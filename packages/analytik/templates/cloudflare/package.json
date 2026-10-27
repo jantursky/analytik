@@ -26,7 +26,7 @@
         "description": "The password you sign in to the dashboard with. Pick a long one: https://textarray.com/password-generator#length=20&upper=true&lower=true&digits=true&symbols=true"
       },
       "SESSION_SECRET": {
-        "description": "Signs the dashboard's session cookie: at least 32 random characters, for example the output of `openssl rand -hex 32`, or generate one at https://textarray.com/random-bytes-generator#bytes=32&format=hex&count=1&prefix=&group=0"
+        "description": "Signs the session cookie, 32+ random characters. Generate one: https://textarray.com/random-bytes-generator#bytes=32&format=hex&count=1&prefix=&group=0"
       }
     }
   }
