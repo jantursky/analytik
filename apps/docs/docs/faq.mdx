@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: Cookie banners, ad blockers, accuracy, serverless, multiple sites, data location and what analytik leaves out.
+description: Cookie banners, ad blockers, accuracy, serverless, multiple sites, data location and what Analytik leaves out.
 sidebar:
   order: 8
 ---
@@ -13,7 +13,7 @@ In `enriched` mode, show a banner and call `analytik.consent()` when the visitor
 
 ## Why are my numbers lower than Google Analytics?
 
-Reasons stack up: ad blockers that block the script or the request (see the [first-party route](/deploy/cloudflare-workers-d1#ad-blockers-and-first-party-routes)), bots that analytik filters out, and the wait for the first interaction before the first pageview (`data-require-interaction`). Strict mode also has [its own limits](/concepts/privacy-modes#strict): a visitor who changes network counts twice, while two people on one network and browser count once.
+Reasons stack up: ad blockers that block the script or the request (see the [first-party route](/deploy/cloudflare-workers-d1#ad-blockers-and-first-party-routes)), bots that Analytik filters out, and the wait for the first interaction before the first pageview (`data-require-interaction`). Strict mode also has [its own limits](/concepts/privacy-modes#strict): a visitor who changes network counts twice, while two people on one network and browser count once.
 
 ## Are visitors with Do Not Track counted?
 
@@ -29,7 +29,7 @@ Yes. The server is a `fetch` handler without background state. Salts are rotated
 
 ## Where is my data?
 
-In the database you configured, on the platform you chose. analytik sends nothing to any third party, and the dashboard has no external requests.
+In the database you configured, on the platform you chose. Analytik sends nothing to any third party, and the dashboard has no external requests.
 
 ## Can I use it without React?
 

@@ -48,7 +48,7 @@ An indigo-navy canvas: background `#0c1024`, land dots `#2c3570`, graticule `#16
 
 ### Logo
 
-A blue triangle (`#3a8dff`) with a yellow upper-left face (`#ffc232`), cut from the rest by a diagonal transparent gap. The colours come from the artwork, not from the UI primary, and are the same in light and dark. The mark appears in the dashboard header (`BrandMark`), the favicons, the docs logo and the README banner (mark, "analytik" wordmark and tagline).
+A blue triangle (`#3a8dff`) with a yellow upper-left face (`#ffc232`), cut from the rest by a diagonal transparent gap. The colours come from the artwork, not from the UI primary, and are the same in light and dark. The mark appears in the dashboard header (`BrandMark`), the favicons, the docs logo and the README banner (mark, "Analytik" wordmark and tagline).
 
 ## Typography
 

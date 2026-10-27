@@ -3,21 +3,39 @@ import { type ReactNode, type SubmitEvent, useId, useState } from 'react'
 import type { Site } from '../shared/types'
 import { cleanDomain, domainProblem } from '../shared/url'
 import type { ApiClient } from './api'
-import { Field } from './ui'
+import { BrandMark } from './brand'
+import { Icon } from './icons'
+import { ThemeToggle } from './theme-toggle'
+import { ErrorNote, Field } from './ui'
 import { CurrencySelect } from './ui/currency'
 import { Dialog } from './ui/dialog'
 import { localTimeZone, TimeZoneSelect } from './ui/timezone'
 
 const message = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
+/** The mark and name above a form on its own card, with the theme switch on the right. */
+function CardHead() {
+  return (
+    <div className="analytik-login-head">
+      <span className="analytik-login-brand">
+        <BrandMark />
+        Analytik
+      </span>
+      <ThemeToggle />
+    </div>
+  )
+}
+
 export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () => void }) {
   const [password, setPassword] = useState('')
+  const [shown, setShown] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
     setBusy(true)
+    setError('')
     client
       .login(password)
       .then(onLogin, (e: unknown) => setError(message(e)))
@@ -26,24 +44,36 @@ export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () 
 
   return (
     <form className="analytik-card analytik-login" onSubmit={submit}>
-      <h1>Sign in to analytik</h1>
+      <CardHead />
+      <div>
+        <h1>Sign in to Analytik</h1>
+        <p className="analytik-login-lede">Enter the admin password to open your dashboard.</p>
+      </div>
       <Field label="Admin password">
-        <input
-          className="analytik-input"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoFocus
-        />
+        <span className="analytik-password">
+          <input
+            className="analytik-input"
+            type={shown ? 'text' : 'password'}
+            autoComplete="current-password"
+            value={password}
+            aria-invalid={error ? true : undefined}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoFocus
+          />
+          <button
+            type="button"
+            className="analytik-pill-icon analytik-password-toggle"
+            aria-label={shown ? 'Hide password' : 'Show password'}
+            aria-pressed={shown}
+            onClick={() => setShown(!shown)}
+          >
+            <Icon name={shown ? 'eye-off' : 'eye'} />
+          </button>
+        </span>
       </Field>
-      {error && (
-        <p className="analytik-error" role="alert">
-          {error}
-        </p>
-      )}
-      <button type="submit" className="analytik-button" data-variant="primary" disabled={busy}>
+      {error && <ErrorNote title="Couldn't sign in">{error}</ErrorNote>}
+      <button type="submit" className="analytik-button analytik-wide" data-variant="primary" disabled={busy}>
         {busy ? 'Checking…' : 'Sign in'}
       </button>
     </form>
@@ -180,11 +210,7 @@ function SiteForm({
           onChange={(e) => setRetention(e.target.value)}
         />
       </Field>
-      {error && (
-        <p className="analytik-error" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote title="Couldn't add the website">{error}</ErrorNote>}
       <button type="submit" className="analytik-button analytik-wide" data-variant="primary" disabled={!ready}>
         {busy ? 'Adding…' : 'Add website'}
       </button>
@@ -197,7 +223,11 @@ export function CreateSiteForm({ client, onCreated }: { client: ApiClient; onCre
   return (
     <div className="analytik-card analytik-login">
       <SiteForm client={client} onCreated={onCreated}>
-        <h1>Add a website</h1>
+        <CardHead />
+        <div>
+          <h1>Add your first website</h1>
+          <p className="analytik-login-lede">Enter its domain to get the tracking code.</p>
+        </div>
       </SiteForm>
     </div>
   )

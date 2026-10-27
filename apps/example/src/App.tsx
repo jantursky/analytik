@@ -77,7 +77,7 @@ export function App() {
           <div className="brand">
             <img src="/icon.svg" alt="" />
             <span>
-              analytik <small>demo</small>
+              Analytik <small>demo</small>
             </span>
           </div>
           <nav className="nav" aria-label="Demo sections">
@@ -118,7 +118,7 @@ export function App() {
             </div>
             <ExampleFrame
               title="Dashboard"
-              description="The embeddable React dashboard, pointed at this app's own analytik server."
+              description="The embeddable React dashboard, pointed at this app's own Analytik server."
               file="DashboardExample.tsx"
               source={dashboardSource}
             >
@@ -130,7 +130,7 @@ export function App() {
         {shown === 'site' && (
           <>
             <div className="stack">
-              <h1 className="title">A shop that reports to analytik</h1>
+              <h1 className="title">A shop that reports to Analytik</h1>
               <p className="lede">
                 Fernwood is a made-up indie writing app. Pageviews, button goals and the purchase revenue event are sent
                 with analytik/react. Toggle consent to move between strict and enriched mode.
@@ -156,7 +156,7 @@ export function App() {
               </p>
             </div>
             <ExampleFrame
-              title="Install analytik"
+              title="Install Analytik"
               description="The steps, a snippet generator and prompts for coding assistants, all built from the same options."
               file="InstallExample.tsx"
               source={installSource}

@@ -3,11 +3,11 @@ title: Attribution and payments
 description: How a payment is matched to a visitor, which session gets the credit, and how refunds and renewals are counted.
 ---
 
-Revenue is stored as payments. A payment arrives from a webhook, from your server, or from the tracker, and analytik tries to link it to the visitor who paid. A linked payment shows up in the dashboard next to the source, campaign, page and country of that visitor's session.
+Revenue is stored as payments. A payment arrives from a webhook, from your server, or from the tracker, and Analytik tries to link it to the visitor who paid. A linked payment shows up in the dashboard next to the source, campaign, page and country of that visitor's session.
 
 ## Matching order
 
-Each payment records how it was matched in `matchedBy`. analytik tries the methods in this order and stops at the first that works.
+Each payment records how it was matched in `matchedBy`. Analytik tries the methods in this order and stops at the first that works.
 
 | `matchedBy`   | How it matches                                                                                                                                                   | Needs                                                          |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |

@@ -1,6 +1,6 @@
 {
-  "name": "analytik demo",
-  "short_name": "analytik",
+  "name": "Analytik demo",
+  "short_name": "Analytik",
   "description": "Privacy-first web analytics: the dashboard, an instrumented shop, an install generator and a privacy explainer.",
   "id": "/",
   "start_url": "/#dashboard",

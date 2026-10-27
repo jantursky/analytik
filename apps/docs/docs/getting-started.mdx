@@ -1,6 +1,6 @@
 ---
 title: Getting started
-description: Install analytik, run the server locally with SQLite, create a site, add the script and see the first pageview.
+description: Install Analytik, run the server locally with SQLite, create a site, add the script and see the first pageview.
 sidebar:
   order: 2
 ---
@@ -13,7 +13,7 @@ This page runs everything on your machine with Bun or Node and a SQLite file. Th
 analytik hono
 ```
 
-analytik is ESM only and needs Node 22.19 or newer, or Bun 1.3 or newer. `hono` is a peer dependency of the server. `react` and `react-dom` (version 19) are needed only for the React bindings and the dashboard. Postgres needs `postgres` or `pg`, and you pass the connected client to `postgresStorage()`; see [Storage](/reference/storage). The tracker script and the browser client have no dependencies.
+Analytik is ESM only and needs Node 22.19 or newer, or Bun 1.3 or newer. `hono` is a peer dependency of the server. `react` and `react-dom` (version 19) are needed only for the React bindings and the dashboard. Postgres needs `postgres` or `pg`, and you pass the connected client to `postgresStorage()`; see [Storage](/reference/storage). The tracker script and the browser client have no dependencies.
 
 ## Write the server
 
@@ -70,7 +70,7 @@ The response is `{ "site": { ... }, "apiKey": "ak_..." }`. Take the site id from
 <script defer src="http://localhost:8787/analytik.js" data-site="SITE_ID" data-allow-localhost></script>
 ```
 
-The analytik server does not serve the tracker script. The file is `dist/analytik.js` in the package (exported as `analytik/analytik.js`). Copy it into the folder your server or host serves as static files, and copy it again after you upgrade the package:
+The Analytik server does not serve the tracker script. The file is `dist/analytik.js` in the package (exported as `analytik/analytik.js`). Copy it into the folder your server or host serves as static files, and copy it again after you upgrade the package:
 
 ```bash
 mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js

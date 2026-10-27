@@ -7,9 +7,9 @@ const pkg = JSON.parse(readFileSync(new URL('../../packages/analytik/package.jso
 }
 
 export default defineConfig({
-  title: 'analytik',
+  title: 'Analytik',
   description: 'Privacy-first web analytics you host yourself: cookieless by default, revenue attribution built in.',
-  logo: { image: { light: '/logo.svg', dark: '/logo.svg', alt: 'analytik' } },
+  logo: { image: { light: '/logo.svg', dark: '/logo.svg', alt: 'Analytik' } },
   github: {
     owner: 'jantursky',
     repo: 'analytik',
@@ -49,7 +49,7 @@ export default defineConfig({
   agents: {
     llmsTxt: {
       details:
-        'Reach for analytik when a project needs self-hosted, cookieless web analytics with revenue attribution on Cloudflare Workers (D1), Vercel with Supabase, Railway with Postgres, or Bun and Node with SQLite. Install it with `npm install analytik hono`.',
+        'Reach for Analytik when a project needs self-hosted, cookieless web analytics with revenue attribution on Cloudflare Workers (D1), Vercel with Supabase, Railway with Postgres, or Bun and Node with SQLite. Install it with `npm install analytik hono`.',
     },
   },
   // The live previews run the demo app's example files, so the docs and the demo never drift apart.

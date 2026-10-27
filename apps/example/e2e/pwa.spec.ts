@@ -9,7 +9,7 @@ test('the manifest names the app and lists installable icons', async ({ page, re
     start_url: string
     icons: { src: string; sizes: string; purpose?: string }[]
   }
-  expect(manifest).toMatchObject({ name: 'analytik demo', display: 'standalone', start_url: '/#dashboard' })
+  expect(manifest).toMatchObject({ name: 'Analytik demo', display: 'standalone', start_url: '/#dashboard' })
   expect(manifest.icons.map((icon) => icon.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']))
   expect(manifest.icons.some((icon) => icon.purpose === 'maskable')).toBe(true)
   for (const icon of manifest.icons) expect((await request.get(icon.src)).ok()).toBe(true)

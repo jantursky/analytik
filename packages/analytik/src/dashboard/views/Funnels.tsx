@@ -5,7 +5,7 @@ import type { Funnel, FunnelResult, FunnelStep } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatNumber, formatPercent } from '../format'
-import { Card, ConfirmButton, Field, Status } from '../ui'
+import { Card, ConfirmButton, ErrorNote, Field, Status } from '../ui'
 import { EASE, View } from '../ui/motion'
 import { Select, type SelectOption } from '../ui/select'
 
@@ -113,11 +113,7 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
           )}
         </fieldset>
       ))}
-      {error && (
-        <p className="analytik-error" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
       <div className="analytik-actions">
         <button type="button" className="analytik-button" onClick={() => setSteps([...steps, emptyStep()])}>
           Add step

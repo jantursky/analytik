@@ -1,6 +1,6 @@
-# analytik on Cloudflare
+# Analytik on Cloudflare
 
-A Worker that serves the [analytik](https://github.com/jantursky/analytik) dashboard, the tracker script and the API, with its data in a D1 database.
+A Worker that serves the [Analytik](https://github.com/jantursky/analytik) dashboard, the tracker script and the API, with its data in a D1 database.
 
 ## Deploy
 

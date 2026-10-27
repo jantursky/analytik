@@ -65,7 +65,7 @@ test('builds the integration prompt for the chosen framework and the current opt
   const panel = page.getByRole('region', { name: 'Site integration prompt' })
   await panel.getByRole('radio', { name: 'Nuxt' }).check()
   const preview = panel.locator('pre')
-  await expect(preview).toContainText('Add analytik tracking to your Nuxt site')
+  await expect(preview).toContainText('Add Analytik tracking to your Nuxt site')
   await expect(preview).toContainText('nuxt.config.ts')
   await expect(preview).toContainText("'data-site': 'acme'")
   await expect(preview).toContainText('/api/event')
@@ -76,7 +76,7 @@ test('builds the server prompt for the chosen platform', async ({ page }) => {
   await page.goto('/#install')
   const panel = page.getByRole('region', { name: 'Server setup prompt' })
   await panel.getByRole('radio', { name: 'Fly.io + SQLite' }).check()
-  await expect(panel.locator('pre')).toContainText('Set up the analytik server on Fly.io + SQLite')
+  await expect(panel.locator('pre')).toContainText('Set up the Analytik server on Fly.io + SQLite')
   await expect(panel.locator('pre')).toContainText("sqliteStorage('/data/analytik.db')")
 })
 

@@ -33,16 +33,38 @@ afterEach(() => {
 })
 
 describe('Dashboard shell', () => {
+  it('lets the theme be switched and the password shown on the login screen', async () => {
+    const api = fakeApi()
+    api.state.loggedIn = false
+    const { container } = await open(api)
+    const root = () => container.querySelector('.analytik')
+    expect(container.querySelector('.analytik-main')?.hasAttribute('data-centered')).toBe(true)
+    const toggle = () => container.querySelector<HTMLButtonElement>('.analytik-login-head button')
+    expect(toggle()?.getAttribute('aria-label')).toBe('Theme: Same as the page. Switch to light')
+    await click(toggle())
+    expect(root()?.getAttribute('data-theme')).toBe('light')
+    await click(toggle())
+    expect(root()?.getAttribute('data-theme')).toBe('dark')
+    await click(toggle())
+    expect(root()?.getAttribute('data-theme')).toBeNull()
+    const input = byLabel(container, 'Admin password')!
+    expect(input.getAttribute('type')).toBe('password')
+    await click(container.querySelector('.analytik-password-toggle'))
+    expect(input.getAttribute('type')).toBe('text')
+    await click(container.querySelector('.analytik-password-toggle'))
+    expect(input.getAttribute('type')).toBe('password')
+  })
+
   it('shows the login form on 401 and loads the sites after signing in', async () => {
     const api = fakeApi()
     api.state.loggedIn = false
     const { container } = await open(api)
     const form = container.querySelector('form')
-    expect(container.querySelector('h1')?.textContent).toBe('Sign in to analytik')
+    expect(container.querySelector('h1')?.textContent).toBe('Sign in to Analytik')
     await fill(byLabel(container, 'Admin password'), 'nope')
     await submit(form)
     await settled()
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Wrong password')
+    expect(container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('Wrong password.')
     await fill(byLabel(container, 'Admin password'), 'secret')
     await submit(form)
     await settled()
@@ -55,7 +77,7 @@ describe('Dashboard shell', () => {
     await click(byText(container, 'Log out', 'button'))
     await settled()
     expect(api.find('POST', '/auth/logout')).toHaveLength(1)
-    expect(container.querySelector('h1')?.textContent).toBe('Sign in to analytik')
+    expect(container.querySelector('h1')?.textContent).toBe('Sign in to Analytik')
   })
 
   it('customizes the overview layout and remembers it', async () => {
@@ -747,22 +769,22 @@ describe('Dashboard shell', () => {
     const api = fakeApi({ 'POST /sites': () => Response.json({ error: 'Domain taken' }, { status: 409 }) })
     api.state.sites = []
     const { container } = await open(api)
-    expect(container.querySelector('h1')?.textContent).toBe('Add a website')
+    expect(container.querySelector('h1')?.textContent).toBe('Add your first website')
     expect(byText(container, 'Subdomains (app.example.com) are tracked under the same site.')).toBeDefined()
     await fill(byLabel(container, 'Name'), 'A')
     await fill(byLabel(container, 'Domain'), 'a.org')
     await submit(container.querySelector('form'))
     await settled()
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Domain taken')
+    expect(container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('Domain taken.')
   })
 
   it('shows API errors', async () => {
     const { container } = await open(
       fakeApi({ 'GET /sites': () => Response.json({ error: 'Database down' }, { status: 500 }) }),
     )
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Database down')
+    expect(container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('Database down.')
     const broken = await open(fakeApi({ 'GET /sites/:id/overview': () => new Response('x', { status: 502 }) }))
-    expect(broken.container.querySelector('[role="alert"]')?.textContent).toBe('HTTP 502')
+    expect(broken.container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('HTTP 502.')
   })
 })
 
@@ -961,7 +983,9 @@ describe('Dashboard views', () => {
     expect(texts(container, '.analytik-funnel li')).toEqual(['1. /1,000 · 100%', '2. signup250 · 25% · 75% dropped'])
     await fill(byLabel(container, 'Funnel name'), 'Checkout')
     await submit(container.querySelector('form'))
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe('A funnel needs at least two steps.')
+    expect(container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe(
+      'A funnel needs at least two steps.',
+    )
     await click(byText(container, 'Add step', 'button'))
     const matches = container.querySelectorAll<HTMLInputElement>('fieldset input.analytik-input')
     await fill(matches[0], '/cart')
@@ -999,7 +1023,7 @@ describe('Dashboard views', () => {
     await fill(inputs[1], '/b')
     await submit(container.querySelector('form'))
     await settled()
-    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Invalid step')
+    expect(container.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('Invalid step.')
   })
 
   it('Realtime maps who is online, describes what they do and refreshes while visible', async () => {
@@ -1468,7 +1492,7 @@ describe('site lifecycle', () => {
     expect(submitButton()?.hasAttribute('disabled')).toBe(false)
     await submit(dialog()?.querySelector('form'))
     await settled()
-    expect(dialog()?.querySelector('.analytik-field-error')?.textContent).toBe('Wrong password.')
+    expect(dialog()?.querySelector('[role="alert"] .analytik-error-text')?.textContent).toBe('Wrong password.')
     expect(api.state.sites).toHaveLength(2)
     await fill(byLabel(document.body, 'Admin password'), 'secret')
     await submit(dialog()?.querySelector('form'))
@@ -1567,7 +1591,7 @@ describe('formatting and credits', () => {
     const { container } = await open()
     const links = [...container.querySelectorAll<HTMLAnchorElement>('.analytik-credits a')]
     expect(links.map((a) => [a.textContent.trim(), a.href])).toEqual([
-      ['analytikOpen-source, privacy-first analytics', 'https://github.com/jantursky/analytik'],
+      ['AnalytikOpen-source, privacy-first analytics', 'https://github.com/jantursky/analytik'],
       ['Star on GitHub', 'https://github.com/jantursky/analytik'],
       ['Jan Tursky', 'https://jantursky.com/'],
     ])

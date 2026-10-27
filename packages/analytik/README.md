@@ -17,14 +17,14 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-# analytik
+# Analytik
 
 Web analytics you host yourself. The default `strict` mode is designed to avoid needing a cookie banner (see the [privacy page](https://analytik-docs.vercel.app/concepts/privacy-modes) for the conditions). A Hono server for Cloudflare Workers, Vercel, Railway, Bun or Node, storage on D1, Postgres (Supabase) or SQLite, a 4 KB tracker, React bindings and a dashboard you can embed.
 
 <a href="https://analytik.vercel.app/#dashboard">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/dashboard-dark.png">
-    <img alt="The analytik dashboard: visitors, revenue and a breakdown by source, page and device" src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/dashboard-light.png">
+    <img alt="The Analytik dashboard: visitors, revenue and a breakdown by source, page and device" src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/dashboard-light.png">
   </picture>
 </a>
 

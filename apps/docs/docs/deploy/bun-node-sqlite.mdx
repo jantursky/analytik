@@ -1,6 +1,6 @@
 ---
 title: Bun, Node and SQLite
-description: Run analytik on a VPS or in Docker with Bun or Node and a SQLite file, behind a reverse proxy, with backups.
+description: Run Analytik on a VPS or in Docker with Bun or Node and a SQLite file, behind a reverse proxy, with backups.
 ---
 
 For a single server and modest traffic, SQLite is enough, and it removes the database as something to run. The constraint is that SQLite allows one writer, so run exactly one instance of the process.
@@ -96,7 +96,7 @@ The database lives in the `analytik-data` volume. Do not scale this service abov
 
 ## Reverse proxy
 
-Put Caddy or nginx in front for TLS and keep the container on `127.0.0.1`. Make sure the proxy passes the visitor's address, since strict mode hashes it, and tell analytik to read it. By default analytik ignores `X-Forwarded-For`, because a visitor could send that header themselves. Add `trustProxy: 'forwarded'` to `createAnalytik` in the server code above:
+Put Caddy or nginx in front for TLS and keep the container on `127.0.0.1`. Make sure the proxy passes the visitor's address, since strict mode hashes it, and tell Analytik to read it. By default Analytik ignores `X-Forwarded-For`, because a visitor could send that header themselves. Add `trustProxy: 'forwarded'` to `createAnalytik` in the server code above:
 
 ```ts
 createAnalytik({

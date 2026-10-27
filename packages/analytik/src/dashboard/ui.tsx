@@ -50,7 +50,7 @@ export function Card({
 const TILE_HUES = 5
 
 /** Where a site's icon comes from: `true` for its `/favicon.ico`, `false` for none, or a function returning a URL. */
-export type FaviconSource = boolean | ((site: Pick<Site, 'name' | 'domain'>) => string | undefined)
+export type FaviconSource = boolean | ((site: Pick<Site, 'name' | 'domain'> & { id?: string }) => string | undefined)
 
 export const FaviconsContext = createContext<FaviconSource>(true)
 
@@ -120,7 +120,7 @@ const TEST_MARKS: readonly (readonly [string, string])[] = [
  * A site's favicon over its initial on a tinted square; the initial stays when the site has no icon. Sites made by
  * the test data generator have no real domain to ask; they get the analytik mark in a colour pair of their own.
  */
-export function SiteTile({ site }: { site: Pick<Site, 'name' | 'domain'> }) {
+export function SiteTile({ site }: { site: Pick<Site, 'name' | 'domain'> & { id?: string } }) {
   const favicons = use(FaviconsContext)
   const text = site.name || site.domain
   let hash = 0
@@ -217,14 +217,34 @@ export function StatTile({ label, delta, format, exact, invert, trend, marker, s
   )
 }
 
+/** "wrong password" read as a sentence: a capital first, and a full stop unless the message ends in punctuation. */
+const sentence = (text: string): string => {
+  const trimmed = text.trim()
+  return trimmed ? `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}${/[.!?]$/.test(trimmed) ? '' : '.'}` : ''
+}
+
+/**
+ * An error: an alert icon in a tinted badge, a short title and the message as a sentence. Announced to screen
+ * readers, and eases in when it appears.
+ */
+export function ErrorNote({ title = 'Something went wrong', children }: { title?: string; children: string }) {
+  return (
+    <div className="analytik-error" role="alert">
+      <span className="analytik-error-icon">
+        <Icon name="alert" />
+      </span>
+      <div>
+        <strong>{title}</strong>
+        <span className="analytik-error-text">{sentence(children)}</span>
+      </div>
+    </div>
+  )
+}
+
 /** Shows children once loaded; a busy state before and an alert on error. */
 export function Status({ loading, error, children }: { loading: boolean; error?: Error; children?: ReactNode }) {
   if (error) {
-    return (
-      <p className="analytik-error" role="alert">
-        {error.message}
-      </p>
-    )
+    return <ErrorNote>{error.message}</ErrorNote>
   }
   if (loading) {
     return (

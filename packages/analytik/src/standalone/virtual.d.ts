@@ -3,3 +3,8 @@ declare module 'virtual:analytik-standalone' {
   const assets: { js: string; css: string; tracker: string }
   export default assets
 }
+
+declare module '*.svg?raw' {
+  const source: string
+  export default source
+}

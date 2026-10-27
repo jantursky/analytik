@@ -23,13 +23,13 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "56 kB"
+    "limit": "57 kB"
   },
   {
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "12 kB"
+    "limit": "12.5 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
@@ -43,7 +43,7 @@
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "27.5 kB"
+    "limit": "28 kB"
   },
   {
     "name": "D1 storage",

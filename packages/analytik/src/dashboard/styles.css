@@ -37,6 +37,9 @@
   --analytik-danger: #b42f2f;
   --analytik-on-danger: #ffffff;
   --analytik-warning-soft: #fde8dc;
+  --analytik-danger-soft: #fdeaea;
+  --analytik-caution: #9a6700;
+  --analytik-caution-soft: #fdf1d0;
   --analytik-focus: #3a4fd8;
   --analytik-font: 'Figtree Variable', 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --analytik-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -86,6 +89,9 @@
     --analytik-danger: #ff8a80;
     --analytik-on-danger: #0b1020;
     --analytik-warning-soft: #3a2116;
+    --analytik-danger-soft: #3a1a1c;
+    --analytik-caution: #f5c04e;
+    --analytik-caution-soft: #33270f;
     --analytik-focus: #a3adff;
     --analytik-shadow: none;
     --analytik-shadow-card: none;
@@ -126,6 +132,9 @@
   --analytik-danger: #ff8a80;
   --analytik-on-danger: #0b1020;
   --analytik-warning-soft: #3a2116;
+  --analytik-danger-soft: #3a1a1c;
+  --analytik-caution: #f5c04e;
+  --analytik-caution-soft: #33270f;
   --analytik-focus: #a3adff;
   --analytik-shadow: none;
   --analytik-shadow-card: none;
@@ -254,6 +263,7 @@
 
 .analytik-main {
   --analytik-gutter: 24px;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -386,8 +396,24 @@
   opacity: 1;
 }
 
+.analytik-button[data-variant='warning'] {
+  border-color: color-mix(in srgb, var(--analytik-caution) 55%, transparent);
+  background: var(--analytik-caution-soft);
+  color: var(--analytik-caution);
+}
+
+.analytik-button[data-variant='warning']:hover:not(:disabled) {
+  border-color: var(--analytik-caution);
+}
+
 .analytik-button[data-variant='danger'] {
-  border-color: var(--analytik-warning);
+  border-color: color-mix(in srgb, var(--analytik-danger) 55%, transparent);
+  background: var(--analytik-danger-soft);
+  color: var(--analytik-danger);
+}
+
+.analytik-button[data-variant='danger']:hover:not(:disabled) {
+  border-color: var(--analytik-danger);
 }
 
 .analytik-button[data-variant='danger-solid'] {
@@ -2038,17 +2064,82 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 }
 
 .analytik-login {
+  position: relative;
   width: 100%;
   max-width: 440px;
-  margin: 48px auto;
+  margin: 0 auto;
   padding: 28px;
   border-radius: var(--analytik-radius-card);
+  animation: analytik-login-in 360ms var(--analytik-ease) both;
+}
+
+@keyframes analytik-login-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-login {
+    animation: none;
+  }
 }
 
 .analytik-login h1 {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.analytik-login-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.analytik-login-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.analytik-login-brand .analytik-brand-mark {
+  width: 30px;
+  height: 30px;
+}
+
+.analytik-login-lede {
+  margin-top: 4px;
+  color: var(--analytik-text-muted);
+}
+
+.analytik-password {
+  position: relative;
+  display: block;
+}
+
+.analytik-password .analytik-input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.analytik-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+/* Login and first-site screens sit in the middle of the page, whatever its height. */
+.analytik-main[data-centered] {
+  flex: 1;
+  justify-content: center;
+  padding-top: 24px;
 }
 
 /* ---- sites overview */
@@ -2747,6 +2838,70 @@ tr:hover .analytik-row-button {
   color: var(--analytik-text);
 }
 
+/* An error: a tinted badge with the icon, a title and the message, with an accent edge, easing in when it appears. */
+.analytik-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--analytik-danger) 28%, transparent);
+  border-left: 3px solid var(--analytik-danger);
+  border-radius: var(--analytik-radius-control);
+  background: var(--analytik-danger-soft);
+  color: var(--analytik-text);
+  font-size: 14px;
+  line-height: 1.45;
+  animation: analytik-error-in 240ms var(--analytik-ease) both;
+}
+
+.analytik-error-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--analytik-danger) 16%, transparent);
+  color: var(--analytik-danger);
+}
+
+.analytik-error-icon .analytik-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.analytik-error > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+  padding-top: 3px;
+}
+
+.analytik-error strong {
+  color: var(--analytik-danger);
+  font-weight: 650;
+}
+
+.analytik-error-text {
+  color: var(--analytik-text-muted);
+  overflow-wrap: anywhere;
+}
+
+@keyframes analytik-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-error,
+  .analytik-field-error {
+    animation: none;
+  }
+}
+
 .analytik-success {
   background: var(--analytik-success-soft);
 }
@@ -2882,6 +3037,7 @@ tr:hover .analytik-row-button {
   color: var(--analytik-danger);
   font-size: 12px;
   font-weight: 500;
+  animation: analytik-error-in 200ms var(--analytik-ease) both;
 }
 
 .analytik-input[aria-invalid='true'] {

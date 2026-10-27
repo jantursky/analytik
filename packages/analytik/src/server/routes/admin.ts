@@ -6,6 +6,7 @@ import type { EventType, Interval } from '../../shared/types'
 import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
+import { siteFavicon } from '../favicon'
 import { rematchPayments } from '../payments'
 import { getPreferences, savePreferences } from '../preferences'
 import { readText } from '../request'
@@ -173,6 +174,7 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
 
   const query = (c: HonoContext<AdminEnv>) => statsQuery(new URL(c.req.url), c.get('site'), ctx.now())
 
+  app.get('/sites/:id/favicon', async (c) => (await siteFavicon(c.get('site').domain)) ?? c.body(null, 404))
   app.get('/sites/:id/overview', async (c) => c.json(await overview(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/timeseries', async (c) => c.json(await timeseries(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/breakdown', async (c) => {

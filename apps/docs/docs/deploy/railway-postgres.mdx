@@ -1,9 +1,9 @@
 ---
 title: Railway and Postgres
-description: Run analytik as a long-lived Bun service on Railway with a Railway Postgres database, a pre-deploy migration and a custom domain.
+description: Run Analytik as a long-lived Bun service on Railway with a Railway Postgres database, a pre-deploy migration and a custom domain.
 ---
 
-Railway runs analytik as a normal long-lived process, which is the simplest model: one connection pool, no cold starts. The database is a Railway Postgres service in the same project.
+Railway runs Analytik as a normal long-lived process, which is the simplest model: one connection pool, no cold starts. The database is a Railway Postgres service in the same project.
 
 ## Project
 
@@ -62,7 +62,7 @@ In the service's settings, generate a Railway domain or add a custom one and cre
 <script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID"></script>
 ```
 
-Railway puts a proxy in front of the service and passes the visitor's address in `X-Forwarded-For`. analytik ignores that header unless you set `trustProxy: 'forwarded'`, as in the code above, because otherwise a visitor could send it themselves. That mode reads the rightmost public address, so it is only safe behind a proxy that sets or appends the header. Check that this holds for your Railway setup. Without a client IP, strict mode tells visitors apart by user agent only. Railway does not add location headers, so countries and cities are empty unless you supply your own lookup with the `geo` option or put Cloudflare in front of the domain.
+Railway puts a proxy in front of the service and passes the visitor's address in `X-Forwarded-For`. Analytik ignores that header unless you set `trustProxy: 'forwarded'`, as in the code above, because otherwise a visitor could send it themselves. That mode reads the rightmost public address, so it is only safe behind a proxy that sets or appends the header. Check that this holds for your Railway setup. Without a client IP, strict mode tells visitors apart by user agent only. Railway does not add location headers, so countries and cities are empty unless you supply your own lookup with the `geo` option or put Cloudflare in front of the domain.
 
 ## Costs and limits
 

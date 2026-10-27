@@ -20,7 +20,7 @@ export function Credits() {
     <footer className="analytik-credits">
       <a className="analytik-credits-brand" href={REPOSITORY} target="_blank" rel="noopener">
         <BrandMark />
-        <strong>analytik</strong>
+        <strong>Analytik</strong>
         <span className="analytik-credits-tagline">Open-source, privacy-first analytics</span>
       </a>
       <span className="analytik-credits-links">

@@ -64,7 +64,7 @@ export interface DashboardProps {
   /** View shown first. Default `overview`. */
   view?: DashboardView
   /**
-   * Site icons. Default `true`: each site's `/favicon.ico`, requested by the browser from the site itself. `false`
+   * Site icons. Default `true`: each site's icon, fetched by the analytik server from the site (its `<link rel="icon">`, else `/favicon.ico`), so the browser never contacts the site. `false`
    * shows the site's initial; a function returns the icon URL for a site, or `undefined` for the initial.
    */
   favicons?: FaviconSource
@@ -338,7 +338,7 @@ export function Dashboard({
       <div className="analytik" data-theme={theme ?? parseTheme(preferences.values.theme)} ref={setRoot}>
         <PreferencesProvider value={preferences}>
           <LayerContext value={root}>
-            <FaviconsContext value={favicons}>
+            <FaviconsContext value={favicons === true ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon` : favicons}>
               {!unauthorized && site && (
                 <header className="analytik-header" ref={header}>
                   <span className="analytik-brand">
@@ -377,7 +377,11 @@ export function Dashboard({
                 </header>
               )}
               {/* Not a <main>: the dashboard is embedded in pages that have their own. */}
-              <div className="analytik-main" ref={main}>
+              <div
+                className="analytik-main"
+                ref={main}
+                data-centered={unauthorized || (!sites.loading && !sites.error && !site) ? '' : undefined}
+              >
                 {content}
               </div>
               {credits && <Credits />}

@@ -123,7 +123,7 @@ export function InstallExample() {
         <div className="split">
           <div className="stack">
             <label className="field" htmlFor={ids.host}>
-              Your analytik host
+              Your Analytik host
               <input
                 id={ids.host}
                 className="input"
@@ -218,7 +218,7 @@ export function InstallExample() {
 
       <PromptPanel
         title="Server setup prompt"
-        description="Let your coding assistant deploy analytik. Pick where it runs; the prompt uses the host and mode from More options."
+        description="Let your coding assistant deploy Analytik. Pick where it runs; the prompt uses the host and mode from More options."
         options={SERVER_TARGETS}
         icons={SERVER_ICONS}
         value={server}

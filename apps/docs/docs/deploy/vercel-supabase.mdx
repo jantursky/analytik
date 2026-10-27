@@ -1,9 +1,9 @@
 ---
 title: Vercel and Supabase
-description: Run analytik as a Hono function on Vercel with Supabase Postgres, including the pooler, migrations, row level security and geo headers.
+description: Run Analytik as a Hono function on Vercel with Supabase Postgres, including the pooler, migrations, row level security and geo headers.
 ---
 
-On Vercel, analytik runs as a function and stores its data in Postgres. Supabase is a convenient Postgres, and the same steps work with any Postgres provider.
+On Vercel, Analytik runs as a function and stores its data in Postgres. Supabase is a convenient Postgres, and the same steps work with any Postgres provider.
 
 ## Deploy button
 
@@ -51,7 +51,7 @@ Vercel runs a Hono app exported as the default of `src/index.ts`. Put the tracke
 
 ## Inside a Next.js app
 
-If the site is a Next.js app on Vercel, mount analytik as a route handler and keep everything on one origin, which also avoids ad-blocker problems:
+If the site is a Next.js app on Vercel, mount Analytik as a route handler and keep everything on one origin, which also avoids ad-blocker problems:
 
 ```ts app/api/analytik/[[...route]]/route.ts
 import { createAnalytik } from 'analytik/server'
@@ -87,7 +87,7 @@ Run it again after each package upgrade, before the deploy that uses the new ver
 
 ## Lock down the tables
 
-Supabase exposes the `public` schema through its REST API. Tables created by a migration have row level security off, which would let anyone holding your `anon` key read them. analytik connects as the database owner, which is not affected by row level security, so turn it on for every table and add no policies:
+Supabase exposes the `public` schema through its REST API. Tables created by a migration have row level security off, which would let anyone holding your `anon` key read them. Analytik connects as the database owner, which is not affected by row level security, so turn it on for every table and add no policies:
 
 ```sql
 do $$
@@ -104,7 +104,7 @@ begin
 end $$;
 ```
 
-Check in Supabase's table editor that no analytik table shows as unrestricted.
+Check in Supabase's table editor that no Analytik table shows as unrestricted.
 
 ## Geo and the visitor IP
 

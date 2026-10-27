@@ -1,6 +1,6 @@
-# analytik on Vercel
+# Analytik on Vercel
 
-One Vercel function that serves the [analytik](https://github.com/jantursky/analytik) dashboard, the tracker script and the API, with its data in Postgres (Supabase, Neon or any other).
+One Vercel function that serves the [Analytik](https://github.com/jantursky/analytik) dashboard, the tracker script and the API, with its data in Postgres (Supabase, Neon or any other).
 
 ## Deploy
 

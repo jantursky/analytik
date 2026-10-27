@@ -1,11 +1,11 @@
-import { type SubmitEvent, useId, useState } from 'react'
+import { type SubmitEvent, useState } from 'react'
 
 import type { Site } from '../../shared/types'
 import type { ApiClient } from '../api'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { Icon } from '../icons'
-import { Actions, Card, useOutcome } from '../ui'
+import { Actions, Card, ErrorNote, useOutcome } from '../ui'
 import { Dialog } from '../ui/dialog'
 
 /**
@@ -25,7 +25,6 @@ export function DeleteSiteDialog({
   onOpenChange: (open: boolean) => void
   onDeleted: () => void
 }) {
-  const id = useId()
   const auth = useResource(`auth-me-${String(open)}`, () => (open ? client.me() : Promise.resolve(null)))
   // Admins signing in through verify() have no password here; the typed domain is the proof then.
   const withPassword = auth.data?.login !== 'custom'
@@ -94,16 +93,11 @@ export function DeleteSiteDialog({
               autoComplete="current-password"
               value={password}
               aria-invalid={error ? true : undefined}
-              aria-describedby={error ? `${id}-error` : undefined}
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
         )}
-        {error && (
-          <span className="analytik-field-error" id={`${id}-error`} role="alert">
-            {error.charAt(0).toUpperCase() + error.slice(1)}.
-          </span>
-        )}
+        {error && <ErrorNote title="Couldn't delete the website">{error}</ErrorNote>}
         <div className="analytik-actions analytik-card-actions">
           <button type="button" className="analytik-button" onClick={() => change(false)}>
             Cancel
@@ -147,7 +141,7 @@ export function SiteLifecycle() {
           <button
             type="button"
             className="analytik-button"
-            data-variant={site.paused ? 'primary' : undefined}
+            data-variant={site.paused ? 'primary' : 'warning'}
             onClick={() =>
               run(togglePaused(client, site).then(onSiteChange), site.paused ? 'Tracking resumed' : 'Tracking paused')
             }

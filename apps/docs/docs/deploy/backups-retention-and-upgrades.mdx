@@ -1,6 +1,6 @@
 ---
 title: Backups, retention and upgrades
-description: Back up D1, Postgres and SQLite, export data as JSON or CSV, purge old data, and upgrade analytik safely.
+description: Back up D1, Postgres and SQLite, export data as JSON or CSV, purge old data, and upgrade Analytik safely.
 ---
 
 ## Backups
@@ -35,7 +35,7 @@ For continuous replication to object storage, run Litestream next to the process
 
 ### Portable export
 
-`GET /api/sites/SITE_ID/export?format=json` (or `csv`) returns all the data for one site, as admin. It is the format to use for moving between storage backends or leaving analytik, and it is not a replacement for database backups.
+`GET /api/sites/SITE_ID/export?format=json` (or `csv`) returns all the data for one site, as admin. It is the format to use for moving between storage backends or leaving Analytik, and it is not a replacement for database backups.
 
 ```bash
 curl -b cookies.txt "https://analytics.example.com/api/sites/SITE_ID/export?format=json" -o site.json
@@ -43,7 +43,7 @@ curl -b cookies.txt "https://analytics.example.com/api/sites/SITE_ID/export?form
 
 ## Retention
 
-Data is kept until it is deleted. Each site has a `retentionDays` setting (a whole number of days, or empty to keep everything). When it is set, analytik purges older data by itself: the ingest path checks it at most once an hour per server instance, so there is no cron job to set up. You can also purge by hand, for one site and any date, with the purge route:
+Data is kept until it is deleted. Each site has a `retentionDays` setting (a whole number of days, or empty to keep everything). When it is set, Analytik purges older data by itself: the ingest path checks it at most once an hour per server instance, so there is no cron job to set up. You can also purge by hand, for one site and any date, with the purge route:
 
 ```bash
 curl -b cookies.txt -X DELETE \
@@ -68,7 +68,7 @@ Retention and salt deletion apply to the live database only. A backup, a Time Tr
 
 ## Upgrades
 
-analytik follows semantic versioning, and the [changelog](/changelog) lists every change. Migrations are ordered SQL files applied once each and recorded in `schema_migrations`.
+Analytik follows semantic versioning, and the [changelog](/changelog) lists every change. Migrations are ordered SQL files applied once each and recorded in `schema_migrations`.
 
 1. Read the changelog entries between your version and the new one.
 2. Take a backup.

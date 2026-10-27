@@ -3,7 +3,7 @@ title: Payments
 description: Record revenue through the generic API or the Stripe, Dodo Payments and Lemon Squeezy webhooks, with the checkout metadata that links each payment to a source.
 ---
 
-Revenue gets a source in two steps: the payment must reach analytik, and it must be linked to a visitor. Read [Attribution and payments](/concepts/attribution-and-payments) first for the matching order. The short version: put the visitor and session ids in the checkout metadata, and everything else follows.
+Revenue gets a source in two steps: the payment must reach Analytik, and it must be linked to a visitor. Read [Attribution and payments](/concepts/attribution-and-payments) first for the matching order. The short version: put the visitor and session ids in the checkout metadata, and everything else follows.
 
 ## Get the ids on the page
 
@@ -57,7 +57,7 @@ Server-side goals work the same way, with `POST /api/v1/goals` and `{ "name": "t
 
 ## Webhooks
 
-analytik verifies and maps provider webhooks itself. For each provider, create a webhook that points to your server and paste its signing secret into the site's settings (Webhooks). The URL has the form `https://analytics.example.com/api/webhooks/PROVIDER/SITE_ID`, where `PROVIDER` is `stripe`, `dodo` or `lemonsqueezy`. Requests that fail verification are rejected.
+Analytik verifies and maps provider webhooks itself. For each provider, create a webhook that points to your server and paste its signing secret into the site's settings (Webhooks). The URL has the form `https://analytics.example.com/api/webhooks/PROVIDER/SITE_ID`, where `PROVIDER` is `stripe`, `dodo` or `lemonsqueezy`. Requests that fail verification are rejected.
 
 | Provider      | Events used                                                       | Signature                       |
 | ------------- | ----------------------------------------------------------------- | ------------------------------- |

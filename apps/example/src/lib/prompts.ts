@@ -2,7 +2,7 @@ import type { PrivacyMode } from 'analytik'
 
 import { escapeAttr, hostOf, scriptAttributes, scriptTag, siteOf, type SnippetOptions } from './snippet'
 
-// Prompts for coding assistants: one to set up the analytik server, one to add the tracker to a site.
+// Prompts for coding assistants: one to set up the Analytik server, one to add the tracker to a site.
 // Each is a template filled with the chosen platform and the snippet options, so what gets copied is ready to paste.
 
 export const SERVER_TARGETS = [
@@ -124,7 +124,7 @@ const analytik = createAnalytik({
 
 const app = new Hono()
 app.route('/', analytik.app)
-// The analytik app serves the API only; the tracker is a static file.
+// The Analytik app serves the API only; the tracker is a static file.
 app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
 
 export default { port: Number(process.env.PORT ?? 3000), fetch: app.fetch }`,
@@ -148,7 +148,7 @@ const analytik = createAnalytik({
 
 const app = new Hono()
 app.route('/', analytik.app)
-// The analytik app serves the API only; the tracker is a static file.
+// The Analytik app serves the API only; the tracker is a static file.
 app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) })`,
@@ -432,11 +432,11 @@ const MODE_NOTES: Record<PrivacyMode, string> = {
     'Persistent: first-party cookies `analytik_vid` (1 year) and `analytik_sid` (30 minutes), like most analytics tools. Treat it as needing consent in the EU and load the tracker only after consent.',
 }
 
-/** A prompt that asks a coding assistant to deploy the analytik server on the chosen platform. */
+/** A prompt that asks a coding assistant to deploy the Analytik server on the chosen platform. */
 export const serverPrompt = (target: ServerTarget, options: SnippetOptions): string => {
   const guide = SERVER_GUIDES[target]
   const host = hostOf(options)
-  return `# Set up the analytik server on ${labelOf(SERVER_TARGETS, target)}
+  return `# Set up the Analytik server on ${labelOf(SERVER_TARGETS, target)}
 
 ## Goal
 
@@ -448,7 +448,7 @@ Deploy analytik (privacy-first, self-hosted web analytics, npm package \`analyti
 ${guide.install}
 \`\`\`
 
-analytik is ESM only and needs Node 22.19+ or Bun 1.3+ when it runs outside Workers. \`hono\` is a peer dependency.
+Analytik is ESM only and needs Node 22.19+ or Bun 1.3+ when it runs outside Workers. \`hono\` is a peer dependency.
 
 ## Code
 
@@ -486,7 +486,7 @@ ${numbered([
 
 ${bullets([
   'Never commit secrets; read them from the platform environment.',
-  'Do not add cookies, fingerprinting or third-party scripts on top of what analytik does.',
+  'Do not add cookies, fingerprinting or third-party scripts on top of what Analytik does.',
   'Keep the API under `/api`; the tracker posts to `/api/event` on the origin of the script by default.',
   'Stop and tell me if a step needs an account, a paid plan or DNS access you do not have.',
 ])}
@@ -819,7 +819,7 @@ ${attributes.join('\n')}
 const PRIVACY_RULES: Record<PrivacyMode, string[]> = {
   strict: [
     'Strict mode stores nothing on the device: no cookie, no localStorage, no sessionStorage. The IP is used for a salted hash and never stored.',
-    'By design no cookie banner is needed for analytik in this mode, so do not put it behind a consent manager and do not list a cookie for it (not legal advice; the site owner decides).',
+    'By design no cookie banner is needed for Analytik in this mode, so do not put it behind a consent manager and do not list a cookie for it (not legal advice; the site owner decides).',
     'Do not call `analytik.identify()`: strict mode ignores it. Identify people only with their consent, on a site switched to enriched or persistent mode.',
   ],
   enriched: [
@@ -858,11 +858,11 @@ export const sitePrompt = (target: SiteTarget, options: SnippetOptions): string 
   const host = hostOf(options)
   const site = siteOf(options)
   const label = labelOf(SITE_TARGETS, target)
-  return `# Add analytik tracking to your ${label} site
+  return `# Add Analytik tracking to your ${label} site
 
 ## Goal
 
-Add the analytik tracker (privacy-first, self-hosted web analytics) to this ${label} site so every page sends pageviews to ${host}. The analytics server is already running; only the website changes. Site id: \`${site}\`, privacy mode: \`${options.mode}\`. If the site id looks like a placeholder, ask me for the real one.
+Add the Analytik tracker (privacy-first, self-hosted web analytics) to this ${label} site so every page sends pageviews to ${host}. The analytics server is already running; only the website changes. Site id: \`${site}\`, privacy mode: \`${options.mode}\`. If the site id looks like a placeholder, ask me for the real one.
 
 ## The snippet
 
@@ -891,7 +891,7 @@ ${eventsSection(target, host)}
 ${numbered([
   `Open the site in a normal browser window (the tracker ignores automated browsers) with ad blockers off. The first pageview is sent after the first interaction or 3 seconds of visibility${options.requireInteraction ? '' : ' (here: immediately, interaction is not required)'}.`,
   `In DevTools > Network, filter for \`event\`: a \`POST ${host}/api/event\` request returns **202**. 403 means the page's host is not the site's domain (on localhost add \`data-allow-localhost\` and enable allowLocalhost for the site); 404 means the site id is wrong.`,
-  'Open the analytik dashboard: the visit shows up in Realtime within a few seconds.',
+  'Open the Analytik dashboard: the visit shows up in Realtime within a few seconds.',
   'If you added goals or revenue, trigger one and check that it appears under Events or Revenue.',
 ])}
 `

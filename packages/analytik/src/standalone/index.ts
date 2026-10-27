@@ -1,5 +1,7 @@
 import assets from 'virtual:analytik-standalone'
 
+import icon from './icon.svg?raw'
+
 export interface StandaloneOptions {
   /** Where the analytik API is mounted, as a path or a full URL. Defaults to `/api`. */
   api?: string
@@ -26,9 +28,6 @@ const SECURITY = {
     "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'",
 }
 
-const FAVICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 27H3z' fill='%233A8DFF'/%3E%3Cpath d='M16 13l8 14H8z' fill='%23FFC232'/%3E%3C/svg%3E"
-
 /**
  * Puts the dashboard and the tracker script in front of an analytik app, so one deployment serves everything:
  * `/` is the dashboard (sign in with the admin password), `/analytik.js` is the tracker, and every other request
@@ -42,7 +41,7 @@ export function withDashboard<A extends unknown[]>(
   options: StandaloneOptions = {},
 ): { fetch: Fetch<A> } {
   const api = options.api ?? '/api'
-  const title = options.title ?? 'analytik'
+  const title = options.title ?? 'Analytik - privacy-first analytics'
   const names = Promise.all([fingerprint(assets.js), fingerprint(assets.css)])
 
   const page = async (): Promise<Response> => {
@@ -55,10 +54,11 @@ export function withDashboard<A extends unknown[]>(
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
 <title>${escapeAttribute(title)}</title>
-<link rel="icon" href="${FAVICON}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/_analytik/${css}.css">
+<style>html,body{height:100%;margin:0}#root>.analytik{min-height:100vh;min-height:100dvh}</style>
 </head>
-<body style="margin:0">
+<body>
 <div id="root" data-api="${escapeAttribute(api)}"></div>
 <script type="module" src="/_analytik/${js}.js"></script>
 </body>
@@ -76,6 +76,7 @@ export function withDashboard<A extends unknown[]>(
       if (request.method === 'GET' || request.method === 'HEAD') {
         const { pathname } = new URL(request.url)
         if (pathname === '/' || pathname === '/index.html') return page()
+        if (pathname === '/favicon.svg') return asset(icon, 'image/svg+xml', 'public, max-age=86400')
         if (pathname === '/analytik.js') {
           return asset(assets.tracker, 'text/javascript; charset=utf-8', 'public, max-age=86400')
         }

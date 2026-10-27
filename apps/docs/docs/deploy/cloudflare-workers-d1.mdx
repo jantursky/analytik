@@ -1,6 +1,6 @@
 ---
 title: Cloudflare Workers and D1
-description: Put analytik and its dashboard on Cloudflare Workers with one command, a deploy button or by hand, with a D1 database, secrets, a custom domain, the free-plan limits and a first-party route for ad blockers.
+description: Put Analytik and its dashboard on Cloudflare Workers with one command, a deploy button or by hand, with a D1 database, secrets, a custom domain, the free-plan limits and a first-party route for ad blockers.
 ---
 
 This is the smallest deployment: one Worker with a D1 database. It can serve the dashboard, the tracker script and the API all by itself, so there is no other app to build.
@@ -138,7 +138,7 @@ npx wrangler secret put SESSION_SECRET   # openssl rand -hex 32, at least 32 cha
 npx wrangler deploy
 ```
 
-The analytik command line cannot reach D1, so the schema goes in through Wrangler. `--print-sql sqlite` prints every migration plus the rows that mark them as applied. The Worker also applies pending migrations on its first request (`autoMigrate`, on by default), so the explicit step mostly saves the first request some work, and after a package upgrade you can simply deploy.
+The Analytik command line cannot reach D1, so the schema goes in through Wrangler. `--print-sql sqlite` prints every migration plus the rows that mark them as applied. The Worker also applies pending migrations on its first request (`autoMigrate`, on by default), so the explicit step mostly saves the first request some work, and after a package upgrade you can simply deploy.
 
 `createAnalytik()` throws when `ADMIN_PASSWORD` is empty or `SESSION_SECRET` is shorter than 32 characters, so the Worker fails on its first request until both secrets are set properly. For local work, put the two secrets in `.dev.vars` and run `npx wrangler dev`.
 
@@ -190,7 +190,7 @@ Put the tracker at `public/s/analytik.js` and point it at the base path with `da
 
 Mount the dashboard on `api="/s/api"`. Pick any path you like instead of `/s`.
 
-If your site is not on Cloudflare, use your host's rewrite feature (a Vercel or Netlify rewrite, an nginx `proxy_pass`) to send the path to the Worker. A Worker that sits behind another proxy does not see the visitor's address on its own: by default analytik trusts only Cloudflare's `cf-connecting-ip` (which, behind another proxy, is that proxy's address) and ignores `X-Forwarded-For`, because any visitor could send that header themselves. Pick one of these:
+If your site is not on Cloudflare, use your host's rewrite feature (a Vercel or Netlify rewrite, an nginx `proxy_pass`) to send the path to the Worker. A Worker that sits behind another proxy does not see the visitor's address on its own: by default Analytik trusts only Cloudflare's `cf-connecting-ip` (which, behind another proxy, is that proxy's address) and ignores `X-Forwarded-For`, because any visitor could send that header themselves. Pick one of these:
 
 - `trustProxy: 'forwarded'` reads the rightmost public address in `X-Forwarded-For`. Use it only when the proxy in front overwrites or appends that header with the real client address.
 - `clientIp: (request) => request.headers.get('x-real-ip')`, or whichever header your proxy sets, if it uses a different one. Make sure the proxy replaces that header and does not pass on a value from the visitor.
