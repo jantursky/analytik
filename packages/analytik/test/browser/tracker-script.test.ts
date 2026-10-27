@@ -82,15 +82,22 @@ describe('tracker in a real browser', () => {
     doc.getElementById('in')!.click()
     doc.getElementById('out')!.click()
     const all = await collect(run, 6)
-    expect(all.map((r) => [r.body.t, r.body.n, r.body.p])).toEqual([
-      ['pageview', undefined, undefined],
-      ['pageview', undefined, undefined],
-      ['goal', 'cta', { place: 'hero' }],
-      ['goal', 'signup', { plan: 'pro' }],
-      ['goal', 'trial', { seats: '3' }],
-      ['outbound', 'https://outbound.example.org/docs', undefined],
-    ])
-    expect(new URL(all[1]!.body.u).pathname + new URL(all[1]!.body.u).search).toBe('/spa/next?ref=hn')
+    // The first page's view goes first; the rest are sent together, and the network may reorder them.
+    const rows = all.map((r) => JSON.stringify([r.body.t, r.body.n, r.body.p]))
+    expect(rows[0]).toBe(JSON.stringify(['pageview', undefined, undefined]))
+    expect(rows.slice(1).sort()).toEqual(
+      [
+        ['pageview', undefined, undefined],
+        ['goal', 'cta', { place: 'hero' }],
+        ['goal', 'signup', { plan: 'pro' }],
+        ['goal', 'trial', { seats: '3' }],
+        ['outbound', 'https://outbound.example.org/docs', undefined],
+      ]
+        .map((row) => JSON.stringify(row))
+        .sort(),
+    )
+    const spa = all.find((r) => r.body.t === 'pageview' && r !== all[0])
+    expect(new URL(spa!.body.u).pathname + new URL(spa!.body.u).search).toBe('/spa/next?ref=hn')
   })
 
   it('waits for an interaction before the first pageview', async () => {
