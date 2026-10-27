@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.5.0]
+
 ### Added
 
 - Settings, Privacy: each privacy mode shows whether it needs a cookie banner and, on hover or focus, what it stores
