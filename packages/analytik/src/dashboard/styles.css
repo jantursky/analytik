@@ -55,8 +55,9 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .analytik:not([data-theme='light']),
-  .analytik-layer {
+  /* A light theme set on the dashboard or on any element around it wins over the system's dark one. */
+  .analytik:not([data-theme='light']):not(:where([data-theme='light'] *)),
+  .analytik-layer:not(:where([data-theme='light'] *)) {
     --analytik-bg: #0b1020;
     --analytik-surface: #121a2c;
     --analytik-bg-subtle: #161f33;

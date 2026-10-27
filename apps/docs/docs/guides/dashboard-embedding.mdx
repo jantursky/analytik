@@ -36,6 +36,10 @@ Under the dashboard, a line says it is analytik and links to its source and its 
 
 Settings → General has a **Tracking** card. **Pause tracking** drops new visits, events and server goals for the site until you resume; payments still come in, and nothing already stored changes. **Delete website** removes the site with everything recorded for it, after you type the site's domain and the admin password. With your own authentication (the server's `verify()` option) there is no password, so the domain alone confirms it. The same two actions are in the menu that appears on a site card in **All sites** when you hover it (always shown on touch screens). Paused sites carry a **Paused** badge there. **All sites** sorts the cards by the date they were added, name, domain, visitors, revenue or orders in the last 24 hours, with a button to reverse the order; the choice is saved with the other dashboard settings.
 
+## Theme
+
+Settings → Appearance sets the dashboard to light or dark. The default, **Same as the page**, follows a `data-theme="light"` or `data-theme="dark"` on the page (on `<html>`, say) and otherwise the system's setting, so a theme switch on your site carries over. The choice is saved with the other dashboard settings; the `theme` prop of `<Dashboard>` overrides it.
+
 ## Formatting
 
 Settings → Formatting sets how the whole dashboard writes numbers, money, dates and times: digit grouping (`1,234.5`, `1.234,5`, `1 234,5` or `1'234.5`), the currency as a symbol or a code, cents always or only when there are some, five date styles (`Oct 27, 2026`, `27 Oct 2026`, `27.10.2026`, `10/27/2026`, `2026-10-27`) and a 12- or 24-hour clock. Each option in the lists shows an example written its way. The choice is saved with the other dashboard settings, for every admin.

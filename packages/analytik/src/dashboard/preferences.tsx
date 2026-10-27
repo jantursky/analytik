@@ -36,6 +36,11 @@ function writeLocal(values: Preferences): void {
   }
 }
 
+/** The saved theme, or undefined to follow the page and the system. */
+export function parseTheme(value: unknown): 'light' | 'dark' | undefined {
+  return value === 'light' || value === 'dark' ? value : undefined
+}
+
 const isEmpty = (values: Preferences): boolean => Object.keys(values).length === 0
 
 /**

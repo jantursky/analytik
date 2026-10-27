@@ -17,7 +17,7 @@ import { Switch } from '../ui/switch'
 import { TimeZoneSelect } from '../ui/timezone'
 import { Icon, type IconName } from '../icons'
 import { DebugSettings } from './DebugSettings'
-import { FormatSettings } from './FormatSettings'
+import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { SiteLifecycle } from './SiteActions'
 
 const MODES: { value: PrivacyMode; label: string; hint: string }[] = [
@@ -571,12 +571,13 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
+  { value: 'appearance', label: 'Appearance', icon: 'theme', content: ThemeSettings },
   { value: 'formatting', label: 'Formatting', icon: 'format', content: FormatSettings },
   { value: 'debug', label: 'Debug', icon: 'bug', content: DebugSettings, tone: 'debug' },
 ]
 
 export type SettingsSection =
-  'general' | 'privacy' | 'tracking' | 'campaigns' | 'payments' | 'data' | 'formatting' | 'debug'
+  'general' | 'privacy' | 'tracking' | 'campaigns' | 'payments' | 'data' | 'appearance' | 'formatting' | 'debug'
 
 /**
  * Site settings in sections: a list on the left (a scrolling row on phones) and the chosen section's cards. `section`

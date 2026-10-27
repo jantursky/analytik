@@ -14,7 +14,7 @@ import {
   parseFormatSettings,
   setFormatSettings,
 } from '../format'
-import { usePreferences } from '../preferences'
+import { parseTheme, usePreferences } from '../preferences'
 import { Card } from '../ui'
 import { Select } from '../ui/select'
 
@@ -148,5 +148,26 @@ export function FormatSettings() {
         </p>
       </Card>
     </>
+  )
+}
+
+const THEMES = [
+  { value: 'system', label: 'Same as the page', description: 'Follows the page it sits on, or the system' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+]
+
+/** Light or dark for the whole dashboard; saved with the other settings. */
+export function ThemeSettings() {
+  const { values, update } = usePreferences()
+  return (
+    <Card title="Theme" description="Light or dark for the whole dashboard. Saved for every admin.">
+      <Select
+        label="Theme"
+        value={parseTheme(values.theme) ?? 'system'}
+        options={THEMES}
+        onChange={(value) => update({ theme: value === 'system' ? undefined : value })}
+      />
+    </Card>
   )
 }

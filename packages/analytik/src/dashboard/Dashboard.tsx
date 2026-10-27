@@ -9,7 +9,7 @@ import { DashboardProvider, requestKey } from './context'
 import { useResource } from './data'
 import { Icon } from './icons'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
-import { PreferencesProvider, usePreferencesStore } from './preferences'
+import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange } from './range'
 import { FilterBar, IntervalPicker, RangePicker } from './Toolbar'
 import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
@@ -56,7 +56,10 @@ export interface DashboardProps {
   siteId?: string
   /** Replaces `fetch`, e.g. to add headers. Requests use `credentials: 'include'`. */
   fetcher?: Fetcher
-  /** Forces a theme; by default it follows `prefers-color-scheme`. */
+  /**
+   * Forces a theme. Without it the dashboard follows the Appearance setting, which by default follows a
+   * `data-theme` on the page or else `prefers-color-scheme`.
+   */
   theme?: 'light' | 'dark'
   /** View shown first. Default `overview`. */
   view?: DashboardView
@@ -332,7 +335,7 @@ export function Dashboard({
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="analytik" data-theme={theme} ref={setRoot}>
+      <div className="analytik" data-theme={theme ?? parseTheme(preferences.values.theme)} ref={setRoot}>
         <PreferencesProvider value={preferences}>
           <LayerContext value={root}>
             <FaviconsContext value={favicons}>

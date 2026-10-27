@@ -17,11 +17,29 @@ type Theme = 'system' | 'light' | 'dark'
 
 const NEXT_THEME: Record<Theme, Theme> = { system: 'light', light: 'dark', dark: 'system' }
 
+const THEME_KEY = 'analytik-demo-theme'
+
+function readTheme(): Theme {
+  try {
+    const saved = localStorage.getItem(THEME_KEY)
+    return saved === 'light' || saved === 'dark' ? saved : 'system'
+  } catch {
+    return 'system'
+  }
+}
+
+/** The page theme, kept in this browser. The dashboard picks it up from the data-theme on the page. */
 function useTheme() {
-  const [theme, setTheme] = useState<Theme>('system')
+  const [theme, setTheme] = useState<Theme>(readTheme)
   useEffect(() => {
     if (theme === 'system') document.documentElement.removeAttribute('data-theme')
     else document.documentElement.dataset.theme = theme
+    try {
+      if (theme === 'system') localStorage.removeItem(THEME_KEY)
+      else localStorage.setItem(THEME_KEY, theme)
+    } catch {
+      // Private mode: the theme just isn't remembered.
+    }
   }, [theme])
   return [
     theme,

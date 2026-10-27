@@ -18,8 +18,12 @@ export default defineConfig({
   navigation: {
     actions: [
       { href: 'https://analytik.vercel.app', label: 'Demo' },
+      { href: 'https://github.com/jantursky/analytik', label: 'GitHub' },
       { href: 'https://www.npmjs.com/package/analytik', label: 'npm' },
     ],
+  },
+  footer: {
+    socials: { github: 'https://github.com/jantursky/analytik' },
   },
   content: {
     root: 'docs',

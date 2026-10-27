@@ -105,7 +105,75 @@ analytik.revenue('purchase', 49.9, { currency: 'EUR', orderId: '1042' })
 
 ## Deploy
 
-There are guides for [Cloudflare Workers + D1](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1), [Vercel + Supabase](https://analytik-docs.vercel.app/deploy/vercel-supabase), [Railway + Postgres](https://analytik-docs.vercel.app/deploy/railway-postgres) and [Bun or Node with SQLite](https://analytik-docs.vercel.app/deploy/bun-node-sqlite).
+| Where                                                                                   | Storage                   | Good for                                |
+| --------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------- |
+| [**Cloudflare Workers**](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1) | D1                        | The free plan, no server to run (below) |
+| [**Vercel**](https://analytik-docs.vercel.app/deploy/vercel-supabase)                   | Supabase or Neon Postgres | Already hosting your site on Vercel     |
+| [**Railway**](https://analytik-docs.vercel.app/deploy/railway-postgres)                 | Railway Postgres          | A long-running service with a database  |
+| [**Bun or Node**](https://analytik-docs.vercel.app/deploy/bun-node-sqlite)              | SQLite file               | A VPS or a Docker container             |
+
+### Cloudflare in five minutes
+
+A Worker with a D1 database fits the free plan for small sites.
+
+```bash
+mkdir analytik-worker && cd analytik-worker
+bun add analytik hono && bun add -d wrangler @cloudflare/workers-types typescript
+mkdir -p public src && cp node_modules/analytik/dist/analytik.js public/analytik.js
+```
+
+```ts
+// src/worker.ts
+import { createAnalytik } from 'analytik/server'
+import { d1Storage } from 'analytik/storage/d1'
+
+interface Env {
+  DB: D1Database
+  ADMIN_PASSWORD: string
+  SESSION_SECRET: string
+}
+
+let app: ReturnType<typeof createAnalytik>['app'] | undefined
+
+export default {
+  fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    app ??= createAnalytik({
+      storage: d1Storage(env.DB),
+      admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+    }).app
+    return app.fetch(request, env, ctx)
+  },
+}
+```
+
+```jsonc
+// wrangler.jsonc
+{
+  "name": "analytik",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./public", "run_worker_first": ["/api/*"] },
+  "d1_databases": [{ "binding": "DB", "database_name": "analytik", "database_id": "<id from the next step>" }],
+}
+```
+
+```bash
+npx wrangler d1 create analytik              # copy database_id into wrangler.jsonc
+npx wrangler secret put ADMIN_PASSWORD       # the dashboard password
+npx wrangler secret put SESSION_SECRET       # openssl rand -hex 32
+npx wrangler deploy
+```
+
+The schema is created on the first request. Then create a site through the admin API (replace the host with your Worker URL):
+
+```bash
+curl -c cookies.txt -X POST https://analytik.<you>.workers.dev/api/auth/login \
+  -H 'Content-Type: application/json' -d '{"password":"<ADMIN_PASSWORD>"}'
+curl -b cookies.txt -X POST https://analytik.<you>.workers.dev/api/sites \
+  -H 'Content-Type: application/json' -d '{"name":"My site","domain":"example.com"}'
+```
+
+Add `<script defer src="https://analytik.<you>.workers.dev/analytik.js" data-site="SITE_ID"></script>` to your pages, with the `site.id` from the response. The Worker serves the API and the tracker, not a dashboard page: [embed `<Dashboard />`](https://analytik-docs.vercel.app/guides/dashboard-embedding) in a React app (the [demo](https://analytik.vercel.app) is one) to see the numbers. A custom domain, the free-plan limits and a first-party route for ad blockers are in the [full Cloudflare guide](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1).
 
 ## Alternatives
 

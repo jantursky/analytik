@@ -1514,6 +1514,18 @@ describe('site lifecycle', () => {
 })
 
 describe('formatting and credits', () => {
+  it('saves the theme, which the dashboard root then carries', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBeNull()
+    await section(container, 'Appearance')
+    await choose(selectTrigger(container, 'Theme'), 'Dark')
+    expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBe('dark')
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ theme: 'dark' })
+    await choose(selectTrigger(container, 'Theme'), 'Same as the page')
+    expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBeNull()
+  })
+
   it('saves number and date formats and shows each option written its way', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     await section(container, 'Formatting')
@@ -1547,7 +1559,7 @@ describe('formatting and credits', () => {
 
   it('marks the debug section apart with an icon', async () => {
     const { container } = await open(fakeApi(), 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(8)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(9)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 
