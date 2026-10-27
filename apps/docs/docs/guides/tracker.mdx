@@ -1,0 +1,106 @@
+---
+title: Tracker
+description: The script tag, every attribute, the JavaScript API, declarative events, single-page apps, consent and opt-out.
+---
+
+The tracker is one file, `analytik.js`, under 4 KB gzipped, with no dependencies. It is exported from the package as `analytik/analytik.js`; copy it to a static host or serve it from your Worker's assets.
+
+## The script tag
+
+```html
+<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
+```
+
+`data-site` is the site id from your server. `data-mode` defaults to `strict`; the server processes events in the lower of the tracker's mode and the site's mode. The tracker posts events to `/api/event` on the origin the script was loaded from, unless you set `data-api` to another base path.
+
+The full list is in the [attribute reference](/reference/tracker-attributes). The ones you will use most:
+
+| Attribute                  | What it does                                                                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-site`                | Site id. Required.                                                                                                                                  |
+| `data-api`                 | Base path of the API, for a [first-party proxy route](/deploy/cloudflare-workers-d1#ad-blockers-and-first-party-routes). The tracker adds `/event`. |
+| `data-mode`                | `strict`, `enriched` or `persistent`.                                                                                                               |
+| `data-allow-localhost`     | Send events from `localhost`. Off by default.                                                                                                       |
+| `data-require-interaction` | Wait for the first interaction or 3 s of visibility before the first pageview. On.                                                                  |
+| `data-keep-query`          | Comma-separated query keys the tracker sends. The server also needs them in `privacy.keepQuery`.                                                    |
+
+## JavaScript API
+
+The script defines a global `analytik`. You can call it as a function, `analytik('track', 'signup')`, or use methods. Calls made before the script has loaded are queued in `analytik.q` and run when it does, so you do not need to wait for it.
+
+```js
+// A goal with properties
+analytik.track('signup', { plan: 'pro', source: 'pricing' })
+
+// A client-side revenue event; amount is in major units (19.99 dollars)
+analytik.revenue('purchase', 19.99, { currency: 'USD', orderId: 'order_123', plan: 'pro' })
+
+// Tie the visitor to your own user (stored only in enriched or persistent mode)
+analytik.identify({ userId: 'u_42', email: 'ada@example.com', name: 'Ada' })
+
+// Send a pageview by hand, for example after a route change you handle yourself
+analytik.pageview()
+
+// Ids to put in checkout metadata, see the payments guide
+const ids = await analytik.attribution()
+// { analytik_visitor_id: '...', analytik_session_id: '...' }, or null
+
+// Consent and opt-out
+analytik.consent()
+analytik.withdrawConsent()
+analytik.optOut()
+analytik.optIn()
+```
+
+Property values are strings, numbers, booleans or `null`, and the request body is limited to 8 KB. `revenue` events are stored as payments with provider `client` and the id `client:<orderId>`, and a verified payment for the same order from a webhook or your server replaces them; for real money, prefer a [webhook or server call](/guides/payments), since a browser can be tampered with.
+
+`attribution()` returns a promise, because in `strict` mode the server computes the ids. It resolves to `null` when the visitor has opted out, the request fails, or the server has no session for the visitor yet, so check the result before you use it. Before the script loads, use the queue directly:
+
+```html
+<script>
+  window.analytik =
+    window.analytik ||
+    function () {
+      ;(window.analytik.q = window.analytik.q || []).push(arguments)
+    }
+  analytik('track', 'viewed_pricing')
+</script>
+```
+
+## Declarative events
+
+Put `data-analytik-event` on any element. A click on it, or inside it, sends a goal with that name. Every other `data-analytik-*` attribute becomes a property:
+
+```html
+<button data-analytik-event="signup" data-analytik-plan="pro" data-analytik-location="hero">Start free</button>
+```
+
+This sends the goal `signup` with `{ plan: 'pro', location: 'hero' }`. Turn it off with `data-auto-track-attrs="false"`.
+
+Links to other hosts are tracked as `outbound` events automatically (`data-auto-outbound`, on by default).
+
+## Single-page apps
+
+The tracker listens to `history.pushState`, `replaceState` and `popstate`, and sends a pageview when the path changes. That covers React Router, TanStack Router, Next.js, Vue Router and similar libraries with no extra code. If your router changes the URL some other way, call `analytik.pageview()`. In React, use the [bindings](/guides/react) instead of the script if you prefer to control this from a hook.
+
+## Consent and opt-out
+
+In `strict` mode the tracker has no identifier to ask consent for, and `identify()` is ignored: the server stores an identity only in `enriched` or `persistent` mode, so on a `strict` site it has no effect, even after `consent()`. In `enriched` mode, call `analytik.consent()` when the visitor accepts analytics in your banner and `analytik.withdrawConsent()` if they change their mind. In `enriched` mode the consent lasts for the tab, because the id lives in `sessionStorage`, so call `consent()` again on the next visit if your banner remembers a yes. In `persistent` mode the tracker keeps the choice itself in `localStorage` under `analytik_consent`.
+
+`analytik.optOut()` stops tracking in this browser until `analytik.optIn()`, for example from a link in your privacy policy. To exclude yourself, open any page of your site with `?analytik_ignore=true`; `?analytik_ignore=false` undoes it. You can also list ignored IP addresses in the site settings.
+
+## ESM client
+
+For apps that bundle their code, `analytik/client` offers the same methods without a script tag. It is safe to import in server-rendered code: without `window`, every call does nothing.
+
+```ts
+import { createClient } from 'analytik/client'
+
+export const analytik = createClient({ site: 'SITE_ID', api: 'https://analytics.example.com/api', mode: 'strict' })
+
+analytik.track('signup', { plan: 'pro' })
+```
+
+## Bots and filtering
+
+Requests are dropped when the user agent looks like a bot or when `navigator.webdriver` is set. The server answers such events with 202 anyway, so scrapers get no signal. Events from hosts other than the site's domain and its subdomains are rejected with 403 unless `data-allow-localhost` or `allowedOrigins` says otherwise.

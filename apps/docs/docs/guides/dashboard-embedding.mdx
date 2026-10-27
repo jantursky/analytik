@@ -1,0 +1,126 @@
+---
+title: Embedding the dashboard
+description: Mount the React dashboard, use single parts, authenticate across origins, style it with CSS variables and share a read-only link.
+---
+
+The dashboard is a React component that talks to the [admin routes](/reference/http-api#admin-routes). Its controls are built on Base UI, its animations on Motion and its charts on Recharts. These are optional peer dependencies of `analytik/dashboard`, so install them next to React when you embed it. Recharts loads lazily with the first chart. Light and dark follow `prefers-color-scheme`, or `[data-theme]` on an ancestor.
+
+## Mount it
+
+```sh
+bun add analytik react react-dom @base-ui/react motion recharts
+```
+
+```tsx Admin.tsx
+import { Dashboard } from 'analytik/dashboard'
+import 'analytik/dashboard/styles.css'
+
+export function Admin() {
+  return <Dashboard api="/api" />
+}
+```
+
+`api` is the base path of the server, the same value as `basePath` in `createAnalytik` (default `/api`). Without `siteId`, the dashboard shows a site switcher. Pass `siteId` to pin it to one site.
+
+```tsx
+<Dashboard api="/api" siteId="SITE_ID" />
+```
+
+The component includes a login form. It signs in with `POST /auth/login` and keeps the session cookie, so the dashboard and the API should share an origin, or the API must send CORS headers that allow credentials for your dashboard's origin.
+
+## Your own authentication
+
+If your app already knows who the admin is, replace the login with a custom `admin.verify` on the server and a `fetcher` on the client:
+
+```ts server
+const analytik = createAnalytik({
+  storage,
+  admin: { verify: async (request) => (await getSession(request))?.role === 'admin' },
+})
+```
+
+```tsx
+<Dashboard
+  api="https://analytics.example.com/api"
+  fetcher={(input, init) => fetch(input, { ...init, headers: { ...init?.headers, Authorization: `Bearer ${token}` } })}
+/>
+```
+
+`fetcher` has the signature of `fetch`. With a Bearer token the browser does not need cookies at all.
+
+## Parts
+
+Each view is exported on its own, so you can place a few in your own layout. The parts take no props. They read the client, the site, the date range and the filters from a context, so they must sit inside `<Dashboard>` or inside a `<DashboardProvider>`; rendered anywhere else they throw. `DashboardProvider` takes a client from `createApiClient`, the absolute API URL (used in snippets and webhook URLs), the `Site` to show and a `DateRange`:
+
+```tsx
+import {
+  createApiClient,
+  DashboardProvider,
+  Overview,
+  presetRange,
+  Realtime,
+  Revenue,
+  Sources,
+} from 'analytik/dashboard'
+import type { Site } from 'analytik'
+
+const client = createApiClient('/api')
+
+export function Summary({ site }: { site: Site }) {
+  return (
+    <DashboardProvider
+      client={client}
+      apiUrl="https://analytics.example.com/api"
+      site={site}
+      range={presetRange('30d', Date.now())}
+    >
+      <Overview />
+      <Realtime />
+      <Sources />
+      <Revenue />
+    </DashboardProvider>
+  )
+}
+```
+
+Optional provider props are `filters`, `onFilter`, `onSiteChange` and `onViewChange`. Get the `Site` with `client.site('SITE_ID')` or `client.sites()`.
+
+The dashboard module exports these building blocks:
+
+- Views: `Overview`, `Sources`, `Pages`, `Events`, `Funnels`, `Revenue`, `Sessions`, `Realtime`, `Settings`, plus `SitesOverview` (a card per site; takes `client`, `sites`, `onOpen` and `onAdd`).
+- Dialogs and forms: `AddSiteDialog` (takes `client`, `onCreated` and `onClose`), `CreateSiteForm`, `LoginForm`.
+- Pieces of a view: `BreakdownCard`, `SessionTimeline`, `SiteSettings`, `SnippetGenerator`, `CampaignLinkBuilder`.
+- Charts and widgets: `AreaChart`, `BarList`, `Sparkline`, `StatTile`, `DeltaBadge`, and `WorldMap` (takes `locations` from a `Realtime` result and an optional `globe`).
+- Toolbar controls: `RangePicker`, `IntervalPicker`, `FilterBar`.
+- Helpers: `createApiClient`, `ApiError`, `queryParams`, `useDashboard`, and the range helpers `presetRange`, `customRange`, `shiftRange` and `RANGE_PRESETS`.
+
+If you want your own components, `createApiClient(api, fetcher?)` returns a typed client for the admin routes, with the response types from [Types](/reference/types). `api` is the API base path as a string, and the optional second argument is a `fetch`-compatible function:
+
+```ts
+import { createApiClient } from 'analytik/dashboard'
+
+const api = createApiClient('/api')
+const overview = await api.overview('SITE_ID', { from: Date.now() - 7 * 86_400_000, to: Date.now() })
+```
+
+## Styling
+
+`analytik/dashboard/styles.css` defines CSS variables with the `--analytik-` prefix, mapped to the design tokens: neutrals with one blue accent, 1px borders and no shadows. Override them on any ancestor:
+
+```css
+.admin {
+  --analytik-accent: #0f766e;
+}
+
+.admin[data-theme='dark'] {
+  --analytik-accent: #2dd4bf;
+}
+```
+
+## Public link
+
+A site can have a read-only link, but the dashboard has no screen for it. You switch it on with the API: `PATCH /sites/:id` with `{ "shareToken": true }` creates a token (it is returned as `shareToken` in the response and in `GET /sites/:id`), and `{ "shareToken": null }` turns sharing off. Sending `true` again replaces the token.
+
+A request that carries the token, as `?share=TOKEN` or an `x-analytik-share: TOKEN` header, can read the aggregate stats and the session list without logging in. That covers `overview`, `timeseries`, `breakdown`, `realtime`, `sessions`, `events` and the funnel results, so a viewer sees visitor ids, countries, cities, browsers, pages, referrers and event names. Payments and single-session details are not shared, and neither are settings, export or any write. See the [HTTP API](/reference/http-api#share-links). Treat the link like a password and revoke it when it is no longer needed.
+
+The dashboard component does not read the token itself. To build a public page, call the routes with the token, for example through `createApiClient` with a `fetcher` that appends `?share=TOKEN`.

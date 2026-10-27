@@ -1,0 +1,59 @@
+name: Bug report
+description: Events go missing, a number on the dashboard looks wrong, the tracker throws, or the behavior doesn't match the docs.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please don't paste IP addresses, visitor IDs, API keys or webhook secrets into this issue. Redact them first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead. Include the error message if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The smallest server setup, page or request that shows the problem, or a link to a repository or StackBlitz.
+      render: typescript
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: analytik version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where does it run
+      multiple: true
+      options:
+        - Browser tracker (analytik.js)
+        - React bindings
+        - Dashboard
+        - Cloudflare Workers
+        - Vercel
+        - Bun
+        - Node
+        - Other
+  - type: dropdown
+    id: storage
+    attributes:
+      label: Storage
+      options:
+        - Cloudflare D1
+        - Postgres
+        - SQLite
+        - In-memory
+        - Not sure
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime, framework and React versions
+      placeholder: node 22.19, hono 4.13.x, react 19.x

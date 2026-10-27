@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"],
+    "noEmit": true,
+    "paths": {
+      "analytik/server": ["../../packages/analytik/src/server"],
+      "analytik/storage/memory": ["../../packages/analytik/src/storage/memory.ts"],
+      "analytik/client": ["../../packages/analytik/src/client"],
+      "analytik/react": ["../../packages/analytik/src/react"],
+      "analytik/dashboard": ["../../packages/analytik/src/dashboard"],
+      "analytik/migrate": ["../../packages/analytik/src/migrate"]
+    }
+  },
+  "include": ["src", "server", "api", "e2e", "vite.config.ts", "playwright.config.ts"]
+}

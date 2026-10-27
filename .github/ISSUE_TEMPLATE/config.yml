@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/jantursky/analytik/security/advisories/new
+    about: Report vulnerabilities privately here instead of opening a public issue.
+  - name: Documentation
+    url: https://analytik-docs.vercel.app
+    about: Setup guides for each runtime and storage, the API reference and the FAQ.

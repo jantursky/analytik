@@ -1,0 +1,107 @@
+---
+title: Getting started
+description: Install analytik, run the server locally with SQLite, create a site, add the script and see the first pageview.
+sidebar:
+  order: 2
+---
+
+This page runs everything on your machine with Bun or Node and a SQLite file. The deploy guides cover [Cloudflare](/deploy/cloudflare-workers-d1), [Vercel](/deploy/vercel-supabase), [Railway](/deploy/railway-postgres) and [a VPS](/deploy/bun-node-sqlite).
+
+## Install
+
+```package-install
+analytik hono
+```
+
+analytik is ESM only and needs Node 22.19 or newer, or Bun 1.3 or newer. `hono` is a peer dependency of the server. `react` and `react-dom` (version 19) are needed only for the React bindings and the dashboard. Postgres needs `postgres` or `pg`, and you pass the connected client to `postgresStorage()`; see [Storage](/reference/storage). The tracker script and the browser client have no dependencies.
+
+## Write the server
+
+```ts server.ts
+import { createAnalytik } from 'analytik/server'
+import { sqliteStorage } from 'analytik/storage/sqlite'
+import { Hono } from 'hono'
+import { serveStatic } from 'hono/bun'
+
+const storage = sqliteStorage('./analytik.db')
+await storage.migrate()
+
+const analytik = createAnalytik({
+  storage,
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+})
+
+const app = new Hono()
+app.route('/', analytik.app)
+// The server does not serve the tracker script; see "Add the script" below.
+app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+
+export default {
+  port: 8787,
+  fetch: app.fetch,
+}
+```
+
+Run it with `ADMIN_PASSWORD=change-me SESSION_SECRET=$(openssl rand -hex 32) bun server.ts`. `createAnalytik()` throws at startup when `ADMIN_PASSWORD` is empty or `SESSION_SECRET` is shorter than 32 characters, so a weak password or a forgeable session cookie never goes live. On Node, serve the app with `@hono/node-server` instead; see [Bun, Node and SQLite](/deploy/bun-node-sqlite).
+
+`migrate()` applies pending migrations and is safe to call on every start. The same call exists on every storage driver.
+
+## Create a site
+
+A site is one website you track. Log in to the admin API with your password, then create it:
+
+```bash
+curl -i -c cookies.txt -X POST http://localhost:8787/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"password":"change-me"}'
+
+curl -b cookies.txt -X POST http://localhost:8787/api/sites \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"My site","domain":"example.com","timezone":"Europe/Bratislava","currency":"EUR","allowLocalhost":true}'
+```
+
+The domain must look like `example.com`: the server rejects `localhost` and other names without a dot and a top-level domain. For local work, use a domain you own or `example.com`, and set `allowLocalhost` so events from `localhost` are accepted.
+
+The response is `{ "site": { ... }, "apiKey": "ak_..." }`. Take the site id from `site.id`. The `apiKey` is for server-to-server calls such as [payments](/guides/payments); it is shown only this once, and you can issue a new one with `POST /sites/:id/rotate-key`. You can also create sites from the dashboard (the Websites view, Add website) once it is embedded; see [Embedding the dashboard](/guides/dashboard-embedding).
+
+## Add the script
+
+```html index.html
+<script defer src="http://localhost:8787/analytik.js" data-site="SITE_ID" data-allow-localhost></script>
+```
+
+The analytik server does not serve the tracker script. The file is `dist/analytik.js` in the package (exported as `analytik/analytik.js`). Copy it into the folder your server or host serves as static files, and copy it again after you upgrade the package:
+
+```bash
+mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js
+```
+
+The server above serves that file at `/analytik.js`. Without `data-api` the tracker sends events to the same origin as the script, under `/api`, which matches this setup.
+
+`data-allow-localhost` is only for local work; without it the tracker does nothing on `localhost`, and the server rejects events from hosts that are not the site's domain unless the site has `allowLocalhost` set. All attributes are listed in the [tracker attributes reference](/reference/tracker-attributes).
+
+By default the first pageview is sent after the first interaction or three seconds of visibility, so open the page, wait, and scroll.
+
+## See the data
+
+```bash
+curl -b cookies.txt "http://localhost:8787/api/sites/SITE_ID/realtime"
+```
+
+The result is a `Realtime` object: visitors in the last five minutes and the latest events. The same data drives the dashboard, which you can mount in a React app:
+
+```tsx Admin.tsx
+import { Dashboard } from 'analytik/dashboard'
+import 'analytik/dashboard/styles.css'
+
+export function Admin() {
+  return <Dashboard api="http://localhost:8787/api" />
+}
+```
+
+## Next
+
+- Choose how much to store on the device: [privacy modes](/concepts/privacy-modes).
+- Record sign-ups and clicks: [tracker guide](/guides/tracker).
+- Credit payments to sources: [payments guide](/guides/payments).
+- Check the setup from the command line with `npx analytik doctor`; see the [CLI reference](/reference/cli).

@@ -1,0 +1,8 @@
+dist/
+coverage/
+node_modules/
+bun.lock
+.blume/
+apps/docs/docs/_generated/
+test-results/
+playwright-report/

@@ -1,0 +1,47 @@
+/* Editorial surface from design/DESIGN.md: the same neutrals as the product, Bricolage Grotesque for UI and headings, and
+   small tracked labels. Elevation comes from 1px borders, never shadows. */
+:root {
+  --blume-background: #f7f6f2;
+  --blume-muted: #f0eee9;
+  --blume-border: #ebe8e1;
+  --blume-foreground: #1c1b18;
+  --blume-muted-foreground: #5f5b53;
+  --blume-accent: #1f5fc7;
+  --blume-accent-foreground: #ffffff;
+  --blume-radius: 0.75rem;
+}
+
+:root[data-theme='dark'] {
+  --blume-background: #131210;
+  --blume-muted: #2a2824;
+  --blume-border: #2e2c27;
+  --blume-foreground: #f3f1ec;
+  --blume-muted-foreground: #b0aba0;
+  --blume-accent: #8db3f0;
+  --blume-accent-foreground: #131210;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  line-height: 1.11;
+}
+
+.eyebrow,
+[data-blume-badge] {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 4vw, 3rem);
+}

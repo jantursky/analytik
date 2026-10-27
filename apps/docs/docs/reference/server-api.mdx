@@ -1,0 +1,141 @@
+---
+title: Server API
+description: createAnalytik, its options and the object it returns, with the admin, privacy and geo options.
+---
+
+Exported from `analytik/server`. The server is a [Hono](https://hono.dev) app, so it runs anywhere that serves a `fetch` handler.
+
+```ts
+import { createAnalytik } from 'analytik/server'
+```
+
+## createAnalytik(options)
+
+```ts
+function createAnalytik(options: CreateAnalytikOptions): Analytik
+```
+
+### Options
+
+| Option           | Type                                                                        | Default                         | Description                                                                                                                                                                   |
+| ---------------- | --------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`        | `Storage`                                                                   | required                        | A [storage driver](/reference/storage).                                                                                                                                       |
+| `admin`          | `{ password, secret }` or `{ verify(request) }`                             | none                            | How the admin routes are protected. Without it, every admin route answers 401. See below.                                                                                     |
+| `privacy`        | `{ mode?: PrivacyMode, keepQuery?: string[], respectDoNotTrack?: boolean }` | `strict`, no extra keys, `true` | Default privacy mode for new sites (each site can override it), extra query keys to keep in stored paths, and whether Do Not Track and Global Privacy Control force `strict`. |
+| `allowedOrigins` | `'site-domains'`, `'any'` or `string[]`                                     | `site-domains`                  | Which pages may send events, checked by hostname. See below.                                                                                                                  |
+| `basePath`       | `string`                                                                    | `/api`                          | Prefix of every route.                                                                                                                                                        |
+| `autoMigrate`    | `boolean`                                                                   | `true`                          | Apply pending migrations before the first request.                                                                                                                            |
+| `geo`            | `(request: Request) => Geo \| null \| Promise<Geo \| null>`                 | edge headers                    | Supply location when the platform does not. Default: Vercel `x-vercel-ip-*` headers, then Cloudflare `request.cf`. Coordinates are rounded to two decimals.                   |
+| `trustProxy`     | `'auto'`, `'cloudflare'`, `'vercel'`, `'forwarded'` or `false`              | `auto`                          | Where the client IP comes from. See below.                                                                                                                                    |
+| `clientIp`       | `(request: Request) => string \| null`                                      | from `trustProxy`               | Your own client IP lookup. Overrides `trustProxy`. Return `null` when the address is unknown.                                                                                 |
+| `now`            | `() => number`                                                              | `Date.now`                      | Clock, for tests.                                                                                                                                                             |
+| `random`         | `(size: number) => Uint8Array`                                              | Web Crypto                      | Random source, for tests.                                                                                                                                                     |
+
+### Admin
+
+`admin.password` is the dashboard password and `admin.secret` signs the session cookie. `createAnalytik()` throws at startup when the password is empty or the secret is shorter than 32 characters; generate one with `openssl rand -hex 32`. To integrate with your own authentication, pass `{ verify }` instead: it receives the `Request` and resolves to `true` to allow it.
+
+```ts
+createAnalytik({
+  storage,
+  admin: { verify: async (request) => request.headers.get('x-internal-user') !== null },
+})
+```
+
+### Allowed origins
+
+`allowedOrigins` is matched against hostnames, not full origins, so write `'blog.example.com'`, not `'https://blog.example.com'`.
+
+- `'site-domains'` (default): the page must be on the site's domain or one of its subdomains. A site with `allowLocalhost` also accepts `localhost`.
+- A list of hostnames: those hostnames and their subdomains are accepted in addition to the site's own domain.
+- `'any'`: the check is off.
+
+### Client IP and `trustProxy`
+
+The server needs the visitor's IP address for rate limits, the site's ignored-IP list and the `strict` visitor hash. The address is used and then discarded, never stored. `trustProxy` decides which request headers may supply it, because a client can send any header it likes:
+
+| Value          | Behaviour                                                                                                                                                                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'auto'`       | Default. On Cloudflare (the request has `request.cf`) it reads `cf-connecting-ip`. On Vercel (the process runs on Vercel and `x-vercel-id` is present) it reads `x-vercel-forwarded-for`. Anywhere else there is no IP and forwarding headers are ignored, so they cannot be spoofed. |
+| `'cloudflare'` | Always read `cf-connecting-ip`.                                                                                                                                                                                                                                                       |
+| `'vercel'`     | Always read `x-vercel-forwarded-for`, then `x-real-ip`.                                                                                                                                                                                                                               |
+| `'forwarded'`  | Read the rightmost public address in `X-Forwarded-For`. Use it only behind a proxy that overwrites that header with the real client address; otherwise a visitor can choose their own IP.                                                                                             |
+| `false`        | Ignore every header.                                                                                                                                                                                                                                                                  |
+
+Without an IP, strict-mode visitor ids are built from the user agent and the site only, so all visitors with the same user agent collapse into one visitor. Rate limits are then shared by everyone. On a VPS behind Caddy or nginx, set `trustProxy: 'forwarded'`. If your proxy sets a different header, read it yourself:
+
+```ts
+createAnalytik({
+  storage,
+  admin,
+  clientIp: (request) => request.headers.get('x-real-ip'),
+})
+```
+
+## The returned object
+
+| Member                 | Type                                                          | Description                                                                                             |
+| ---------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `app`                  | `Hono`                                                        | The HTTP app. Export its `fetch`, or mount it with `app.route`.                                         |
+| `storage`              | `Storage`                                                     | The driver you passed in.                                                                               |
+| `ingest(input)`        | `(input: IngestInput) => Promise<IngestResult>`               | Record an event from server code, such as SSR or a queue consumer. Validated like an HTTP request body. |
+| `recordPayment(input)` | `(input: RecordPaymentInput) => Promise<RecordPaymentResult>` | Store a payment, with the same attribution as `POST /v1/payments`.                                      |
+| `stats`                | `StatsApi`                                                    | The queries behind the admin routes, as functions.                                                      |
+
+### ingest
+
+`IngestInput` has a `payload` (the untrusted tracker payload, `unknown`) and optional `ip`, `userAgent`, `origin`, `geo` and `doNotTrack`. The IP and user agent feed the strict-mode hash and the ignored-IP list and are never stored. The result is an `IngestResult`:
+
+- `{ status: 202, visitorId, sessionId }` when the event was accepted. Both ids are `null` and `filtered` is `'bot'` or `'ignored-ip'` when the event was dropped on purpose.
+- `{ status: 400 | 403 | 404, error }` when it was rejected.
+
+```ts
+const result = await analytik.ingest({
+  payload: { w: 'SITE_ID', t: 'goal', u: 'https://example.com/pricing', n: 'signup' },
+  ip: request.headers.get('x-real-ip'),
+  userAgent: request.headers.get('user-agent'),
+})
+if (result.status !== 202) console.warn(result.error)
+```
+
+### recordPayment
+
+`RecordPaymentInput` is a `PaymentInput` plus a required `siteId` and an optional `provider` (default `api`). The result is `{ payment, duplicate }`; `duplicate` is `true` when a payment with that id already exists and nothing changed.
+
+```ts
+const { payment, duplicate } = await analytik.recordPayment({
+  siteId: 'SITE_ID',
+  id: 'ord_8123',
+  amount: 4900,
+  currency: 'USD',
+})
+```
+
+### stats
+
+```ts
+const { stats } = analytik
+
+const overview = await stats.overview('SITE_ID', {
+  from: Date.UTC(2026, 9, 1),
+  to: Date.UTC(2026, 10, 1),
+  interval: 'day',
+  tz: 'Europe/Bratislava',
+  filters: { country: 'DE' },
+})
+```
+
+The query argument is a `Query` and the result is an `Overview`; see [Types](/reference/types). `from` is inclusive and `to` exclusive, both in Unix milliseconds. Unknown sites throw an `AnalytikError` with status 404.
+
+## Mounting
+
+On Cloudflare Workers, Bun and Vercel, export `analytik.app.fetch` or the app itself. On Node, use `@hono/node-server`. To nest it in an existing Hono app:
+
+```ts
+import { Hono } from 'hono'
+
+const app = new Hono()
+app.route('/', analytik.app) // routes keep their basePath, /api by default
+```
+
+The `/event` and `/attribution` routes have open CORS. Event bodies are limited to 8 KB.

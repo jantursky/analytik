@@ -1,0 +1,43 @@
+---
+title: Attribution and payments
+description: How a payment is matched to a visitor, which session gets the credit, and how refunds and renewals are counted.
+---
+
+Revenue is stored as payments. A payment arrives from a webhook, from your server, or from the tracker, and analytik tries to link it to the visitor who paid. A linked payment shows up in the dashboard next to the source, campaign, page and country of that visitor's session.
+
+## Matching order
+
+Each payment records how it was matched in `matchedBy`. analytik tries the methods in this order and stops at the first that works.
+
+| `matchedBy`   | How it matches                                                                                                                                                   | Needs                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `metadata`    | The payment carries `visitorId` and `sessionId`, put into the checkout by your page.                                                                             | Checkout metadata (best option)                                |
+| `return_page` | The tracker saw `payment_id`, `session_id` or `subscription_id` in the return URL and posted a claim for it.                                                     | The tracker on the return page                                 |
+| `customer`    | An earlier payment by the same customer id was already matched.                                                                                                  | A repeat customer                                              |
+| `email`       | The payment email equals an email set by `identify()` or posted by your server.                                                                                  | `enriched` or `persistent` site with consent, or a server post |
+| `timing`      | Exactly one visitor clicked through to checkout in the 3 hours before the payment. If several did, the one visitor who came back to the site right after paying. | A site in `persistent` or `enriched` mode                      |
+
+The timing method only runs for sites that are not in `strict` mode, and it only picks a visitor when the evidence points at exactly one. A click counts when it is an outbound link to a known checkout host (Stripe, Dodo Payments or Lemon Squeezy) or a goal whose name contains `checkout`, `buy` or `purchase`. When several visitors clicked, the fallback looks for pageviews from the minute before the payment to 30 minutes after it, made after the visitor's last checkout click. If exactly one visitor did that, they get the credit; otherwise the payment stays unmatched. Visitors who already have another payment in that window are skipped.
+
+A payment that matches none of them is still counted in total revenue, with no source.
+
+In `strict` mode there is no stable id in the browser, so the `metadata` method works differently: before opening the checkout, your page asks the server for the ids with `analytik.attribution()` (which calls `POST /attribution`). The server computes the same visitor id it would compute for an event from that request, and your checkout carries it to the webhook. That keeps checkout attribution working without anything stored on the device.
+
+## Which session gets the credit
+
+Credit goes to the visitor's last non-direct session: the most recent visit that had a real source such as a search engine, a social site, a referrer or a campaign link. If the visitor arrived directly on the day they paid but came from a newsletter two days earlier, the newsletter is credited. A visitor with only direct sessions is credited to direct.
+
+## Refunds, renewals and currency
+
+- A refund is a payment with `kind: 'refund'`. It is stored with a negative amount and subtracts from revenue.
+- `renewal: true` marks a subscription payment after the first. Renewals count as revenue in the period they arrive, and are credited to the original visitor through the `customer` method.
+- Amounts are integers in minor units (cents). `1999` with currency `USD` is 19.99 dollars.
+- A payment is idempotent on `(siteId, id)`. Sending the same webhook twice stores one payment.
+
+## Re-running matching
+
+If a payment arrived before the visitor could be found, for example because the return-page claim came a few seconds later, run `POST /sites/:id/rematch` (the dashboard has a button for it). It retries matching for payments that have none.
+
+## Where to go next
+
+The [payments guide](/guides/payments) shows the generic API and the three provider adapters with complete checkout metadata examples.

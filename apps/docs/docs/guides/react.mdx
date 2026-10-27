@@ -1,0 +1,126 @@
+---
+title: React
+description: AnalytikProvider, useAnalytik, useTrackPageviews and TrackClick, with React Router, TanStack Router and Next.js.
+---
+
+`analytik/react` wraps the [ESM client](/guides/tracker#esm-client) for React 19. It is safe to render on the server: without `window` the client does nothing.
+
+## Provider
+
+Give the provider your site and the API URL, or pass a client you created yourself.
+
+```tsx main.tsx
+import { AnalytikProvider } from 'analytik/react'
+import { createRoot } from 'react-dom/client'
+
+import { App } from './App'
+
+createRoot(document.getElementById('root')!).render(
+  <AnalytikProvider site="SITE_ID" api="https://analytics.example.com/api" mode="strict">
+    <App />
+  </AnalytikProvider>,
+)
+```
+
+```tsx
+import { createClient } from 'analytik/client'
+import { AnalytikProvider } from 'analytik/react'
+
+const client = createClient({ site: 'SITE_ID', api: 'https://analytics.example.com/api' })
+
+export const Root = ({ children }: { children: React.ReactNode }) => (
+  <AnalytikProvider client={client}>{children}</AnalytikProvider>
+)
+```
+
+If you already load `analytik.js` with a script tag, do not also mount a provider: you would count every pageview twice.
+
+## useAnalytik
+
+`useAnalytik()` returns the client, with `track`, `revenue`, `identify`, `pageview`, `attribution`, `consent`, `withdrawConsent`, `optOut` and `optIn`.
+
+```tsx
+import { useAnalytik } from 'analytik/react'
+
+export function UpgradeButton({ plan }: { plan: string }) {
+  const analytik = useAnalytik()
+
+  async function upgrade() {
+    analytik.track('upgrade_clicked', { plan })
+    const ids = await analytik.attribution()
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, ...ids }),
+    })
+    window.location.href = (await res.json()).url
+  }
+
+  return <button onClick={upgrade}>Upgrade</button>
+}
+```
+
+## useTrackPageviews
+
+Call `useTrackPageviews()` once near the root. It listens to the History API and sends a pageview when the path changes, so it works with any router that uses it.
+
+```tsx
+import { useTrackPageviews } from 'analytik/react'
+import { Outlet } from 'react-router'
+
+export function Layout() {
+  useTrackPageviews()
+  return <Outlet />
+}
+```
+
+If your router exposes its location as state and you prefer to drive pageviews from it, pass that location in. With TanStack Router:
+
+```tsx
+import { useRouterState } from '@tanstack/react-router'
+import { useTrackPageviews } from 'analytik/react'
+
+export function Pageviews() {
+  const location = useRouterState({ select: (s) => s.location })
+  useTrackPageviews(location)
+  return null
+}
+```
+
+## TrackClick
+
+`<TrackClick>` sends a goal when its content is clicked.
+
+```tsx
+import { TrackClick } from 'analytik/react'
+
+export const Cta = () => (
+  <TrackClick event="signup" props={{ plan: 'pro', location: 'hero' }}>
+    <a href="/signup">Start free</a>
+  </TrackClick>
+)
+```
+
+## Next.js
+
+Mount the provider in a client component and render it from the root layout.
+
+```tsx app/providers.tsx
+'use client'
+
+import { AnalytikProvider, useTrackPageviews } from 'analytik/react'
+
+function Pageviews() {
+  useTrackPageviews()
+  return null
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <AnalytikProvider site={process.env.NEXT_PUBLIC_ANALYTIK_SITE!} api={process.env.NEXT_PUBLIC_ANALYTIK_API!}>
+      <Pageviews />
+      {children}
+    </AnalytikProvider>
+  )
+}
+```

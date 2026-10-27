@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # The framework the server and the React bindings are built on.
+      hono:
+        patterns: ['hono', '@hono/*']
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      # Everything else in development, in one pull request. Hono and React have their own groups.
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+        exclude-patterns: ['hono', '@hono/*', 'react', 'react-dom', '@types/react', '@types/react-dom']
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

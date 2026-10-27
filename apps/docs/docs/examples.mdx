@@ -1,0 +1,31 @@
+---
+title: Examples
+description: Live previews of the install snippet generator, the privacy modes, plus pointers to the shop and dashboard demos.
+sidebar:
+  order: 7
+---
+
+The previews on this page run the demo app's example files, in `apps/example/src/examples`, so the docs and the demo cannot drift apart. Switch to the **Code** tab on a preview to read the file. If a file is missing in your checkout, the preview shows "No example found" and the rest of the page still builds.
+
+## Install
+
+Pick a platform and a privacy mode, type your host, and get the script tag, the React provider or the server entry to paste.
+
+<Component path="InstallExample" />
+
+The file is `InstallExample.tsx`.
+
+## Privacy modes
+
+Toggle `strict`, `enriched` and `persistent` and see what each one writes to the device, and how the visitor id is derived from a sample IP address, user agent and salt. This is the same derivation described in [Privacy modes](/concepts/privacy-modes), run in the browser for illustration.
+
+<Component path="PrivacyExample" />
+
+The file is `PrivacyExample.tsx`.
+
+## Shop and dashboard
+
+Two more examples need the demo's server, which serves seeded data on `/api`, so they run in the [demo app](https://analytik.vercel.app) and not in these previews:
+
+- `ShopExample.tsx` is a small storefront instrumented with `analytik/react`: `useTrackPageviews`, `TrackClick`, `useAnalytik` and checkout metadata from `attribution()`. Read it next to the [React guide](/guides/react) and the [payments guide](/guides/payments).
+- `DashboardExample.tsx` mounts `<Dashboard api siteId />` against the seeded demo site. Read it next to [Embedding the dashboard](/guides/dashboard-embedding).

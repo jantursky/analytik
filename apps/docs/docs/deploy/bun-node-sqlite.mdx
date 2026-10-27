@@ -1,0 +1,121 @@
+---
+title: Bun, Node and SQLite
+description: Run analytik on a VPS or in Docker with Bun or Node and a SQLite file, behind a reverse proxy, with backups.
+---
+
+For a single server and modest traffic, SQLite is enough, and it removes the database as something to run. The constraint is that SQLite allows one writer, so run exactly one instance of the process.
+
+## Bun
+
+```ts server.ts
+import { createAnalytik } from 'analytik/server'
+import { sqliteStorage } from 'analytik/storage/sqlite'
+import { Hono } from 'hono'
+import { serveStatic } from 'hono/bun'
+
+const storage = sqliteStorage(process.env.DATABASE_PATH ?? './data/analytik.db')
+await storage.migrate()
+
+const analytik = createAnalytik({
+  storage,
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+})
+
+const app = new Hono()
+app.route('/', analytik.app)
+app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+
+export default { port: Number(process.env.PORT ?? 3000), fetch: app.fetch }
+```
+
+Bun uses its built-in `bun:sqlite`.
+
+Set `ADMIN_PASSWORD` to a non-empty value and `SESSION_SECRET` to at least 32 random characters (`openssl rand -hex 32`). `createAnalytik()` throws at startup otherwise, so a server with a weak or missing secret does not start.
+
+## Node
+
+Node 22.19 or newer has `node:sqlite`, which the SQLite driver uses there. Serve the app with `@hono/node-server`:
+
+```ts server.ts
+import { serve } from '@hono/node-server'
+import { serveStatic } from '@hono/node-server/serve-static'
+import { createAnalytik } from 'analytik/server'
+import { sqliteStorage } from 'analytik/storage/sqlite'
+import { Hono } from 'hono'
+
+const storage = sqliteStorage(process.env.DATABASE_PATH ?? './data/analytik.db')
+await storage.migrate()
+
+const analytik = createAnalytik({
+  storage,
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+})
+
+const app = new Hono()
+app.route('/', analytik.app)
+app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+
+serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) })
+```
+
+Add `@hono/node-server` to your dependencies. Node warns that `node:sqlite` is experimental in some versions; check your version's notes.
+
+## Docker
+
+```dockerfile Dockerfile
+FROM oven/bun:1.3
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+COPY server.ts ./
+COPY public ./public
+ENV DATABASE_PATH=/data/analytik.db PORT=3000
+VOLUME /data
+EXPOSE 3000
+CMD ["bun", "server.ts"]
+```
+
+```yaml compose.yaml
+services:
+  analytik:
+    build: .
+    restart: unless-stopped
+    environment:
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+    volumes:
+      - analytik-data:/data
+    ports:
+      - '127.0.0.1:3000:3000'
+
+volumes:
+  analytik-data:
+```
+
+The database lives in the `analytik-data` volume. Do not scale this service above one replica.
+
+## Reverse proxy
+
+Put Caddy or nginx in front for TLS and keep the container on `127.0.0.1`. Make sure the proxy passes the visitor's address, since strict mode hashes it, and tell analytik to read it. By default analytik ignores `X-Forwarded-For`, because a visitor could send that header themselves. Add `trustProxy: 'forwarded'` to `createAnalytik` in the server code above:
+
+```ts
+createAnalytik({
+  storage,
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+  trustProxy: 'forwarded',
+})
+```
+
+That mode reads the rightmost public address in `X-Forwarded-For`, which is the one your proxy added, so it is only safe when the proxy is the only way to reach the container. Without a client IP, strict mode tells visitors apart by user agent only, so all visitors with the same user agent count as one.
+
+```text Caddyfile
+analytics.example.com {
+  reverse_proxy 127.0.0.1:3000
+}
+```
+
+Caddy sets `X-Forwarded-For` by default. With nginx, add `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`. A plain VPS has no geo headers, so locations stay empty unless you pass a `geo` function (for example a lookup against a local GeoIP database) to `createAnalytik`.
+
+## Backups
+
+See [Backups, retention and upgrades](/deploy/backups-retention-and-upgrades#sqlite) for a safe online backup of the SQLite file.

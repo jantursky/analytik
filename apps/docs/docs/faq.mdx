@@ -1,0 +1,60 @@
+---
+title: FAQ
+description: Cookie banners, ad blockers, accuracy, serverless, multiple sites, data location and what analytik leaves out.
+sidebar:
+  order: 8
+---
+
+## Do I need a cookie banner?
+
+`strict` mode, the default, is designed so that you do not need a consent banner. It stores no identifier on the visitor's device, and the tracker only reads its own `localStorage` keys for opting out and consent (`analytik_ignore`, `analytik_consent`) if they exist. That design holds when the site and the tracker stay in `strict` mode, you do not use `identify()`, and nothing is kept in cookies or session storage. It is a design goal, not a legal opinion. Whether you need a banner depends on your country, your regulator's guidance and what else your site does, and the GDPR still applies to any personal data you process. The visitor id is pseudonymous, not anonymous. Mention analytics in your privacy policy, and ask a lawyer if the stakes are high.
+
+In `enriched` mode, show a banner and call `analytik.consent()` when the visitor accepts. In `persistent` mode, which sets cookies, treat consent as required in the EU. See [Privacy modes](/concepts/privacy-modes).
+
+## Why are my numbers lower than Google Analytics?
+
+Reasons stack up: ad blockers that block the script or the request (see the [first-party route](/deploy/cloudflare-workers-d1#ad-blockers-and-first-party-routes)), bots that analytik filters out, and the wait for the first interaction before the first pageview (`data-require-interaction`). Strict mode also has [its own limits](/concepts/privacy-modes#strict): a visitor who changes network counts twice, while two people on one network and browser count once.
+
+## Are visitors with Do Not Track counted?
+
+Yes. Visitors whose browsers send Do Not Track or Global Privacy Control are counted, but always in `strict` mode: no cookie, no tab id and no stored identity, even on a site set to `enriched` or `persistent`. You can turn this off with `privacy.respectDoNotTrack: false` on the server.
+
+## Can I track several sites with one deployment?
+
+Yes. Each site has an id, a domain and its own settings, including privacy mode. One Worker or one server handles all of them, and the dashboard has a site switcher.
+
+## Does it work on serverless?
+
+Yes. The server is a `fetch` handler without background state. Salts are rotated and old ones deleted by the first request of each month, and retention runs on the ingest path, so no scheduled job is needed. On Postgres, use a pooled connection string, as in the [Vercel guide](/deploy/vercel-supabase). SQLite needs a single long-lived process, so use Workers with D1 or Postgres on serverless platforms.
+
+## Where is my data?
+
+In the database you configured, on the platform you chose. analytik sends nothing to any third party, and the dashboard has no external requests.
+
+## Can I use it without React?
+
+Yes. The server, the tracker script and the HTTP API do not need React. Only the dashboard and the React bindings do. You can read the data from the [HTTP API](/reference/http-api) and draw it yourself.
+
+## What happens if the server is down?
+
+Tracking never blocks the page. The tracker sends events with `sendBeacon` where available and ignores failures, so events during an outage are lost.
+
+## How do I exclude my own visits?
+
+Open any page of your site once with `?analytik_ignore=true`, list your IP address in the site's ignored IPs, or call `analytik.optOut()`.
+
+## How do I get revenue per source?
+
+Send payments with the [generic API or a webhook](/guides/payments), and put the visitor and session ids in the checkout metadata. See [Attribution and payments](/concepts/attribution-and-payments) for how payments are matched when the metadata is missing.
+
+## Can I import data from another analytics tool?
+
+Not yet, there is no importer. To switch, run both side by side for a week, compare the numbers, then remove the old snippet.
+
+## What is not included?
+
+A hosted multi-tenant service, Google sign-in and plan billing are out of scope. Also not available yet: data imports from other tools, an MCP server, a link shortener, A/B testing and session replay.
+
+## Is the code open source?
+
+Yes, under the MIT license. See the repository for the source and issues.

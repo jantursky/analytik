@@ -1,0 +1,212 @@
+import { AnimatePresence, motion } from 'motion/react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
+
+import type { Realtime as RealtimeData } from '../../shared/types'
+import { requestKey, useDashboard } from '../context'
+import { useResource } from '../data'
+import { countryName, formatAgo, formatNumber } from '../format'
+import { Icon } from '../icons'
+import { WorldMap } from '../map'
+import { SiteTile, Status } from '../ui'
+import { LayerContext } from '../ui/layer'
+import { AnimatedNumber, EASE, View } from '../ui/motion'
+import { Tooltip } from '../ui/tooltip'
+
+const REFRESH_MS = 5000
+const FEED_LENGTH = 6
+
+type RecentEvent = RealtimeData['recent'][number]
+
+/** One feed line: who, what they did and on what. */
+export function describeEvent(event: RecentEvent): { who: string; action: string; target: string } {
+  const who = event.country ? `Visitor from ${countryName(event.country)}` : 'A visitor'
+  const target = (event.type === 'revenue' ? event.path : (event.name ?? event.path)) ?? ''
+  const action = {
+    pageview: 'visited',
+    goal: 'completed',
+    revenue: 'paid on',
+    outbound: 'left for',
+    ping: 'is reading',
+    identify: 'signed in on',
+  }[event.type]
+  return { who, action, target }
+}
+
+let audio: AudioContext | undefined
+
+/** A short quiet tone for a new visit. The context is created on the click that turns sound on. */
+function ping(): void {
+  if (!audio) return
+  const tone = audio.createOscillator()
+  const gain = audio.createGain()
+  tone.frequency.value = 880
+  gain.gain.setValueAtTime(0.06, audio.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.25)
+  tone.connect(gain).connect(audio.destination)
+  tone.start()
+  tone.stop(audio.currentTime + 0.25)
+}
+
+function IconButton({
+  label,
+  pressed,
+  onClick,
+  children,
+}: {
+  label: string
+  pressed?: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        className="analytik-icon-button"
+        aria-label={label}
+        aria-pressed={pressed}
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    </Tooltip>
+  )
+}
+
+/** Stable keys for feed lines, so a new event slides in on top instead of every line re-rendering. */
+export function feedKeys(events: readonly RecentEvent[]): string[] {
+  const seen = new Map<string, number>()
+  return events.map((e) => {
+    const base = `${e.ts}-${e.type}-${e.name ?? ''}-${e.path ?? ''}`
+    const count = seen.get(base) ?? 0
+    seen.set(base, count + 1)
+    return count ? `${base}-${count}` : base
+  })
+}
+
+/** Who is on the site right now: a map of their locations, the live count and a feed of what they do. */
+export function Realtime() {
+  const { client, site, openView } = useDashboard()
+  const live = useResource<RealtimeData>(requestKey('realtime', site.id), () => client.realtime(site.id))
+  const [now, setNow] = useState(() => Date.now())
+  const [globe, setGlobe] = useState(false)
+  const [lightMap, setLightMap] = useState(false)
+  const [sound, setSound] = useState(false)
+  const [root, setRoot] = useState<HTMLElement | null>(null)
+  const seen = useRef(0)
+  const { reload } = live
+  const data = live.data
+  const latest = data?.recent[0]?.ts ?? 0
+  const feed = data?.recent.slice(0, FEED_LENGTH) ?? []
+  const keys = feedKeys(feed)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setNow(Date.now())
+        reload()
+      }
+    }, REFRESH_MS)
+    return () => clearInterval(timer)
+  }, [reload])
+
+  useEffect(() => {
+    if (sound && seen.current && latest > seen.current) ping()
+    seen.current = Math.max(seen.current, latest)
+  }, [latest, sound])
+
+  const toggleSound = (): void => {
+    if (!sound && typeof AudioContext === 'function') audio ??= new AudioContext()
+    setSound(!sound)
+  }
+  const toggleFullscreen = (): void => {
+    if (document.fullscreenElement) void document.exitFullscreen()
+    else void root?.requestFullscreen()
+  }
+
+  return (
+    <View>
+      <Status loading={live.loading && !data} error={live.error}>
+        {data && (
+          <section
+            className="analytik-realtime"
+            data-map={lightMap ? 'light' : 'dark'}
+            aria-label="Real-time visitors"
+            ref={setRoot}
+          >
+            <LayerContext value={root}>
+              <WorldMap locations={data.locations} globe={globe} />
+              <div className="analytik-float analytik-live-card">
+                <div className="analytik-live-head">
+                  <SiteTile site={site} />
+                  <div>
+                    <h2>{site.name}</h2>
+                    <p className="analytik-eyebrow">Real-time</p>
+                  </div>
+                  <div className="analytik-icon-row">
+                    <IconButton label="Sound on new visits" pressed={sound} onClick={toggleSound}>
+                      <Icon name={sound ? 'sound' : 'muted'} />
+                    </IconButton>
+                    <IconButton label="Globe view" pressed={globe} onClick={() => setGlobe(!globe)}>
+                      <Icon name={globe ? 'globe' : 'flat'} />
+                    </IconButton>
+                    <IconButton label="Light map" pressed={lightMap} onClick={() => setLightMap(!lightMap)}>
+                      <Icon name="theme" />
+                    </IconButton>
+                    {document.fullscreenEnabled && (
+                      <IconButton label="Full screen" onClick={toggleFullscreen}>
+                        <Icon name="expand" />
+                      </IconButton>
+                    )}
+                    {openView && (
+                      <IconButton label="Close real-time view" onClick={() => openView('overview')}>
+                        <Icon name="close" />
+                      </IconButton>
+                    )}
+                  </div>
+                </div>
+                <p className="analytik-live-count">
+                  <span className="analytik-live-dot" aria-hidden="true" />
+                  <strong className="analytik-stat-value">
+                    <AnimatedNumber value={data.online} format={formatNumber} />
+                  </strong>
+                  {data.online === 1 ? ' visitor' : ' visitors'} on {site.domain}
+                </p>
+              </div>
+              <div className="analytik-float analytik-feed">
+                <h3 className="analytik-eyebrow">Recent activity</h3>
+                {data.recent.length ? (
+                  <ol className="analytik-timeline" aria-live="polite">
+                    <AnimatePresence initial={false} mode="popLayout">
+                      {feed.map((e, i) => {
+                        const { who, action, target } = describeEvent(e)
+                        return (
+                          <motion.li
+                            key={keys[i]}
+                            layout
+                            data-type={e.type}
+                            initial={{ opacity: 0, y: -14 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                            transition={{ duration: 0.35, ease: EASE }}
+                          >
+                            <span>
+                              {who} {action} <strong>{target || '—'}</strong>
+                            </span>
+                            <span className="analytik-muted">{formatAgo(e.ts, now)}</span>
+                          </motion.li>
+                        )
+                      })}
+                    </AnimatePresence>
+                  </ol>
+                ) : (
+                  <p className="analytik-empty">Nobody here right now</p>
+                )}
+              </div>
+            </LayerContext>
+          </section>
+        )}
+      </Status>
+    </View>
+  )
+}

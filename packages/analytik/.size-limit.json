@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Tracker script (analytik.js)",
+    "path": "dist/analytik.js",
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Browser client",
+    "path": "dist/client.js",
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "React bindings",
+    "path": "dist/react.js",
+    "ignore": ["react", "react-dom"],
+    "gzip": true,
+    "limit": "6 kB"
+  },
+  {
+    "name": "Dashboard (Base UI, Motion and Recharts are peers)",
+    "path": "dist/dashboard.js",
+    "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
+    "gzip": true,
+    "limit": "25 kB"
+  },
+  {
+    "name": "Dashboard styles",
+    "path": "dist/dashboard.css",
+    "gzip": true,
+    "limit": "7 kB"
+  },
+  {
+    "name": "Server",
+    "path": "dist/server.js",
+    "ignore": ["hono"],
+    "gzip": true,
+    "limit": "22 kB"
+  },
+  {
+    "name": "D1 storage",
+    "path": "dist/storage/d1.js",
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "Postgres storage",
+    "path": "dist/storage/postgres.js",
+    "gzip": true,
+    "limit": "3 kB"
+  },
+  {
+    "name": "Payment adapters",
+    "path": ["dist/adapters/stripe.js", "dist/adapters/dodo.js", "dist/adapters/lemonsqueezy.js"],
+    "gzip": true,
+    "limit": "4 kB"
+  },
+  {
+    "name": "Demo data and storage opener",
+    "path": "dist/migrate.js",
+    "ignore": ["postgres"],
+    "gzip": true,
+    "limit": "8 kB"
+  }
+]

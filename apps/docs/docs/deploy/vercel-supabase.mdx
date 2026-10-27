@@ -1,0 +1,103 @@
+---
+title: Vercel and Supabase
+description: Run analytik as a Hono function on Vercel with Supabase Postgres, including the pooler, migrations, row level security and geo headers.
+---
+
+On Vercel, analytik runs as a function and stores its data in Postgres. Supabase is a convenient Postgres, and the same steps work with any Postgres provider.
+
+## Install
+
+```package-install
+analytik hono postgres
+```
+
+The `postgres` driver (postgres.js) works in serverless functions. `pg` is also supported.
+
+## Connection strings
+
+Supabase gives you two kinds of connection string.
+
+- **Direct or session** (port 5432): use it for migrations, from your machine or CI.
+- **Transaction pooler** (port 6543): use it from Vercel functions. Each invocation can open its own connection, and the pooler keeps that from exhausting Postgres. The transaction pooler does not support prepared statements, so turn them off in the driver.
+
+Store the pooler URL as `DATABASE_URL` in the Vercel project's environment variables.
+
+## A standalone project
+
+```ts src/index.ts
+import { createAnalytik } from 'analytik/server'
+import { postgresStorage } from 'analytik/storage/postgres'
+import postgres from 'postgres'
+
+const sql = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 })
+
+const analytik = createAnalytik({
+  storage: postgresStorage(sql),
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+})
+
+export default analytik.app
+```
+
+Vercel runs a Hono app exported as the default of `src/index.ts`. Put the tracker in `public/analytik.js` (copy it from `node_modules/analytik/dist/analytik.js`), and set `ADMIN_PASSWORD` (not empty) and `SESSION_SECRET` (at least 32 random characters, for example from `openssl rand -hex 32`) in the project's environment variables. The server throws at startup if either is missing or too short.
+
+## Inside a Next.js app
+
+If the site is a Next.js app on Vercel, mount analytik as a route handler and keep everything on one origin, which also avoids ad-blocker problems:
+
+```ts app/api/analytik/[[...route]]/route.ts
+import { createAnalytik } from 'analytik/server'
+import { postgresStorage } from 'analytik/storage/postgres'
+import { handle } from 'hono/vercel'
+import postgres from 'postgres'
+
+const sql = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 })
+
+const analytik = createAnalytik({
+  storage: postgresStorage(sql),
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+  basePath: '/api/analytik',
+})
+
+export const GET = handle(analytik.app)
+export const POST = handle(analytik.app)
+export const PATCH = handle(analytik.app)
+export const DELETE = handle(analytik.app)
+```
+
+Copy the tracker to `public/analytik.js` and load it with `data-api="/api/analytik"`. The tracker adds `/event` itself. The same two environment variables are required here.
+
+## Migrate
+
+Run migrations with the direct connection string, never from the function:
+
+```bash
+npx analytik migrate --db "postgres://postgres:PASSWORD@db.PROJECT.supabase.co:5432/postgres"
+```
+
+Run it again after each package upgrade, before the deploy that uses the new version.
+
+## Lock down the tables
+
+Supabase exposes the `public` schema through its REST API. Tables created by a migration have row level security off, which would let anyone holding your `anon` key read them. analytik connects as the database owner, which is not affected by row level security, so turn it on for every table and add no policies:
+
+```sql
+do $$
+declare t text;
+begin
+  for t in
+    select tablename from pg_tables
+    where schemaname = 'public'
+      and tablename in ('sites', 'visitors', 'sessions', 'events', 'payments', 'payment_claims',
+                        'funnels', 'salts', 'rate_limits', 'schema_migrations')
+  loop
+    execute format('alter table public.%I enable row level security', t);
+  end loop;
+end $$;
+```
+
+Check in Supabase's table editor that no analytik table shows as unrestricted.
+
+## Geo and the visitor IP
+
+With the default `trustProxy: 'auto'`, the server reads the visitor's IP from `x-vercel-forwarded-for` when it runs on Vercel, so strict mode works without extra setup. On Vercel the server reads location from the `x-vercel-ip-country`, `x-vercel-ip-country-region`, `x-vercel-ip-city` and latitude and longitude headers. These exist only on Vercel's edge. Locally, location is empty.

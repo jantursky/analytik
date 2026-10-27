@@ -1,0 +1,79 @@
+---
+title: Storage
+description: The Storage interface, the D1, Postgres, SQLite and in-memory drivers, the tables, and how migrations work.
+---
+
+Storage is a small interface over SQL. The server builds its queries with a shared set of builders that take the dialect for the few differences (placeholders, upsert, date bucketing, JSON), so every driver runs the same logic.
+
+## Interface
+
+```ts
+interface Storage {
+  readonly dialect: 'sqlite' | 'postgres' | 'memory'
+  migrate(): Promise<MigrationResult> // applies pending migrations, idempotent
+  query<T>(sql: string, params?: unknown[]): Promise<T[]>
+  run(sql: string, params?: unknown[]): Promise<{ changes: number }>
+  batch(statements: Statement[]): Promise<void> // atomic where the driver allows
+  close?(): Promise<void>
+}
+```
+
+You rarely call these yourself. They are public so you can write a driver for another database, or run your own reporting query against the same connection.
+
+## Drivers
+
+| Import                      | Backend                        | Runtime                                         |
+| --------------------------- | ------------------------------ | ----------------------------------------------- |
+| `analytik/storage/d1`       | Cloudflare D1 (SQLite dialect) | Workers                                         |
+| `analytik/storage/postgres` | Postgres, Supabase             | Anywhere with `postgres` or `pg`                |
+| `analytik/storage/sqlite`   | SQLite file                    | Bun (`bun:sqlite`), Node 22.19+ (`node:sqlite`) |
+| `analytik/storage/memory`   | In-process SQLite              | Tests, local demos                              |
+
+```ts
+import { d1Storage } from 'analytik/storage/d1'
+import { memoryStorage } from 'analytik/storage/memory'
+import { postgresStorage } from 'analytik/storage/postgres'
+import { sqliteStorage } from 'analytik/storage/sqlite'
+
+d1Storage(env.DB)
+postgresStorage(postgres(process.env.DATABASE_URL!)) // a postgres.js client
+sqliteStorage('./data/analytik.db')
+memoryStorage()
+```
+
+`postgresStorage()` does not take a connection string and does not open connections itself. Pass a client you created and configured: a [postgres.js](https://github.com/porsager/postgres) `sql` instance, or a `pg` `Pool` or `Client`.
+
+```ts
+import { Pool } from 'pg'
+import postgres from 'postgres'
+
+postgresStorage(postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 }))
+postgresStorage(new Pool({ connectionString: process.env.DATABASE_URL }))
+```
+
+Calling `storage.close()` ends the client you passed in.
+
+`memoryStorage()` is a real SQLite database held in memory, not a mock, so tests that use it run the same SQL as production. D1 batches are atomic. On Postgres and SQLite, `batch` runs in a transaction.
+
+## Tables
+
+The same logical tables exist in every dialect.
+
+| Table               | Holds                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `sites`             | Id, name, domain, timezone, currency, privacy mode, API key hash, webhook secrets, retention, share token     |
+| `visitors`          | Site, id, first seen, user id, name, email                                                                    |
+| `sessions`          | Visit with source, channel, entry and exit, device, location, latitude and longitude                          |
+| `events`            | Pageviews, goals, outbound clicks, pings, with properties as JSON                                             |
+| `payments`          | Amount in minor units, kind, currency, provider, how it was matched                                           |
+| `payment_claims`    | Payment ids seen on return pages, for `return_page` matching                                                  |
+| `funnels`           | Funnel definitions                                                                                            |
+| `salts`             | The monthly secret for strict-mode visitor ids. Older months are deleted by the first request of a new month. |
+| `rate_limits`       | Counters for the rate-limited public routes                                                                   |
+| `schema_migrations` | Applied migration versions and timestamps                                                                     |
+
+The IP address is not stored in any of them.
+
+## Migrations
+
+Migrations are ordered SQL scripts, one set per dialect (`sqlite` and `postgres`; D1 uses `sqlite`). `migrate()` applies the ones not recorded in `schema_migrations` and returns what it did. `createAnalytik()` calls it before the first request unless you pass `autoMigrate: false`. You can also call it at startup yourself, or run `analytik migrate --db <url>` as a deploy step for Postgres and SQLite. D1 cannot be migrated from the command line; load the schema with `analytik migrate --print-sql sqlite` and `wrangler d1 execute`, see the [CLI reference](/reference/cli#migrate). See [Upgrades](/deploy/backups-retention-and-upgrades#upgrades).

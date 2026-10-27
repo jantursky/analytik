@@ -1,0 +1,61 @@
+---
+title: Tracker attributes
+description: Every data attribute the tracker script reads, its default and the global API.
+---
+
+Set these on the `script` tag that loads `analytik.js`.
+
+```html
+<script
+  defer
+  src="https://analytics.example.com/analytik.js"
+  data-site="SITE_ID"
+  data-mode="strict"
+  data-keep-query="plan,coupon"
+></script>
+```
+
+| Attribute                  | Default                           | Description                                                                                                                                                                                                                                                                                 |
+| -------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-site`                | none, required                    | Site id.                                                                                                                                                                                                                                                                                    |
+| `data-api`                 | origin of `src` + `/api`          | Base path of the API. The tracker appends `/event` for events and `/attribution` for checkout ids.                                                                                                                                                                                          |
+| `data-mode`                | `strict`                          | `strict`, `enriched` or `persistent`. The server processes events in the lower of this mode and the site's mode, so a site set to `strict` stays `strict` whatever the tracker asks for.                                                                                                    |
+| `data-allow-localhost`     | off                               | Send events from `localhost` and other local addresses. Presence enables it. The site needs `allowLocalhost` too, or the server rejects them.                                                                                                                                               |
+| `data-domain`              | widest parent domain with cookies | Cookie domain in `persistent` mode, for sharing a visitor across subdomains. By default the tracker tries the parent domains of the page, from the widest, and uses the first one the browser lets it set a cookie on. Links to this domain and its subdomains are not counted as outbound. |
+| `data-require-interaction` | `true`                            | Send the first pageview only after the first interaction or 3 s of visibility. Set `false` to send at once.                                                                                                                                                                                 |
+| `data-keep-query`          | none                              | Comma-separated query keys the tracker keeps in the URLs it sends. The server stores only the keys listed in `privacy.keepQuery` of `createAnalytik`, so list the key in both places. See below.                                                                                            |
+| `data-debug`               | off                               | Log what the tracker sends to the console.                                                                                                                                                                                                                                                  |
+| `data-auto-outbound`       | `true`                            | Record clicks on links to other hosts as `outbound` events.                                                                                                                                                                                                                                 |
+| `data-auto-track-attrs`    | `true`                            | Turn clicks on `data-analytik-event` elements into goals.                                                                                                                                                                                                                                   |
+
+## Keeping query keys
+
+`data-keep-query` only changes what the tracker sends. Campaign keys (`utm_*`, `ref`, `source`) and the payment return ids (`payment_id`, `session_id`, `subscription_id`) are always sent, and private keys such as `email`, `token` and `code` are always dropped, even when listed. What ends up in the stored page path is decided by the server: only the keys in `createAnalytik({ privacy: { keepQuery } })` are kept, and the same private keys are dropped there as well. To keep `plan` in your page paths, set both:
+
+```html
+<script defer src="/analytik.js" data-site="SITE_ID" data-keep-query="plan"></script>
+```
+
+```ts
+createAnalytik({ storage, admin, privacy: { keepQuery: ['plan'] } })
+```
+
+## Element attributes
+
+| Attribute             | On           | Description                                                                                                    |
+| --------------------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
+| `data-analytik-event` | any element  | Name of the goal sent when the element, or something inside it, is clicked.                                    |
+| `data-analytik-*`     | same element | Each becomes a property: `data-analytik-plan="pro"` sends `{ plan: 'pro' }`. Values are cut at 255 characters. |
+
+## Global API
+
+| Call                                               | Description                                                                                                                                        |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `analytik.track(name, props?)`                     | Record a goal.                                                                                                                                     |
+| `analytik.revenue(name, amount, options)`          | Record revenue. `options`: `currency`, `orderId`, plus properties.                                                                                 |
+| `analytik.identify({ userId, email, name })`       | Attach identity. Stored only when the event is processed in `enriched` or `persistent` mode; on a `strict` site it is ignored, even after consent. |
+| `analytik.pageview()`                              | Send a pageview.                                                                                                                                   |
+| `analytik.attribution()`                           | Promise of `{ analytik_visitor_id, analytik_session_id }`.                                                                                         |
+| `analytik.consent()`, `analytik.withdrawConsent()` | Enriched mode consent.                                                                                                                             |
+| `analytik.optOut()`, `analytik.optIn()`            | Stop and resume tracking in this browser.                                                                                                          |
+| `analytik(cmd, ...args)`                           | The same calls as a function; calls before load are queued in `analytik.q`.                                                                        |

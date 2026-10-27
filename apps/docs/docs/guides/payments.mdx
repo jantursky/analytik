@@ -1,0 +1,136 @@
+---
+title: Payments
+description: Record revenue through the generic API or the Stripe, Dodo Payments and Lemon Squeezy webhooks, with the checkout metadata that links each payment to a source.
+---
+
+Revenue gets a source in two steps: the payment must reach analytik, and it must be linked to a visitor. Read [Attribution and payments](/concepts/attribution-and-payments) first for the matching order. The short version: put the visitor and session ids in the checkout metadata, and everything else follows.
+
+## Get the ids on the page
+
+```ts
+const ids = await analytik.attribution()
+if (ids) {
+  const { analytik_visitor_id, analytik_session_id } = ids
+}
+```
+
+Send them to your server, or add them to a checkout link, right before the visitor pays. In `strict` mode this asks the server to compute the ids, so nothing is stored in the browser. The type is `AttributionIds`.
+
+`attribution()` can return `null`: when the visitor has opted out, when the request fails, or in `strict` and `enriched` mode when the server has no session for the visitor yet, for example before the first pageview was sent. Handle that case and let the checkout go ahead without the ids; the payment is then matched by the other methods in [Attribution and payments](/concepts/attribution-and-payments).
+
+## Generic API
+
+For anything else, such as a payment processor without an adapter, post to `POST /api/v1/payments` with the site's API key. The body is a `PaymentInput`. The call is idempotent on `(siteId, id)`.
+
+```bash
+curl -X POST https://analytics.example.com/api/v1/payments \
+  -H "Authorization: Bearer $ANALYTIK_SITE_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "id": "ord_8123",
+    "amount": 4900,
+    "currency": "USD",
+    "email": "ada@example.com",
+    "customerId": "cus_42",
+    "visitorId": "VISITOR_ID",
+    "sessionId": "SESSION_ID"
+  }'
+```
+
+Send a refund with `"kind": "refund"` and the positive amount, and mark subscription renewals with `"renewal": true`. For a refund that has no id of its own, send `"refundedTotal"`, the total refunded for the order so far, in minor units. The server records only the part it has not seen yet, so a second partial refund adds the difference and a retried request adds nothing.
+
+From code in the same process as the server, skip HTTP. Here `siteId` is required, because the function has no API key to tell it which site the payment belongs to. It returns the stored payment and whether it was a duplicate:
+
+```ts
+const { payment, duplicate } = await analytik.recordPayment({
+  siteId: 'SITE_ID',
+  id: 'ord_8123',
+  amount: 4900,
+  currency: 'USD',
+  email: 'ada@example.com',
+  visitorId,
+  sessionId,
+})
+```
+
+Server-side goals work the same way, with `POST /api/v1/goals` and `{ "name": "trial_started", "props": { "plan": "pro" }, "visitorId": "..." }`. See [Funnels and goals](/guides/funnels-and-goals).
+
+## Webhooks
+
+analytik verifies and maps provider webhooks itself. For each provider, create a webhook that points to your server and paste its signing secret into the site's settings (Webhooks). The URL has the form `https://analytics.example.com/api/webhooks/PROVIDER/SITE_ID`, where `PROVIDER` is `stripe`, `dodo` or `lemonsqueezy`. Requests that fail verification are rejected.
+
+| Provider      | Events used                                                       | Signature                       |
+| ------------- | ----------------------------------------------------------------- | ------------------------------- |
+| Stripe        | `checkout.session.completed`, `invoice.paid`, `charge.refunded`   | HMAC-SHA256, `Stripe-Signature` |
+| Dodo Payments | `payment.succeeded`, `refund.succeeded`                           | Standard Webhooks               |
+| Lemon Squeezy | `order_created`, `subscription_payment_success`, `order_refunded` | `X-Signature`                   |
+
+Subscribe only to those events. Others are ignored.
+
+### Stripe
+
+Add the metadata when your server creates the Checkout Session:
+
+```ts app/api/checkout/route.ts
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+export async function POST(request: Request) {
+  const { priceId, analytik_visitor_id, analytik_session_id } = await request.json()
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: 'https://example.com/thanks?session_id={CHECKOUT_SESSION_ID}',
+    cancel_url: 'https://example.com/pricing',
+    metadata: { analytik_visitor_id, analytik_session_id },
+    subscription_data: { metadata: { analytik_visitor_id, analytik_session_id } },
+  })
+
+  return Response.json({ url: session.url })
+}
+```
+
+Put the metadata on the subscription too, so `invoice.paid` for renewals can be linked. The success URL carries `session_id`, which gives the `return_page` method a second chance if the metadata is missing.
+
+### Dodo Payments
+
+For payment links, append the ids as `metadata_` parameters:
+
+```ts
+const ids = await analytik.attribution()
+const url = new URL('https://checkout.dodopayments.com/buy/pdt_XXXX')
+url.searchParams.set('quantity', '1')
+if (ids) {
+  url.searchParams.set('metadata_analytik_visitor_id', ids.analytik_visitor_id)
+  url.searchParams.set('metadata_analytik_session_id', ids.analytik_session_id)
+}
+window.location.href = url.toString()
+```
+
+Dodo adds `payment_id` to your return URL. Keep the tracker on that page and the `return_page` method links the payment to the visitor even when the metadata did not arrive.
+
+### Lemon Squeezy
+
+Checkout links accept custom data in `checkout[custom][...]` parameters:
+
+```ts
+const ids = await analytik.attribution()
+const url = new URL('https://example.lemonsqueezy.com/buy/VARIANT_UUID')
+if (ids) {
+  url.searchParams.set('checkout[custom][analytik_visitor_id]', ids.analytik_visitor_id)
+  url.searchParams.set('checkout[custom][analytik_session_id]', ids.analytik_session_id)
+}
+window.location.href = url.toString()
+```
+
+When creating the checkout through the API, put the same keys in `checkout_data.custom`.
+
+## Revenue sent from the browser
+
+`analytik.revenue()` records an order from the page. It is stored as a payment with the provider `client` and the id `client:<orderId>`, so a browser cannot claim the id of a real provider payment. When a verified payment for the same order arrives from a webhook or your server, it replaces the client record, so the order is not counted twice. A client record for an order that already has a verified payment is ignored. Pass an `orderId` to get this behaviour; without one, every call is a separate order.
+
+## Testing a payment
+
+Send a test event from the provider's dashboard, then open the site's Revenue view. Each payment shows how it was matched (`matchedBy`). If it shows nothing, check that the ids reached the checkout, and run **Rematch** or `POST /api/sites/SITE_ID/rematch` after fixing it.

@@ -1,0 +1,144 @@
+---
+title: Cloudflare Workers and D1
+description: Deploy analytik on a Cloudflare Worker with a D1 database, wrangler.jsonc, secrets, a custom domain, the free-plan limits and a first-party route for ad blockers.
+---
+
+This is the smallest deployment: one Worker, one D1 database, static assets for the tracker script.
+
+## Project
+
+```bash
+mkdir analytik-worker && cd analytik-worker
+bun add analytik hono
+bun add -d wrangler @cloudflare/workers-types typescript
+mkdir -p public src
+cp node_modules/analytik/dist/analytik.js public/analytik.js
+```
+
+The last line puts the tracker where Workers serves static files from. Repeat it when you upgrade the package.
+
+## The Worker
+
+```ts src/worker.ts
+import { createAnalytik } from 'analytik/server'
+import { d1Storage } from 'analytik/storage/d1'
+
+interface Env {
+  DB: D1Database
+  ADMIN_PASSWORD: string
+  SESSION_SECRET: string
+}
+
+// Build the app once per isolate, not once per request.
+let app: ReturnType<typeof createAnalytik>['app'] | undefined
+
+export default {
+  fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    app ??= createAnalytik({
+      storage: d1Storage(env.DB),
+      admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+    }).app
+    return app.fetch(request, env, ctx)
+  },
+}
+```
+
+Location comes from Cloudflare's `cf-ipcountry` header and `request.cf`, so no geo option is needed.
+
+## wrangler.jsonc
+
+```jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "analytik",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./public",
+    // Only API calls run the Worker. The tracker is a free static file.
+    "run_worker_first": ["/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "analytik",
+      // The id printed by `npx wrangler d1 create analytik`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+    },
+  ],
+  "routes": [{ "pattern": "analytics.example.com", "custom_domain": true }],
+}
+```
+
+The `binding` must be `DB` to match the code above. `routes` with `custom_domain` attaches the Worker to a hostname on a zone in your account and creates the DNS record and certificate; leave `routes` out to use the `*.workers.dev` address first.
+
+## Database and secrets
+
+```bash
+npx wrangler d1 create analytik          # copy database_id into wrangler.jsonc
+npx analytik migrate --print-sql sqlite > analytik-schema.sql
+npx wrangler d1 execute analytik --remote --file analytik-schema.sql   # create the schema
+npx wrangler secret put ADMIN_PASSWORD   # the dashboard password, not empty
+npx wrangler secret put SESSION_SECRET   # openssl rand -hex 32, at least 32 characters
+npx wrangler deploy
+```
+
+The analytik command line cannot reach D1, so the schema goes in through Wrangler. `--print-sql sqlite` prints every migration plus the rows that mark them as applied. The Worker also applies pending migrations on its first request (`autoMigrate`, on by default), so the explicit step mostly saves the first request some work, and after a package upgrade you can simply deploy.
+
+`createAnalytik()` throws when `ADMIN_PASSWORD` is empty or `SESSION_SECRET` is shorter than 32 characters, so the Worker fails on its first request until both secrets are set properly. For local work, put the two secrets in `.dev.vars` and run `npx wrangler dev`.
+
+Create the first site as shown in [Getting started](/getting-started#create-a-site), or in the dashboard, and add the script:
+
+```html
+<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID"></script>
+```
+
+Allowed origins default to the registered site domain and its subdomains, so one deployment serves several sites; add each one as its own site.
+
+## Free plan
+
+A small site fits in Cloudflare's free plan, and several small sites often do. Check the current numbers on Cloudflare's limits and pricing pages, because they change. At the time of writing:
+
+- **Workers Free**: 100,000 requests per day across the account, and 10 ms of CPU per request. Static assets, including `analytik.js`, are not billed as requests.
+- **D1 Free**: about 5 million rows read and 100,000 rows written per day, and 5 GB of storage in total.
+
+Each tracked pageview costs one Worker request and a few written rows; engagement pings, goals and dashboard use add more. As a rough guide, the write limit is reached at a few tens of thousands of pageviews a day, whichever limit comes first. When a limit is exceeded, requests fail until it resets, which for analytics means lost events, not a broken site: the tracker never blocks your page. If you outgrow the free plan, the paid Workers plan is a flat monthly fee with generous included usage.
+
+Two things keep usage down: leave `data-require-interaction` on so that bounces from bots cost nothing, and set a [retention](/deploy/backups-retention-and-upgrades#retention) so the database does not grow without bound.
+
+## Ad blockers and first-party routes
+
+Some blockers drop requests to hosts they know from analytics lists, and some match on path names like `/analytics`. Serving the script and the endpoint from your own domain under a neutral path avoids both.
+
+If your site is on Cloudflare, attach the same Worker to a path on the site's zone instead of a separate hostname, so the real visitor IP reaches the server. Use a base path and keep the files under it:
+
+```ts src/worker.ts
+createAnalytik({
+  storage: d1Storage(env.DB),
+  admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+  basePath: '/s/api',
+})
+```
+
+```jsonc
+{
+  "assets": { "directory": "./public", "run_worker_first": ["/s/api/*"] },
+  "routes": [{ "pattern": "example.com/s/*", "zone_name": "example.com" }],
+}
+```
+
+Put the tracker at `public/s/analytik.js` and point it at the base path with `data-api`, because without it the tracker uses `/api` on the script's origin. The tracker adds `/event` itself:
+
+```html
+<script defer src="/s/analytik.js" data-site="SITE_ID" data-api="/s/api"></script>
+```
+
+Mount the dashboard on `api="/s/api"`. Pick any path you like instead of `/s`.
+
+If your site is not on Cloudflare, use your host's rewrite feature (a Vercel or Netlify rewrite, an nginx `proxy_pass`) to send the path to the Worker. A Worker that sits behind another proxy does not see the visitor's address on its own: by default analytik trusts only Cloudflare's `cf-connecting-ip` (which, behind another proxy, is that proxy's address) and ignores `X-Forwarded-For`, because any visitor could send that header themselves. Pick one of these:
+
+- `trustProxy: 'forwarded'` reads the rightmost public address in `X-Forwarded-For`. Use it only when the proxy in front overwrites or appends that header with the real client address.
+- `clientIp: (request) => request.headers.get('x-real-ip')`, or whichever header your proxy sets, if it uses a different one. Make sure the proxy replaces that header and does not pass on a value from the visitor.
+
+Without a client IP, strict mode tells visitors apart by user agent and site only, so every visitor with the same user agent is counted as one. Rate limits, including the login limit, are then shared by everyone.

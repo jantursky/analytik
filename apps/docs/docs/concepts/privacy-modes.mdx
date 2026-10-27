@@ -1,0 +1,70 @@
+---
+title: Privacy modes
+description: What strict, enriched and persistent mode store, how visitor ids work, the limits of strict mode, and how to think about consent in the EU.
+---
+
+A site has one privacy mode, set in the site's settings or as the default for new sites through `createAnalytik({ privacy: { mode } })`. The tracker sends the mode it was configured with (`data-mode`) in each event. Its default is `strict`. The server uses the lower of the two: a tracker that asks for `persistent` on a `strict` site is processed as `strict`, and a `strict` tracker on a `persistent` site is processed as `strict` too. Set the same mode in both places.
+
+| Mode         | Device storage                                                       | Visitor id                                             | Consent banner                                                       |
+| ------------ | -------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------- |
+| `strict`     | None written by tracking                                             | Server: `HMAC(monthSalt, siteId + ip + ua)`, truncated | Designed to need none, under the conditions below. Not legal advice. |
+| `enriched`   | `sessionStorage` id, only after `consent()`                          | Server hash plus a tab id                              | After consent                                                        |
+| `persistent` | First-party cookies `analytik_vid` (1 year), `analytik_sid` (30 min) | Random uuid                                            | Treat as required in the EU                                          |
+
+## Strict
+
+The tracker writes no identifier to the visitor's device. The server receives the request, takes the IP address and user agent from it, and computes an HMAC with a secret salt that belongs to one UTC month. The truncated result is the visitor id. The IP address is used for that one computation and is never stored.
+
+What the tracker does read: it looks for its own `localStorage` keys, `analytik_ignore` (the opt-out flag, written only when someone opts out or visits a page with `?analytik_ignore=true`) and `analytik_consent` (written only in `persistent` mode after a consent choice), and acts on them if they are present. So it is not true that nothing is read back, but it reads no identifiers.
+
+The visitor id is pseudonymous, not anonymous. The salt is kept in the `salts` table of the same database while its month lasts, so anyone with access to that database can take a guess at an IP address and user agent, compute the id and see whether it exists. That is possible until the salt is deleted.
+
+The salt is deleted lazily: the first request that arrives in the next month creates the new salt and deletes the older ones. From then on, ids from past months can no longer be recomputed or linked from the live database. Backups and point-in-time recovery may still hold the old salt, so the guarantee is "removed from the live database". If that matters to you, limit how long backups are kept; see [Backups, retention and upgrades](/deploy/backups-retention-and-upgrades).
+
+Do Not Track and Global Privacy Control do not stop counting. A visitor whose browser sends either signal is still counted, and always in `strict` mode, even on a site set to `enriched` or `persistent` (see `privacy.respectDoNotTrack`).
+
+What strict mode cannot do, stated plainly:
+
+- A visitor who changes network (Wi-Fi to mobile data, home to office) is counted twice.
+- Two people behind the same IP address with the same user agent are counted once.
+- There is no history across months: the same person is a new visitor on the first of each month.
+- A network change also starts a new session, because the visitor id changes.
+- `identify()` is ignored. The server stores an identity only when the event is processed in `enriched` or `persistent` mode, so on a `strict` site nothing is stored, even if the visitor gave consent. Matching by email works only when your server posts the email itself, for example with `POST /v1/goals` or a payment.
+- Timing-based payment matching is not available. It needs a site in `enriched` or `persistent` mode.
+- If the server cannot see a client IP, all visitors with the same user agent are counted as one. See `trustProxy` in the [server API](/reference/server-api#client-ip-and-trustproxy).
+
+Counts are therefore close but not exact. For most sites the error is small compared with what ad blockers already remove.
+
+## Enriched
+
+Enriched mode is for sites that already have a consent banner. Until the visitor consents, it behaves like strict mode. After `analytik.consent()`, the tracker keeps a random id in `sessionStorage`, which dies with the tab, and sends it along with the server hash. That keeps a visit as one visit across network changes and lets `identify()` store an identity. Calling `analytik.withdrawConsent()` deletes the id and returns to strict behavior.
+
+Do Not Track and Global Privacy Control are honoured by default: the visitor is still counted, but the event is processed in `strict` mode, so no tab id and no identity are used.
+
+## Persistent
+
+Persistent mode sets two first-party cookies: `analytik_vid` for a year and `analytik_sid` for 30 minutes. The ids are random uuids. It gives the most accurate counts and unlocks timing-based payment matching. It also needs consent in the EU. When the browser sends Do Not Track or Global Privacy Control, the tracker sets no cookies until `analytik.consent()` is called, and the server processes such events in `strict` mode by default.
+
+## What every mode does
+
+- The IP address is read from the request and never stored.
+- Location comes from edge headers: `cf-ipcountry` and `request.cf` on Cloudflare, `x-vercel-ip-*` on Vercel. Without them, location is empty. Coordinates are rounded to two decimals. You can supply your own lookup with the `geo` option.
+- Query strings and fragments are removed from page paths. The exceptions are campaign keys (`utm_*`, `ref`, `source`) and any keys you list in `keepQuery`. Parameters such as `email` and `token` are always dropped, even if listed.
+- Bots are filtered by user agent and `navigator.webdriver`.
+- Individual visitors can opt out with `analytik.optOut()`, and you can ignore your own IP addresses in the site settings.
+
+## Cookies, consent and the EU
+
+This section is about design, not law, and it is not legal advice.
+
+The EU ePrivacy rules (Article 5(3)) apply when you store information on a visitor's device or read information from it. `strict` mode is designed so that analytics does not need a consent banner. That design holds under these conditions:
+
+- the site runs in `strict` mode, and the tracker does too;
+- you do not use `identify()` or send emails and names to the server;
+- the tracker does not use persistent storage (no cookies, no `sessionStorage` id).
+
+Whether that is enough for you depends on your country, your regulator's guidance and what else you collect. Some regulators have published conditions for exempting audience measurement, such as short retention, no cross-site tracking and no sharing with third parties; some are stricter than others.
+
+Separately, the GDPR still applies to personal data you process, and a pseudonymous visitor id can count as personal data. You should mention analytics in your privacy policy and decide on a legal basis. If you use `enriched` or `persistent`, treat them as needing consent for EU visitors. If you are unsure, ask a lawyer who knows your jurisdiction.
+
+See also the [FAQ](/faq#do-i-need-a-cookie-banner).

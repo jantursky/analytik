@@ -1,0 +1,78 @@
+---
+title: CLI
+description: 'The analytik command line: init, migrate, seed and doctor.'
+---
+
+The package installs a binary named `analytik`. Run it with `npx analytik`, `bunx analytik`, or from your scripts.
+
+```bash
+npx analytik <command> [options]
+```
+
+`-h` or `--help` prints the usage, `-v` or `--version` prints the version.
+
+## Database targets
+
+Commands that open a database take `--db <url-or-path>`. The value is one of:
+
+| Value                                        | Database                                                                   |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `postgres://user:pass@host/db`               | Postgres. Needs the `postgres` package installed.                          |
+| `sqlite:<path>`, `file:<path>`, a `.db` path | A SQLite file. A path ending in `.db`, `.sqlite` or `.sqlite3` also works. |
+| `:memory:`                                   | A throwaway in-memory SQLite database.                                     |
+
+Cloudflare D1 cannot be reached from the command line. See [migrate](#migrate) for how to load the schema with Wrangler.
+
+## Commands
+
+### init
+
+Prints a starter server entry file to stdout. It does not create any files, so redirect the output if you want to keep it. Pick the platform with `--target worker|vercel|bun|node` (default `worker`).
+
+```bash
+npx analytik init --target bun > server.ts
+```
+
+The reminder about `ADMIN_PASSWORD` and `SESSION_SECRET` goes to stderr, so it does not end up in the file. The server refuses to start when `ADMIN_PASSWORD` is empty or `SESSION_SECRET` is shorter than 32 characters.
+
+### migrate
+
+Creates the schema or applies pending migrations, the same as `storage.migrate()`. Safe to run repeatedly.
+
+```bash
+npx analytik migrate --db "$DATABASE_URL"
+npx analytik migrate --db ./data/analytik.db
+```
+
+For D1, print the schema as SQL and load it with Wrangler:
+
+```bash
+npx analytik migrate --print-sql sqlite > analytik-schema.sql
+npx wrangler d1 execute analytik --remote --file analytik-schema.sql
+```
+
+`--print-sql sqlite|postgres` writes every migration plus the rows that mark them as applied, so `createAnalytik()` does not run them a second time. `npx analytik migrate --d1 <name>` does not touch anything: it prints these same two commands for that database name and exits with an error code. By default `createAnalytik()` also applies pending migrations on the first request (`autoMigrate`), so on D1 you can skip this step.
+
+### seed
+
+Fills a database with generated demo data, for trying the dashboard. Use it on a local or throwaway database.
+
+```bash
+npx analytik seed --db ./demo.db --days 30 --seed 1
+```
+
+`--db` is required. `--days` (default 30) is how many days of data to generate and `--seed` (default 1) makes the data repeatable. The command prints the site id and API key it created.
+
+### doctor
+
+Runs a self-check and prints the result of each check. It exits with a non-zero code when one fails. Run it after a deploy or when events do not appear.
+
+```bash
+npx analytik doctor --db ./data/analytik.db --url https://analytics.example.com
+```
+
+| Option               | Check                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| (always)             | The runtime: Bun, or Node 22.19 or newer.                                                                     |
+| `--db <url-or-path>` | The database answers a query and the schema is at the latest migration.                                       |
+| `--url <deployment>` | `GET <deployment>/api/health` answers with `ok: true`. A URL that already ends in `/health` is used as it is. |

@@ -1,0 +1,42 @@
+/* Injected into every live preview frame, after Blume's defaults. The class names match the demo
+   app's stylesheet, since the previews run its example files unchanged. */
+body {
+  padding: 16px;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  color: #171717;
+  background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #f5f5f5;
+    background: #0a0a0a;
+  }
+}
+
+.dark body,
+[data-theme='dark'] body {
+  color: #f5f5f5;
+  background: #0a0a0a;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.actions,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}

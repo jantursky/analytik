@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # Vitest's V8 coverage needs Node; `bun run` hands the tool binaries to it.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - name: Code samples in the README and docs are in sync
+        run: node scripts/samples.js --check
+      - name: Format
+        run: bun run format:check
+      - name: Lint
+        run: bun run lint
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Test with coverage
+        run: bun run test:coverage
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v7
+        with:
+          files: packages/analytik/coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+      - name: Install browsers for the browser and e2e tests
+        run: bunx playwright install --with-deps chromium firefox webkit
+      - name: Browser tests (writing and reading in real engines)
+        run: bun run test:browser
+      - name: Build (library, size-limit budgets, demo)
+        run: bun run build
+      - name: Check the package (publint, type resolution)
+        run: bun run lint:package
+      - name: Install the packed tarball and run it
+        run: bun run test:pack
+      - name: End-to-end tests of the demo app
+        run: bun run test:e2e
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces
+          path: apps/example/test-results/
+          retention-days: 7
+      - name: Build docs
+        run: bun run build:docs
+
+  # The server runs against a real Postgres, so the storage tests run there too. Without
+  # ANALYTIK_TEST_POSTGRES_URL those tests are skipped locally.
+  server-postgres:
+    name: Server tests on Postgres
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: analytik
+          POSTGRES_PASSWORD: analytik
+          POSTGRES_DB: analytik_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U analytik -d analytik_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ANALYTIK_TEST_POSTGRES_URL: postgres://analytik:analytik@localhost:5432/analytik_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - name: Server tests against Postgres
+        run: bun run test
+
+  # The server is a Hono app that also runs on Bun, so its tests run under the Bun runtime too.
+  bun-runtime:
+    name: Tests on Bun runtime
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: Unit tests under Bun
+        run: bun --bun run test
+
+  # The library declares react ^19.0.0 and tests against the oldest 19.x release and the
+  # newest one on npm, not only the version in bun.lock. Node 22 and 24 both run each pair.
+  react-versions:
+    name: React ${{ matrix.react }} on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['19.0.0', 'latest']
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install with react@${{ matrix.react }}
+        run: |
+          npm pkg set overrides.react=${{ matrix.react }}
+          npm pkg set overrides.react-dom=${{ matrix.react }}
+          bun install
+      - name: Check the installed version
+        working-directory: packages/analytik
+        env:
+          EXPECTED: ${{ matrix.react }}
+        run: |
+          actual=$(node -p "require('react/package.json').version")
+          actual_dom=$(node -p "require('react-dom/package.json').version")
+          echo "react $actual, react-dom $actual_dom"
+          if [ "$actual" != "$actual_dom" ]; then exit 1; fi
+          if [ "$EXPECTED" != latest ] && [ "$actual" != "$EXPECTED" ]; then exit 1; fi
+      - name: Typecheck the library
+        run: bun run --filter analytik typecheck
+      - name: Unit tests
+        run: bun run test

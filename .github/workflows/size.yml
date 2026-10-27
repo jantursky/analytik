@@ -1,0 +1,64 @@
+name: Size
+
+# Comments on each pull request with how the library's size changes against main, for the
+# package's own code and for the tracker bundle (budgets in packages/analytik/.size-limit.json).
+# size-limit-action installs with npm, which can't resolve bun's workspace: protocol,
+# so both builds are measured here with bun.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Measure the pull request
+        run: |
+          bun install --frozen-lockfile
+          cd packages/analytik
+          bunx vite build
+          bunx size-limit --json > "$RUNNER_TEMP/head.json" || true
+      - name: Measure main
+        run: |
+          git checkout --force "origin/$GITHUB_BASE_REF"
+          bun install --frozen-lockfile
+          cd packages/analytik
+          bunx vite build && bunx size-limit --json > "$RUNNER_TEMP/base.json" || true
+          [ -s "$RUNNER_TEMP/base.json" ] || echo '[]' > "$RUNNER_TEMP/base.json"
+      - name: Write the report
+        id: report
+        run: |
+          node - "$RUNNER_TEMP/base.json" "$RUNNER_TEMP/head.json" > "$RUNNER_TEMP/size.md" <<'EOF'
+          const fs = require('node:fs')
+          const [base, head] = process.argv.slice(2).map((file) => JSON.parse(fs.readFileSync(file, 'utf8')))
+          if (head.length === 0) throw new Error('size-limit produced no results for the pull request')
+          const kb = (bytes) => `${(bytes / 1000).toFixed(2)} kB`
+          const rows = head.map(({ name, size, sizeLimit, passed }) => {
+            const before = base.find((entry) => entry.name === name)?.size
+            const diff = before === undefined ? 'new' : `${size >= before ? '+' : ''}${(((size - before) / before) * 100).toFixed(2)}%`
+            return `| ${passed ? '' : 'over budget: '}${name} | ${kb(size)} | ${diff} | ${kb(sizeLimit)} |`
+          })
+          console.log(['## size-limit report', '', '| Path | Size | Change | Limit |', '| --- | --- | --- | --- |', ...rows].join('\n'))
+          EOF
+          cat "$RUNNER_TEMP/size.md" >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'over budget' "$RUNNER_TEMP/size.md"; then echo "Over the size budget" >&2; exit 1; fi
+      # Pull requests from forks and from Dependabot get a read-only token, so they only
+      # get the job summary above.
+      - name: Comment on the pull request
+        if: ${{ !cancelled() && steps.report.conclusion != 'skipped' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: test -s "$RUNNER_TEMP/size.md" && gh pr comment "$PR" --edit-last --create-if-none --body-file "$RUNNER_TEMP/size.md"

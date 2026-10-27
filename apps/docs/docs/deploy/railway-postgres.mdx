@@ -1,0 +1,69 @@
+---
+title: Railway and Postgres
+description: Run analytik as a long-lived Bun service on Railway with a Railway Postgres database, a pre-deploy migration and a custom domain.
+---
+
+Railway runs analytik as a normal long-lived process, which is the simplest model: one connection pool, no cold starts. The database is a Railway Postgres service in the same project.
+
+## Project
+
+```bash
+mkdir analytik-server && cd analytik-server
+bun init -y
+bun add analytik hono postgres
+mkdir public && cp node_modules/analytik/dist/analytik.js public/analytik.js
+```
+
+```ts server.ts
+import { createAnalytik } from 'analytik/server'
+import { postgresStorage } from 'analytik/storage/postgres'
+import { serveStatic } from 'hono/bun'
+import { Hono } from 'hono'
+import postgres from 'postgres'
+
+const analytik = createAnalytik({
+  storage: postgresStorage(postgres(process.env.DATABASE_URL!)),
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+  // Railway's proxy passes the visitor's address in X-Forwarded-For.
+  trustProxy: 'forwarded',
+})
+
+const app = new Hono()
+app.route('/', analytik.app)
+app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+
+export default {
+  port: Number(process.env.PORT ?? 3000),
+  fetch: app.fetch,
+}
+```
+
+Railway sets `PORT`. Bind to it and nothing else.
+
+## Services
+
+1. Create a project and add a **PostgreSQL** database.
+2. Add a service from your repository (or `railway up`).
+3. In the service's variables, add `DATABASE_URL` as a reference to the database's `DATABASE_URL` so Railway keeps it in sync, and set `ADMIN_PASSWORD` (not empty) and `SESSION_SECRET` (at least 32 random characters, for example from `openssl rand -hex 32`). The server throws at startup if either is missing or too short.
+4. Set the start command to `bun server.ts`.
+5. Set a **pre-deploy command** so the schema is current before the new version takes traffic:
+
+```bash
+bunx analytik migrate --db "$DATABASE_URL"
+```
+
+Use the database's private networking address (`*.railway.internal`) for `DATABASE_URL`. It avoids egress charges and keeps the database off the public internet. The pre-deploy command runs inside Railway's network, so the private address works there too.
+
+## Domain
+
+In the service's settings, generate a Railway domain or add a custom one and create the CNAME record Railway shows. Use the resulting hostname in the script tag:
+
+```html
+<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID"></script>
+```
+
+Railway puts a proxy in front of the service and passes the visitor's address in `X-Forwarded-For`. analytik ignores that header unless you set `trustProxy: 'forwarded'`, as in the code above, because otherwise a visitor could send it themselves. That mode reads the rightmost public address, so it is only safe behind a proxy that sets or appends the header. Check that this holds for your Railway setup. Without a client IP, strict mode tells visitors apart by user agent only. Railway does not add location headers, so countries and cities are empty unless you supply your own lookup with the `geo` option or put Cloudflare in front of the domain.
+
+## Costs and limits
+
+Railway bills for resources used, and a small analytics server with a small database is usually a few dollars a month. The database grows with traffic, so set a [retention](/deploy/backups-retention-and-upgrades#retention) period. Check Railway's current pricing before you rely on any figure.

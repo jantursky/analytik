@@ -1,0 +1,73 @@
+---
+title: Funnels and goals
+description: Record goals from the page, declaratively or from your server, then define funnels over pages and goals and read the drop-off.
+---
+
+A goal is any named event you care about: a sign-up, a click on a pricing button, a finished onboarding. Anything the tracker records with a name can be used in a funnel.
+
+## Record goals
+
+From the page:
+
+```js
+analytik.track('signup', { plan: 'pro' })
+```
+
+Or declaratively, with no JavaScript:
+
+```html
+<button data-analytik-event="signup" data-analytik-plan="pro">Start free</button>
+```
+
+From your server, when the action happens there (a webhook, a background job), with the site's API key:
+
+```bash
+curl -X POST https://analytics.example.com/api/v1/goals \
+  -H "Authorization: Bearer $ANALYTIK_SITE_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"trial_started","props":{"plan":"pro"},"visitorId":"VISITOR_ID"}'
+```
+
+`visitorId` or `email` ties the goal to a visitor; email matching follows the rules of the site's [privacy mode](/concepts/privacy-modes). Property values are strings, numbers, booleans or `null`.
+
+The Events view lists goals with counts, and `GET /api/sites/SITE_ID/breakdown?dimension=goal` gives the same as data. Break down a goal by `source` or `channel` to see which source converts.
+
+## Define a funnel
+
+A funnel is an ordered list of steps. Each step is a page path or a goal name. A page path may end in `*` to match everything below it.
+
+```bash
+curl -b cookies.txt -X POST https://analytics.example.com/api/sites/SITE_ID/funnels \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Pricing to signup",
+    "steps": [
+      { "type": "page", "match": "/pricing" },
+      { "type": "page", "match": "/signup" },
+      { "type": "goal", "match": "signup" }
+    ]
+  }'
+```
+
+You can also build funnels in the dashboard's Funnels view.
+
+## Read the result
+
+`GET /api/sites/SITE_ID/funnels/FUNNEL_ID` returns a `FunnelResult`: the funnel and, for each step, the number of visitors who reached it and the drop-off from the previous step (`null` for the first).
+
+```ts
+import type { FunnelResult } from 'analytik'
+
+const res = await fetch('/api/sites/SITE_ID/funnels/FUNNEL_ID?from=2026-10-01&to=2026-10-31', {
+  credentials: 'include',
+})
+const result: FunnelResult = await res.json()
+
+for (const step of result.steps) {
+  console.log(step.match, step.visitors, step.dropOff)
+}
+```
+
+## Notes on accuracy
+
+In `strict` mode a visitor who changes network mid-funnel is counted as two visitors, and one of them drops out. Expect funnel completion to read a little lower than in `persistent` mode.

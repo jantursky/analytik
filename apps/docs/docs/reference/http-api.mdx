@@ -1,0 +1,126 @@
+---
+title: HTTP API
+description: Every route the server exposes, with authentication, parameters, filters and status codes.
+---
+
+All paths are relative to `basePath` (default `/api`). Dates are ISO 8601, or Unix milliseconds on the `Query` objects used in code. Time zones are IANA names and default to the site's time zone. Intervals are `hour`, `day`, `week` or `month`.
+
+## Public routes
+
+CORS is open and `text/plain` bodies are accepted, so the browser sends events without a preflight request.
+
+| Method and path                    | Auth                | Description                                                                                                    |
+| ---------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `POST /event`                      | none                | Tracker payload, see below. 202 on accept and on a filtered bot. 400, 403, 404 or 413 otherwise. 8 KB at most. |
+| `POST /attribution`                | none                | Returns `{ visitorId, sessionId }` computed on the server for this request. Rate limited per hash.             |
+| `POST /v1/payments`                | Bearer site API key | Body: `PaymentInput`. Idempotent on `(siteId, id)`. Answers `{ ok, duplicate, payment, attributed }`.          |
+| `POST /v1/goals`                   | Bearer site API key | Body: `name`, optional `props`, and `visitorId` or `email`.                                                    |
+| `POST /webhooks/:provider/:siteId` | signature           | `provider` is `stripe`, `dodo` or `lemonsqueezy`. Verified with the site's webhook secret.                     |
+| `GET /health`                      | none                | Health check.                                                                                                  |
+
+### Event body
+
+The body is a `TrackerPayload`, compact on purpose, to keep the request small:
+
+| Key   | Type                                                            | Meaning                                                                                                |
+| ----- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `w`   | string                                                          | Site id. Required.                                                                                     |
+| `t`   | `pageview`, `goal`, `outbound`, `ping`, `identify` or `revenue` | Event type. Required.                                                                                  |
+| `u`   | string                                                          | Page URL. Required.                                                                                    |
+| `r`   | string                                                          | Referrer.                                                                                              |
+| `vid` | string                                                          | Visitor id. Only needed in `persistent` mode.                                                          |
+| `sid` | string                                                          | Session id. Only needed in `persistent` mode.                                                          |
+| `sw`  | number                                                          | Screen width.                                                                                          |
+| `n`   | string                                                          | Goal or event name.                                                                                    |
+| `p`   | object                                                          | Properties: strings, numbers, booleans or null.                                                        |
+| `d`   | number                                                          | Engaged time in milliseconds.                                                                          |
+| `a`   | number                                                          | Revenue amount, major units (19.99).                                                                   |
+| `c`   | string                                                          | Currency.                                                                                              |
+| `o`   | string                                                          | Order id. `revenue` events are de-duplicated by it.                                                    |
+| `m`   | `strict`, `enriched` or `persistent`                            | Privacy mode of the tracker. Without it the event is treated as `strict`, and `vid`/`sid` are ignored. |
+
+```bash
+curl -X POST https://analytics.example.com/api/event \
+  -H 'Content-Type: text/plain' \
+  -d '{"w":"SITE_ID","t":"goal","u":"https://example.com/pricing","n":"signup","p":{"plan":"pro"}}'
+```
+
+## Admin routes
+
+Admin routes need a session cookie from `POST /auth/login`, or `Authorization: Bearer <admin token>`. Without one they answer 401.
+
+### Auth
+
+| Method and path     | Description                                            |
+| ------------------- | ------------------------------------------------------ |
+| `POST /auth/login`  | Body `{ "password": "..." }`. Sets the session cookie. |
+| `POST /auth/logout` | Clears it.                                             |
+| `GET /auth/me`      | Whether the current request is authenticated.          |
+
+### Sites
+
+| Method and path              | Description                                                                                                                                                                                                                                                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /sites`                 | List sites.                                                                                                                                                                                                                                                                                      |
+| `POST /sites`                | Create a site. Only `domain` is required (a real domain such as `example.com`; `localhost` is rejected). Other fields: `name`, `timezone`, `currency`, `privacyMode`, `retentionDays`, `allowLocalhost`, `ignoredIps`, `shareToken`. Answers 201 with `{ site, apiKey }`; the key is shown once. |
+| `GET /sites/:id`             | One site. Secrets are never returned: `webhooks` says which providers have a secret, and `shareToken` is the current share token or `null`.                                                                                                                                                      |
+| `PATCH /sites/:id`           | Change settings, including webhook secrets (`webhookSecrets: { stripe: "..." }`, `null` removes one) and the share link (`shareToken: true` creates a token, `null` turns sharing off).                                                                                                          |
+| `DELETE /sites/:id`          | Delete the site and its data.                                                                                                                                                                                                                                                                    |
+| `POST /sites/:id/rotate-key` | Issue a new site API key. The old one stops working.                                                                                                                                                                                                                                             |
+
+### Statistics
+
+All take `from`, `to`, `interval`, `tz` and filters. `GET /sites/:id/realtime` takes none of them.
+
+| Method and path                       | Returns                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `GET /sites/:id/overview`             | `Overview`. Revenue counts only the site's currency; the rest is in `otherCurrencies`. |
+| `GET /sites/:id/timeseries`           | `TimeseriesPoint[]`: visitors, sessions, pageviews, revenue per bucket                 |
+| `GET /sites/:id/breakdown?dimension=` | `BreakdownRow[]`                                                                       |
+| `GET /sites/:id/realtime`             | `Realtime`: visitors in the last 5 minutes, recent events and locations                |
+| `GET /sites/:id/sessions`             | `Page<SessionSummary>`, cursor paginated                                               |
+| `GET /sites/:id/sessions/:sid`        | One session with its visitor profile, events and payments (admin only)                 |
+| `GET /sites/:id/events?name=&type=`   | Paged events                                                                           |
+| `GET /sites/:id/payments`             | `Page<Payment>`, cursor paginated (admin only)                                         |
+
+Dimensions for `breakdown`: `channel`, `source`, `referrer`, `campaign`, `medium`, `term`, `content`, `ref`, `page`, `entry`, `exit`, `country`, `region`, `city`, `browser`, `os`, `device`, `event`, `outbound`, `goal`.
+
+### Filters
+
+Filters use the dimension names as query keys: `country=DE&channel=Organic%20Search&page=/pricing`. Repeat a key to match any of several values.
+
+```bash
+curl -b cookies.txt \
+  "https://analytics.example.com/api/sites/SITE_ID/breakdown?dimension=source&from=2026-10-01&to=2026-11-01&country=DE"
+```
+
+### Share links
+
+Turn sharing on with `PATCH /sites/:id` and `{ "shareToken": true }`, and off with `{ "shareToken": null }`. The new token is in the `shareToken` field of the response. The dashboard has no screen for this; it is an API call.
+
+A request that carries the token, as `?share=TOKEN` or an `x-analytik-share: TOKEN` header, can read these `GET` routes without logging in: `overview`, `timeseries`, `breakdown`, `realtime`, `sessions`, `events`, and the funnel list and funnel results. That is the aggregate numbers and the session list, including visitor ids, countries, cities, browsers, pages, referrers, and event names and properties. Payments, single-session details, the site settings, export and every write stay admin only. Treat the token like a password: anyone who has the link sees all of the above, and turning sharing off and on again issues a new token.
+
+### Funnels
+
+| Method and path                  | Description                                       |
+| -------------------------------- | ------------------------------------------------- |
+| `GET /sites/:id/funnels`         | List funnels.                                     |
+| `POST /sites/:id/funnels`        | Create one: `{ name, steps: [{ type, match }] }`. |
+| `DELETE /sites/:id/funnels/:fid` | Delete one.                                       |
+| `GET /sites/:id/funnels/:fid`    | `FunnelResult`.                                   |
+
+### Maintenance
+
+| Method and path                  | Description                                                                                                                                           |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /sites/:id/rematch`        | Retry attribution for payments without a match.                                                                                                       |
+| `GET /sites/:id/export?format=`  | `json`: everything for the site in one file. `csv`: one table at a time, chosen with `table=visitors\|sessions\|events\|payments` (default `events`). |
+| `DELETE /sites/:id/data?before=` | Delete older data. `before` is an ISO 8601 date or Unix milliseconds. Answers with how many `events`, `sessions` and `visitors` were removed.         |
+
+The purge deletes events, sessions, return-page claims and visitors left without sessions. Payments are kept so revenue numbers stay correct, but their email, name, customer id, visitor id and session id are cleared. See [Retention](/deploy/backups-retention-and-upgrades#retention).
+
+### Payments
+
+`POST /v1/payments` and `analytik.recordPayment()` take a `PaymentInput`. Amounts are minor units. A refund has `kind: "refund"` and the positive amount. For a refund without an id of its own, send `refundedTotal`, the total refunded for the order so far, and the server records only the difference; a retried request adds nothing.
+
+Revenue events from the tracker are stored as payments with the provider `client` and the id `client:<orderId>`. When a verified payment from a provider webhook or your server arrives for the same order, it replaces the client record instead of counting twice.

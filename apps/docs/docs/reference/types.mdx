@@ -1,0 +1,245 @@
+---
+title: Types
+description: The TypeScript types exported from the package root, which are shared by the server, tracker, client and dashboard.
+---
+
+The root export, `analytik`, contains types only. There is no runtime code in it, so importing from it adds nothing to a bundle.
+
+```ts
+import type { Overview, PaymentInput, PrivacyMode } from 'analytik'
+```
+
+## Unions
+
+```ts
+type PrivacyMode = 'strict' | 'enriched' | 'persistent'
+type Interval = 'hour' | 'day' | 'week' | 'month'
+type EventType = 'pageview' | 'goal' | 'outbound' | 'ping' | 'identify' | 'revenue'
+type PaymentKind = 'payment' | 'refund'
+type PaymentMatch = 'metadata' | 'return_page' | 'customer' | 'email' | 'timing'
+type PaymentProvider = 'stripe' | 'dodo' | 'lemonsqueezy'
+
+type Dimension =
+  | 'channel'
+  | 'source'
+  | 'referrer'
+  | 'campaign'
+  | 'medium'
+  | 'term'
+  | 'content'
+  | 'ref'
+  | 'page'
+  | 'entry'
+  | 'exit'
+  | 'country'
+  | 'region'
+  | 'city'
+  | 'browser'
+  | 'os'
+  | 'device'
+  | 'event'
+  | 'outbound'
+  | 'goal'
+
+type Props = Record<string, string | number | boolean | null>
+```
+
+## Site
+
+```ts
+interface Site {
+  id: string
+  name: string
+  domain: string
+  timezone: string
+  currency: string
+  privacyMode: PrivacyMode
+  retentionDays: number | null
+  allowLocalhost: boolean
+  ignoredIps: string[]
+  createdAt: number // Unix milliseconds
+  /** Which providers have a webhook secret configured. Secrets are never returned. */
+  webhooks?: Record<PaymentProvider, boolean>
+  /** Token for the read-only share link, or null when sharing is off. */
+  shareToken?: string | null
+}
+```
+
+## Events and payments
+
+```ts
+/** What the tracker posts to `POST {basePath}/event`. */
+interface TrackerPayload {
+  w: string // site id
+  t: EventType
+  u: string // url
+  r?: string // referrer
+  vid?: string
+  sid?: string
+  sw?: number // screen width
+  n?: string // name
+  p?: Props
+  d?: number // engaged milliseconds
+  a?: number // amount
+  c?: string // currency
+  o?: string // order id
+  m?: PrivacyMode
+}
+
+interface PaymentInput {
+  id: string
+  /** Minor units (cents). */
+  amount: number
+  currency: string
+  kind?: PaymentKind
+  email?: string
+  name?: string
+  customerId?: string
+  subscriptionId?: string
+  orderId?: string
+  visitorId?: string
+  sessionId?: string
+  renewal?: boolean
+  /** Unix milliseconds. Defaults to now. */
+  ts?: number
+  /**
+   * Refunds without their own id: the total refunded for the order so far.
+   * Only the part not recorded yet is stored.
+   */
+  refundedTotal?: number
+}
+
+interface Payment {
+  id: string
+  amount: number
+  currency: string
+  siteId: string
+  provider: string
+  kind: PaymentKind
+  ts: number
+  visitorId: string | null
+  sessionId: string | null
+  customerId: string | null
+  email: string | null
+  name: string | null
+  renewal: boolean
+  matchedBy: PaymentMatch | null
+  subscriptionId: string | null
+  orderId: string | null
+}
+
+interface AttributionIds {
+  analytik_visitor_id: string
+  analytik_session_id: string
+}
+```
+
+## Queries and results
+
+`Overview.revenue`, `orders` and the other revenue figures count only payments in the site's own `currency`. Payments in any other currency are listed in `otherCurrencies`, not converted.
+
+```ts
+interface Filters {
+  [dimension: string]: string | undefined
+}
+
+interface Query {
+  from: number // Unix ms, inclusive
+  to: number // Unix ms, exclusive
+  interval?: Interval
+  tz?: string
+  filters?: Filters
+}
+
+interface Delta {
+  value: number
+  previous: number
+  /** Relative change, `null` when `previous` is 0. */
+  change: number | null
+}
+
+interface Overview {
+  visitors: Delta
+  sessions: Delta
+  pageviews: Delta
+  bounceRate: Delta
+  avgDurationMs: Delta
+  revenue: Delta
+  orders: Delta
+  conversionRate: Delta
+  revenuePerVisitor: Delta
+  currency: string
+  online: number
+  /** Payments in other currencies than the site's, left out of the revenue numbers above. */
+  otherCurrencies: { currency: string; amount: number; orders: number }[]
+}
+
+interface TimeseriesPoint {
+  ts: number // bucket start, Unix ms
+  visitors: number
+  sessions: number
+  pageviews: number
+  revenue: number
+}
+
+interface BreakdownRow {
+  key: string
+  visitors: number
+  sessions: number
+  pageviews: number
+  revenue: number
+  orders: number
+  conversionRate: number
+}
+
+interface Realtime {
+  online: number
+  recent: { ts: number; type: EventType; name: string | null; path: string | null; country: string | null }[]
+  locations: { lat: number; lon: number; country: string | null; city: string | null }[]
+}
+
+interface SessionSummary {
+  id: string
+  visitorId: string
+  startedAt: number
+  durationMs: number
+  pageviews: number
+  goals: number
+  entryPage: string | null
+  exitPage: string | null
+  source: string
+  channel: string
+  country: string | null
+  city: string | null
+  browser: string | null
+  os: string | null
+  device: string | null
+  revenue: number
+}
+
+interface Page<T> {
+  items: T[]
+  nextCursor: string | null
+}
+```
+
+## Funnels
+
+```ts
+interface Funnel {
+  id: string
+  name: string
+  steps: FunnelStep[]
+}
+
+interface FunnelStep {
+  type: 'page' | 'goal'
+  /** Page path (supports a trailing `*`) or goal name. */
+  match: string
+}
+
+interface FunnelResult {
+  funnel: Funnel
+  steps: { match: string; visitors: number; dropOff: number | null }[]
+}
+```

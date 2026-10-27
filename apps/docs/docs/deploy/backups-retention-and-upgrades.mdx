@@ -1,0 +1,82 @@
+---
+title: Backups, retention and upgrades
+description: Back up D1, Postgres and SQLite, export data as JSON or CSV, purge old data, and upgrade analytik safely.
+---
+
+## Backups
+
+Analytics data is easy to lose and impossible to recreate, so back it up like any other database.
+
+### D1
+
+```bash
+npx wrangler d1 export analytik --remote --output backup-$(date +%F).sql
+```
+
+A D1 export blocks queries on that database while it runs, so do it at a quiet hour. D1 also has Time Travel, which restores the database to any minute within a retention window that depends on your plan; see Cloudflare's documentation for the current window.
+
+### Postgres
+
+```bash
+pg_dump --format=custom "$DATABASE_URL" --file "analytik-$(date +%F).dump"
+```
+
+Supabase and Railway also take their own backups on paid plans. Check what yours includes.
+
+### SQLite
+
+Do not copy the file while the server is writing. Use SQLite's online backup, which is safe with the server running:
+
+```bash
+sqlite3 /data/analytik.db ".backup '/backups/analytik-$(date +%F).db'"
+```
+
+For continuous replication to object storage, run Litestream next to the process.
+
+### Portable export
+
+`GET /api/sites/SITE_ID/export?format=json` (or `csv`) returns all the data for one site, as admin. It is the format to use for moving between storage backends or leaving analytik, and it is not a replacement for database backups.
+
+```bash
+curl -b cookies.txt "https://analytics.example.com/api/sites/SITE_ID/export?format=json" -o site.json
+```
+
+## Retention
+
+Data is kept until it is deleted. Each site has a `retentionDays` setting (a whole number of days, or empty to keep everything). When it is set, analytik purges older data by itself: the ingest path checks it at most once an hour per server instance, so there is no cron job to set up. You can also purge by hand, for one site and any date, with the purge route:
+
+```bash
+curl -b cookies.txt -X DELETE \
+  "https://analytics.example.com/api/sites/SITE_ID/data?before=2025-01-01"
+```
+
+`before` is an ISO 8601 date or Unix milliseconds. The purge, automatic or manual, removes:
+
+- events and sessions older than the date;
+- payment claims (the payment ids seen on return pages) older than the date;
+- visitors that are left without any session.
+
+Payments are not deleted, because the revenue numbers depend on them. Payments older than the date keep their amount, currency, provider and dates, but their email, name, customer id, visitor id and session id are cleared. Such a payment still counts in revenue and no longer points at a person or a source.
+
+Deleting data you no longer need is also the best way to stay inside the storage limit of a free plan.
+
+Strict-mode salts are handled separately and automatically, whatever retention you set. The first request that arrives in a new month creates that month's salt and deletes the older ones, so a salt is removed from the live database once the next month starts to see traffic.
+
+### Backups and retention
+
+Retention and salt deletion apply to the live database only. A backup, a Time Travel restore point or a Postgres point-in-time recovery window still holds the data and the salts as they were when it was taken. If you promise visitors that old data is gone, keep backups only as long as you keep the data itself: set a retention period for your backups that matches `retentionDays`, and delete old dumps.
+
+## Upgrades
+
+analytik follows semantic versioning, and the [changelog](/changelog) lists every change. Migrations are ordered SQL files applied once each and recorded in `schema_migrations`.
+
+1. Read the changelog entries between your version and the new one.
+2. Take a backup.
+3. Install the new version: `bun add analytik@latest`.
+4. Run the migrations before the new code starts serving traffic: `npx analytik migrate --db "$DATABASE_URL"` or `npx analytik migrate --db ./data/analytik.db`. `storage.migrate()` does the same from code and is safe to call repeatedly. D1 cannot be reached from the command line; there the Worker applies pending migrations on its first request (`autoMigrate`, on by default). To create the schema of a new D1 database yourself, use `npx analytik migrate --print-sql sqlite > analytik-schema.sql` and `npx wrangler d1 execute <db> --remote --file analytik-schema.sql`, see the [CLI reference](/reference/cli#migrate).
+5. Copy the new `analytik.js` to where you serve it, if the changelog notes a tracker change.
+6. Deploy.
+
+Plan on migrations moving forward only. To go back to an older version, restore the backup you took in step 2.
+
+Check an installation any time with `npx analytik doctor`; see the [CLI reference](/reference/cli).

@@ -1,0 +1,58 @@
+---
+title: Introduction
+description: 'analytik is self-hosted web analytics with a cookieless default mode and revenue attribution, for Cloudflare Workers, Vercel, Bun and Node.'
+sidebar:
+  order: 1
+---
+
+analytik is web analytics you run yourself. A small script on your pages sends pageviews, goals and revenue to a server you deploy, the server stores them in a database you own, and an embeddable React dashboard shows where visitors came from and which source made money.
+
+The current version is {{version}}. See the [changelog](/changelog) for what each release changed.
+
+## What it is
+
+- **One package.** `analytik` contains the server (a [Hono](https://hono.dev) app), storage drivers, the tracker script, a browser client, React bindings and the dashboard. There is nothing else to install except `hono` and, for Postgres, a driver.
+- **Runs where your site runs.** The same code runs on Cloudflare Workers with D1, on Vercel with Supabase, on Railway with Postgres, and on Bun or Node with SQLite.
+- **Cookieless by default.** In `strict` mode the tracker stores no identifier on the visitor's device and the server derives a pseudonymous visitor id that is tied to a salt which changes every month.
+- **Revenue attribution.** Payments from Stripe, Dodo Payments, Lemon Squeezy or your own code are credited to the visitor's last non-direct session.
+
+It is not a hosted service and does not try to be one: no multi-tenant accounts, no Google sign-in, no plan billing. You deploy it, you hold the data.
+
+## Why another one
+
+Self-hosted analytics tools tend to either need a long-running server and a database you operate (Plausible, Umami), or they are a single deployment target. analytik is meant for people who already have a small site stack and want analytics as a library: a Worker file of about a dozen lines, a database that is already there, and a dashboard they can embed in their own admin area. Revenue attribution is part of the data model, not a plugin.
+
+## Privacy modes
+
+Every site picks one mode. `strict` is the default.
+
+| Mode         | Device storage                                                       | Visitor id                                             | Consent banner                                             |
+| ------------ | -------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| `strict`     | None written by tracking                                             | Server: `HMAC(monthSalt, siteId + ip + ua)`, truncated | Designed to need none, under conditions. Not legal advice. |
+| `enriched`   | `sessionStorage` id, only after `consent()`                          | Server hash plus a tab id                              | After consent                                              |
+| `persistent` | First-party cookies `analytik_vid` (1 year), `analytik_sid` (30 min) | Random uuid                                            | Treat as required in the EU                                |
+
+`strict` is designed so that analytics can run without a consent banner when the site stays in `strict` mode, uses no `identify()` and no persistent storage. Whether that is enough for you is a question for your regulator or lawyer. `strict` also has real limits, such as counting a visitor twice when they change network. [Privacy modes](/concepts/privacy-modes) states the conditions and the limits plainly.
+
+## Alternatives
+
+Two established tools sit nearby. [Plausible](https://plausible.io) is a polished, hosted-first analytics product that can be self-hosted, built on ClickHouse. [Umami](https://umami.is) is a self-hostable Node app on Postgres or MySQL with a broad feature set. If you want a standalone product with its own UI and hosting, either may fit better than a library.
+
+<CardGroup cols={2}>
+  <Card title="Getting started" href="/getting-started" icon="rocket">
+    Run the server locally, add the script, see your first pageview.
+  </Card>
+  <Card title="Privacy modes" href="/concepts/privacy-modes" icon="shield">
+    What each mode stores, and what strict mode cannot do.
+  </Card>
+  <Card title="Deploy on Cloudflare" href="/deploy/cloudflare-workers-d1" icon="cloud">
+    Workers, D1, secrets, a custom domain and the free plan.
+  </Card>
+  <Card
+    title="Switching from another tool"
+    href="/faq#can-i-import-data-from-another-analytics-tool"
+    icon="arrow-right-left"
+  >
+    Run both side by side for a week, then remove the old snippet.
+  </Card>
+</CardGroup>

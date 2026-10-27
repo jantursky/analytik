@@ -1,0 +1,188 @@
+{
+  "name": "analytik",
+  "version": "1.0.0",
+  "description": "Privacy-first, cookieless web analytics you host yourself: a Hono server for Cloudflare Workers, Vercel, Bun and Node, D1, Postgres and SQLite storage, a tiny tracker, React bindings and an embeddable dashboard.",
+  "license": "MIT",
+  "author": {
+    "name": "Jan Tursky",
+    "email": "jan.tursky@gmail.com",
+    "url": "https://jantursky.com"
+  },
+  "homepage": "https://analytik-docs.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jantursky/analytik.git",
+    "directory": "packages/analytik"
+  },
+  "bugs": {
+    "url": "https://github.com/jantursky/analytik/issues"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./storage/d1": {
+      "types": "./dist/storage/d1.d.ts",
+      "default": "./dist/storage/d1.js"
+    },
+    "./storage/postgres": {
+      "types": "./dist/storage/postgres.d.ts",
+      "default": "./dist/storage/postgres.js"
+    },
+    "./storage/sqlite": {
+      "types": "./dist/storage/sqlite.d.ts",
+      "default": "./dist/storage/sqlite.js"
+    },
+    "./storage/memory": {
+      "types": "./dist/storage/memory.d.ts",
+      "default": "./dist/storage/memory.js"
+    },
+    "./adapters/stripe": {
+      "types": "./dist/adapters/stripe.d.ts",
+      "default": "./dist/adapters/stripe.js"
+    },
+    "./adapters/dodo": {
+      "types": "./dist/adapters/dodo.d.ts",
+      "default": "./dist/adapters/dodo.js"
+    },
+    "./adapters/lemonsqueezy": {
+      "types": "./dist/adapters/lemonsqueezy.d.ts",
+      "default": "./dist/adapters/lemonsqueezy.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./dashboard": {
+      "types": "./dist/dashboard.d.ts",
+      "default": "./dist/dashboard.js"
+    },
+    "./dashboard/styles.css": "./dist/dashboard.css",
+    "./analytik.js": "./dist/analytik.js",
+    "./migrate": {
+      "types": "./dist/migrate.d.ts",
+      "default": "./dist/migrate.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "analytik": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "engines": {
+    "node": ">=22.19"
+  },
+  "keywords": [
+    "analytics",
+    "web-analytics",
+    "privacy",
+    "gdpr",
+    "cookieless",
+    "cloudflare-workers",
+    "d1",
+    "hono",
+    "postgres",
+    "supabase",
+    "react",
+    "self-hosted"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build && size-limit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:coverage": "vitest run --coverage",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./dashboard/styles.css",
+    "prepublishOnly": "bun run typecheck && bun run test && bun run test:browser && bun run build && bun run lint:package && bun run test:pack",
+    "test:pack": "node scripts/pack-test.js",
+    "size": "size-limit"
+  },
+  "peerDependencies": {
+    "@base-ui/react": "^1.9.0",
+    "hono": "^4.13.0",
+    "motion": "^14.6.0",
+    "pg": "^8.0.0",
+    "postgres": "^3.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.10.1"
+  },
+  "peerDependenciesMeta": {
+    "@base-ui/react": {
+      "optional": true
+    },
+    "hono": {
+      "optional": true
+    },
+    "motion": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "postgres": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "recharts": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@base-ui/react": "^1.9.0",
+    "@cloudflare/workers-types": "^5.20261026.1",
+    "@microsoft/api-extractor": "^7.59.4",
+    "@size-limit/esbuild": "^14",
+    "@size-limit/file": "^14",
+    "@types/node": "^26",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6",
+    "@vitest/browser-playwright": "5.0.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "happy-dom": "^21.0.4",
+    "hono": "^4.13.14",
+    "motion": "^14.6.0",
+    "pg": "^8.23.1",
+    "postgres": "^3.4.9",
+    "publint": "^0.3.25",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "recharts": "^3.10.1",
+    "size-limit": "^14",
+    "typescript": "~5.9.3",
+    "vite": "^8",
+    "vite-plugin-dts": "^5",
+    "vitest": "^5"
+  }
+}

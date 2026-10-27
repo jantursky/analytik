@@ -1,0 +1,111 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/banner.svg" alt="analytik: simple, private, fast web analytics" width="420">
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/analytik"><img alt="npm" src="https://img.shields.io/npm/v/analytik"></a>
+  <a href="https://github.com/jantursky/analytik/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/jantursky/analytik/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://codecov.io/gh/jantursky/analytik"><img alt="coverage" src="https://codecov.io/gh/jantursky/analytik/graph/badge.svg"></a>
+  <img alt="types" src="https://img.shields.io/npm/types/analytik">
+  <a href="LICENSE"><img alt="license" src="https://img.shields.io/npm/l/analytik"></a>
+</p>
+
+<p align="center">
+  <a href="https://analytik-docs.vercel.app">Docs</a> ·
+  <a href="https://analytik.vercel.app">Demo</a> ·
+  <a href="https://www.npmjs.com/package/analytik">npm</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+# analytik
+
+Web analytics you host yourself. The default `strict` mode is designed to avoid needing a cookie banner (see the [privacy page](https://analytik-docs.vercel.app/concepts/privacy-modes) for the conditions). A Hono server for Cloudflare Workers, Vercel, Railway, Bun or Node, storage on D1, Postgres (Supabase) or SQLite, a 4 KB tracker, React bindings and a dashboard you can embed.
+
+<a href="https://analytik.vercel.app/#dashboard">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/dashboard-dark.png">
+    <img alt="The analytik dashboard: visitors, revenue and a breakdown by source, page and device" src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/dashboard-light.png">
+  </picture>
+</a>
+
+## What you get
+
+- **Strict mode by default.** The tracker stores no identifier on the visitor's device and no IP address is kept. The visitor id is a pseudonymous hash of IP, user agent and site, salted with a random value that is removed from the live database once the next month starts. Do Not Track visitors are still counted, in strict mode. Strict mode is designed to avoid needing consent, which is not legal advice.
+- **Two more modes when you need them.** `enriched` adds a per-tab id after the visitor consents. `persistent` uses first-party cookies like most analytics tools do, and should be treated as needing consent in the EU.
+- **Revenue.** A payments API with refunds, optional Stripe, Dodo and Lemon Squeezy webhook adapters, and attribution to the visit that brought the buyer.
+- **Goals, funnels, campaigns, realtime**, JSON and CSV export, retention, share links (read-only, set through the API).
+- **One server, three databases.** It runs on D1, Postgres and SQLite, and the tests run every case against each of them.
+
+## Install
+
+```sh
+bun add analytik hono
+```
+
+## A server in a dozen lines
+
+```ts sample
+import { createAnalytik } from 'analytik/server'
+import { d1Storage } from 'analytik/storage/d1'
+
+interface Env {
+  DB: Parameters<typeof d1Storage>[0]
+  ADMIN_PASSWORD: string
+  SESSION_SECRET: string
+}
+
+export default {
+  fetch(request: Request, env: Env) {
+    const { app } = createAnalytik({
+      storage: d1Storage(env.DB),
+      admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+    })
+    return app.fetch(request, env)
+  },
+}
+```
+
+Then add the tracker to your site:
+
+```html
+<script defer src="https://analytics.example.com/analytik.js" data-site="my-site" data-mode="strict"></script>
+```
+
+Track an event or a sale from your own code:
+
+```ts sample
+import { createClient } from 'analytik/client'
+
+const analytik = createClient({ site: 'my-site', api: 'https://analytics.example.com/api' })
+
+analytik.track('signup', { plan: 'pro' })
+analytik.revenue('purchase', 49.9, { currency: 'EUR', orderId: '1042' })
+```
+
+## How it works
+
+1. The tracker (`src/tracker`) sends pageviews, engaged time, outbound clicks and your events to `POST /api/event`, using a `text/plain` beacon so no preflight is needed.
+2. The server (`src/server`) checks the origin against the site's domain, drops bots, and computes the visitor id with the monthly salt.
+3. Sessions, events and payments land in the storage adapter you chose (`src/storage`).
+4. Payments arrive through `POST /api/v1/payments` or a provider webhook (`src/adapters`) and are matched to the visit that led to them.
+5. The dashboard (`src/dashboard`) reads the admin API. Embed `<Dashboard />` in your own app or use the one in the demo.
+
+## Deploy
+
+There are guides for [Cloudflare Workers + D1](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1), [Vercel + Supabase](https://analytik-docs.vercel.app/deploy/vercel-supabase), [Railway + Postgres](https://analytik-docs.vercel.app/deploy/railway-postgres) and [Bun or Node with SQLite](https://analytik-docs.vercel.app/deploy/bun-node-sqlite).
+
+## Alternatives
+
+[Plausible](https://plausible.io) and [Umami](https://umami.is) are good, mature alternatives if you prefer a bigger project.
+
+## Support
+
+Browsers: the tracker targets ES2020, so any evergreen browser. Runtimes: Cloudflare Workers, Bun 1.3+, Node 22.19+, Vercel Functions. The dashboard and React bindings need React 19.
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/jantursky/analytik/blob/main/CONTRIBUTING.md). Security notes are in [SECURITY.md](https://github.com/jantursky/analytik/blob/main/SECURITY.md).
+
+## License
+
+[MIT](LICENSE)
