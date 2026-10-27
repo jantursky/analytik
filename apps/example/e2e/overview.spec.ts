@@ -17,7 +17,6 @@ test('customizes the overview: adds a block from the catalogue and resets the la
   await expect(blocks).toHaveCount(7)
   await expect(blocks.last()).toContainText('Average order value')
 
-  await blocks.nth(1).hover()
   await page.getByRole('button', { name: 'Add a block after Acquisition' }).click()
   await page
     .getByRole('dialog', { name: 'Add a block' })
