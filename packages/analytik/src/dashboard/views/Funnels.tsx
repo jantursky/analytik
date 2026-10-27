@@ -157,7 +157,9 @@ export function Funnels() {
                 )}
                 <ConfirmButton
                   label="Delete"
-                  confirm="Confirm delete"
+                  title={`Delete the funnel “${selected.name}”?`}
+                  description="The funnel definition is removed. The visits and events it counted stay."
+                  confirmLabel="Delete funnel"
                   onConfirm={() => void client.deleteFunnel(site.id, selected.id).then(funnels.reload)}
                 />
               </div>

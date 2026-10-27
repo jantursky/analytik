@@ -1,24 +1,24 @@
-/* Editorial surface from design/DESIGN.md: the same neutrals as the product, Bricolage Grotesque for UI and headings, and
+/* Editorial surface from design/DESIGN.md: the same neutrals as the product, Figtree for UI and headings, and
    small tracked labels. Elevation comes from 1px borders, never shadows. */
 :root {
-  --blume-background: #f7f6f2;
-  --blume-muted: #f0eee9;
-  --blume-border: #ebe8e1;
-  --blume-foreground: #1c1b18;
-  --blume-muted-foreground: #5f5b53;
-  --blume-accent: #1f5fc7;
+  --blume-background: #f2f4f8;
+  --blume-muted: #e9edf3;
+  --blume-border: #e0e5ee;
+  --blume-foreground: #101828;
+  --blume-muted-foreground: #4a5568;
+  --blume-accent: #3a4fd8;
   --blume-accent-foreground: #ffffff;
   --blume-radius: 0.75rem;
 }
 
 :root[data-theme='dark'] {
-  --blume-background: #131210;
-  --blume-muted: #2a2824;
-  --blume-border: #2e2c27;
-  --blume-foreground: #f3f1ec;
-  --blume-muted-foreground: #b0aba0;
-  --blume-accent: #8db3f0;
-  --blume-accent-foreground: #131210;
+  --blume-background: #0b1020;
+  --blume-muted: #1d2740;
+  --blume-border: #232e47;
+  --blume-foreground: #e9edf6;
+  --blume-muted-foreground: #a8b2c7;
+  --blume-accent: #8a97ff;
+  --blume-accent-foreground: #0b1020;
 }
 
 h1,

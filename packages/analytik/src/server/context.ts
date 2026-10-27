@@ -17,6 +17,7 @@ export interface Context {
   allowedOrigins: AllowedOrigins
   geo: ((request: Request) => Geo | null | Promise<Geo | null>) | undefined
   clientIp: (request: Request) => string | null
+  debug: boolean
   /** Month salts this instance has loaded, so the hot path doesn't query them on every event. */
   salts: Map<string, string>
   /** When retention was last enforced per site, so it runs at most hourly per instance. */
@@ -51,6 +52,7 @@ export function createContext(options: CreateAnalytikOptions): Context {
     allowedOrigins: options.allowedOrigins ?? 'site-domains',
     geo: options.geo,
     clientIp: options.clientIp ?? ((request) => clientIpFrom(request, trustProxy)),
+    debug: options.debug === true,
     salts: new Map(),
     retentionRuns: new Map(),
   }

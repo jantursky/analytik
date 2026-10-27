@@ -18,7 +18,7 @@ export interface PaymentFacts {
   renewal?: boolean
 }
 
-export interface Attribution {
+export interface VisitMatch {
   visitorId: string | null
   sessionId: string | null
   matchedBy: PaymentMatch | null
@@ -132,18 +132,22 @@ const RULES: [PaymentMatch, Rule][] = [
 ]
 
 async function earlierPayment(ctx: Context, siteId: string, facts: PaymentFacts): Promise<Evidence['earlier']> {
-  if (!facts.customerId && !facts.email) return undefined
+  // The same buyer: matched on whichever of the customer id and the email this payment has.
+  const keys: [column: string, value: string][] = []
+  if (facts.customerId) keys.push(['customer_id', facts.customerId])
+  if (facts.email) keys.push(['email', facts.email])
+  if (!keys.length) return undefined
   const [row] = await ctx.storage.query<{ visitor_id: string | null }>(
     `SELECT visitor_id FROM payments WHERE site_id = ? AND kind = 'payment' AND id <> ? AND ts <= ?
-       AND ((customer_id IS NOT NULL AND customer_id = ?) OR (email IS NOT NULL AND email = ?))
+       AND (${keys.map(([column]) => `${column} = ?`).join(' OR ')})
      ORDER BY CASE WHEN visitor_id IS NULL THEN 1 ELSE 0 END, ts LIMIT 1`,
-    [siteId, facts.id, facts.ts, facts.customerId ?? '', facts.email ?? ''],
+    [siteId, facts.id, facts.ts, ...keys.map(([, value]) => value)],
   )
   return row && { visitorId: row.visitor_id }
 }
 
 /** Finds the visitor behind a payment, how they were found, the visit to credit, and whether it is a renewal. */
-export async function attribute(ctx: Context, site: SiteRecord, facts: PaymentFacts): Promise<Attribution> {
+export async function attribute(ctx: Context, site: SiteRecord, facts: PaymentFacts): Promise<VisitMatch> {
   const earlier = await earlierPayment(ctx, site.id, facts)
   const evidence: Evidence = {
     site,

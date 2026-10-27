@@ -53,7 +53,10 @@ export async function press(element: Element | null | undefined): Promise<void> 
 export async function choose(trigger: Element | null | undefined, option: string): Promise<void> {
   await click(trigger)
   await settled()
-  const item = [...document.querySelectorAll('[role="option"]')].find((o) => o.textContent.trim() === option)
+  // Options with a second line (a site's domain) are matched on their first line.
+  const item = [...document.querySelectorAll('[role="option"]')].find(
+    (o) => (o.querySelector('.analytik-menu-text > *') ?? o).textContent.trim() === option,
+  )
   await press(item)
   await settled()
 }

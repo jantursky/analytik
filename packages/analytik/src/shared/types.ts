@@ -40,6 +40,8 @@ export interface Site {
   privacyMode: PrivacyMode
   retentionDays: number | null
   allowLocalhost: boolean
+  /** Tracking is paused: tracker events and server goals are dropped, payments are still recorded. */
+  paused: boolean
   ignoredIps: string[]
   createdAt: number
   /** Which payment providers have a webhook secret configured. Secrets themselves are never returned. */
@@ -143,6 +145,17 @@ export interface Overview {
   otherCurrencies: { currency: string; amount: number; orders: number }[]
 }
 
+/** A site's headline numbers on the sites overview, from `GET /summary`. */
+export interface SiteSummary {
+  siteId: string
+  visitors: number
+  /** Revenue in the site's currency, minor units. */
+  revenue: number
+  orders: number
+  currency: string
+  online: number
+}
+
 export interface TimeseriesPoint {
   /** Bucket start, unix milliseconds. */
   ts: number
@@ -150,6 +163,13 @@ export interface TimeseriesPoint {
   sessions: number
   pageviews: number
   revenue: number
+  orders: number
+  /** Share of the bucket's sessions with one pageview and no goal, 0 to 1. */
+  bounceRate: number
+  avgDurationMs: number
+  /** Paying customers (first payments) over visitors, 0 to 1. */
+  conversionRate: number
+  revenuePerVisitor: number
 }
 
 export interface BreakdownRow {
@@ -165,7 +185,24 @@ export interface BreakdownRow {
 export interface Realtime {
   online: number
   recent: { ts: number; type: EventType; name: string | null; path: string | null; country: string | null }[]
-  locations: { lat: number; lon: number; country: string | null; city: string | null }[]
+  /** Visits seen in the last five minutes that have coordinates, newest first. */
+  locations: RealtimeVisit[]
+}
+
+export interface RealtimeVisit {
+  lat: number
+  lon: number
+  country: string | null
+  city: string | null
+  sessionId: string
+  visitorId: string
+  /** The page the visitor is on now (the visit's last page). */
+  page: string | null
+  source: string
+  browser: string | null
+  device: string | null
+  startedAt: number
+  lastSeen: number
 }
 
 export interface SessionSummary {
@@ -189,7 +226,10 @@ export interface SessionSummary {
 
 export interface Page<T> {
   items: T[]
+  /** For the next page in the default order; null on the last page, and whenever `sort` or `offset` is used. */
   nextCursor: string | null
+  /** Rows matching the query across all pages. */
+  total: number
 }
 
 export interface Funnel {
@@ -239,4 +279,32 @@ export interface SessionDetail {
   visitor: VisitorProfile | null
   events: EventRow[]
   payments: Payment[]
+}
+
+/** What `POST /debug/generate` writes. Every field is optional. */
+export interface TestDataInput {
+  /** Write into this site instead of making new test sites. */
+  siteId?: string
+  /** New test sites to make, 1 to 20. Default 1. */
+  sites?: number
+  /** Days of history ending now, 0 to 730; 0 makes empty sites. Default 30. */
+  days?: number
+  /** Average visits per day and site, 0 to 100,000; 0 makes empty sites. Default 500. */
+  visitorsPerDay?: number
+  /** Multiplies every price (900, 2,900 and 9,900 minor units), e.g. 1000 for revenue in the millions. Default 1. */
+  priceScale?: number
+  /** Currency of new test sites. Default `USD`. */
+  currency?: string
+  /**
+   * Make the new sites differ like real ones: an empty site, a quiet blog, a busy shop, a paused one and more, in
+   * turn. `visitorsPerDay` and `priceScale` then don't apply.
+   */
+  mix?: boolean
+}
+
+export interface TestDataResult {
+  sites: { id: string; name: string }[]
+  counts: { visitors: number; sessions: number; events: number; payments: number }
+  /** How long writing took, in ms. */
+  durationMs: number
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 
-import type { Page } from '../shared/types'
+import type { Realtime } from '../shared/types'
 
 export interface Resource<T> {
   /** The latest result, kept while a new key loads. */
@@ -35,58 +35,44 @@ export function useResource<T>(key: string, load: () => Promise<T>): Resource<T>
   return { data: state?.data, error: fresh ? state.error : undefined, loading: !fresh, reload }
 }
 
-export interface Paged<T> {
-  items: T[]
-  loading: boolean
-  error: Error | undefined
-  hasMore: boolean
-  /** True while a further page loads. */
-  loadingMore: boolean
-  loadMore: () => void
-}
+/**
+ * Calls `poll` every `every` ms while the page is visible. While `signature` (what the last answer showed) stays the
+ * same, the wait doubles up to `max`, so a quiet site is asked less often; a change, or the tab coming back into
+ * view, goes back to `every`. A hidden tab isn't polled at all.
+ */
+export function usePolling(poll: () => void, signature: string, every: number, max: number): void {
+  const run = useEffectEvent(poll)
 
-interface PagedState<T> {
-  key: string
-  items: T[]
-  next: string | null
-  error?: Error
-}
-
-/** Cursor-paged list: the first page loads whenever `key` changes, `loadMore()` appends the next. */
-export function usePaged<T>(key: string, load: (cursor: string | null) => Promise<Page<T>>): Paged<T> {
-  const [state, setState] = useState<PagedState<T>>()
-  const [loadingMore, setLoadingMore] = useState(false)
-  const run = useEffectEvent(load)
-
+  // Runs again whenever the answer changes, starting over at the short wait.
   useEffect(() => {
-    let current = true
-    run(null).then(
-      (page) => current && setState({ key, items: page.items, next: page.nextCursor }),
-      (error: unknown) => current && setState({ key, items: [], next: null, error: toError(error) }),
-    )
-    return () => {
-      current = false
+    let delay = every
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const schedule = (): void => {
+      timer = setTimeout(() => {
+        if (document.visibilityState !== 'visible') return
+        run()
+        delay = Math.min(delay * 2, max)
+        schedule()
+      }, delay)
     }
-  }, [key])
-
-  const fresh = state?.key === key ? state : undefined
-  const loadMore = (): void => {
-    if (!fresh?.next) return
-    setLoadingMore(true)
-    load(fresh.next)
-      .then(
-        (page) =>
-          setState((s) => (s?.key === key ? { key, items: [...s.items, ...page.items], next: page.nextCursor } : s)),
-        (error: unknown) => setState((s) => s && { ...s, error: toError(error) }),
-      )
-      .finally(() => setLoadingMore(false))
-  }
-  return {
-    items: fresh?.items ?? [],
-    loading: !fresh,
-    error: fresh?.error,
-    hasMore: !!fresh?.next,
-    loadingMore,
-    loadMore,
-  }
+    const visibility = (): void => {
+      clearTimeout(timer)
+      if (document.visibilityState !== 'visible') return
+      delay = every
+      run()
+      schedule()
+    }
+    schedule()
+    document.addEventListener('visibilitychange', visibility)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', visibility)
+    }
+  }, [every, max, signature])
 }
+
+/** What a live answer shows, for `usePolling`: the same count, newest event and places mean nothing new happened. */
+export const liveSignature = (data: Realtime | undefined): string =>
+  data
+    ? `${data.online}|${data.recent[0]?.ts ?? 0}|${data.locations.map((l) => `${l.sessionId}:${l.page ?? ''}`).join(',')}`
+    : ''

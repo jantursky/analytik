@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { DIRECT_SOURCE, classify, domainForSource, findKnownSource } from '../src/shared/channels'
+import { DIRECT_SOURCE, classify, sourceDomain, matchSource } from '../src/shared/channels'
 import { fromBase64, sha256Hex, timingSafeEqual, toBase64, toBase64Url } from '../src/shared/crypto'
 import { isId, isSiteId, randomId } from '../src/shared/ids'
 import {
@@ -19,11 +19,12 @@ import {
 import { isBot, parseUserAgent } from '../src/shared/ua'
 import {
   cleanDomain,
+  domainProblem,
   clip,
   extractCampaign,
   hostBelongsTo,
   isLocalhost,
-  normalizePath,
+  cleanPath,
   pagePath,
   parseReferrer,
 } from '../src/shared/url'
@@ -56,22 +57,22 @@ describe('channels', () => {
   })
 
   it('finds known sources and their favicon domains', () => {
-    expect(findKnownSource(' YouTube ')?.name).toBe('YouTube')
-    expect(findKnownSource(undefined)).toBeUndefined()
-    expect(domainForSource('GitHub')).toBe('github.com')
-    expect(domainForSource('Newsletter')).toBeUndefined()
-    expect(domainForSource('Unknown')).toBeUndefined()
-    expect(domainForSource('Google')).toBe('google.com')
+    expect(matchSource(' YouTube ')?.name).toBe('YouTube')
+    expect(matchSource(undefined)).toBeUndefined()
+    expect(sourceDomain('GitHub')).toBe('github.com')
+    expect(sourceDomain('Newsletter')).toBeUndefined()
+    expect(sourceDomain('Unknown')).toBeUndefined()
+    expect(sourceDomain('Google')).toBe('google.com')
   })
 
   it('matches subdomains and public suffixes, the most specific host first', () => {
-    expect(findKnownSource('www.google.co.uk')?.name).toBe('Google')
-    expect(findKnownSource('images.google.de')?.name).toBe('Google')
-    expect(findKnownSource('mail.google.com')?.name).toBe('Gmail')
-    expect(findKnownSource('gemini.google.com')?.name).toBe('Gemini')
-    expect(findKnownSource('m.youtube.com')?.name).toBe('YouTube')
-    expect(findKnownSource('google.example.com')).toBeUndefined()
-    expect(findKnownSource('notreddit.com')).toBeUndefined()
+    expect(matchSource('www.google.co.uk')?.name).toBe('Google')
+    expect(matchSource('images.google.de')?.name).toBe('Google')
+    expect(matchSource('mail.google.com')?.name).toBe('Gmail')
+    expect(matchSource('gemini.google.com')?.name).toBe('Gemini')
+    expect(matchSource('m.youtube.com')?.name).toBe('YouTube')
+    expect(matchSource('google.example.com')).toBeUndefined()
+    expect(matchSource('notreddit.com')).toBeUndefined()
     expect(classify({ referrerDomain: 'com.google.android.gm' })).toEqual({ source: 'Gmail', channel: 'Email' })
     expect(classify({ referrerDomain: null, utmSource: 'Mastodon.Social', utmMedium: 'CPC' })).toEqual({
       source: 'Mastodon',
@@ -211,10 +212,10 @@ describe('user agents', () => {
 
 describe('urls', () => {
   it('normalizes paths', () => {
-    expect(normalizePath('/caf%C3%A9//menu/')).toBe('/café/menu')
-    expect(normalizePath('/%E0%A4%A')).toBe('/%E0%A4%A')
-    expect(normalizePath('')).toBe('/')
-    expect(normalizePath(`/${'a'.repeat(600)}`)).toHaveLength(500)
+    expect(cleanPath('/caf%C3%A9//menu/')).toBe('/café/menu')
+    expect(cleanPath('/%E0%A4%A')).toBe('/%E0%A4%A')
+    expect(cleanPath('')).toBe('/')
+    expect(cleanPath(`/${'a'.repeat(600)}`)).toHaveLength(500)
   })
 
   it('keeps only allowed query keys in page paths', () => {
@@ -251,6 +252,24 @@ describe('urls', () => {
     expect(isLocalhost('example.com')).toBe(false)
     expect(cleanDomain('HTTPS://www.Example.co.uk:8080/path?x')).toBe('example.co.uk')
     expect(cleanDomain('localhost')).toBeNull()
+    expect(cleanDomain('Müller.de')).toBe('xn--mller-kva.de')
+    expect(cleanDomain('-bad.com')).toBeNull()
+    expect(cleanDomain('a.b')).toBeNull()
+    expect(cleanDomain('exa mple.com')).toBeNull()
+  })
+
+  it('says why a domain is not one', () => {
+    expect(domainProblem('  ')).toBe('Enter the domain, like example.com.')
+    expect(domainProblem('exa mple.com')).toBe('A domain has no spaces.')
+    expect(domainProblem('example.com:3000')).toBe('Leave out the port.')
+    expect(domainProblem('localhost')).toMatch(/^Use the public domain/)
+    expect(domainProblem('shop.test')).toMatch(/^Use the public domain/)
+    expect(domainProblem('10.0.0.1')).toBe('Use a domain name, not an IP address.')
+    expect(domainProblem('[::1]')).toBe('Use a domain name, not an IP address.')
+    expect(domainProblem('example')).toBe('Add the ending, like .com or .co.uk.')
+    expect(domainProblem('ex_ample.com')).toBe('Use letters, digits, hyphens and dots, like shop.example.com.')
+    expect(domainProblem('https://Shop.Example.com/path')).toBeNull()
+    expect(domainProblem('müller.de')).toBeNull()
   })
 
   it('parses referrers', () => {

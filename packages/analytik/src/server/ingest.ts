@@ -16,7 +16,8 @@ import type { Geo, IngestInput, IngestResult } from './types'
 const TYPES: ReadonlySet<EventType> = new Set(['pageview', 'goal', 'outbound', 'ping', 'identify', 'revenue'])
 const MODES: ReadonlySet<PrivacyMode> = new Set(['strict', 'enriched', 'persistent'])
 export const SESSION_WINDOW = 30 * MINUTE
-const MAX_PING = 10 * MINUTE
+// One update can carry a whole half-hour visit when the page sends its time only on leaving.
+const MAX_PING = 30 * MINUTE
 
 interface Payload {
   w: string
@@ -150,6 +151,34 @@ async function resolveVisit(
     : { visitorId, sessionId: randomId(20, ctx.random), known: false }
 }
 
+/** What one hit changes on its session's counters. */
+export interface SessionChange {
+  pageviews?: number
+  goals?: number
+  /** Engaged milliseconds to add. */
+  duration?: number
+  exitPage?: string
+  /** Moves `last_seen_at` forward. */
+  seenAt?: number
+}
+
+const CHANGE_COLUMNS = {
+  pageviews: 'pageviews = pageviews + ?',
+  goals: 'goals = goals + ?',
+  duration: 'duration = duration + ?',
+  exitPage: 'exit_page = ?',
+  seenAt: 'last_seen_at = ?',
+} as const satisfies Record<keyof SessionChange, string>
+
+/** One UPDATE for every counter a hit moves on its session. */
+export function sessionUpdate(siteId: string, sessionId: string, change: SessionChange): Statement {
+  const keys = (Object.keys(CHANGE_COLUMNS) as (keyof SessionChange)[]).filter((key) => change[key] !== undefined)
+  return {
+    sql: `UPDATE sessions SET ${keys.map((key) => CHANGE_COLUMNS[key]).join(', ')} WHERE site_id = ? AND id = ?`,
+    params: [...keys.map((key) => change[key]), siteId, sessionId],
+  }
+}
+
 function newSessionStatements(
   site: SiteRecord,
   visit: Visit,
@@ -262,6 +291,7 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   if (input.ip && site.ignoredIps.includes(input.ip)) {
     return { status: 202, visitorId: null, sessionId: null, filtered: 'ignored-ip' }
   }
+  if (site.paused) return { status: 202, visitorId: null, sessionId: null, filtered: 'paused' }
 
   const now = ctx.now()
   const doNotTrack = ctx.respectDoNotTrack && input.doNotTrack === true
@@ -276,10 +306,8 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   if (payload.t === 'ping') {
     const ms = Math.max(0, Math.min(MAX_PING, Math.round(Number(payload.d) || 0)))
     if (visit.known) {
-      await ctx.storage.run(
-        'UPDATE sessions SET duration = duration + ?, last_seen_at = ? WHERE site_id = ? AND id = ?',
-        [ms, now, site.id, visit.sessionId],
-      )
+      const update = sessionUpdate(site.id, visit.sessionId, { duration: ms, seenAt: now })
+      await ctx.storage.run(update.sql, update.params)
     }
     return accepted
   }
@@ -309,18 +337,12 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   }
 
   const statements: Statement[] = visit.known ? [] : newSessionStatements(site, visit, payload, path, input, now)
-  const touch = {
-    sql: 'UPDATE sessions SET last_seen_at = ? WHERE site_id = ? AND id = ?',
-    params: [now, site.id, visit.sessionId],
-  }
+  const touch = sessionUpdate(site.id, visit.sessionId, { seenAt: now })
 
   switch (payload.t) {
     case 'pageview':
       statements.push(
-        {
-          sql: 'UPDATE sessions SET pageviews = pageviews + 1, exit_page = ?, last_seen_at = ? WHERE site_id = ? AND id = ?',
-          params: [path, now, site.id, visit.sessionId],
-        },
+        sessionUpdate(site.id, visit.sessionId, { pageviews: 1, exitPage: path, seenAt: now }),
         eventStatement(ctx, site, visit, now, 'pageview', null, path, null),
         ...claimStatements(site.id, visit.visitorId, payload.url, now),
       )
@@ -329,10 +351,7 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
       const name = clip(payload.n, 100)
       if (!name) return { status: 400, error: 'n (goal name) is required' }
       statements.push(
-        {
-          sql: 'UPDATE sessions SET goals = goals + 1, last_seen_at = ? WHERE site_id = ? AND id = ?',
-          params: [now, site.id, visit.sessionId],
-        },
+        sessionUpdate(site.id, visit.sessionId, { goals: 1, seenAt: now }),
         eventStatement(ctx, site, visit, now, 'goal', name, path, cleanProps(payload.p)),
       )
       break

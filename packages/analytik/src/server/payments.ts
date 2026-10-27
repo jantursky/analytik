@@ -2,7 +2,7 @@ import { isId } from '../shared/ids'
 import type { Payment, PaymentInput, PaymentKind, PaymentMatch } from '../shared/types'
 import { clip } from '../shared/url'
 import type { Statement } from '../storage/types'
-import { type Attribution, attribute } from './attribution'
+import { type VisitMatch, attribute } from './attribution'
 import { AnalytikError, type Context } from './context'
 import type { SiteRecord } from './sites'
 import type { RecordPaymentResult, RematchResult } from './types'
@@ -183,7 +183,7 @@ export async function recordPayment(
     if (verified) return { payment: toPayment(verified), duplicate: true }
   }
 
-  let match: Attribution
+  let match: VisitMatch
   if (payment.kind === 'refund') {
     if (payment.refundedTotal !== null) {
       payment.orderId ??= payment.id

@@ -19,24 +19,24 @@
     "limit": "6 kB"
   },
   {
-    "name": "Dashboard (Base UI, Motion and Recharts are peers)",
+    "name": "Dashboard with its lazy chunks (Base UI, Motion and Recharts are peers)",
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "25 kB"
+    "limit": "56 kB"
   },
   {
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "7 kB"
+    "limit": "12 kB"
   },
   {
-    "name": "Server",
+    "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "22 kB"
+    "limit": "27.5 kB"
   },
   {
     "name": "D1 storage",

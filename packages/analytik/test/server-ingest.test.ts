@@ -106,7 +106,8 @@ describe('POST /event in strict mode', () => {
     ])
     expect(JSON.parse(String(rows[1]?.props))).toEqual({ plan: 'pro', seats: 3, trial: true, empty: null })
     const [session] = await sessions()
-    expect(session).toMatchObject({ goals: 1, duration: 12_345 + 10 * MINUTE })
+    // One update counts for at most half an hour.
+    expect(session).toMatchObject({ goals: 1, duration: 12_345 + 30 * MINUTE })
   })
 
   it('requires a name for goals and outbound clicks', async () => {

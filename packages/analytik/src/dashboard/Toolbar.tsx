@@ -34,7 +34,7 @@ export function RangePicker({ range, onChange }: { range: DateRange; onChange: (
   )
 }
 
-const INTERVAL_LABELS: Record<Interval, string> = { hour: 'Hourly', day: 'Daily', week: 'Weekly', month: 'Monthly' }
+const INTERVAL_LABELS: Record<Interval, string> = { hour: 'By hour', day: 'By day', week: 'By week', month: 'By month' }
 
 /** Bucket size of the chart, limited to the ones that suit the range. */
 export function IntervalPicker({ range, onChange }: { range: DateRange; onChange: (range: DateRange) => void }) {

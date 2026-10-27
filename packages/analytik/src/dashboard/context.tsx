@@ -4,6 +4,7 @@ import { createContext, type ReactNode, use, useMemo } from 'react'
 import type { Filters, Query, Site } from '../shared/types'
 import type { ApiClient } from './api'
 import type { DashboardView } from './Dashboard'
+import { OwnPreferences } from './preferences'
 import type { DateRange } from './range'
 
 export interface DashboardState {
@@ -20,6 +21,8 @@ export interface DashboardState {
   onSiteChange: (site: Site) => void
   /** Switches the dashboard view; undefined when the parts are rendered without `<Dashboard>`. */
   openView?: (view: DashboardView) => void
+  /** The overview layout editor is open (the toolbar's Customize button). */
+  customizing?: boolean
 }
 
 const DashboardContext = createContext<DashboardState | null>(null)
@@ -39,14 +42,19 @@ export interface DashboardProviderProps {
   filters?: Filters
   onFilter?: (dimension: string, value: string) => void
   onSiteChange?: (site: Site) => void
-  /** Lets parts link to other views, e.g. "View on map" to the realtime view. */
+  /** Lets parts link to other views, e.g. "Open live map" to the realtime view. */
   onViewChange?: (view: DashboardView) => void
+  /** Opens the overview layout editor. */
+  customizing?: boolean
   children: ReactNode
 }
 
 const ignore = (): void => undefined
 
-/** Renders dashboard parts (`<Overview />`, `<Sources />`, ...) outside `<Dashboard>`. */
+/**
+ * Renders dashboard parts (`<Overview />`, `<Sources />`, ...) outside `<Dashboard>`. Their settings (the overview
+ * layout and chart choices) are saved through `client`, like in the full dashboard.
+ */
 export function DashboardProvider({
   client,
   apiUrl,
@@ -56,6 +64,7 @@ export function DashboardProvider({
   onFilter = ignore,
   onSiteChange = ignore,
   onViewChange,
+  customizing,
   children,
 }: DashboardProviderProps) {
   const value = useMemo<DashboardState>(
@@ -69,13 +78,16 @@ export function DashboardProvider({
       addFilter: onFilter,
       onSiteChange,
       openView: onViewChange,
+      customizing,
     }),
-    [client, apiUrl, site, range, filters, onFilter, onSiteChange, onViewChange],
+    [client, apiUrl, site, range, filters, onFilter, onSiteChange, onViewChange, customizing],
   )
   // Motion follows the visitor's reduced-motion setting here and in <Dashboard>.
   return (
     <MotionConfig reducedMotion="user">
-      <DashboardContext value={value}>{children}</DashboardContext>
+      <DashboardContext value={value}>
+        <OwnPreferences client={client}>{children}</OwnPreferences>
+      </DashboardContext>
     </MotionConfig>
   )
 }

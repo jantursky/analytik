@@ -23,6 +23,21 @@ The full list is in the [attribute reference](/reference/tracker-attributes). Th
 | `data-allow-localhost`     | Send events from `localhost`. Off by default.                                                                                                       |
 | `data-require-interaction` | Wait for the first interaction or 3 s of visibility before the first pageview. On.                                                                  |
 | `data-keep-query`          | Comma-separated query keys the tracker sends. The server also needs them in `privacy.keepQuery`.                                                    |
+| `data-ping-interval`       | Seconds between activity updates while the page is open. `240`; `0` only on leaving. See [Activity updates](#activity-updates).                     |
+
+## Activity updates
+
+Besides the pageview, an open page sends small updates with the time the visitor spent on it, counted only while the tab is visible. They give the visit duration, and they keep a reader in the dashboard's live view, which shows whoever was active in the last five minutes. An update always goes out when the page is hidden or left, through `sendBeacon`, and while it stays open one goes out every 4 minutes, for at most half an hour per page.
+
+Each update is a request, which counts on hosts that bill per request, such as the Cloudflare Workers free plan. `data-ping-interval` sets the balance:
+
+| Value           | Requests for a 10-minute read | Trade-off                                                                                      |
+| --------------- | ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| `60`            | 12                            | The most exact time when a browser closes without a last update.                               |
+| `240` (default) | 4                             | Readers stay in the live view.                                                                 |
+| `0`             | 2                             | The fewest requests; a reader who doesn't click drops out of the live view after five minutes. |
+
+Values under 30 count as 30. Settings → Tracking code in the dashboard has the same choice under **Activity updates** and writes it into the snippet.
 
 ## JavaScript API
 

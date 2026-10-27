@@ -86,7 +86,7 @@ export async function login(ctx: Context, c: HonoContext, password: unknown): Pr
   const token = await sessionToken(admin.secret, expiresAt)
   setCookie(c, SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: new URL(c.req.url).protocol === 'https:',
+    secure: c.req.url.startsWith('https:'),
     sameSite: 'Lax',
     path: ctx.basePath || '/',
     maxAge: SESSION_LIFETIME / 1000,
@@ -103,4 +103,28 @@ export function logout(ctx: Context, c: HonoContext): Response {
 export async function me(ctx: Context, c: HonoContext): Promise<Response> {
   const login = !ctx.admin ? 'none' : isPasswordAuth(ctx.admin) ? 'password' : 'custom'
   return c.json({ loggedIn: (await adminMethod(ctx, c)) !== null, login })
+}
+
+/**
+ * Asks for proof before a site is deleted, so a session left open isn't enough: the site's domain typed out, and the
+ * admin password too unless admins sign in through the `verify()` option. Wrong passwords count toward the login limit.
+ */
+export async function confirmDeletion(
+  ctx: Context,
+  c: HonoContext,
+  domain: string,
+  input: Record<string, unknown>,
+): Promise<void> {
+  if (input.confirm !== domain) throw new AnalytikError(`type the site's domain (${domain}) to confirm`)
+  const { admin } = ctx
+  if (!isPasswordAuth(admin)) return
+  const key = await hashedKey(ctx, 'login', ctx.clientIp(c.req.raw) ?? '')
+  if ((await hits(ctx, key, LOGIN_WINDOW)) >= LOGIN_ATTEMPTS) {
+    throw new AnalytikError('too many wrong passwords, try again in 15 minutes', 429)
+  }
+  if (typeof input.password !== 'string' || !timingSafeEqual(input.password, admin.password)) {
+    await hit(ctx, key, LOGIN_WINDOW)
+    // Not 401: the session is fine, and the dashboard signs out on a 401.
+    throw new AnalytikError('wrong password', 403)
+  }
 }

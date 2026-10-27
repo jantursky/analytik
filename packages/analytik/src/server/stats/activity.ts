@@ -13,9 +13,9 @@ import type {
 import type { Context } from '../context'
 import { type PaymentRow, toPayment } from '../payments'
 import type { SiteRecord } from '../sites'
-import type { EventsOptions, PageOptions } from '../types'
+import type { EventsOptions, PageOptions, PaymentsOptions } from '../types'
 import { online } from './overview'
-import { type StatsQuery, decodeCursor, filterSql, pageLimit, sessionWhere, toPage } from './query'
+import { type ListSpec, type StatsQuery, filterSql, listPage, sessionWhere } from './query'
 
 const FEED_WINDOW = 30 * MINUTE
 const ACTIVE_WINDOW = 5 * MINUTE
@@ -112,37 +112,96 @@ export async function realtime(ctx: Context, site: SiteRecord): Promise<Realtime
       country: string | null
     }>(
       `SELECT e.ts, e.type, e.name, e.path, s.country FROM events e
-       LEFT JOIN sessions s ON s.site_id = e.site_id AND s.id = e.session_id
+       LEFT JOIN sessions s ON s.id = e.session_id AND s.site_id = e.site_id
        WHERE e.site_id = ? AND e.ts > ? ORDER BY e.ts DESC, e.id DESC LIMIT 50`,
       [site.id, now - FEED_WINDOW],
     ),
-    ctx.storage.query<{ lat: number; lon: number; country: string | null; city: string | null }>(
-      `SELECT s.lat, s.lon, s.country, s.city FROM sessions s
+    ctx.storage.query<{
+      lat: number
+      lon: number
+      country: string | null
+      city: string | null
+      session_id: string
+      visitor_id: string
+      page: string | null
+      source: string
+      browser: string | null
+      device: string | null
+      started_at: number | string
+      last_seen_at: number | string
+    }>(
+      `SELECT s.lat, s.lon, s.country, s.city, s.id AS session_id, s.visitor_id, s.exit_page AS page, s.source,
+         s.browser, s.device, s.started_at, s.last_seen_at FROM sessions s
        WHERE s.site_id = ? AND s.last_seen_at > ? AND s.lat IS NOT NULL AND s.lon IS NOT NULL
        ORDER BY s.last_seen_at DESC LIMIT 200`,
       [site.id, now - ACTIVE_WINDOW],
     ),
   ])
-  return { online: count, recent, locations }
+  return {
+    online: count,
+    recent,
+    locations: locations.map((l) => ({
+      lat: l.lat,
+      lon: l.lon,
+      country: l.country,
+      city: l.city,
+      sessionId: l.session_id,
+      visitorId: l.visitor_id,
+      page: l.page,
+      source: l.source,
+      browser: l.browser,
+      device: l.device,
+      startedAt: Number(l.started_at),
+      lastSeen: Number(l.last_seen_at),
+    })),
+  }
 }
 
-/** Sessions that started in the range, newest first. */
-export async function sessions(
+const SESSION_LIST: ListSpec = {
+  sorts: {
+    time: { sql: 's.started_at' },
+    duration: { sql: 's.duration' },
+    pageviews: { sql: 's.pageviews' },
+    source: { sql: 's.source' },
+    country: { sql: 's.country', nullable: true },
+    entry: { sql: 's.entry_page', nullable: true },
+    revenue: { sql: 'revenue' },
+  },
+  time: 's.started_at',
+  id: 's.id',
+  search: [
+    's.entry_page',
+    's.exit_page',
+    's.source',
+    's.channel',
+    's.country',
+    's.city',
+    's.browser',
+    's.os',
+    's.visitor_id',
+  ],
+}
+
+/** Sessions that started in the range, newest first unless sorted otherwise. */
+export function sessions(
   ctx: Context,
   site: SiteRecord,
   query: StatsQuery,
   options: PageOptions = {},
 ): Promise<Page<SessionSummary>> {
-  const limit = pageLimit(options.limit)
-  const cursor = decodeCursor(options.cursor)
   const where = sessionWhere(site.id, query)
-  const after = cursor ? ' AND (s.started_at < ? OR (s.started_at = ? AND s.id < ?))' : ''
-  const rows = await ctx.storage.query<SessionRow>(
-    `SELECT ${SESSION_COLUMNS} FROM sessions s WHERE ${where.sql}${after}
-     ORDER BY s.started_at DESC, s.id DESC LIMIT ${limit + 1}`,
-    [site.currency, ...where.params, ...(cursor ? [cursor.ts, cursor.ts, cursor.id] : [])],
+  if (options.visitor) {
+    where.sql += ' AND s.visitor_id = ?'
+    where.params.push(options.visitor)
+  }
+  return listPage<SessionRow, SessionSummary>(
+    ctx,
+    { select: SESSION_COLUMNS, selectParams: [site.currency], from: 'sessions s', where },
+    SESSION_LIST,
+    options,
+    toSummary,
+    (row) => ({ ts: row.started_at, id: row.id }),
   )
-  return toPage(rows.map(toSummary), limit, (session) => ({ ts: session.startedAt, id: session.id }))
 }
 
 /** One session with its events and payments, and the visitor it belongs to. */
@@ -189,18 +248,27 @@ export async function sessionDetail(ctx: Context, site: SiteRecord, sessionId: s
   return { session: toSummary(row), visitor: profile, events: events.map(toEvent), payments: payments.map(toPayment) }
 }
 
+const EVENT_LIST: ListSpec = {
+  sorts: {
+    time: { sql: 'e.ts' },
+    type: { sql: 'e.type' },
+    name: { sql: 'e.name', nullable: true },
+    page: { sql: 'e.path', nullable: true },
+  },
+  time: 'e.ts',
+  id: 'e.id',
+  search: ['e.name', 'e.path', 'e.type'],
+}
+
 /** Events in the range, newest first, optionally by name and type. Pings are never stored. */
-export async function events(
+export function events(
   ctx: Context,
   site: SiteRecord,
   query: StatsQuery,
   options: EventsOptions = {},
 ): Promise<Page<EventRow>> {
-  const limit = pageLimit(options.limit)
-  const cursor = decodeCursor(options.cursor)
   const filters = filterSql(query.filters)
-  let sql = `SELECT e.* FROM events e JOIN sessions s ON s.site_id = e.site_id AND s.id = e.session_id
-    WHERE e.site_id = ? AND e.ts >= ? AND e.ts < ?${filters.sql}`
+  let sql = `e.site_id = ? AND e.ts >= ? AND e.ts < ?${filters.sql}`
   const params: unknown[] = [site.id, query.from, query.to, ...filters.params]
   if (options.name) {
     sql += ' AND e.name = ?'
@@ -210,29 +278,66 @@ export async function events(
     sql += ' AND e.type = ?'
     params.push(options.type)
   }
-  if (cursor) {
-    sql += ' AND (e.ts < ? OR (e.ts = ? AND e.id < ?))'
-    params.push(cursor.ts, cursor.ts, cursor.id)
+  if (options.visitor) {
+    sql += ' AND e.visitor_id = ?'
+    params.push(options.visitor)
   }
-  const rows = await ctx.storage.query<StoredEvent>(`${sql} ORDER BY e.ts DESC, e.id DESC LIMIT ${limit + 1}`, params)
-  return toPage(rows.map(toEvent), limit, (event) => ({ ts: event.ts, id: event.id }))
+  return listPage<StoredEvent, EventRow>(
+    ctx,
+    {
+      select: 'e.*',
+      from: 'events e JOIN sessions s ON s.site_id = e.site_id AND s.id = e.session_id',
+      where: { sql, params },
+    },
+    EVENT_LIST,
+    options,
+    toEvent,
+    (row) => ({ ts: row.ts, id: row.id }),
+  )
 }
 
-/** Payments and refunds in the range, newest first. */
-export async function payments(
+const PAYMENT_LIST: ListSpec = {
+  sorts: {
+    time: { sql: 'ts' },
+    amount: { sql: 'amount' },
+    provider: { sql: 'provider' },
+    customer: { sql: 'COALESCE(name, email, customer_id)', nullable: true },
+    attribution: { sql: 'matched_by', nullable: true },
+  },
+  time: 'ts',
+  id: 'id',
+  search: ['id', 'email', 'name', 'customer_id', 'order_id', 'subscription_id', 'provider'],
+}
+
+/** Payments and refunds in the range, newest first unless sorted otherwise. */
+export function payments(
   ctx: Context,
   site: SiteRecord,
   query: StatsQuery,
-  options: PageOptions = {},
+  options: PaymentsOptions = {},
 ): Promise<Page<Payment>> {
-  const limit = pageLimit(options.limit)
-  const cursor = decodeCursor(options.cursor)
+  let sql = 'site_id = ? AND ts >= ? AND ts < ?'
   const params: unknown[] = [site.id, query.from, query.to]
-  let sql = 'SELECT * FROM payments WHERE site_id = ? AND ts >= ? AND ts < ?'
-  if (cursor) {
-    sql += ' AND (ts < ? OR (ts = ? AND id < ?))'
-    params.push(cursor.ts, cursor.ts, cursor.id)
+  if (options.kind) {
+    sql += ' AND kind = ?'
+    params.push(options.kind)
   }
-  const rows = await ctx.storage.query<PaymentRow>(`${sql} ORDER BY ts DESC, id DESC LIMIT ${limit + 1}`, params)
-  return toPage(rows.map(toPayment), limit, (payment) => ({ ts: payment.ts, id: payment.id }))
+  if (options.provider) {
+    sql += ' AND provider = ?'
+    params.push(options.provider)
+  }
+  if (options.attributed !== undefined)
+    sql += options.attributed ? ' AND matched_by IS NOT NULL' : ' AND matched_by IS NULL'
+  if (options.visitor) {
+    sql += ' AND visitor_id = ?'
+    params.push(options.visitor)
+  }
+  return listPage<PaymentRow, Payment>(
+    ctx,
+    { select: '*', from: 'payments', where: { sql, params } },
+    PAYMENT_LIST,
+    options,
+    toPayment,
+    (row) => ({ ts: row.ts, id: row.id }),
+  )
 }

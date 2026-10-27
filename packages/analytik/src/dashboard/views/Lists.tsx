@@ -5,7 +5,7 @@ export function Sources() {
   return (
     <View>
       <BreakdownCard
-        title="Sources"
+        title="Traffic sources"
         dimensions={['channel', 'source', 'referrer', 'campaign', 'medium', 'term', 'content', 'ref']}
         limit={50}
       />

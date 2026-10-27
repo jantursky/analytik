@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ExampleFrame } from './components'
 import dashboardSource from './examples/DashboardExample.tsx?raw'
@@ -31,14 +31,30 @@ function useTheme() {
   ] as const
 }
 
+/** Publishes the sticky header's height as --header-height, so the dashboard's own sticky bars sit below it. */
+function useHeaderHeight() {
+  const header = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const element = header.current
+    if (!element || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() =>
+      document.documentElement.style.setProperty('--header-height', `${element.offsetHeight}px`),
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+  return header
+}
+
 export function App() {
   const tab = useHashTab()
+  const header = useHeaderHeight()
   // The tab on screen lags the URL while the previous tab plays its exit animation.
   const [shown, setShown] = useState<TabId>(tab)
   const [theme, cycleTheme] = useTheme()
   return (
     <>
-      <header className="header">
+      <header className="header" ref={header}>
         <div className="header__inner">
           <div className="brand">
             <img src="/icon.svg" alt="" />

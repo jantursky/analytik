@@ -9,6 +9,8 @@ export interface SnippetOptions {
   autoOutbound: boolean
   /** Comma-separated query parameters to keep. */
   keepQuery: string
+  /** Seconds between activity updates; 0 only on leaving. Default 240. */
+  pingInterval?: number
   debug: boolean
 }
 
@@ -27,6 +29,10 @@ export function buildSnippet(options: SnippetOptions): string {
     ['data-require-interaction', options.requireInteraction ? null : 'false'],
     ['data-auto-outbound', options.autoOutbound ? null : 'false'],
     ['data-keep-query', options.keepQuery.trim() || null],
+    [
+      'data-ping-interval',
+      options.pingInterval === undefined || options.pingInterval === 240 ? null : String(options.pingInterval),
+    ],
     ['data-debug', options.debug ? 'true' : null],
   ]
   const rendered = attrs.flatMap(([name, value]) => (value == null ? [] : [`${name}="${escapeAttr(value)}"`]))

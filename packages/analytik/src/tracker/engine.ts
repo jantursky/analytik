@@ -21,7 +21,11 @@ const CONSENT = 'analytik_consent'
 const TAB = 'analytik_tab'
 const YEAR = 31536000
 const SESSION = 1800
-const MAX_PINGS = 30
+// Activity updates while a page is open: often enough to keep the visitor in the five-minute live window, rare
+// enough not to multiply the requests. They stop after half an hour on one page; the update on leaving carries the rest.
+const PING_SECONDS = 240
+const MIN_PING_SECONDS = 30
+const PING_SPAN_SECONDS = 1800
 
 const noop = (): void => undefined
 
@@ -247,12 +251,18 @@ export function createEngine(options: AnalytikOptions): AnalytikClient {
     else if (open && last) since = Date.now()
   })
   on(w, 'pagehide', () => flush(true))
-  const interval = setInterval(() => {
-    if (visible() && pings < MAX_PINGS) {
-      pings++
-      flush(false)
-    }
-  }, 60000)
+  const pingSeconds = options.pingInterval ?? PING_SECONDS
+  const every = Number.isFinite(pingSeconds) && pingSeconds > 0 ? Math.max(MIN_PING_SECONDS, pingSeconds) : 0
+  const maxPings = every ? Math.ceil(PING_SPAN_SECONDS / every) : 0
+  // 0 turns the updates off: the time is sent only when the page is hidden or left.
+  const interval = every
+    ? setInterval(() => {
+        if (visible() && pings < maxPings) {
+          pings++
+          flush(false)
+        }
+      }, every * 1000)
+    : undefined
 
   function pageview(): void {
     const href = cleanUrl(loc.href, keep)

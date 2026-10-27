@@ -23,7 +23,7 @@ function decodeLeniently(path: string): string {
 }
 
 /** Decoded, with repeated slashes collapsed and no trailing slash (except for the root), at most 500 characters. */
-export function normalizePath(pathname: string): string {
+export function cleanPath(pathname: string): string {
   const path = decodeLeniently(pathname || '/').replace(/\/\/+/g, '/')
   const trimmed = path.length > 1 ? path.replace(/\/$/, '') : path
   return trimmed.slice(0, MAX_PATH)
@@ -38,7 +38,7 @@ export function pagePath(url: URL, keepQuery: readonly string[] = []): string {
     const lower = key.toLowerCase()
     return keepQuery.includes(lower) && !PRIVATE_PARAMS.has(lower)
   })
-  const path = normalizePath(url.pathname)
+  const path = cleanPath(url.pathname)
   return kept.length ? `${path}?${new URLSearchParams(kept).toString()}`.slice(0, MAX_PATH) : path
 }
 
@@ -82,15 +82,45 @@ export function isLocalhost(hostname: string): boolean {
   return /^(localhost|127(\.\d{1,3}){3}|\[::1\]|0\.0\.0\.0)$/.test(hostname) || hostname.endsWith('.localhost')
 }
 
-/** `https://www.Example.com/path` → `example.com`. Returns null for anything that is not a plain domain. */
-export function cleanDomain(input: string): string | null {
-  const domain = input
+const LABEL = '[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?'
+const DOMAIN = new RegExp(`^(?:${LABEL}\\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$`)
+
+/** `https://Shop.Example.com/path?x` → `shop.example.com`, port included. */
+const stripToHost = (input: string): string =>
+  input
     .trim()
     .toLowerCase()
-    .replace(/^[a-z]+:\/\//, '')
+    .replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+    .replace(/[/?#].*$/, '')
+
+/** `https://www.Example.com/path` → `example.com`. Returns null for anything that is not a plain domain. */
+export function cleanDomain(input: string): string | null {
+  const host = stripToHost(input)
     .replace(/^www\./, '')
-    .replace(/[/?#:].*$/, '')
-  return /^([a-z0-9-]+\.)+[a-z]{2,}$/.test(domain) && domain.length <= 253 ? domain : null
+    .replace(/:\d*$/, '')
+  let domain: string
+  try {
+    // Turns international names into their ASCII (punycode) form.
+    domain = new URL(`http://${host}`).hostname
+  } catch {
+    return null
+  }
+  return DOMAIN.test(domain) && domain.length <= 253 ? domain : null
+}
+
+/** Why `input` is not a site domain, in a sentence for a form; `null` when it is one. */
+export function domainProblem(input: string): string | null {
+  const host = stripToHost(input)
+  if (!host) return 'Enter the domain, like example.com.'
+  if (/\s/.test(host)) return 'A domain has no spaces.'
+  if (/:\d*$/.test(host)) return 'Leave out the port.'
+  if (host === 'localhost' || /\.(localhost|local|test|internal)$/.test(host)) {
+    return 'Use the public domain, not a local one. Local visits can be allowed in the site settings.'
+  }
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith('[')) return 'Use a domain name, not an IP address.'
+  if (!host.includes('.')) return 'Add the ending, like .com or .co.uk.'
+  if (!cleanDomain(host)) return 'Use letters, digits, hyphens and dots, like shop.example.com.'
+  return null
 }
 
 export interface Referrer {
@@ -113,7 +143,7 @@ export function parseReferrer(raw: string | null | undefined, siteDomain: string
   }
   if (!/^https?:$/.test(url.protocol) || hostBelongsTo(url.hostname, siteDomain)) return none
   return {
-    referrer: (stripWww(url.hostname) + normalizePath(url.pathname)).slice(0, MAX_PATH),
+    referrer: (stripWww(url.hostname) + cleanPath(url.pathname)).slice(0, MAX_PATH),
     referrerDomain: stripWww(url.hostname),
   }
 }

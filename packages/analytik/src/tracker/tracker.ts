@@ -30,6 +30,7 @@ if (script && !w.analytik?.track) {
     debug: flag('debug', false),
     autoOutbound: flag('auto-outbound', true),
     autoTrackAttrs: flag('auto-track-attrs', true),
+    pingInterval: attr('ping-interval') == null ? undefined : Number(attr('ping-interval')),
   })
   const queue = w.analytik?.q ?? []
   const analytik = toGlobal(engine)

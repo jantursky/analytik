@@ -4,9 +4,14 @@ const PATHS = {
   prev: 'M10 3 5 8l5 5',
   next: 'M6 3l5 5-5 5',
   down: 'M4 6l4 4 4-4',
+  up: 'M4 10l4-4 4 4',
+  search: 'M7 2.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9M10.3 10.3 13.5 13.5',
+  arrow: 'M3 8h10M9.5 4.5 13 8l-3.5 3.5',
   check: 'M3.5 8.5l3 3 6-7',
   calendar: 'M3 4.5h10v8.5H3zM3 7.5h10M5.5 2.5v3M10.5 2.5v3',
   refresh: 'M13 8a5 5 0 1 1-1.5-3.6M13 2.5V5h-2.5',
+  info: 'M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM8 7.5V11M8 5h.01',
+  reset: 'M3 8a5 5 0 1 0 1.5-3.6M3 2.5V5h2.5',
   close: 'M4 4l8 8M12 4l-8 8',
   sound: 'M3 6h2.5L9 3v10L5.5 10H3zM11.5 5.5a3.5 3.5 0 0 1 0 5',
   muted: 'M3 6h2.5L9 3v10L5.5 10H3zM11 6l3 4M14 6l-3 4',
@@ -14,13 +19,41 @@ const PATHS = {
   flat: 'M2 4h12v8H2zM2 8h12M6 4v8M10 4v8',
   theme: 'M8 2a6 6 0 1 0 0 12zM8 2a6 6 0 0 1 0 12',
   expand: 'M3 6V3h3M10 3h3v3M13 10v3h-3M6 13H3v-3',
+  desktop: 'M2 3h12v8H2zM6 14h4M8 11v3',
+  mobile: 'M5 1.5h6v13H5zM7.5 12.5h1',
+  tablet: 'M3 2h10v12H3zM7.5 12h1',
+  copy: 'M5.5 5.5h7v7h-7zM3.5 10.5v-7h7',
+  filter: 'M2.5 3.5h11l-4 5v4l-3 1.5V8.5z',
+  layout: 'M2.5 2.5h11v11h-11zM2.5 6.5h11M7 6.5v7',
+  clock: 'M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2M8 4.5V8l2.5 1.5',
+  visitors:
+    'M6 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M1.5 13.5a4.5 4.5 0 0 1 9 0M11 2.7a2.5 2.5 0 0 1 0 4.6M12.5 9.6a4.5 4.5 0 0 1 2 3.9',
+  page: 'M4 1.5h5.5L12.5 4.5v10h-8.5zM9.5 1.5v3h3M6.5 8h4M6.5 11h4',
+  coin: 'M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2M9.8 5.8C9.4 5.2 8.8 5 8 5c-1.1 0-1.8.6-1.8 1.4 0 1.9 3.6 1 3.6 3.1 0 .9-.8 1.5-1.8 1.5-.9 0-1.6-.3-2-1M8 3.8V5M8 11v1.2',
+  trash: 'M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v4.5M9.2 6.5v4.5',
+  sliders: 'M2.5 4.5h6M11.5 4.5h2M2.5 11.5h2M7.5 11.5h6M10 3v3M6 10v3',
+  shield: 'M8 1.8 13 3.6v4c0 3.1-2.1 5.4-5 6.6-2.9-1.2-5-3.5-5-6.6v-4zM5.8 8l1.6 1.6L10.4 6.4',
+  code: 'M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5M9 3 7 13',
+  link: 'M7 9a3 3 0 0 0 4.2.3l2-2a3 3 0 0 0-4.2-4.2l-1 1M9 7a3 3 0 0 0-4.2-.3l-2 2a3 3 0 0 0 4.2 4.2l1-1',
+  card: 'M1.5 3.5h13v9h-13zM1.5 6.5h13M4 10h3',
+  database:
+    'M8 1.8c3 0 5.5.9 5.5 2.2S11 6.2 8 6.2 2.5 5.3 2.5 4 5 1.8 8 1.8M2.5 4v8c0 1.3 2.5 2.2 5.5 2.2s5.5-.9 5.5-2.2V4M2.5 8c0 1.3 2.5 2.2 5.5 2.2s5.5-.9 5.5-2.2',
+  format: 'M1.5 12.5 4.5 3.5l3 9M2.5 9.5h4M10.5 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4M12.5 6.5v6',
+  bug: 'M5.5 5.5h5v4a2.5 2.5 0 0 1-5 0zM6 5.5a2 2 0 0 1 4 0M8 7.5V12M5.5 8H2.5M13.5 8h-3M5.6 10.6l-2.3 1.9M10.4 10.6l2.3 1.9M5.8 6.2 3.5 4.5M10.2 6.2l2.3-1.7',
+  more: 'M3.5 8h.01M8 8h.01M12.5 8h.01',
+  pause: 'M5.5 3.5v9M10.5 3.5v9',
+  play: 'M5 3l8 5-8 5z',
+  lock: 'M3.5 7h9v6.5h-9zM5.5 7V5a2.5 2.5 0 0 1 5 0v2',
+  external: 'M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v4H2.5V4h4',
+  ascending: 'M4.5 13V3M2 5.5 4.5 3 7 5.5M9.5 4h2.5M9.5 8h3.5M9.5 12h4.5',
+  descending: 'M4.5 3v10M2 10.5 4.5 13 7 10.5M9.5 4h4.5M9.5 8h3.5M9.5 12h2.5',
 } as const
 
 export type IconName = keyof typeof PATHS
 
 export function Icon({ name }: { name: IconName }) {
   return (
-    <svg className="analytik-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <svg className="analytik-icon" data-icon={name} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
       <path d={PATHS[name]} />
     </svg>
   )

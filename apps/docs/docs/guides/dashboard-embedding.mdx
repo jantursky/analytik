@@ -26,6 +26,20 @@ export function Admin() {
 <Dashboard api="/api" siteId="SITE_ID" />
 ```
 
+Site tiles show each site's `/favicon.ico`. The browser requests it from the site itself, never from a third-party icon service, and remembers for a week when a site has none. Pass `favicons={false}` to show the site's initial instead, or a function that returns the icon URL for a site (`undefined` keeps the initial).
+
+The **Add a website** dialog asks for the domain, a name, the time zone, the revenue currency and, optionally, how many days to keep visits and events. Once the site is saved, the dashboard opens its settings on **Tracking code**, with the snippet to paste into the site.
+
+Under the dashboard, a line says it is analytik and links to its source and its author. Pass `credits={false}` to leave it out.
+
+## Pausing and deleting a site
+
+Settings → General has a **Tracking** card. **Pause tracking** drops new visits, events and server goals for the site until you resume; payments still come in, and nothing already stored changes. **Delete website** removes the site with everything recorded for it, after you type the site's domain and the admin password. With your own authentication (the server's `verify()` option) there is no password, so the domain alone confirms it. The same two actions are in the menu that appears on a site card in **All sites** when you hover it (always shown on touch screens). Paused sites carry a **Paused** badge there. **All sites** sorts the cards by the date they were added, name, domain, visitors, revenue or orders in the last 24 hours, with a button to reverse the order; the choice is saved with the other dashboard settings.
+
+## Formatting
+
+Settings → Formatting sets how the whole dashboard writes numbers, money, dates and times: digit grouping (`1,234.5`, `1.234,5`, `1 234,5` or `1'234.5`), the currency as a symbol or a code, cents always or only when there are some, five date styles (`Oct 27, 2026`, `27 Oct 2026`, `27.10.2026`, `10/27/2026`, `2026-10-27`) and a 12- or 24-hour clock. Each option in the lists shows an example written its way. The choice is saved with the other dashboard settings, for every admin.
+
 The component includes a login form. It signs in with `POST /auth/login` and keeps the session cookie, so the dashboard and the API should share an origin, or the API must send CORS headers that allow credentials for your dashboard's origin.
 
 ## Your own authentication
@@ -50,7 +64,7 @@ const analytik = createAnalytik({
 
 ## Parts
 
-Each view is exported on its own, so you can place a few in your own layout. The parts take no props. They read the client, the site, the date range and the filters from a context, so they must sit inside `<Dashboard>` or inside a `<DashboardProvider>`; rendered anywhere else they throw. `DashboardProvider` takes a client from `createApiClient`, the absolute API URL (used in snippets and webhook URLs), the `Site` to show and a `DateRange`:
+Each view is exported on its own, so you can place a few in your own layout. Apart from `Overview`, the parts take no props. They read the client, the site, the date range and the filters from a context, so they must sit inside `<Dashboard>` or inside a `<DashboardProvider>`; rendered anywhere else they throw. `DashboardProvider` takes a client from `createApiClient`, the absolute API URL (used in snippets and webhook URLs), the `Site` to show and a `DateRange`:
 
 ```tsx
 import {
@@ -83,16 +97,16 @@ export function Summary({ site }: { site: Site }) {
 }
 ```
 
-Optional provider props are `filters`, `onFilter`, `onSiteChange` and `onViewChange`. Get the `Site` with `client.site('SITE_ID')` or `client.sites()`.
+Optional provider props are `filters`, `onFilter`, `onSiteChange`, `onViewChange` and `customizing` (opens the overview's layout editor). Get the `Site` with `client.site('SITE_ID')` or `client.sites()`.
 
 The dashboard module exports these building blocks:
 
 - Views: `Overview`, `Sources`, `Pages`, `Events`, `Funnels`, `Revenue`, `Sessions`, `Realtime`, `Settings`, plus `SitesOverview` (a card per site; takes `client`, `sites`, `onOpen` and `onAdd`).
 - Dialogs and forms: `AddSiteDialog` (takes `client`, `onCreated` and `onClose`), `CreateSiteForm`, `LoginForm`.
-- Pieces of a view: `BreakdownCard`, `SessionTimeline`, `SiteSettings`, `SnippetGenerator`, `CampaignLinkBuilder`.
-- Charts and widgets: `AreaChart`, `BarList`, `Sparkline`, `StatTile`, `DeltaBadge`, and `WorldMap` (takes `locations` from a `Realtime` result and an optional `globe`).
+- Pieces of a view: `BreakdownCard`, `SessionTimeline`, `SiteSettings`, `PrivacySettings`, `SnippetGenerator`, `CampaignLinkBuilder`.
+- Charts and widgets: `AreaChart`, `BarList`, `Sparkline`, `StatTile`, `DeltaBadge`, and `WorldMap` (takes `locations` from a `Realtime` result, an optional `globe`, and `selected` with `onSelect` to make the markers buttons).
 - Toolbar controls: `RangePicker`, `IntervalPicker`, `FilterBar`.
-- Helpers: `createApiClient`, `ApiError`, `queryParams`, `useDashboard`, and the range helpers `presetRange`, `customRange`, `shiftRange` and `RANGE_PRESETS`.
+- Helpers: `createApiClient`, `RequestError`, `queryParams`, `useDashboard`, and the range helpers `presetRange`, `customRange`, `shiftRange` and `RANGE_PRESETS`.
 
 If you want your own components, `createApiClient(api, fetcher?)` returns a typed client for the admin routes, with the response types from [Types](/reference/types). `api` is the API base path as a string, and the optional second argument is a `fetch`-compatible function:
 
@@ -102,6 +116,102 @@ import { createApiClient } from 'analytik/dashboard'
 const api = createApiClient('/api')
 const overview = await api.overview('SITE_ID', { from: Date.now() - 7 * 86_400_000, to: Date.now() })
 ```
+
+The client keeps each answer for a minute and shares a request with an identical one still on its way, so parts of a view that need the same numbers, and a view opened again soon after, don't ask the server twice. That matters on hosts that bill every request, such as Cloudflare Workers. Anything the client writes clears the kept answers, polled reads (`realtime`) always go out, and `api.clearCache()` forgets everything, as the toolbar's **Refresh** does.
+
+### Requests and polling
+
+The dashboard asks only for what the open view shows. **All sites** loads every site's numbers in one request (`GET /summary`), however many sites there are. While the **Live** switch is on, the range moves forward once a minute and the view reloads; the live map and feed refresh every 10 seconds, the live block in the overview every 30 seconds. When an answer shows nothing new, the next one waits twice as long, up to a minute for the live map and two minutes for the live block, and any change goes back to the short wait. Nothing is polled while the browser tab is hidden, and coming back to it refreshes at once. Polling rather than a WebSocket keeps the server stateless, so it runs the same on serverless hosts, where a held connection would need a separate always-on piece (on Cloudflare, a Durable Object) to receive the visits and push them out. A live refresh reads the whole range again, so on a database that bills rows read (D1, for one), leave **Live** off on dashboards that stay open for hours.
+
+## Customizing the overview
+
+The **Customize** button in the overview toolbar turns the overview into a layout editor. Each block gets buttons to move it earlier or later, to switch between full and half width, and to remove it. A **+** on the left or right edge of a block adds a new block before or after it, and the **Add a block** tile adds one at the end. Both open a catalogue of blocks grouped by category: traffic (summary and chart, acquisition, key numbers, campaigns), content (pages, goals, funnel), audience (geography, devices, device split), revenue (channel performance, revenue by source or country, average order value, recent payments) and live. **Done** closes the editor.
+
+The summary block has its own settings in the editor: each number can be swapped for another (visitors, sessions, pageviews, revenue, orders, conversion rate, revenue per visitor, bounce rate, visit duration or live visitors), removed, or added, up to eight, and the **Chart** row picks which metrics the chart combines, one to four. Outside the editor, a click on a number plots it on its own: counts as an area, money and durations as bars, rates as a line. Clicking more numbers adds them to the same chart, up to four, each in its own colour (the tile's marker shows which). Metrics of the same kind share a scale: the first kind is measured on the left axis, the second on the right, and any further one scales on its own, with exact values in the tooltip. The legend hides and shows each metric. Clicking a plotted number takes it out; the link above the chart goes back to the configured chart.
+
+**Reset** next to **Done** asks for confirmation, then brings back the six default blocks and the default summary. In your own layout, `<Overview customizing />` shows the editor without the toolbar button.
+
+### Where settings are kept
+
+The overview layout, the summary choices and the **Live** switch are saved in the database (`GET` and `PUT /preferences`) and loaded when the dashboard opens, so they are the same in every browser and for every admin. A copy in the browser's local storage shows them at once while the database copy loads. A browser that has settings while the database has none uploads its own. `<Dashboard syncPreferences={false}>` keeps them in the browser only, which suits a shared read-only demo. Parts inside a `<DashboardProvider>` save their settings the same way.
+
+### Sticky header and toolbar
+
+The dashboard's header and toolbar stay at the top while the page scrolls; on phones only the toolbar does, as one row that scrolls sideways. If your page has its own sticky bar above the dashboard, set `--analytik-sticky-top` to its height, and keep `overflow: hidden` off the dashboard's containers (use `overflow: clip`), or sticking stops at that container.
+
+## Test data for local testing
+
+Settings has a **Debug** section for trying the dashboard with heavy data: many sites, years of history, revenue in the millions. It fills the database with made-up visits, goals and payments, either into the open site or into up to 20 new test sites. Zero days or zero visits make empty sites, to see the dashboard before any data arrives. Presets cover a quiet month, a busy quarter, a dozen sites, a realistic mix of very different sites (empty, quiet, just launched, paused, a busy shop), big money and a stress test of about a million visits. Every amount can be changed, and the form estimates the visits and events before writing. **Delete test sites** removes the generated sites again; data generated into one of your own sites stays until you delete that site or its old data.
+
+The section only works against a server created with `debug: true`, and explains how to turn it on otherwise. Use it on a local or staging database, never on one with real data:
+
+```ts
+const analytik = createAnalytik({ storage, admin, debug: true })
+```
+
+The example app's dev server (`bun run dev` in `apps/example`) has it on.
+
+## Install it as an app
+
+The dashboard runs on your own page, so making it installable is up to that page: a web app manifest and a service worker turn it into an app on phones and desktops, with its own icon and window. Sign-in keeps working, because the installed app uses the same cookies as the site.
+
+Link a manifest from the page that mounts `<Dashboard>`:
+
+```html
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f2f4f8" />
+```
+
+```json
+{
+  "name": "Analytics",
+  "start_url": "/analytics",
+  "scope": "/analytics",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#f2f4f8",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
+```
+
+Then register a service worker. A small one is enough: load pages from the network and fall back to the last copy, keep the hashed build files, and leave the API alone.
+
+```js
+// sw.js
+const CACHE = 'analytics-v1'
+
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event
+  const url = new URL(request.url)
+  // Never cache the analytik API: its answers are private and must be current.
+  if (request.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/')) return
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone()
+          caches.open(CACHE).then((cache) => cache.put(request, copy))
+          return response
+        })
+        .catch(() => caches.match(request).then((cached) => cached ?? Response.error())),
+    )
+  }
+})
+```
+
+```ts
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
+```
+
+Serve `sw.js` with `Cache-Control: no-cache`, so a new version reaches installed apps. Without a network the app opens, and its cards show the request error until the device is back online; the refresh button in the toolbar then loads the numbers again. On iPhone and iPad, "Add to Home Screen" in Safari installs it. The [demo](/examples) is installable the same way.
 
 ## Styling
 

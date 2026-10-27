@@ -10,7 +10,9 @@ import {
   SnippetGenerator,
   useDashboard,
 } from '../src/dashboard/index'
-import { fakeApi, realtime, row, site } from './dashboard-fixtures'
+import { describeTimeZone, zoneLabel } from '../src/dashboard/ui/timezone'
+import { BLOCK_IDS } from '../src/dashboard/views/blocks'
+import { fakeApi, otherSite, realtime, row, site } from './dashboard-fixtures'
 import { choose, comboboxInput, press, selectTrigger, switchFor, type, waitFor } from './dashboard-helpers'
 import { actAsync, byLabel, byText, click, fill, key, render, settled, submit } from './react-render'
 
@@ -20,12 +22,14 @@ async function open(api = fakeApi(), view?: DashboardView, extra: { siteId?: str
   return { ...result, api }
 }
 
+const timeZoneText = (zone: string) => `${zoneLabel(zone)} (${describeTimeZone(zone).offset})`
 const nav = (container: HTMLElement, label: string) => byText(container, label, '.analytik-nav-item')
 const texts = (container: Element, selector: string) =>
   [...container.querySelectorAll(selector)].map((el) => el.textContent.trim())
 
 afterEach(() => {
   vi.useRealTimers()
+  localStorage.clear()
 })
 
 describe('Dashboard shell', () => {
@@ -54,6 +58,147 @@ describe('Dashboard shell', () => {
     expect(container.querySelector('h1')?.textContent).toBe('Sign in to analytik')
   })
 
+  it('customizes the overview layout and remembers it', async () => {
+    const { container, unmount } = await open()
+    const blocks = () => [...container.querySelectorAll('.analytik-block:not(.analytik-add-block)')]
+    const names = () => blocks().map((b) => b.querySelector('.analytik-block-name')?.textContent)
+    const category = (name: string) =>
+      [...document.body.querySelectorAll<HTMLElement>('.analytik-picker-category')].find((b) =>
+        b.textContent.startsWith(name),
+      )
+    const tile = (name: string) =>
+      [...document.body.querySelectorAll<HTMLElement>('.analytik-picker-tile')].find(
+        (t) => t.querySelector('.analytik-picker-head strong')?.textContent === name,
+      )
+    expect(blocks()).toHaveLength(6)
+    expect(blocks()[0]?.hasAttribute('data-wide')).toBe(true)
+    expect(container.querySelector('.analytik-add-block')).toBeNull()
+    await click(byText(container, 'Customize', 'button'))
+    expect(container.querySelector('.analytik-board')?.hasAttribute('data-editing')).toBe(true)
+    expect(container.querySelector('[aria-label="Move Summary and chart earlier"]')?.hasAttribute('disabled')).toBe(
+      true,
+    )
+    await click(container.querySelector('[aria-label="Move Summary and chart later"]'))
+    await click(byText(blocks()[0]!, 'Half width', 'button'))
+    await click(container.querySelector('[aria-label="Remove Geography"]'))
+    expect(names()).toEqual(['Acquisition', 'Summary and chart', 'Pages', 'Devices', 'Goals'])
+    expect(blocks()[0]?.hasAttribute('data-wide')).toBe(true)
+
+    await click(container.querySelector('[aria-label="Add a block after Pages"]'))
+    expect(byText(document.body, 'Pick a block to add after Pages.', 'p')).toBeDefined()
+    expect(category('All blocks')?.textContent).toBe('All blocks16')
+    await click(category('Revenue'))
+    expect([...document.body.querySelectorAll('.analytik-picker-head strong')].map((t) => t.textContent)).toEqual([
+      'Channel performance',
+      'Revenue by source',
+      'Revenue by country',
+      'Average order value',
+      'Recent payments',
+    ])
+    await click(tile('Average order value'))
+    expect(tile('Average order value')?.getAttribute('aria-checked')).toBe('true')
+    await click(byText(document.body, 'Add block', 'button'))
+    expect(names()).toEqual(['Acquisition', 'Summary and chart', 'Pages', 'Average order value', 'Devices', 'Goals'])
+    expect(byText(container, 'Average order value', '.analytik-card h2')).toBeDefined()
+
+    await click(container.querySelector('.analytik-add-tile'))
+    await click(category('All blocks'))
+    expect(tile('Pages')?.getAttribute('aria-disabled')).toBe('true')
+    expect(tile('Pages')?.textContent).toContain('On the overview')
+    await click(tile('Pages'))
+    expect(byText(document.body, 'Add block', 'button')?.hasAttribute('disabled')).toBe(true)
+    await click(byText(document.body, 'Cancel', 'button'))
+
+    await click(byText(container, 'Done', 'button'))
+    expect(container.querySelector('.analytik-board')?.hasAttribute('data-editing')).toBe(false)
+    expect(blocks()).toHaveLength(6)
+    expect(blocks()[0]?.querySelector('.analytik-overview')).toBeNull()
+    expect(blocks()[1]?.querySelector('.analytik-overview')).not.toBeNull()
+    await unmount()
+
+    const again = await open()
+    const stored = [...again.container.querySelectorAll('.analytik-block')]
+    expect(stored).toHaveLength(6)
+    expect(stored[3]?.textContent).toContain('Average order value')
+    await click(byText(again.container, 'Customize', 'button'))
+    await click(byText(again.container, 'Reset', 'button'))
+    expect(byText(document.body, 'Reset the overview?', 'h2')).toBeDefined()
+    await click(byText(document.body, 'Reset layout', 'button'))
+    await click(byText(again.container, 'Done', 'button'))
+    expect(again.container.querySelectorAll('.analytik-block')).toHaveLength(6)
+    expect(again.container.querySelector('.analytik-block')?.querySelector('.analytik-overview')).not.toBeNull()
+  })
+
+  it('renders every block of the catalogue', async () => {
+    localStorage.setItem('analytik:preferences', JSON.stringify({ layout: BLOCK_IDS.map((id) => ({ id })) }))
+    const { container, api } = await open()
+    expect(container.querySelectorAll('.analytik-board > .analytik-block')).toHaveLength(BLOCK_IDS.length)
+    expect(texts(container, '.analytik-kpi .analytik-stat-label')).toEqual([
+      'Visitors',
+      'Pageviews',
+      'Sessions',
+      'Revenue',
+    ])
+    const card = (title: string) =>
+      [...container.querySelectorAll('.analytik-card')].find((c) =>
+        c.querySelector('h2')?.textContent.startsWith(title),
+      )
+    expect(texts(card('Channel performance')!, 'tbody td:first-child')).toEqual(['Organic Search', 'Direct'])
+    expect(texts(card('Channel performance')!, 'tbody td:last-child')).toEqual(['€99.00', '—'])
+    expect(texts(card('Device split')!, '.analytik-legend-list li')).toEqual(['device-a100%'])
+    expect(card('Device split')?.querySelectorAll('circle')).toHaveLength(2)
+    expect(texts(card('Funnel')!, '.analytik-funnel-bars li')).toEqual(['/1,000', 'signup250'])
+    expect(card('Average order value')?.querySelector('.analytik-big-number strong')?.textContent).not.toBe('—')
+    expect(card('Recent payments')?.querySelectorAll('.analytik-feed-list li')).toHaveLength(2)
+    expect(card('Recent payments')?.querySelector('[data-refund]')).not.toBeNull()
+    expect(card('Live now')?.querySelector('.analytik-live-count')?.textContent).toContain('right now')
+    expect(card('Revenue by source')).toBeDefined()
+    expect(card('Revenue by country')).toBeDefined()
+
+    await click(byText(card('Channel performance')!, 'Direct', 'button'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.channel).toBe('Direct')
+    await click(byText(card('Recent payments')!, 'View all', 'button'))
+    expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Revenue')
+  })
+
+  it('shows empty catalogue blocks', async () => {
+    localStorage.setItem(
+      'analytik:preferences',
+      JSON.stringify({ layout: ['channels', 'devices', 'funnel', 'payments'].map((id) => ({ id })) }),
+    )
+    const api = fakeApi({
+      'GET /sites/:id/breakdown': () => [],
+      'GET /sites/:id/payments': () => ({ items: [], nextCursor: null, total: 0 }),
+    })
+    api.state.funnels = []
+    const { container } = await open(api)
+    expect(texts(container, '.analytik-empty')).toEqual([
+      'Nothing recorded in this period',
+      'Nothing recorded in this period',
+      'No funnels yetCreate a funnel',
+      'No payments in this period',
+    ])
+    await click(byText(container, 'Create a funnel', 'button'))
+    expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Funnels')
+  })
+
+  it('shows every block in the picker with sample numbers', async () => {
+    const { container } = await open()
+    await click(byText(container, 'Customize', 'button'))
+    await click(container.querySelector('.analytik-add-tile'))
+    expect(document.body.querySelectorAll('.analytik-picker-tile')).toHaveLength(BLOCK_IDS.length)
+    expect(document.body.querySelectorAll('.analytik-picker-tile .analytik-preview')).toHaveLength(BLOCK_IDS.length)
+    expect(document.body.querySelector('.analytik-picker-tile .analytik-preview-bars li')?.textContent).toBe(
+      'Organic Search4,812',
+    )
+    const tile = [...document.body.querySelectorAll<HTMLElement>('.analytik-picker-tile')].find(
+      (t) => t.querySelector('.analytik-picker-head strong')?.textContent === 'Funnel',
+    )
+    await actAsync(() => tile?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })))
+    expect(container.querySelectorAll('.analytik-block:not(.analytik-add-block)')).toHaveLength(7)
+  })
+
   it('renders overview stats with deltas, a dual-axis chart and breakdowns', async () => {
     const { container, api } = await open(fakeApi(), undefined, { theme: 'dark' })
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBe('dark')
@@ -63,8 +208,8 @@ describe('Dashboard shell', () => {
       'Conversion rate',
       'Revenue per visitor',
       'Bounce rate',
-      'Session time',
-      'Online',
+      'Visit duration',
+      'Live now',
     ])
     expect(texts(container, '.analytik-stat-value')).toEqual([
       '1,200',
@@ -76,13 +221,15 @@ describe('Dashboard shell', () => {
       '4',
     ])
     expect(
-      texts(container, '.analytik-stat .analytik-badge').map((t) => t.replace('Change from previous period: ', '')),
+      texts(container, '.analytik-stat .analytik-delta').map((t) => t.replace('Change from previous period: ', '')),
     ).toEqual(['+20%', 'new', '+8%', '+20%', '+5%', '-8%'])
-    expect(container.querySelector('.analytik-stat:nth-child(5) .analytik-badge')?.getAttribute('data-trend')).toBe(
+    expect(container.querySelector('.analytik-stat:nth-child(5) .analytik-delta')?.getAttribute('data-trend')).toBe(
       'down',
     )
     expect(container.querySelectorAll('.analytik-stat .analytik-marker')).toHaveLength(2)
-    expect(container.querySelector('figcaption')?.textContent).toMatch(/^Visitors, 4 points, peak 600 at /)
+    expect(container.querySelector('figcaption')?.textContent).toMatch(
+      /^Visitors, Revenue, 4 points\. Visitors peaks at 600 on /,
+    )
     expect(texts(container, '.analytik-chart table tbody tr')[3]).toMatch(/600€99\.00$/)
     await waitFor(() => container.querySelector('.recharts-surface'))
     expect(texts(container, '.analytik-legend-item')).toEqual(['Visitors', 'Revenue'])
@@ -100,9 +247,64 @@ describe('Dashboard shell', () => {
     ])
     expect(texts(container, '.analytik-col-head')).toEqual(['Visitors', 'Visitors', 'Visitors', 'Visitors', 'Visitors'])
 
-    await click(byText(container, 'View on map', 'button'))
+    await click(byText(container, 'Open live map', 'button'))
     await settled()
-    expect(nav(container, 'Realtime')?.getAttribute('aria-current')).toBe('page')
+    expect(nav(container, 'Live')?.getAttribute('aria-current')).toBe('page')
+  })
+
+  it('marks browsers, systems and devices with an icon', async () => {
+    const { container } = await open(
+      fakeApi({
+        'GET /sites/:id/breakdown': ({ params }) =>
+          params.dimension === 'browser'
+            ? [row('Chrome', 5), row('Mobile Safari', 3), row('Netscape', 1)]
+            : params.dimension === 'device'
+              ? [row('Mobile', 4), row('Robot', 1)]
+              : [],
+      }),
+    )
+    const card = byText(container, 'Browser', '[role="tab"]')?.closest('section')
+    const icons = () =>
+      [...(card?.querySelectorAll('.analytik-bar-label') ?? [])].map((l) => !!l.querySelector('.analytik-logo, svg'))
+    expect(icons()).toEqual([true, true, false])
+    expect(card?.querySelectorAll('.analytik-bar-icon')).toHaveLength(3)
+    await waitFor(() => card?.querySelector('img.analytik-logo'))
+    expect(
+      [...(card?.querySelectorAll<HTMLImageElement>('img.analytik-logo') ?? [])].map((i) =>
+        decodeURIComponent(i.src).startsWith('data:image/svg+xml,<svg'),
+      ),
+    ).toEqual([true, true])
+    await click(byText(card!, 'Device', '[role="tab"]'))
+    await settled()
+    await waitFor(() => card?.querySelector('.analytik-bar-label'))
+    expect(texts(card!, '.analytik-bar-label')).toEqual(['Mobile', 'Robot'])
+    expect(icons()).toEqual([true, false])
+  })
+
+  it("keeps the previous tab's rows until the next tab's rows arrive", async () => {
+    let release = (): void => undefined
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const { container } = await open(
+      fakeApi({
+        'GET /sites/:id/breakdown': async ({ params }) => {
+          if (params.dimension === 'os') await gate
+          return params.dimension === 'os'
+            ? [row('Windows', 2)]
+            : params.dimension === 'browser'
+              ? [row('Chrome', 5)]
+              : []
+        },
+      }),
+    )
+    const card = byText(container, 'Browser', '[role="tab"]')?.closest('section')
+    expect(texts(card!, '.analytik-bar-label')).toEqual(['Chrome'])
+    await click(byText(card!, 'OS', '[role="tab"]'))
+    await settled()
+    expect(texts(card!, '.analytik-bar-label')).toEqual(['Chrome'])
+    expect(card?.querySelector('[aria-label="Browser by visitors"]')).not.toBeNull()
+    release()
+    await waitFor(() => card?.querySelector('[aria-label="OS by visitors"]'))
+    expect(texts(card!, '.analytik-bar-label')).toEqual(['Windows'])
   })
 
   it('labels countries with their flag and name and expands long lists', async () => {
@@ -155,7 +357,7 @@ describe('Dashboard shell', () => {
     expect(api.find('GET', '/sites/site_1/breakdown').at(-1)?.params.dimension).toBe('referrer')
     await key(document.activeElement, 'ArrowLeft')
     await key(document.activeElement, 'End')
-    expect(container.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe('Keyword')
+    expect(container.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe('Term')
     await key(document.activeElement, 'ArrowRight')
     expect(container.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe('Channel')
     await key(document.activeElement, 'x')
@@ -166,11 +368,11 @@ describe('Dashboard shell', () => {
     const trigger = () => container.querySelector('.analytik-range-trigger')
     await click(trigger())
     await settled()
-    expect(byText(container, 'Last 7 days', '.analytik-preset')?.getAttribute('aria-pressed')).toBe('true')
-    await click(byText(container, 'Last 12 months', '.analytik-preset'))
+    expect(byText(container, 'Past 7 days', '.analytik-preset')?.getAttribute('aria-pressed')).toBe('true')
+    await click(byText(container, 'Past 12 months', '.analytik-preset'))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.interval).toBe('month')
-    expect(trigger()?.textContent).toBe('Last 12 months')
+    expect(trigger()?.textContent).toBe('Past 12 months')
 
     await click(trigger())
     await settled()
@@ -243,9 +445,9 @@ describe('Dashboard shell', () => {
 
     await click(selectTrigger(container, 'Interval'))
     await settled()
-    expect(texts(document.body, '[role="option"]')).toEqual(['Hourly', 'Daily'])
+    expect(texts(document.body, '[role="option"]')).toEqual(['By hour', 'By day'])
     await click(selectTrigger(container, 'Interval'))
-    await choose(selectTrigger(container, 'Interval'), 'Hourly')
+    await choose(selectTrigger(container, 'Interval'), 'By hour')
     expect(last()?.interval).toBe('hour')
 
     const before = api.find('GET', '/sites/site_1/overview').length
@@ -255,13 +457,130 @@ describe('Dashboard shell', () => {
 
     await click(container.querySelector('.analytik-range-trigger'))
     await settled()
-    await click(byText(container, 'Last 30 days', '.analytik-preset'))
+    await click(byText(container, 'Past 30 days', '.analytik-preset'))
     await settled()
     const count = api.find('GET', '/sites/site_1/overview').length
     await click(container.querySelector('[aria-label="Refresh"]'))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').length).toBe(count + 1)
     expect(last()?.interval).toBe('day')
+  })
+
+  it('loads the settings from the database and saves changes back', async () => {
+    const api = fakeApi()
+    api.state.preferences = { live: true, layout: [{ id: 'kpis', wide: true }, { id: 'goals' }] }
+    const { container } = await open(api)
+    await settled()
+    const live = switchFor(container, 'Live')
+    expect(live?.getAttribute('aria-checked')).toBe('true')
+    expect(container.querySelectorAll('.analytik-board > .analytik-block')).toHaveLength(2)
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toMatchObject({ live: true })
+    await click(live)
+    await click(live)
+    await click(live)
+    expect(live?.getAttribute('aria-checked')).toBe('false')
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences')).toHaveLength(1)
+    expect(api.find('PUT', '/preferences')[0]?.body).toEqual({
+      live: false,
+      layout: [{ id: 'kpis', wide: true }, { id: 'goals' }],
+    })
+  })
+
+  it('uploads the browser settings to an empty database and keeps them when saving fails', async () => {
+    localStorage.setItem('analytik:preferences', JSON.stringify({ live: true }))
+    const api = fakeApi({ 'PUT /preferences': () => Response.json({ error: 'read only' }, { status: 403 }) })
+    const { container } = await open(api)
+    await settled()
+    expect(api.find('PUT', '/preferences')[0]?.body).toEqual({ live: true })
+    const live = switchFor(container, 'Live')
+    expect(live?.getAttribute('aria-checked')).toBe('true')
+    await click(live)
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences')).toHaveLength(2)
+    expect(live?.getAttribute('aria-checked')).toBe('false')
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: false })
+  })
+
+  it('keeps the settings in the browser only with syncPreferences off', async () => {
+    const api = fakeApi()
+    const { container } = await render(<Dashboard api="/api" fetcher={api.fetcher} syncPreferences={false} />)
+    await settled()
+    await click(switchFor(container, 'Live'))
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('GET', '/preferences')).toHaveLength(0)
+    expect(api.find('PUT', '/preferences')).toHaveLength(0)
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: true })
+  })
+
+  it('plots clicked numbers together and changes the summary while customizing', async () => {
+    const { container } = await open()
+    const tile = (label: string) =>
+      [...container.querySelectorAll('button.analytik-stat')].find(
+        (b) => b.querySelector('.analytik-stat-label')?.textContent === label,
+      )
+    const caption = () => container.querySelector('.analytik-overview figcaption')?.textContent
+    const legend = () => texts(container, '.analytik-overview .analytik-legend-item')
+    const focus = () => container.querySelector('.analytik-chart-focus strong')?.textContent
+    expect(legend()).toEqual(['Visitors', 'Revenue'])
+    await click(tile('Bounce rate'))
+    expect(tile('Bounce rate')?.getAttribute('aria-pressed')).toBe('true')
+    expect(focus()).toBe('Bounce rate over time')
+    expect(caption()).toMatch(/^Bounce rate, 4 points/)
+    expect(container.querySelector('.analytik-overview .analytik-legend')).toBeNull()
+
+    await click(tile('Revenue'))
+    await click(tile('Visit duration'))
+    expect(focus()).toBe('Bounce rate, Revenue and Visit duration over time')
+    expect(legend()).toEqual(['Bounce rate', 'Revenue', 'Visit duration'])
+    expect(texts(container, '.analytik-overview table th[scope="col"]')).toEqual([
+      'Time',
+      'Bounce rate',
+      'Revenue',
+      'Visit duration',
+    ])
+    expect(tile('Revenue')?.querySelector<HTMLElement>('.analytik-marker')?.style.background).toBe(
+      'var(--analytik-series-2)',
+    )
+    await click(tile('Conversion rate'))
+    expect(byText(container, 'Up to 4 at once.', '.analytik-chart-focus span')).toBeDefined()
+    await click(tile('Visitors'))
+    expect(legend()).toHaveLength(4)
+    await click(tile('Bounce rate'))
+    expect(focus()).toBe('Revenue, Visit duration and Conversion rate over time')
+    await click(byText(container, 'Back to visitors and revenue', 'button'))
+    expect(caption()).toMatch(/^Visitors, Revenue, 4 points/)
+    await click(tile('Revenue per visitor'))
+    await click(tile('Revenue per visitor'))
+    expect(container.querySelector('.analytik-chart-focus')).toBeNull()
+
+    await click(byText(container, 'Customize', 'button'))
+    expect(container.querySelectorAll('.analytik-stat-edit')).toHaveLength(7)
+    await choose(selectTrigger(container, 'Number 1'), 'Pageviews')
+    await click(container.querySelector('[aria-label="Remove Live now"]'))
+    await click(byText(container, 'Add a number', 'button'))
+    const chip = (label: string) => byText(container, label, '.analytik-chart-edit button')
+    await click(chip('Revenue'))
+    expect(chip('Visitors')?.hasAttribute('disabled')).toBe(true)
+    await click(chip('Sessions'))
+    await click(chip('Bounce rate'))
+    await click(chip('Orders'))
+    await click(chip('Pageviews'))
+    expect(chip('Pageviews')?.hasAttribute('disabled')).toBe(true)
+    await click(byText(container, 'Done', 'button'))
+    expect(texts(container, '.analytik-overview .analytik-stat-label')).toEqual([
+      'Pageviews',
+      'Revenue',
+      'Conversion rate',
+      'Revenue per visitor',
+      'Bounce rate',
+      'Visit duration',
+      'Visitors',
+    ])
+    expect(legend()).toEqual(['Visitors', 'Sessions', 'Bounce rate', 'Orders'])
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toMatchObject({
+      summary: { chart: ['visitors', 'sessions', 'bounceRate', 'orders'] },
+    })
   })
 
   it('refreshes live while the page is visible', async () => {
@@ -272,7 +591,7 @@ describe('Dashboard shell', () => {
     await click(live)
     expect(live?.getAttribute('aria-checked')).toBe('true')
     const before = api.find('GET', '/sites/site_1/overview').length
-    await actAsync(() => vi.advanceTimersByTime(30000))
+    await actAsync(() => vi.advanceTimersByTime(60000))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').length).toBe(before + 1)
     await click(container.querySelector('[aria-label="Previous period"]'))
@@ -298,13 +617,39 @@ describe('Dashboard shell', () => {
     await choose(site(), 'Add website…')
     const submitButton = dialog()?.querySelector<HTMLButtonElement>('button[type="submit"]')
     expect(submitButton?.disabled).toBe(true)
-    expect(comboboxInput(container, 'Timezone')?.value).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    expect(comboboxInput(container, 'Timezone')?.value).toBe(
+      timeZoneText(Intl.DateTimeFormat().resolvedOptions().timeZone),
+    )
     await fill(byLabel(container, 'Name'), 'New')
-    await fill(byLabel(container, 'Domain'), 'https://New.example.org/path?x')
-    await choose(selectTrigger(container, 'Revenue currency'), 'EUR')
-    await type(comboboxInput(container, 'Timezone'), 'Europe/Ber')
-    await press(byText(document.body, 'Europe/Berlin', '[role="option"]'))
+    const domain = byLabel(container, 'Domain')
+    await fill(domain, 'localhost:3000')
+    expect(container.querySelector('.analytik-field-error')).toBeNull()
+    await actAsync(() => domain?.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+    expect(container.querySelector('.analytik-field-error')?.textContent).toBe('Leave out the port.')
+    expect(domain?.getAttribute('aria-invalid')).toBe('true')
+    expect(domain?.getAttribute('aria-describedby')).toBe(container.querySelector('.analytik-field-error')?.id)
+    await submit(dialog()?.querySelector('form'))
+    expect(api.find('POST', '/sites')).toHaveLength(0)
+    await fill(domain, 'localhost')
+    expect(container.querySelector('.analytik-field-error')?.textContent).toMatch(/^Use the public domain/)
+    await fill(domain, 'https://New.example.org/path?x')
+    expect(container.querySelector('.analytik-field-error')).toBeNull()
+    expect(domain?.closest('label')?.querySelector('.analytik-field-hint')?.textContent).toMatch(
+      /^Tracked as new\.example\.org\. /,
+    )
+    await type(comboboxInput(container, 'Revenue currency'), 'EUR')
+    await press(byText(document.body, 'EUR · Euro', '[role="option"] .analytik-menu-text > span'))
+    await type(comboboxInput(container, 'Timezone'), 'Berlin')
+    await press(byText(document.body, timeZoneText('Europe/Berlin'), '[role="option"] .analytik-menu-text > span'))
     await settled()
+    expect(submitButton?.disabled).toBe(false)
+    const retention = byLabel(container, 'Keep data for (days)')
+    await fill(retention, '0')
+    expect(container.querySelector('.analytik-field-error')?.textContent).toBe(
+      'Use a whole number of days from 1 to 36500, or leave it empty.',
+    )
+    expect(submitButton?.disabled).toBe(true)
+    await fill(retention, '90')
     expect(submitButton?.disabled).toBe(false)
     await submit(dialog()?.querySelector('form'))
     await settled()
@@ -313,23 +658,38 @@ describe('Dashboard shell', () => {
       domain: 'new.example.org',
       currency: 'EUR',
       timezone: 'Europe/Berlin',
+      retentionDays: 90,
     })
     expect(dialog()).toBeNull()
     expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Settings')
+    // A new site opens on its tracking code; later visits to the settings start at the general section again.
+    expect(container.querySelector('.analytik-settings-nav [aria-current="page"]')?.textContent).toBe('Tracking code')
+    await click(nav(container, 'Overview'))
+    await click(nav(container, 'Settings'))
+    expect(container.querySelector('.analytik-settings-nav [aria-current="page"]')?.textContent).toBe('General')
   })
 
-  it('lists every site with its last 24 hours and opens one', async () => {
-    const { container, api } = await open(fakeApi(), 'sites')
-    expect(container.querySelector('h1')?.textContent).toBe('Websites')
+  it('lists every site with its last 24 hours, revenue only where payments come in, and opens one', async () => {
+    const { container, api } = await open(
+      fakeApi({
+        'GET /summary': () => [
+          { siteId: 'site_1', visitors: 1200, revenue: 129_900, orders: 13, currency: 'EUR', online: 4 },
+          { siteId: 'site_2', visitors: 1200, revenue: 0, orders: 0, currency: 'USD', online: 4 },
+        ],
+      }),
+      'sites',
+    )
+    expect(container.querySelector('h1')?.textContent).toBe('All sites')
     const cards = [...container.querySelectorAll('.analytik-site-card')]
     expect(cards.map((c) => c.textContent)).toEqual([
-      'EExampleexample.com1,200visitors in the last 24h4 online',
+      'EExampleexample.com1,200visitors in the last 24h4 online€1,299.00 · 13 orders',
       'OOtherother.org1,200visitors in the last 24h4 online',
     ])
-    const calls = api.find('GET', '/sites/site_2/overview')
+    // One request for every site's numbers, none per card.
+    const calls = api.find('GET', '/summary')
     expect(calls).toHaveLength(1)
     expect(Date.parse(calls[0]?.params.to ?? '') - Date.parse(calls[0]?.params.from ?? '')).toBe(86400000)
-    expect(calls[0]?.params.interval).toBe('hour')
+    expect(api.find('GET', '/sites/site_2/overview')).toHaveLength(0)
     await click(byText(container, 'Add website', 'button'))
     await settled()
     expect(container.querySelector('[role="dialog"]')).not.toBeNull()
@@ -341,9 +701,42 @@ describe('Dashboard shell', () => {
     expect(nav(container, 'Overview')?.getAttribute('aria-current')).toBe('page')
   })
 
+  it('sorts the sites by name, domain, visitors, revenue or orders and remembers the order', async () => {
+    const api = fakeApi({
+      'GET /summary': () => [
+        { siteId: 'site_1', visitors: 50, revenue: 900, orders: 9, currency: 'EUR', online: 0 },
+        { siteId: 'site_2', visitors: 80, revenue: 100, orders: 1, currency: 'USD', online: 0 },
+        { siteId: 'site_3', visitors: 10, revenue: 5000, orders: 2, currency: 'EUR', online: 0 },
+      ],
+    })
+    api.state.sites = [site, otherSite, { ...site, id: 'site_3', name: 'alpha', domain: 'zeta.net' }]
+    const { container } = await open(api, 'sites')
+    const names = () => texts(container, '.analytik-site-name strong')
+    expect(names()).toEqual(['Example', 'Other', 'alpha'])
+    const sortBy = async (label: string) => {
+      await choose(selectTrigger(container, 'Sort sites by'), label)
+      await settled()
+    }
+    await sortBy('Name')
+    expect(names()).toEqual(['alpha', 'Example', 'Other'])
+    await sortBy('Domain')
+    expect(names()).toEqual(['Example', 'Other', 'alpha'])
+    await sortBy('Visitors')
+    expect(names()).toEqual(['Other', 'Example', 'alpha'])
+    await sortBy('Revenue')
+    expect(names()).toEqual(['alpha', 'Example', 'Other'])
+    await sortBy('Orders')
+    expect(names()).toEqual(['Example', 'alpha', 'Other'])
+    await click(container.querySelector('[aria-label="Descending, switch to ascending"]'))
+    expect(names()).toEqual(['Other', 'alpha', 'Example'])
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toMatchObject({
+      sitesSort: { by: 'orders', descending: false },
+    })
+  })
+
   it('shows a dash and an idle dot when a site card fails to load', async () => {
     const { container } = await open(
-      fakeApi({ 'GET /sites/:id/overview': () => Response.json({ error: 'nope' }, { status: 500 }) }),
+      fakeApi({ 'GET /summary': () => Response.json({ error: 'nope' }, { status: 500 }) }),
       'sites',
     )
     expect(texts(container, '.analytik-site-number')).toEqual(['–', '–'])
@@ -382,9 +775,9 @@ describe('Dashboard views', () => {
       'Referrer',
       'Campaign',
       'Medium',
-      'Keyword',
+      'Term',
       'Content',
-      'Ref',
+      'Ref code',
     ])
     await click(nav(container, 'Pages'))
     await settled()
@@ -392,18 +785,27 @@ describe('Dashboard views', () => {
     expect(api.find('GET', '/sites/site_1/breakdown').map((r) => r.params.dimension)).toEqual(['channel', 'page'])
   })
 
-  it('Events lists goals and recent events, filtered by the goal filter', async () => {
+  it('Events lists goals and recent events, filtered by the goal filter and by type', async () => {
     const { container, api } = await open(fakeApi(), 'events')
-    expect(texts(container, '[role="tab"]')).toEqual(['Goal', 'Event', 'Exit link'])
-    expect(texts(container, 'tbody td')).toEqual(['Oct 26, 2026, 10:00 AM', 'goal', 'signup', '/pricing'])
+    expect(texts(container, '[role="tab"]')).toEqual(['Goal', 'Event', 'Outbound link'])
+    expect(texts(container, 'tbody td').slice(0, 4)).toEqual(['Oct 26, 2026, 10:00 AM', 'goal', 'signup', '/pricing'])
     await click(byText(container, 'goal-a', '.analytik-bar-label')?.closest('button'))
     await settled()
     expect(api.find('GET', '/sites/site_1/events').at(-1)?.params).toMatchObject({ name: 'goal-a', goal: 'goal-a' })
-    expect(byText(container, 'Recent “goal-a” events', 'h2')).toBeDefined()
+    expect(byText(container, '“goal-a” events', 'h2')).toBeDefined()
+    await choose(selectTrigger(container, 'Type'), 'Pageviews')
+    await settled()
+    expect(api.find('GET', '/sites/site_1/events').at(-1)?.params.type).toBe('pageview')
+    await click(container.querySelector('tbody .analytik-row-button'))
+    await settled()
+    expect(texts(document.body, '[role="dialog"] .analytik-timeline li')).toEqual([
+      '+0spageview/pricing',
+      '+42sgoalsignup',
+    ])
   })
 
   it('Revenue shows revenue stats, chart, breakdown by revenue and payments', async () => {
-    const { container } = await open(fakeApi(), 'revenue')
+    const { container, api } = await open(fakeApi(), 'revenue')
     expect(texts(container, '.analytik-stat-label')).toEqual([
       'Revenue',
       'Orders',
@@ -413,35 +815,145 @@ describe('Dashboard views', () => {
     expect(texts(container, '.analytik-bars .analytik-bar-label')).toEqual(['Organic Search'])
     expect(texts(container, '.analytik-bars .analytik-bar-value')).toEqual(['€99.00'])
     const rows = [...container.querySelectorAll('.analytik-table tbody tr')].map((tr) => texts(tr, 'td'))
-    expect(rows).toEqual([
-      ['Oct 26, 2026, 10:05 AM', '€49.90renewal', 'stripe', 'Ann Buyer', 'metadata'],
-      ['Oct 26, 2026, 10:05 AM', '-€49.90refund', 'stripe', 'cus_1', 'unattributed'],
-    ])
+    expect(rows).toHaveLength(2)
+    expect(rows[0]?.slice(2)).toEqual(['€49.90renewal', 'Stripe', 'Checkout metadata', ''])
+    expect(rows[1]?.slice(2)).toEqual(['-€49.90refund', 'Stripe', 'Unattributed', ''])
+    await choose(selectTrigger(container, 'Kind'), 'Refunds')
+    await settled()
+    await choose(selectTrigger(container, 'Attribution'), 'Attributed')
+    await settled()
+    await click(byText(container, 'Amount', 'th button'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/payments').at(-1)?.params).toMatchObject({
+      kind: 'refund',
+      attributed: 'true',
+      sort: 'amount',
+      order: 'desc',
+      offset: '0',
+      limit: '25',
+    })
   })
 
-  it('Sessions pages through sessions and opens a visitor timeline', async () => {
+  it('Sessions pages, sorts, searches and filters, and opens a visitor timeline', async () => {
     const { container, api } = await open(fakeApi(), 'sessions')
-    expect(texts(container, 'tbody tr:first-child td')).toEqual([
+    const last = () => api.find('GET', '/sites/site_1/sessions').at(-1)?.params
+    expect(container.querySelector('.analytik-count')?.textContent).toBe('30')
+    expect(container.querySelector('.analytik-pager')?.textContent).toContain('1–25 of 30')
+    expect(texts(container, 'tbody tr:first-child td').slice(1)).toEqual([
       'Oct 26, 2026, 10:00 AM',
-      'news.ycombinator.com',
-      'Berlin, DE',
-      '/pricing',
+      expect.stringContaining('Berlin'),
+      expect.stringContaining('news.ycombinator.com'),
+      'desktop',
+      expect.stringContaining('Firefox'),
+      expect.stringContaining('/pricing'),
       '3',
       '2m 5s',
       '€49.90',
+      '',
     ])
-    await click(byText(container, 'Load more', 'button'))
+    await click(container.querySelector('[aria-label="Page 2"]'))
     await settled()
-    expect(container.querySelectorAll('tbody tr')).toHaveLength(2)
-    expect(api.find('GET', '/sites/site_1/sessions').at(-1)?.params.cursor).toBe('c2')
-    expect(byText(container, 'Load more', 'button')).toBeUndefined()
-    await click(container.querySelector('tbody .analytik-link'))
+    expect(last()?.offset).toBe('25')
+    expect(container.querySelector('.analytik-page[aria-current="page"]')?.textContent).toBe('2')
+    expect(container.querySelector('[aria-label="Next page"]')?.hasAttribute('disabled')).toBe(true)
+
+    const duration = byText(container, 'Duration', 'th button')
+    await click(duration)
     await settled()
-    expect(texts(container, '.analytik-timeline li')).toEqual(['+0spageview/pricing', '+42sgoalsignup'])
-    expect(container.querySelector('.analytik-muted')?.textContent).toContain('desktop / Firefox / Linux')
-    expect(container.querySelector('tbody tr')?.getAttribute('aria-selected')).toBe('true')
-    await click(byText(container, 'Close', 'button'))
-    expect(container.querySelector('.analytik-timeline')).toBeNull()
+    expect(last()).toMatchObject({ sort: 'duration', order: 'desc', offset: '0' })
+    expect(duration?.closest('th')?.getAttribute('aria-sort')).toBe('descending')
+    await click(duration)
+    await settled()
+    expect(last()).toMatchObject({ sort: 'duration', order: 'asc' })
+    await click(duration)
+    await settled()
+    // Back to the default order: the first page in that order is still cached, so no new request.
+    expect(duration?.closest('th')?.hasAttribute('aria-sort')).toBe(false)
+
+    await choose(selectTrigger(container, 'Rows per page'), '50 per page')
+    await settled()
+    expect(last()?.limit).toBe('50')
+    await choose(selectTrigger(container, 'Channel'), 'Referral')
+    await settled()
+    expect(last()?.channel).toBe('Referral')
+
+    await fill(container.querySelector('input[type="search"]'), ' pricing ')
+    await waitFor(() => last()?.search === 'pricing')
+    await click(byText(container, 'Clear', '.analytik-table-tools button'))
+    await settled()
+    // Cleared back to an earlier list, which comes from the cache.
+    expect(container.querySelector<HTMLInputElement>('input[type="search"]')?.value).toBe('')
+    expect(selectTrigger(container, 'Channel')?.textContent).not.toContain('Referral')
+
+    await click(container.querySelector('tbody .analytik-row-button'))
+    await settled()
+    const dialog = document.querySelector('[role="dialog"]')
+    expect(texts(document.body, '[role="dialog"] .analytik-timeline li')).toEqual([
+      '+0spageview/pricing',
+      '+42sgoalsignup',
+    ])
+    expect(dialog?.textContent).toContain('Firefox')
+    await key(dialog, 'Escape')
+    await settled()
+  })
+
+  it('Sessions filter by browser and by a visitor, and copy visitor ids', async () => {
+    const writes: string[] = []
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: (text: string) => (writes.push(text), Promise.resolve()) },
+    })
+    const { container, api } = await open(fakeApi(), 'sessions')
+    const last = () => api.find('GET', '/sites/site_1/sessions').at(-1)?.params
+    await choose(selectTrigger(container, 'Browser'), 'browser-a')
+    await settled()
+    expect(last()?.browser).toBe('browser-a')
+    const copy = container.querySelector('tbody [aria-label="Copy visitor id"]')
+    await click(copy)
+    await settled()
+    expect(writes).toEqual(['vis_1'])
+    expect(copy?.hasAttribute('data-done')).toBe(true)
+    expect(copy?.getAttribute('aria-label')).toBe('Copied')
+    // The copy button is inside the row button's cell but does not open the visit.
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+    await click(container.querySelector('tbody [aria-label="Show only this visitor"]'))
+    await settled()
+    expect(last()?.visitor).toBe('vis_1')
+    expect(container.querySelector('.analytik-filter-chip')?.textContent).toBe('Visitorvis_1')
+    await click(container.querySelector('[aria-label="Remove the visitor filter"]'))
+    await settled()
+    expect(container.querySelector('.analytik-filter-chip')).toBeNull()
+  })
+
+  it('Events and payments narrow to one visitor', async () => {
+    const { container, api } = await open(fakeApi(), 'events')
+    await click(container.querySelector('tbody [aria-label="Show only this visitor"]'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/events').at(-1)?.params.visitor).toBe('vis_1')
+    await click(nav(container, 'Revenue'))
+    await settled()
+    expect(container.querySelector('tbody [aria-label="Copy customer id"]')).not.toBeNull()
+    await click(container.querySelector('tbody [aria-label="Show only this visitor"]'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/payments').at(-1)?.params.visitor).toBe('vis_1')
+  })
+
+  it('Sessions shows an empty state that clears its filters', async () => {
+    const api = fakeApi({
+      'GET /sites/:id/sessions': ({ params }) => ({
+        items: params.search ? [] : [],
+        nextCursor: null,
+        total: 0,
+      }),
+    })
+    const { container } = await open(api, 'sessions')
+    expect(container.querySelector('.analytik-empty')?.textContent).toContain('No sessions in this period')
+    expect(container.querySelector('.analytik-pager')).toBeNull()
+    await fill(container.querySelector('input[type="search"]'), 'nothing')
+    await waitFor(() => container.querySelector('.analytik-empty')?.textContent.includes('Nothing matches'))
+    await click(byText(container, 'Clear filters', 'button'))
+    await settled()
+    expect(container.querySelector('.analytik-empty')?.textContent).toContain('No sessions in this period')
   })
 
   it('Funnels shows conversion per step, creates and deletes funnels', async () => {
@@ -467,10 +979,10 @@ describe('Dashboard views', () => {
     })
     expect(selectTrigger(container, 'Funnel')?.textContent).toBe('Checkout')
     await choose(selectTrigger(container, 'Funnel'), 'Signup')
-    const remove = byText(container, 'Delete', 'button')
-    await click(remove)
-    expect(remove?.textContent).toBe('Confirm delete')
-    await click(remove)
+    await click(byText(container, 'Delete', 'button'))
+    await settled()
+    expect(byText(container, 'Delete the funnel “Signup”?', '[role="dialog"] h2')).toBeDefined()
+    await click(byText(container, 'Delete funnel', '[role="dialog"] button'))
     await settled()
     expect(api.find('DELETE', '/sites/site_1/funnels/f1')).toHaveLength(1)
     expect(container.querySelector('.analytik-card h2')?.textContent).toBe('Checkout')
@@ -491,7 +1003,7 @@ describe('Dashboard views', () => {
   })
 
   it('Realtime maps who is online, describes what they do and refreshes while visible', async () => {
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
     const { container, api } = await open(fakeApi(), 'realtime')
     expect(container.querySelector('.analytik-range')).toBeNull()
     expect(container.querySelector('.analytik-live-count')?.textContent).toBe('3 visitors on example.com')
@@ -505,6 +1017,13 @@ describe('Dashboard views', () => {
     await actAsync(() => vi.advanceTimersByTime(10000))
     await settled()
     expect(api.find('GET', '/sites/site_1/realtime')).toHaveLength(2)
+    // Nothing changed, so the next poll waits twice as long.
+    await actAsync(() => vi.advanceTimersByTime(10000))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/realtime')).toHaveLength(2)
+    await actAsync(() => vi.advanceTimersByTime(10000))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/realtime')).toHaveLength(3)
   })
 
   it('Realtime switches to a globe, a light map and back to the overview', async () => {
@@ -514,11 +1033,69 @@ describe('Dashboard views', () => {
     await click(button('Globe view'))
     expect(button('Globe view')?.getAttribute('aria-pressed')).toBe('true')
     expect(container.querySelector('.analytik-map > circle')).not.toBeNull()
+    const map = container.querySelector<SVGSVGElement>('.analytik-map')!
+    const land = () => container.querySelector('.analytik-map-land')?.getAttribute('d')
+    const facing = land()
+    const pointer = (type: string, x: number, y: number) =>
+      actAsync(() => map.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, clientX: x, clientY: y })))
+    await pointer('pointerdown', 100, 50)
+    await pointer('pointermove', 160, 70)
+    await pointer('pointerup', 160, 70)
+    const dragged = land()
+    expect(dragged).not.toBe(facing)
+    await pointer('pointermove', 200, 90)
+    expect(land()).toBe(dragged)
+    await actAsync(() => map.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })))
+    expect(land()).not.toBe(dragged)
+    const turned = land()
+    await actAsync(() => map.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+    expect(land()).toBe(turned)
     await click(button('Light map'))
     expect(container.querySelector('.analytik-realtime')?.getAttribute('data-map')).toBe('light')
     await click(button('Close real-time view'))
     await settled()
     expect(nav(container, 'Overview')?.getAttribute('aria-current')).toBe('page')
+    // The globe and the light map are remembered for the next visit.
+    await click(nav(container, 'Live'))
+    await settled()
+    expect(container.querySelector('.analytik-map > circle')).not.toBeNull()
+    expect(container.querySelector('.analytik-realtime')?.getAttribute('data-map')).toBe('light')
+  })
+
+  it('Realtime shows a tooltip on a marker and the visitors there on a click', async () => {
+    const { container } = await open(fakeApi(), 'realtime')
+    expect(container.querySelector('.analytik-map')?.getAttribute('role')).toBe('group')
+    const marker = container.querySelector('[data-place="52.52,13.4"]')
+    expect(marker?.getAttribute('aria-label')).toBe('Berlin, Germany: 2 visitors. Show details.')
+    await actAsync(() => marker?.dispatchEvent(new PointerEvent('pointerover', { bubbles: true })))
+    await settled()
+    expect(container.querySelector('[role="tooltip"].analytik-map-tip')?.textContent).toBe(
+      'Berlin, Germany2 visitors · /pricingClick for details',
+    )
+    await actAsync(() => marker?.dispatchEvent(new PointerEvent('pointerout', { bubbles: true })))
+    await settled()
+    expect(container.querySelector('.analytik-map-tip')).toBeNull()
+    await key(marker, 'Enter')
+    await settled()
+    const card = container.querySelector('.analytik-place-card')
+    expect(card?.querySelector('h3')?.textContent).toBe('Berlin, Germany')
+    expect(texts(card!, '.analytik-place-page')).toEqual(['/pricing', '/docs'])
+    expect(marker?.getAttribute('aria-pressed')).toBe('true')
+    await click(card?.querySelector('.analytik-place-visit'))
+    await settled()
+    expect(texts(document.body, '[role="dialog"] .analytik-timeline li')).toHaveLength(2)
+    await key(document.querySelector('[role="dialog"]'), 'Escape')
+    await settled()
+    await click(container.querySelector('[aria-label="Close details"]'))
+    await settled()
+    expect(container.querySelector('.analytik-place-card')).toBeNull()
+    // A click toggles the details; a press on a marker never starts a globe drag.
+    await click(marker)
+    await settled()
+    expect(container.querySelector('.analytik-place-card')).not.toBeNull()
+    await click(marker)
+    await settled()
+    expect(container.querySelector('.analytik-place-card')).toBeNull()
   })
 
   it('Realtime plays a tone for new visits once sound is on', async () => {
@@ -540,7 +1117,7 @@ describe('Dashboard views', () => {
       }
     }
     vi.stubGlobal('AudioContext', FakeAudio)
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
     let latest = Date.now()
     const api = fakeApi({
       'GET /sites/:id/realtime': () => ({
@@ -597,35 +1174,58 @@ describe('Dashboard views', () => {
   })
 })
 
+/** Opens a settings section from the list on the left. */
+async function section(container: Element, label: string): Promise<void> {
+  await click(byText(container, label, '.analytik-settings-nav button'))
+  await settled()
+}
+
+/** Clicks a button in the open dialog. */
+async function inDialog(container: Element, label: string): Promise<void> {
+  await click(byText(container, label, '[role="dialog"] button'))
+  await settled()
+}
+
 describe('Settings', () => {
-  it('saves the site settings', async () => {
+  it('saves the general and the privacy settings separately', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     await fill(byLabel(container, 'Name'), 'Renamed')
+    await fill(byLabel(container, 'Domain'), '192.168.0.1')
+    await submit(container.querySelector('form'))
+    expect(api.find('PATCH', '/sites/site_1')).toHaveLength(0)
+    expect(container.querySelector('.analytik-field-error')?.textContent).toBe('Use a domain name, not an IP address.')
     await fill(byLabel(container, 'Domain'), ' new.org ')
-    await fill(byLabel(container, 'Currency'), 'usd')
-    await type(comboboxInput(container, 'Timezone'), 'Europe/Ber')
-    await press(byText(document.body, 'Europe/Berlin', '[role="option"]'))
-    await fill(byLabel(container, 'Keep data for (days)'), '365')
-    await fill(byLabel(container, 'Ignored IP addresses'), '1.2.3.4\n 5.6.7.8 ,')
-    await click(container.querySelector('input[value="persistent"]'))
-    await click(switchFor(container, 'Accept events from localhost (for testing; turn off once live)'))
+    await type(comboboxInput(container, 'Currency'), 'swiss')
+    await press(byText(document.body, 'CHF · Swiss Franc', '[role="option"] .analytik-menu-text > span'))
+    await type(comboboxInput(container, 'Timezone'), 'Berlin')
+    await press(byText(document.body, timeZoneText('Europe/Berlin'), '[role="option"] .analytik-menu-text > span'))
     await submit(container.querySelector('form'))
     await settled()
     expect(api.find('PATCH', '/sites/site_1')[0]?.body).toEqual({
       name: 'Renamed',
       domain: 'new.org',
       timezone: 'Europe/Berlin',
-      currency: 'USD',
+      currency: 'CHF',
+    })
+    expect(byText(container, 'Settings saved', '[role="status"]')).toBeDefined()
+
+    await section(container, 'Privacy')
+    await fill(byLabel(container, 'Keep data for (days)'), '365')
+    await fill(byLabel(container, 'Ignored IP addresses'), '1.2.3.4\n 5.6.7.8 ,')
+    await click(container.querySelector('input[value="persistent"]'))
+    await click(switchFor(container, 'Accept events from localhost (for testing; turn off once live)'))
+    await submit(container.querySelector('form'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_1')[1]?.body).toEqual({
       privacyMode: 'persistent',
       retentionDays: 365,
       allowLocalhost: true,
       ignoredIps: ['1.2.3.4', '5.6.7.8'],
     })
-    expect(byText(container, 'Settings saved', '[role="status"]')).toBeDefined()
     await fill(byLabel(container, 'Keep data for (days)'), '')
     await submit(container.querySelector('form'))
     await settled()
-    expect((api.find('PATCH', '/sites/site_1')[1]?.body as { retentionDays: unknown }).retentionDays).toBeNull()
+    expect((api.find('PATCH', '/sites/site_1')[2]?.body as { retentionDays: unknown }).retentionDays).toBeNull()
   })
 
   it('reports a failed save', async () => {
@@ -638,18 +1238,35 @@ describe('Settings', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toBe('Invalid domain')
   })
 
+  it('hides a success message after a moment', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
+    try {
+      const { container } = await open(fakeApi(), 'settings')
+      await submit(container.querySelector('form'))
+      await settled()
+      expect(byText(container, 'Settings saved', '[role="status"]')).toBeDefined()
+      await actAsync(() => vi.advanceTimersByTime(3000))
+      await settled()
+      expect(container.querySelector('[role="status"] .analytik-notice')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('generates the snippet and copies it', async () => {
     const writeText = vi.fn(() => Promise.resolve())
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
     const { container } = await open(fakeApi(), 'settings')
+    await section(container, 'Tracking code')
     const snippet = () => container.querySelector('[aria-label="Snippet"]')?.textContent
     expect(snippet()).toBe(`<script defer src="${location.origin}/analytik.js" data-site="site_1"></script>`)
     await choose(selectTrigger(container, 'Mode'), 'Enriched')
     await fill(byLabel(container, 'Keep query parameters'), 'page')
     await click(switchFor(container, 'Track clicks on outbound links'))
     await click(switchFor(container, 'Wait for an interaction or 3 seconds on screen before counting (filters bots)'))
+    await choose(selectTrigger(container, 'Activity updates'), 'Only when leaving')
     expect(snippet()).toBe(
-      `<script defer src="${location.origin}/analytik.js" data-site="site_1" data-mode="enriched" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page"></script>`,
+      `<script defer src="${location.origin}/analytik.js" data-site="site_1" data-mode="enriched" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page" data-ping-interval="0"></script>`,
     )
     await click(byText(container, 'Copy snippet', 'button'))
     await settled()
@@ -658,11 +1275,12 @@ describe('Settings', () => {
     writeText.mockRejectedValueOnce(new Error('denied'))
     await click(byText(container, 'Copy snippet', 'button'))
     await settled()
-    expect(byText(container, 'Copy failed, select the text instead', '[role="status"]')).toBeDefined()
+    expect(byText(container, 'Copy failed, select the text instead', '[role="alert"]')).toBeDefined()
   })
 
-  it('builds campaign links', async () => {
+  it('builds campaign links with a preview', async () => {
     const { container } = await open(fakeApi(), 'settings')
+    await section(container, 'Campaign links')
     expect(byText(container, 'Enter a full page URL and a source.')).toBeDefined()
     await fill(byLabel(container, 'Page URL'), 'https://example.com/pricing')
     await fill(byLabel(container, 'Source (required)'), 'newsletter')
@@ -670,14 +1288,28 @@ describe('Settings', () => {
     expect(container.querySelector('[aria-label="Campaign link"]')?.textContent).toBe(
       'https://example.com/pricing?utm_source=newsletter&utm_campaign=launch',
     )
+    expect([...container.querySelectorAll('.analytik-url-param')].map((p) => p.textContent)).toEqual([
+      '?utm_source=newsletter',
+      '&utm_campaign=launch',
+    ])
+    expect([...container.querySelectorAll('.analytik-params > [data-set] dt')].map((d) => d.textContent)).toEqual([
+      'utm_source',
+      'utm_campaign',
+    ])
   })
 
-  it('rotates the API key, saves webhook secrets and manages data', async () => {
+  it('rotates the API key after confirming and saves webhook secrets', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
-    const rotate = byText(container, 'Rotate key', 'button')
-    await click(rotate)
-    await click(rotate)
+    await section(container, 'Payments and API')
+    await click(byText(container, 'Rotate key', '.analytik-card button'))
     await settled()
+    expect(byText(container, 'Rotate the API key?', '[role="dialog"] h2')).toBeDefined()
+    await inDialog(container, 'Cancel')
+    expect(container.querySelector('[role="dialog"]')).toBeNull()
+    expect(api.find('POST', '/sites/site_1/rotate-key')).toHaveLength(0)
+    await click(byText(container, 'Rotate key', '.analytik-card button'))
+    await settled()
+    await inDialog(container, 'Rotate key')
     expect(container.querySelector('[aria-label="New API key"]')?.textContent).toBe('ak_live_123')
 
     const stripe = byText(container, 'Stripe', 'h3')?.closest('form')
@@ -689,7 +1321,11 @@ describe('Settings', () => {
     await settled()
     expect(api.find('PATCH', '/sites/site_1')[0]?.body).toEqual({ webhookSecrets: { stripe: 'whsec_1' } })
     expect(byText(container, 'Stripe secret saved', '[role="status"]')).toBeDefined()
+  })
 
+  it('exports, re-runs attribution and deletes old data after confirming', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Data')
     expect([...container.querySelectorAll('a[download]')].map((a) => a.getAttribute('href'))).toEqual([
       '/api/sites/site_1/export?format=json',
       '/api/sites/site_1/export?format=csv',
@@ -697,6 +1333,7 @@ describe('Settings', () => {
     await click(byText(container, 'Re-run payment attribution', 'button'))
     await settled()
     expect(api.find('POST', '/sites/site_1/rematch')).toHaveLength(1)
+    expect(byText(container, 'Delete', '.analytik-card button')?.hasAttribute('disabled')).toBe(true)
     await click(container.querySelector('.analytik-date-trigger'))
     await settled()
     expect(container.querySelector('.analytik-calendar')).not.toBeNull()
@@ -705,17 +1342,227 @@ describe('Settings', () => {
     await click(firstDay)
     await settled()
     expect(container.querySelector('.analytik-calendar')).toBeNull()
-    const purge = byText(container, 'Delete', 'button')
-    await click(purge)
-    expect(purge?.textContent).toBe(`Delete everything before ${picked}?`)
-    await actAsync(() => purge?.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
-    expect(purge?.textContent).toBe('Delete')
-    await click(purge)
-    await click(purge)
+    await click(byText(container, 'Delete', '.analytik-card button'))
     await settled()
+    expect(byText(container, `Delete everything before ${picked}?`, '[role="dialog"] h2')).toBeDefined()
+    await inDialog(container, 'Delete data')
     expect(api.find('DELETE', '/sites/site_1/data')[0]?.params.before).toBe(
       new Date(`${picked}T00:00:00`).toISOString(),
     )
+    expect(byText(container, 'Data deleted', '[role="status"]')).toBeDefined()
+  })
+
+  it('explains how to turn the debug tools on when the server has them off', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Debug')
+    expect(api.find('GET', '/debug')).toHaveLength(1)
+    expect(container.querySelector('.analytik-settings-body')?.textContent).toContain('The debug tools are off')
+    expect(container.querySelector('.analytik-code')?.textContent).toBe(
+      'createAnalytik({ storage, admin, debug: true })',
+    )
+    expect(byText(container, 'Generate', 'button')).toBeUndefined()
+  })
+
+  it('generates test data from a preset or custom amounts and removes test sites', async () => {
+    const api = fakeApi()
+    api.state.debug = true
+    const { container } = await open(api, 'settings')
+    await section(container, 'Debug')
+    const estimate = () => container.querySelector('.analytik-debug-estimate')?.textContent
+    expect(estimate()).toBe('About 6,000 visits and 16.8K events.')
+
+    const preset = (value: string) => container.querySelector<HTMLInputElement>(`input[value="${value}"]`)
+    await click(preset('stress'))
+    expect(byLabel(container, 'Days of history')?.value).toBe('730')
+    expect(estimate()).toContain('takes a minute or more')
+    await fill(byLabel(container, 'Visits per day'), '5000')
+    expect(estimate()).toBe("That's 3.7M visits; one run writes at most 1M.")
+    expect(byText(container, 'Generate', 'button')?.hasAttribute('disabled')).toBe(true)
+    expect(preset('stress')?.checked).toBe(false)
+
+    await fill(byLabel(container, 'Visits per day'), '0')
+    expect(estimate()).toBe('An empty site with no visits yet, to see the dashboard before any data arrives.')
+    expect(byText(container, 'Generate', 'button')?.hasAttribute('disabled')).toBe(false)
+    await fill(byLabel(container, 'Days of history'), '-1')
+    expect(estimate()).toBe('Days go from 0 to 730.')
+
+    await click(preset('busy'))
+    await choose(selectTrigger(container, 'Write into'), 'This site (Example)')
+    expect(byLabel(container, 'Sites')).toBeUndefined()
+    const sitesBefore = api.find('GET', '/sites').length
+    await click(byText(container, 'Generate', 'button'))
+    await settled()
+    expect(api.find('POST', '/debug/generate')[0]?.body).toEqual({
+      siteId: 'site_1',
+      days: 90,
+      visitorsPerDay: 3000,
+      priceScale: 1,
+    })
+    expect(container.querySelector('.analytik-card-actions [role="status"]')?.textContent).toBe(
+      'Added 6,020 visits from 5,210 visitors, 16,844 events and 151 payments to Test site a1 in 1.8 s',
+    )
+    expect(api.find('GET', '/sites').length).toBeGreaterThan(sitesBefore)
+
+    await choose(selectTrigger(container, 'Write into'), 'New test sites')
+    await fill(byLabel(container, 'Sites'), '3')
+    await fill(byLabel(container, 'Price multiplier'), '10000')
+    await click(byText(container, 'Generate', 'button'))
+    await settled()
+    expect(api.find('POST', '/debug/generate')[1]?.body).toEqual({
+      sites: 3,
+      days: 90,
+      visitorsPerDay: 3000,
+      priceScale: 10000,
+      currency: 'EUR',
+    })
+
+    await click(preset('mix'))
+    expect(byLabel(container, 'Visits per day')).toBeUndefined()
+    expect(byLabel(container, 'Price multiplier')).toBeUndefined()
+    expect(estimate()).toMatch(
+      /^10 different sites \(busy shop, empty site, .*premium SaaS, .*personal site\): about 605\.2K visits\. A run this big/,
+    )
+    await fill(byLabel(container, 'Sites'), '2')
+    expect(estimate()).toBe('2 different sites (busy shop, empty site): about 150K visits.')
+    await click(byText(container, 'Generate', 'button'))
+    await settled()
+    expect(api.find('POST', '/debug/generate')[2]?.body).toEqual({ sites: 2, days: 60, mix: true, currency: 'EUR' })
+    await choose(selectTrigger(container, 'Traffic'), 'Same on every site')
+    expect(byLabel(container, 'Visits per day')?.value).toBe('400')
+
+    await click(byText(container, 'Delete test sites', '.analytik-card button'))
+    await settled()
+    await inDialog(container, 'Delete test sites')
+    expect(api.find('DELETE', '/debug/sites')).toHaveLength(1)
+    expect(byText(container, 'Deleted 3 test sites', '[role="status"]')).toBeDefined()
+  })
+})
+
+describe('site lifecycle', () => {
+  it('pauses and resumes tracking from the general settings', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    expect(container.querySelector('.analytik-tracking-state')?.textContent).toBe('Tracking is on')
+    await click(byText(container, 'Pause tracking', 'button'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_1')[0]?.body).toEqual({ paused: true })
+    expect(container.querySelector('.analytik-tracking-state')?.textContent).toBe('Tracking is paused')
+    expect(byText(container, 'Tracking paused', '[role="status"]')).toBeDefined()
+    await click(byText(container, 'Resume tracking', 'button'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_1')[1]?.body).toEqual({ paused: false })
+  })
+
+  it('deletes the site after the admin password, then shows all sites', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await click(byText(container, 'Delete website', '.analytik-card button'))
+    await settled()
+    const dialog = () => document.querySelector('[role="dialog"]')
+    expect(dialog()?.querySelector('h2')?.textContent).toBe('Delete Example?')
+    const submitButton = () => byText(document.body, 'Delete website', '[role="dialog"] button')
+    expect(submitButton()?.hasAttribute('disabled')).toBe(true)
+    await fill(byLabel(document.body, 'Admin password'), 'guess')
+    expect(submitButton()?.hasAttribute('disabled')).toBe(true)
+    await fill(byLabel(document.body, 'Type example.com to confirm'), 'example.co')
+    expect(submitButton()?.hasAttribute('disabled')).toBe(true)
+    await fill(byLabel(document.body, 'Type example.com to confirm'), ' Example.com ')
+    expect(submitButton()?.hasAttribute('disabled')).toBe(false)
+    await submit(dialog()?.querySelector('form'))
+    await settled()
+    expect(dialog()?.querySelector('.analytik-field-error')?.textContent).toBe('Wrong password.')
+    expect(api.state.sites).toHaveLength(2)
+    await fill(byLabel(document.body, 'Admin password'), 'secret')
+    await submit(dialog()?.querySelector('form'))
+    await settled()
+    expect(api.find('DELETE', '/sites/site_1').at(-1)?.body).toEqual({ confirm: 'example.com', password: 'secret' })
+    expect(api.state.sites.map((s) => s.id)).toEqual(['site_2'])
+    expect(container.querySelector('h1')?.textContent).toBe('All sites')
+  })
+
+  it('asks for the domain when admins sign in through verify()', async () => {
+    const api = fakeApi()
+    api.state.login = 'custom'
+    const { container } = await open(api, 'settings')
+    await click(byText(container, 'Delete website', '.analytik-card button'))
+    await settled()
+    expect(byLabel(document.body, 'Admin password')).toBeUndefined()
+    await fill(byLabel(document.body, 'Type example.com to confirm'), 'example.com')
+    await submit(document.querySelector('[role="dialog"] form'))
+    await settled()
+    expect(api.find('DELETE', '/sites/site_1')[0]?.body).toEqual({ confirm: 'example.com' })
+  })
+
+  it('pauses and deletes from the menu on a site card', async () => {
+    const { container, api } = await open(fakeApi(), 'sites')
+    await click(container.querySelector('[aria-label="Actions for Other"]'))
+    await settled()
+    await press(byText(document.body, 'Pause tracking', '[role="menuitem"]'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_2')[0]?.body).toEqual({ paused: true })
+    expect(texts(container, '.analytik-site-item[data-paused] .analytik-site-name strong')).toEqual(['Other'])
+    expect(texts(container, '.analytik-badge[data-tone="paused"]')).toEqual(['Paused'])
+
+    await click(container.querySelector('[aria-label="Actions for Other"]'))
+    await settled()
+    await press(byText(document.body, 'Delete website', '[role="menuitem"]'))
+    await settled()
+    await fill(byLabel(document.body, 'Type other.org to confirm'), 'other.org')
+    await fill(byLabel(document.body, 'Admin password'), 'secret')
+    await submit(document.querySelector('[role="dialog"] form'))
+    await settled()
+    expect(texts(container, '.analytik-site-name strong')).toEqual(['Example'])
+  })
+})
+
+describe('formatting and credits', () => {
+  it('saves number and date formats and shows each option written its way', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Formatting')
+    await click(selectTrigger(container, 'Numbers'))
+    await settled()
+    const descriptions = [...document.querySelectorAll('[role="option"] .analytik-menu-description')].map((d) =>
+      d.textContent.replace(/\s/g, ' '),
+    )
+    expect(descriptions).toEqual(['1,234,567 · 5.3%', '1.234.567 · 5,3 %', '1 234 567 · 5,3 %', "1'234'567 · 5.3%"])
+    await key(document.activeElement ?? document.body, 'Escape')
+    await settled()
+    await choose(selectTrigger(container, 'Numbers'), 'Dot groups, comma decimals')
+    await choose(selectTrigger(container, 'Dates'), 'ISO 8601')
+    expect(api.state.preferences).toEqual({})
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({
+      format: { numbers: 'dot', currency: 'symbol', cents: 'always', date: 'iso', time: '12h' },
+    })
+    expect(container.querySelector('.analytik-format-preview strong')?.textContent.replace(/\s/g, ' ')).toBe(
+      '1.234.567,89 €',
+    )
+    expect(container.querySelector('.analytik-format-preview span')?.textContent).toMatch(/^\d{4}-\d{2}-\d{2} /)
+    await click(nav(container, 'Overview'))
+    await settled()
+    // The rest of the dashboard follows: the summary's visitors were "1,200".
+    expect(container.querySelector('.analytik-stat-value')?.textContent).toContain('1.200')
+    await key(document.body, 'Escape')
+    const { setFormatSettings, DEFAULT_FORMAT } = await import('../src/dashboard/format')
+    setFormatSettings(DEFAULT_FORMAT)
+  })
+
+  it('marks the debug section apart with an icon', async () => {
+    const { container } = await open(fakeApi(), 'settings')
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(8)
+    expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
+  })
+
+  it('credits the library and its author under the dashboard, unless turned off', async () => {
+    const { container } = await open()
+    const links = [...container.querySelectorAll<HTMLAnchorElement>('.analytik-credits a')]
+    expect(links.map((a) => [a.textContent.trim(), a.href])).toEqual([
+      ['analytikOpen-source, privacy-first analytics', 'https://github.com/jantursky/analytik'],
+      ['Star on GitHub', 'https://github.com/jantursky/analytik'],
+      ['Jan Tursky', 'https://jantursky.com/'],
+    ])
+    expect(links.every((a) => a.target === '_blank' && a.rel === 'noopener')).toBe(true)
+    const bare = await render(<Dashboard api="/api" fetcher={fakeApi().fetcher} credits={false} />)
+    await settled()
+    expect(bare.container.querySelector('.analytik-credits')).toBeNull()
   })
 })
 
@@ -735,7 +1582,7 @@ describe('parts', () => {
       'src="https://stats.example.net/analytik.js"',
     )
     expect(texts(container, '.analytik-stat-label')).toHaveLength(7)
-    expect(byText(container, 'View on map', 'button')).toBeUndefined()
+    expect(byText(container, 'Open live map', 'button')).toBeUndefined()
     await click(byText(container, 'Organic Search', '.analytik-bar-label')?.closest('button'))
   })
 

@@ -19,13 +19,16 @@ const middleware =
     }
   }
 
-/** Mounts the same handler as the Vercel function on the dev and preview servers. */
+/**
+ * Mounts the demo API: the Vercel function's read-only handler on the preview server, and a writable one with the
+ * debug tools on the dev server.
+ */
 export const demoApi = (): Plugin => ({
   name: 'analytik-demo-api',
   configureServer(server) {
     server.middlewares.use(
       // Loaded through Vite so the dev server resolves `analytik/*` to the library source.
-      middleware(async () => ((await server.ssrLoadModule('/server/demo.ts')) as { handle: Handle }).handle),
+      middleware(async () => ((await server.ssrLoadModule('/server/demo.ts')) as { localHandle: Handle }).localHandle),
     )
   },
   configurePreviewServer(server) {

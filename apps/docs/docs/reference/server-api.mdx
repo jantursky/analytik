@@ -28,6 +28,7 @@ function createAnalytik(options: CreateAnalytikOptions): Analytik
 | `geo`            | `(request: Request) => Geo \| null \| Promise<Geo \| null>`                 | edge headers                    | Supply location when the platform does not. Default: Vercel `x-vercel-ip-*` headers, then Cloudflare `request.cf`. Coordinates are rounded to two decimals.                   |
 | `trustProxy`     | `'auto'`, `'cloudflare'`, `'vercel'`, `'forwarded'` or `false`              | `auto`                          | Where the client IP comes from. See below.                                                                                                                                    |
 | `clientIp`       | `(request: Request) => string \| null`                                      | from `trustProxy`               | Your own client IP lookup. Overrides `trustProxy`. Return `null` when the address is unknown.                                                                                 |
+| `debug`          | `boolean`                                                                   | `false`                         | Turns on the `/debug` admin routes and the dashboard's Debug settings, which fill the database with test data. Local and staging only.                                        |
 | `now`            | `() => number`                                                              | `Date.now`                      | Clock, for tests.                                                                                                                                                             |
 | `random`         | `(size: number) => Uint8Array`                                              | Web Crypto                      | Random source, for tests.                                                                                                                                                     |
 
@@ -86,7 +87,7 @@ createAnalytik({
 
 `IngestInput` has a `payload` (the untrusted tracker payload, `unknown`) and optional `ip`, `userAgent`, `origin`, `geo` and `doNotTrack`. The IP and user agent feed the strict-mode hash and the ignored-IP list and are never stored. The result is an `IngestResult`:
 
-- `{ status: 202, visitorId, sessionId }` when the event was accepted. Both ids are `null` and `filtered` is `'bot'` or `'ignored-ip'` when the event was dropped on purpose.
+- `{ status: 202, visitorId, sessionId }` when the event was accepted. Both ids are `null` and `filtered` is `'bot'`, `'ignored-ip'` or `'paused'` (tracking is paused for the site) when the event was dropped on purpose.
 - `{ status: 400 | 403 | 404, error }` when it was rejected.
 
 ```ts
@@ -126,6 +127,17 @@ const overview = await stats.overview('SITE_ID', {
 ```
 
 The query argument is a `Query` and the result is an `Overview`; see [Types](/reference/types). `from` is inclusive and `to` exclusive, both in Unix milliseconds. Unknown sites throw an `AnalytikError` with status 404.
+
+`stats.sessions`, `stats.events` and `stats.payments` return a `Page` and take the list options of the [HTTP API](/reference/http-api#lists) as a third argument:
+
+```ts
+const refunds = await stats.payments(
+  'SITE_ID',
+  { from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 10, 1) },
+  { kind: 'refund', sort: 'amount', order: 'desc', offset: 0, limit: 25 },
+)
+console.log(refunds.total, refunds.items)
+```
 
 ## Mounting
 

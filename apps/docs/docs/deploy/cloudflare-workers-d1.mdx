@@ -105,7 +105,7 @@ A small site fits in Cloudflare's free plan, and several small sites often do. C
 
 Each tracked pageview costs one Worker request and a few written rows; engagement pings, goals and dashboard use add more. As a rough guide, the write limit is reached at a few tens of thousands of pageviews a day, whichever limit comes first. When a limit is exceeded, requests fail until it resets, which for analytics means lost events, not a broken site: the tracker never blocks your page. If you outgrow the free plan, the paid Workers plan is a flat monthly fee with generous included usage.
 
-Two things keep usage down: leave `data-require-interaction` on so that bounces from bots cost nothing, and set a [retention](/deploy/backups-retention-and-upgrades#retention) so the database does not grow without bound.
+Three things keep usage down: leave `data-require-interaction` on so that bounces from bots cost nothing, keep [activity updates](/guides/tracker#activity-updates) at their default of one every 4 minutes (or `data-ping-interval="0"` for the fewest requests), and set a [retention](/deploy/backups-retention-and-upgrades#retention) so the database does not grow without bound. The dashboard keeps answers for a minute and loads the sites overview in one request; leave its **Live** switch off on a dashboard that stays open for hours, since every live refresh reads the whole range again.
 
 ## Ad blockers and first-party routes
 

@@ -13,10 +13,11 @@ import type {
   SessionDetail,
   SessionSummary,
   Site,
+  SiteSummary,
   TimeseriesPoint,
 } from '../src/shared/types'
 import { storageKinds } from './helpers/databases'
-import { CHROME, IPHONE, START, type TestServer, testServer } from './helpers/server'
+import { CHROME, IPHONE, PASSWORD, START, type TestServer, testServer } from './helpers/server'
 
 const DAY_START = Date.UTC(2026, 2, 16)
 const RANGE = 'from=2026-03-16&to=2026-03-16&tz=UTC'
@@ -131,6 +132,29 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     })
   })
 
+  it('summary: every site in one request, matching the overview', async () => {
+    const empty = await server.createSite({ domain: 'quiet.example.org', currency: 'EUR' })
+    const summary = await server.adminJson<SiteSummary[]>('/summary?from=2026-03-16&to=2026-03-16')
+    expect(summary).toHaveLength(2)
+    expect(summary).toEqual(
+      expect.arrayContaining([
+        { siteId: site.id, visitors: 3, revenue: 7000, orders: 2, currency: 'USD', online: 1 },
+        { siteId: empty.site.id, visitors: 0, revenue: 0, orders: 0, currency: 'EUR', online: 0 },
+      ]),
+    )
+    // Default: the last 24 hours, which take in the visit the evening before too.
+    const recent = await server.adminJson<SiteSummary[]>('/summary')
+    expect(recent.find((row) => row.siteId === site.id)?.visitors).toBe(4)
+    const refused = await server.admin('/summary?from=2026-03-17&to=2026-03-16')
+    expect(refused.status).toBe(400)
+    expect((await server.admin('/summary?from=soon')).status).toBe(400)
+    expect((await server.request('/summary')).status).toBe(401)
+    await server.admin(`/sites/${empty.site.id}`, {
+      method: 'DELETE',
+      json: { confirm: 'quiet.example.org', password: PASSWORD },
+    })
+  })
+
   it('overview: filters by session attributes and events', async () => {
     const organic = await get<Overview>(`/overview?${RANGE}&channel=Organic%20Search`)
     expect([organic.visitors.value, organic.sessions.value, organic.revenue.value, organic.orders.value]).toEqual([
@@ -148,8 +172,27 @@ describe.each(storageKinds())('stats on %s', (kind) => {
   it('timeseries: one point per bucket in the requested timezone', async () => {
     const hourly = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=hour`)
     expect(hourly).toHaveLength(24)
-    expect(hourly[8]).toEqual({ ts: DAY_START + 8 * HOUR, visitors: 1, sessions: 1, pageviews: 2, revenue: 0 })
-    expect(hourly[12]).toEqual({ ts: DAY_START + 12 * HOUR, visitors: 0, sessions: 0, pageviews: 0, revenue: 5000 })
+    expect(hourly[8]).toMatchObject({
+      ts: DAY_START + 8 * HOUR,
+      visitors: 1,
+      sessions: 1,
+      pageviews: 2,
+      revenue: 0,
+      orders: 0,
+      bounceRate: 0,
+      conversionRate: 0,
+    })
+    expect(hourly[12]).toMatchObject({
+      ts: DAY_START + 12 * HOUR,
+      visitors: 0,
+      sessions: 0,
+      revenue: 5000,
+      orders: 1,
+      bounceRate: 0,
+      avgDurationMs: 0,
+      conversionRate: 0,
+      revenuePerVisitor: 0,
+    })
     expect(hourly[13]?.revenue).toBe(-1000)
     expect(hourly.reduce((sum, point) => sum + point.sessions, 0)).toBe(4)
 
@@ -160,7 +203,22 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     expect(local.map((point) => point.sessions)).toEqual([1, 4])
 
     const filtered = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=day&channel=Organic%20Search`)
-    expect(filtered).toEqual([{ ts: DAY_START, visitors: 1, sessions: 1, pageviews: 2, revenue: 4000 }])
+    expect(filtered).toEqual([
+      {
+        ts: DAY_START,
+        visitors: 1,
+        sessions: 1,
+        pageviews: 2,
+        revenue: 4000,
+        orders: 1,
+        bounceRate: 0,
+        avgDurationMs: filtered[0]?.avgDurationMs,
+        conversionRate: 1,
+        revenuePerVisitor: 4000,
+      },
+    ])
+    const daily = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=day`)
+    expect(daily[0]?.bounceRate).toBe(0.75)
   })
 
   it('breakdown: session dimensions with revenue credited to the visit', async () => {
@@ -251,9 +309,14 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     ])
     expect(realtime.locations).toEqual([])
     server.now = DAY_START + 8 * HOUR + 2 * MINUTE
-    expect((await get<Realtime>('/realtime')).locations).toEqual([
-      { lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' },
-    ])
+    const [berlin, ...others] = (await get<Realtime>('/realtime')).locations
+    expect(others).toEqual([])
+    expect(berlin).toMatchObject({ lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' })
+    expect(typeof berlin?.sessionId).toBe('string')
+    expect(typeof berlin?.visitorId).toBe('string')
+    expect(berlin?.page).toMatch(/^\//)
+    expect(berlin?.source).toBeTruthy()
+    expect(berlin?.lastSeen).toBeGreaterThanOrEqual(berlin?.startedAt ?? Infinity)
     server.now = DAY_START + 11 * HOUR + 2 * MINUTE
   })
 
@@ -311,6 +374,95 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     expect(next.items.map((payment) => [payment.id, payment.matchedBy, payment.renewal])).toEqual([
       ['pay_1', 'metadata', false],
     ])
+  })
+
+  it('lists: numbered pages with a total, any sort order and search', async () => {
+    const all = await get<Page<SessionSummary>>(`/sessions?${RANGE}`)
+    expect(all.total).toBe(4)
+    expect(await get<Page<SessionSummary>>(`/sessions?${RANGE}&limit=3&offset=3`)).toMatchObject({
+      items: [{ id: 'session-0001' }],
+      nextCursor: null,
+      total: 4,
+    })
+    const ascending = (values: number[]) => values.every((v, i) => i === 0 || values[i - 1]! <= v)
+    const pages = (await get<Page<SessionSummary>>(`/sessions?${RANGE}&sort=pageviews&order=asc`)).items
+    expect(ascending(pages.map((s) => s.pageviews))).toBe(true)
+    const revenue = (await get<Page<SessionSummary>>(`/sessions?${RANGE}&sort=revenue`)).items
+    expect(ascending(revenue.map((s) => -s.revenue))).toBe(true)
+    expect(revenue[0]?.revenue).toBe(4000)
+    // Unknown values sort last in both directions, on every database.
+    for (const order of ['asc', 'desc']) {
+      const countries = (await get<Page<SessionSummary>>(`/sessions?${RANGE}&sort=country&order=${order}`)).items
+      const firstUnknown = countries.findIndex((s) => s.country === null)
+      if (firstUnknown >= 0) expect(countries.slice(firstUnknown).every((s) => s.country === null)).toBe(true)
+    }
+    const oldest = await get<Page<SessionSummary>>(`/sessions?${RANGE}&order=asc&limit=1`)
+    expect(oldest).toMatchObject({ items: [{ id: 'session-0001' }], nextCursor: null })
+
+    const pricing = await get<Page<SessionSummary>>(`/sessions?${RANGE}&search=PRICING`)
+    expect(pricing.total).toBeGreaterThan(0)
+    expect(pricing.items.every((s) => [s.entryPage, s.exitPage].some((p) => p?.includes('/pricing')))).toBe(true)
+    expect(await get<Page<EventRow>>(`/events?${RANGE}&search=sign`)).toMatchObject({
+      items: [{ name: 'signup' }],
+      total: 1,
+    })
+    // Wildcards in the search are literal characters.
+    expect((await get<Page<EventRow>>(`/events?${RANGE}&search=%25`)).total).toBe(0)
+    expect((await get<Page<EventRow>>(`/events?${RANGE}&search=_`)).total).toBe(0)
+    const named = (await get<Page<EventRow>>(`/events?${RANGE}&sort=name&order=asc`)).items
+    expect(named[0]?.name).not.toBeNull()
+    expect(named.at(-1)?.name).toBeNull()
+  })
+
+  it('payments: filtered by kind, provider and attribution, sorted by amount', async () => {
+    const all = (await get<Page<Payment>>(`/payments?${RANGE}`)).items
+    const ids = async (params: string) =>
+      (await get<Page<Payment>>(`/payments?${RANGE}&${params}`)).items.map((p) => p.id)
+    expect(await ids('kind=refund')).toEqual(all.filter((p) => p.kind === 'refund').map((p) => p.id))
+    expect(await ids('kind=payment&attributed=true')).toEqual(
+      all.filter((p) => p.kind === 'payment' && p.matchedBy).map((p) => p.id),
+    )
+    expect(await ids('attributed=false')).toEqual(all.filter((p) => !p.matchedBy).map((p) => p.id))
+    expect(await ids(`provider=${all[0]?.provider ?? ''}`)).toHaveLength(
+      all.filter((p) => p.provider === all[0]?.provider).length,
+    )
+    expect(await ids('provider=nobody')).toEqual([])
+    const amounts = (await get<Page<Payment>>(`/payments?${RANGE}&sort=amount&order=asc`)).items.map((p) => p.amount)
+    expect(amounts).toEqual([...amounts].sort((a, b) => a - b))
+    expect(await ids('search=PAY_1')).toEqual(['pay_1'])
+    for (const sort of ['provider', 'customer', 'attribution', 'time']) {
+      expect((await get<Page<Payment>>(`/payments?${RANGE}&sort=${sort}`)).total).toBe(all.length)
+    }
+    const buyer = all.find((p) => p.visitorId)?.visitorId ?? ''
+    expect(await ids(`visitor=${buyer}`)).toEqual(all.filter((p) => p.visitorId === buyer).map((p) => p.id))
+  })
+
+  it("lists: one visitor's sessions and events", async () => {
+    const all = (await get<Page<SessionSummary>>(`/sessions?${RANGE}`)).items
+    const visitor = all[0]?.visitorId ?? ''
+    const theirs = await get<Page<SessionSummary>>(`/sessions?${RANGE}&visitor=${visitor}`)
+    expect(theirs.total).toBe(all.filter((s) => s.visitorId === visitor).length)
+    expect(theirs.items.every((s) => s.visitorId === visitor)).toBe(true)
+    const events = await get<Page<EventRow>>(`/events?${RANGE}&visitor=${visitor}`)
+    expect(events.total).toBeGreaterThan(0)
+    expect(events.items.every((e) => e.visitorId === visitor)).toBe(true)
+    expect((await get<Page<EventRow>>(`/events?${RANGE}&visitor=nobody`)).total).toBe(0)
+  })
+
+  it('lists reject unknown sorts, orders and filters', async () => {
+    const status = async (path: string) => (await server.admin(`/sites/${site.id}${path}`)).status
+    const first = await get<Page<SessionSummary>>(`/sessions?${RANGE}&limit=1`)
+    expect(await status(`/sessions?${RANGE}&sort=planet`)).toBe(400)
+    expect(await status(`/sessions?${RANGE}&order=up`)).toBe(400)
+    expect(await status(`/sessions?${RANGE}&offset=-1`)).toBe(400)
+    expect(await status(`/sessions?${RANGE}&sort=duration&cursor=${first.nextCursor ?? ''}`)).toBe(400)
+    expect(await status(`/sessions?${RANGE}&offset=1&cursor=${first.nextCursor ?? ''}`)).toBe(400)
+    expect(await status(`/payments?${RANGE}&kind=gift`)).toBe(400)
+    expect(await status(`/payments?${RANGE}&attributed=maybe`)).toBe(400)
+    for (const sort of ['time', 'duration', 'pageviews', 'source', 'country', 'entry', 'revenue']) {
+      expect(await status(`/sessions?${RANGE}&sort=${sort}`)).toBe(200)
+    }
+    for (const sort of ['time', 'type', 'name', 'page']) expect(await status(`/events?${RANGE}&sort=${sort}`)).toBe(200)
   })
 
   it('funnels: create, list, compute and delete', async () => {
@@ -442,7 +594,7 @@ describe('empty sites', () => {
     )
     // 75 days of hours is too many points; the interval falls back to days.
     expect(series).toHaveLength(75)
-    expect(await server.adminJson(`/sites/${site.id}/sessions`)).toEqual({ items: [], nextCursor: null })
+    expect(await server.adminJson(`/sites/${site.id}/sessions`)).toEqual({ items: [], nextCursor: null, total: 0 })
     expect(await (await server.admin(`/sites/${site.id}/export?format=csv`)).text()).toBe('')
     await server.close()
   })

@@ -22,7 +22,21 @@ describe('AreaChart', () => {
     expect(container.querySelector('.recharts-surface')?.getAttribute('aria-label')).toBe('Visitors chart')
     expect(container.querySelector('.analytik-legend')).toBeNull()
     expect(container.querySelectorAll('.recharts-yAxis')).toHaveLength(1)
-    expect(container.querySelector('linearGradient stop')?.getAttribute('stop-color')).toBe('var(--analytik-series-1)')
+    expect(container.querySelector('linearGradient stop')?.getAttribute('stop-color')).toBe(
+      'var(--analytik-primary-series, var(--analytik-series-1))',
+    )
+  })
+
+  it('draws the main series as bars or a bare line, in its own colour', async () => {
+    const bars = await render(<AreaChart points={points} {...props} kind="bars" colour="red" />)
+    await waitFor(() => bars.container.querySelector('.recharts-bar-rectangle'))
+    expect(bars.container.querySelector('.recharts-area-curve')).toBeNull()
+    expect(
+      bars.container.querySelector<HTMLElement>('figure')?.style.getPropertyValue('--analytik-primary-series'),
+    ).toBe('red')
+    const line = await render(<AreaChart points={points} {...props} kind="line" />)
+    await waitFor(() => line.container.querySelector('.recharts-area-curve'))
+    expect(line.container.querySelector('.recharts-area-area')?.getAttribute('fill')).toBe('none')
   })
 
   it('shows a tooltip for the point under the keyboard focus', async () => {
@@ -55,7 +69,7 @@ describe('AreaChart', () => {
 
   it('handles no data', async () => {
     const none = await render(<AreaChart points={[]} {...props} />)
-    expect(none.container.textContent).toBe('No data for this period')
+    expect(none.container.textContent).toBe('Nothing recorded in this period')
   })
 })
 
@@ -74,9 +88,9 @@ describe('BarList', () => {
     expect(buttons).toHaveLength(2)
     expect(container.querySelector('ul')?.getAttribute('aria-label')).toBe('Pages')
     await settled()
-    expect([...container.querySelectorAll<HTMLElement>('.analytik-bar-fill')].map((f) => f.style.width)).toEqual([
-      '100%',
-      '50%',
+    expect([...container.querySelectorAll<HTMLElement>('.analytik-bar-fill')].map((f) => f.style.transform)).toEqual([
+      'none',
+      'scaleX(0.5)',
     ])
     expect(buttons[1]?.textContent).toBe('(none)50, filter by this')
     await click(buttons[0])
@@ -88,7 +102,7 @@ describe('BarList', () => {
     expect(container.querySelector('button')).toBeNull()
     expect(container.querySelector('.analytik-bar')?.textContent).toBe('a0')
     const empty = await render(<BarList rows={[]} label="L" formatValue={String} />)
-    expect(empty.container.textContent).toBe('No data for this period')
+    expect(empty.container.textContent).toBe('Nothing recorded in this period')
   })
 })
 
@@ -111,13 +125,14 @@ describe('Sparkline and DeltaBadge', () => {
         <DeltaBadge change={null} />
       </>,
     )
-    expect([...container.querySelectorAll('.analytik-badge')].map((b) => b.getAttribute('data-trend'))).toEqual([
+    expect([...container.querySelectorAll('.analytik-delta')].map((b) => b.getAttribute('data-trend'))).toEqual([
       'up',
       'down',
       'down',
       'flat',
       'flat',
     ])
-    expect(container.querySelector('.analytik-badge')?.textContent).toBe('Change from previous period: +10%')
+    expect(container.querySelector('.analytik-delta')?.textContent).toBe('Change from previous period: +10%')
+    expect(container.querySelectorAll('.analytik-delta svg')).toHaveLength(3)
   })
 })

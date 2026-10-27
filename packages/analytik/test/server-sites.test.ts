@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import type { Site } from '../src/shared/types'
-import { type TestServer, testServer } from './helpers/server'
+import { storageKinds } from './helpers/databases'
+import { CHROME, PASSWORD, type TestServer, testServer } from './helpers/server'
 
 let server: TestServer
 
@@ -28,6 +29,7 @@ describe('site management', () => {
       privacyMode: 'strict',
       retentionDays: null,
       allowLocalhost: false,
+      paused: false,
       ignoredIps: [],
       shareToken: null,
       webhooks: { stripe: false, dodo: false, lemonsqueezy: false },
@@ -83,7 +85,14 @@ describe('site management', () => {
       name: 'Renamed',
     })
 
-    expect(await server.adminJson(`/sites/${site.id}`, { method: 'DELETE' })).toEqual({ ok: true })
+    expect(
+      await server.adminJson(`/sites/${site.id}`, {
+        method: 'DELETE',
+        json: { confirm: 'example.com', password: PASSWORD },
+      }),
+    ).toEqual({
+      ok: true,
+    })
     expect((await server.admin(`/sites/${site.id}`)).status).toBe(404)
   })
 
@@ -132,7 +141,7 @@ describe('site management', () => {
   it('deletes all data of a deleted site', async () => {
     const { site } = await server.createSite()
     await server.event({ w: site.id, t: 'pageview', u: 'https://example.com/' })
-    await server.admin(`/sites/${site.id}`, { method: 'DELETE' })
+    await server.admin(`/sites/${site.id}`, { method: 'DELETE', json: { confirm: 'example.com', password: PASSWORD } })
     for (const table of ['sites', 'sessions', 'events', 'visitors']) {
       expect(await server.rows(`SELECT * FROM ${table}`)).toEqual([])
     }
@@ -171,5 +180,92 @@ describe('share links', () => {
   it('can be created together with the site', async () => {
     const { site } = await server.createSite({ shareToken: true })
     expect(site.shareToken).toMatch(/^[0-9a-z]{24}$/)
+  })
+})
+
+describe('deleting and pausing a site', () => {
+  it('asks for the domain and the admin password before deleting', async () => {
+    const { site } = await server.createSite()
+    const remove = (json?: unknown) => server.admin(`/sites/${site.id}`, { method: 'DELETE', json })
+    expect((await remove()).status).toBe(400)
+    expect((await remove({ password: PASSWORD })).status).toBe(400)
+    expect((await remove({ confirm: 'example.com' })).status).toBe(403)
+    const wrong = await remove({ confirm: 'example.com', password: 'nope' })
+    expect(wrong.status).toBe(403)
+    expect(await wrong.json()).toEqual({ error: 'wrong password' })
+    expect((await server.admin(`/sites/${site.id}`)).status).toBe(200)
+    for (let i = 0; i < 8; i++) await remove({ confirm: 'example.com', password: 'nope' })
+    expect((await remove({ confirm: 'example.com', password: PASSWORD })).status).toBe(429)
+  })
+
+  it('asks for the domain with custom auth', async () => {
+    const custom = await testServer('memory', { admin: { verify: () => true } })
+    const { site } = await custom.createSite()
+    const remove = (json: unknown) => custom.admin(`/sites/${site.id}`, { method: 'DELETE', json })
+    const refused = await remove({ confirm: 'other.com' })
+    expect(refused.status).toBe(400)
+    expect(await refused.json()).toEqual({ error: "type the site's domain (example.com) to confirm" })
+    expect((await remove({ confirm: 'example.com' })).status).toBe(200)
+    await custom.close()
+  })
+
+  it('drops tracker events and server goals while paused, and records payments', async () => {
+    const { site, apiKey } = await server.createSite()
+    expect((await server.event({ w: site.id, t: 'pageview', u: 'https://example.com/' })).status).toBe(202)
+    const paused = await server.adminJson<Site>(`/sites/${site.id}`, { method: 'PATCH', json: { paused: true } })
+    expect(paused.paused).toBe(true)
+    expect((await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { paused: 'yes' } })).status).toBe(400)
+    await server.event({ w: site.id, t: 'pageview', u: 'https://example.com/pricing' })
+    expect(
+      await server.analytik.ingest({
+        payload: { w: site.id, t: 'pageview', u: 'https://example.com/a' },
+        userAgent: CHROME,
+      }),
+    ).toEqual({
+      status: 202,
+      visitorId: null,
+      sessionId: null,
+      filtered: 'paused',
+    })
+    const goal = await server.request('/v1/goals', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ name: 'signup', email: 'a@b.co' }),
+    })
+    expect(goal.status).toBe(202)
+    expect(await goal.json()).toEqual({ ok: true, filtered: 'paused' })
+    expect(await server.rows('SELECT path FROM events')).toEqual([{ path: '/' }])
+    const pay = await server.request('/v1/payments', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ id: 'pi_1', amount: 900, currency: 'USD' }),
+    })
+    expect(pay.status).toBe(200)
+
+    await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { paused: false } })
+    await server.event({ w: site.id, t: 'pageview', u: 'https://example.com/docs' })
+    expect(await server.rows('SELECT path FROM events ORDER BY ts')).toHaveLength(2)
+  })
+})
+
+describe('dashboard preferences', () => {
+  it.each(storageKinds())('stores them as one JSON document on %s', async (kind) => {
+    const store = await testServer(kind)
+    expect(await store.adminJson('/preferences')).toEqual({})
+    const first = { live: true, layout: [{ id: 'summary', wide: true }] }
+    expect(await store.adminJson('/preferences', { method: 'PUT', json: first })).toEqual(first)
+    await store.adminJson('/preferences', { method: 'PUT', json: { live: false } })
+    expect(await store.adminJson('/preferences')).toEqual({ live: false })
+    await store.close()
+  })
+
+  it('is admin only and takes a JSON object', async () => {
+    expect((await server.request('/preferences')).status).toBe(401)
+    expect((await server.admin('/preferences', { method: 'PUT', json: [1, 2] })).status).toBe(400)
+    await server.adminJson('/preferences', { method: 'PUT', json: {} })
+    await server.rows("UPDATE preferences SET value = 'not json' RETURNING key")
+    expect(await server.adminJson('/preferences')).toEqual({})
+    await server.rows("UPDATE preferences SET value = '[1]' RETURNING key")
+    expect(await server.adminJson('/preferences')).toEqual({})
   })
 })

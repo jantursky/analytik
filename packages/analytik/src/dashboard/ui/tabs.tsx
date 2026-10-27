@@ -1,8 +1,6 @@
 import { Tabs as BaseTabs } from '@base-ui/react/tabs'
 import type { ReactNode } from 'react'
 
-import { Reveal } from './motion'
-
 export interface TabsProps<T extends string> {
   label: string
   tabs: readonly { value: T; label: string }[]
@@ -30,7 +28,7 @@ export function Tabs<T extends string>({ label, tabs, value, onChange, extra, ch
         {extra}
       </div>
       <BaseTabs.Panel value={value} className="analytik-tab-panel">
-        <Reveal id={value}>{children}</Reveal>
+        {children}
       </BaseTabs.Panel>
     </BaseTabs.Root>
   )

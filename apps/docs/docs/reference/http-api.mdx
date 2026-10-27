@@ -57,16 +57,24 @@ Admin routes need a session cookie from `POST /auth/login`, or `Authorization: B
 | `POST /auth/logout` | Clears it.                                             |
 | `GET /auth/me`      | Whether the current request is authenticated.          |
 
+### Preferences
+
+| Method and path    | Description                                                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /preferences` | The dashboard settings (overview layout, summary numbers and chart, live refresh) as one JSON object; `{}` before any are saved. |
+| `PUT /preferences` | Replaces them with the JSON object in the body. The server stores it as is; the dashboard checks each value when it reads it.    |
+
 ### Sites
 
-| Method and path              | Description                                                                                                                                                                                                                                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /sites`                 | List sites.                                                                                                                                                                                                                                                                                      |
-| `POST /sites`                | Create a site. Only `domain` is required (a real domain such as `example.com`; `localhost` is rejected). Other fields: `name`, `timezone`, `currency`, `privacyMode`, `retentionDays`, `allowLocalhost`, `ignoredIps`, `shareToken`. Answers 201 with `{ site, apiKey }`; the key is shown once. |
-| `GET /sites/:id`             | One site. Secrets are never returned: `webhooks` says which providers have a secret, and `shareToken` is the current share token or `null`.                                                                                                                                                      |
-| `PATCH /sites/:id`           | Change settings, including webhook secrets (`webhookSecrets: { stripe: "..." }`, `null` removes one) and the share link (`shareToken: true` creates a token, `null` turns sharing off).                                                                                                          |
-| `DELETE /sites/:id`          | Delete the site and its data.                                                                                                                                                                                                                                                                    |
-| `POST /sites/:id/rotate-key` | Issue a new site API key. The old one stops working.                                                                                                                                                                                                                                             |
+| Method and path              | Description                                                                                                                                                                                                                                                                                                                                                |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /sites`                 | List sites.                                                                                                                                                                                                                                                                                                                                                |
+| `GET /summary`               | Every site's visitors, revenue and orders in `from`–`to` (ISO dates, default the last 24 hours) and who is online now, as `SiteSummary[]`. One request for the sites overview, however many sites there are.                                                                                                                                               |
+| `POST /sites`                | Create a site. Only `domain` is required (a real domain such as `example.com`; `localhost` is rejected). Other fields: `name`, `timezone`, `currency`, `privacyMode`, `retentionDays`, `allowLocalhost`, `ignoredIps`, `shareToken`. Answers 201 with `{ site, apiKey }`; the key is shown once.                                                           |
+| `GET /sites/:id`             | One site. Secrets are never returned: `webhooks` says which providers have a secret, and `shareToken` is the current share token or `null`.                                                                                                                                                                                                                |
+| `PATCH /sites/:id`           | Change settings, including webhook secrets (`webhookSecrets: { stripe: "..." }`, `null` removes one) and the share link (`shareToken: true` creates a token, `null` turns sharing off). `paused: true` stops tracking until set back to `false`: tracker events and server goals are dropped (202 with `filtered: "paused"`), payments are still recorded. |
+| `DELETE /sites/:id`          | Delete the site and its data. The body proves it is meant: `{ "confirm": "example.com", "password": "..." }`, the site's domain and the admin password. When admins sign in through `verify()` there is no password, and the domain alone is enough. A wrong domain answers 400; a wrong password 403, and it counts toward the login limit.               |
+| `POST /sites/:id/rotate-key` | Issue a new site API key. The old one stops working.                                                                                                                                                                                                                                                                                                       |
 
 ### Statistics
 
@@ -75,15 +83,37 @@ All take `from`, `to`, `interval`, `tz` and filters. `GET /sites/:id/realtime` t
 | Method and path                       | Returns                                                                                |
 | ------------------------------------- | -------------------------------------------------------------------------------------- |
 | `GET /sites/:id/overview`             | `Overview`. Revenue counts only the site's currency; the rest is in `otherCurrencies`. |
-| `GET /sites/:id/timeseries`           | `TimeseriesPoint[]`: visitors, sessions, pageviews, revenue per bucket                 |
+| `GET /sites/:id/timeseries`           | `TimeseriesPoint[]`: traffic, revenue, orders and rates per bucket                     |
 | `GET /sites/:id/breakdown?dimension=` | `BreakdownRow[]`                                                                       |
-| `GET /sites/:id/realtime`             | `Realtime`: visitors in the last 5 minutes, recent events and locations                |
-| `GET /sites/:id/sessions`             | `Page<SessionSummary>`, cursor paginated                                               |
+| `GET /sites/:id/realtime`             | `Realtime`: visitors in the last 5 minutes, recent events and their visits on the map  |
+| `GET /sites/:id/sessions`             | `Page<SessionSummary>`, see [Lists](#lists)                                            |
 | `GET /sites/:id/sessions/:sid`        | One session with its visitor profile, events and payments (admin only)                 |
-| `GET /sites/:id/events?name=&type=`   | Paged events                                                                           |
-| `GET /sites/:id/payments`             | `Page<Payment>`, cursor paginated (admin only)                                         |
+| `GET /sites/:id/events?name=&type=`   | `Page<EventRow>`, see [Lists](#lists)                                                  |
+| `GET /sites/:id/payments`             | `Page<Payment>`, see [Lists](#lists) (admin only)                                      |
 
 Dimensions for `breakdown`: `channel`, `source`, `referrer`, `campaign`, `medium`, `term`, `content`, `ref`, `page`, `entry`, `exit`, `country`, `region`, `city`, `browser`, `os`, `device`, `event`, `outbound`, `goal`.
+
+### Lists
+
+Sessions, events and payments answer one page at a time, newest first: `{ items, nextCursor, total }`. `total` counts every match, not just this page.
+
+| Parameter       | Meaning                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| `limit`         | Page size, up to 100.                                                                               |
+| `cursor`        | The previous page's `nextCursor`. Only for the default order.                                       |
+| `offset`        | Skip this many matches, for numbered pages. `nextCursor` is then `null`.                            |
+| `sort`, `order` | Sort key and `asc` or `desc` (default `desc`). `nextCursor` is then `null`. Empty values sort last. |
+| `search`        | Case-insensitive substring match over the list's text columns.                                      |
+| `visitor`       | Only the rows of this visitor id.                                                                   |
+
+Sort keys: sessions `time duration pageviews source country entry revenue`; events `time type name page`; payments `time amount provider customer attribution`. Sessions search pages, sources, channels, places, browsers, systems and visitor ids; events search names, paths and types; payments search ids, emails, names, customer, order and subscription ids and the provider.
+
+Events also take `name` and `type` (`pageview`, `goal`, `outbound`, `revenue`, `identify`). Payments take `kind` (`payment` or `refund`), `provider` and `attributed` (`true` or `false`). An unknown sort, order or filter value answers 400, and so does a `cursor` combined with `sort` or `offset`.
+
+```bash
+curl -b cookies.txt \
+  "https://analytics.example.com/api/sites/SITE_ID/payments?kind=refund&sort=amount&order=desc&offset=25&limit=25"
+```
 
 ### Filters
 
@@ -118,6 +148,16 @@ A request that carries the token, as `?share=TOKEN` or an `x-analytik-share: TOK
 | `DELETE /sites/:id/data?before=` | Delete older data. `before` is an ISO 8601 date or Unix milliseconds. Answers with how many `events`, `sessions` and `visitors` were removed.         |
 
 The purge deletes events, sessions, return-page claims and visitors left without sessions. Payments are kept so revenue numbers stay correct, but their email, name, customer id, visitor id and session id are cleared. See [Retention](/deploy/backups-retention-and-upgrades#retention).
+
+### Debug
+
+Test data for trying the dashboard with many sites, long histories and large numbers. `GET /debug` always answers; the other routes answer 404 unless the server was created with `debug: true`.
+
+| Method and path        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /debug`           | `{ enabled }`: whether the debug routes are on.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `POST /debug/generate` | Writes made-up visits, events, goals and payments (`TestDataInput`). With `siteId` they go into that site; otherwise into `sites` new sites with ids starting `debug-`. `days` (0 to 730), `visitorsPerDay` (0 to 100,000; a zero in either makes empty sites), `priceScale` and `currency` set the amounts. With `mix: true` the new sites differ the way real ones do (an empty one, a quiet blog, a busy shop, one just launched, a paused one and more), and `visitorsPerDay` and `priceScale` don't apply. One call writes at most 1,000,000 visits. Answers with `TestDataResult`: the sites, counts and how long it took. |
+| `DELETE /debug/sites`  | Deletes every site whose id starts with `debug-`, with its data. Answers `{ deleted }`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ### Payments
 

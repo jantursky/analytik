@@ -1,8 +1,17 @@
 import { Combobox as BaseCombobox } from '@base-ui/react/combobox'
-import { useId } from 'react'
+import { type ReactNode, useId } from 'react'
 
 import { Icon } from '../icons'
 import { useLayer } from './layer'
+
+export interface ComboboxChoice {
+  /** Shown in the input once chosen and matched against what is typed. */
+  label: string
+  /** A second, quieter line in the list. */
+  detail?: string
+  /** Shown before the text in the list, e.g. a currency symbol. */
+  leading?: ReactNode
+}
 
 export interface ComboboxProps {
   label: string
@@ -11,13 +20,16 @@ export interface ComboboxProps {
   options: readonly string[]
   onChange: (value: string) => void
   placeholder?: string
+  hint?: string
+  /** How a choice reads in the list and the input. Default: the value itself. */
+  describe?: (value: string) => ComboboxChoice
 }
 
 // Keeps long lists (some 400 time zones) quick to render; typing narrows them down.
 const LIMIT = 60
 
-/** A text input that filters a list of string choices, e.g. time zones. */
-export function Combobox({ label, value, options, onChange, placeholder }: ComboboxProps) {
+/** A text input that filters a list of choices, e.g. time zones or currencies. */
+export function Combobox({ label, value, options, onChange, placeholder, hint, describe }: ComboboxProps) {
   const id = useId()
   const layer = useLayer()
   return (
@@ -29,6 +41,7 @@ export function Combobox({ label, value, options, onChange, placeholder }: Combo
         items={options}
         value={value}
         limit={LIMIT}
+        itemToStringLabel={describe && ((option) => describe(option).label)}
         onValueChange={(next) => {
           if (next) onChange(next)
         }}
@@ -46,7 +59,7 @@ export function Combobox({ label, value, options, onChange, placeholder }: Combo
               <BaseCombobox.List>
                 {(option: string) => (
                   <BaseCombobox.Item key={option} value={option} className="analytik-menu-item">
-                    {option}
+                    {describe ? <Choice {...describe(option)} /> : option}
                     <BaseCombobox.ItemIndicator className="analytik-menu-check">
                       <Icon name="check" />
                     </BaseCombobox.ItemIndicator>
@@ -57,6 +70,19 @@ export function Combobox({ label, value, options, onChange, placeholder }: Combo
           </BaseCombobox.Positioner>
         </BaseCombobox.Portal>
       </BaseCombobox.Root>
+      {hint && <span className="analytik-field-hint">{hint}</span>}
     </div>
+  )
+}
+
+function Choice({ label, detail, leading }: ComboboxChoice) {
+  return (
+    <>
+      {leading}
+      <span className="analytik-menu-text">
+        <span>{label}</span>
+        {detail && <span className="analytik-menu-description">{detail}</span>}
+      </span>
+    </>
   )
 }

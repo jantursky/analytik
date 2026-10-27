@@ -23,6 +23,12 @@ export interface AnalytikOptions {
   autoOutbound?: boolean
   /** Track clicks on elements with `data-analytik-event`. Default true. */
   autoTrackAttrs?: boolean
+  /**
+   * Seconds between activity updates while the page is visible, at least 30. They keep a reader in the live view
+   * (which shows the last five minutes) and save the time spent should the page close without a last update. Each one
+   * is a request. Default 240; 0 sends the time only when the page is hidden or left.
+   */
+  pingInterval?: number
 }
 
 export interface RevenueOptions {

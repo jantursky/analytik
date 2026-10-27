@@ -7,6 +7,10 @@ import { useLayer } from './layer'
 export interface SelectOption<T extends string> {
   value: T
   label: string
+  /** A second line in the list, e.g. a site's domain. */
+  description?: string
+  /** Shown before the label in the list, e.g. a site tile. */
+  icon?: ReactNode
 }
 
 export interface SelectProps<T extends string> {
@@ -66,7 +70,11 @@ export function Select<T extends string>({
             <BaseSelect.List>
               {options.map((option) => (
                 <BaseSelect.Item key={option.value} value={option.value} className="analytik-menu-item">
-                  <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
+                  {option.icon}
+                  <span className="analytik-menu-text">
+                    <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
+                    {option.description && <span className="analytik-menu-description">{option.description}</span>}
+                  </span>
                   <BaseSelect.ItemIndicator className="analytik-menu-check">
                     <Icon name="check" />
                   </BaseSelect.ItemIndicator>

@@ -73,13 +73,17 @@ Public (CORS open, `text/plain` bodies allowed so no preflight):
 Admin (cookie session from `POST /auth/login`, or `Authorization: Bearer <admin token>`):
 
 - `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- `GET/POST /sites`, `GET/PATCH/DELETE /sites/:id`, `POST /sites/:id/rotate-key`
+- `GET /preferences`, `PUT /preferences` — dashboard settings (overview layout, summary, live refresh) as one JSON object, shared by every admin
+- `GET /debug` → `{ enabled }`; with `createAnalytik({ debug: true })` only: `POST /debug/generate` (`TestDataInput`: `siteId?` or `sites` 1–20, `days` 0–730, `visitorsPerDay` 0–100k (0 = empty sites), `priceScale`, `currency`, `mix` (varied site profiles: empty, quiet, busy, just launched, paused…); ≤ 1M visits per call) → `TestDataResult`, `DELETE /debug/sites` removes `debug-*` sites
+- `GET /summary?from&to` → `SiteSummary[]` (every site's visitors, revenue, orders and online in one request; default last 24 h)
+- `GET/POST /sites`, `GET/PATCH/DELETE /sites/:id` (`DELETE` needs `{ confirm: domain, password }`, the domain alone with `verify()` auth; `PATCH { paused }` pauses tracking: events and server goals dropped, payments kept), `POST /sites/:id/rotate-key`
 - `GET /sites/:id/overview?from&to&interval&tz&filter...` → `Overview`
-- `GET /sites/:id/timeseries` → `TimeseriesPoint[]` (visitors, sessions, pageviews, revenue)
+- `GET /sites/:id/timeseries` → `TimeseriesPoint[]` (visitors, sessions, pageviews, revenue, orders, bounce rate, visit duration, conversion rate, revenue per visitor)
 - `GET /sites/:id/breakdown?dimension=...` → `BreakdownRow[]`; dimensions: `channel source referrer campaign medium term content ref page entry exit country region city browser os device event outbound goal`
-- `GET /sites/:id/realtime` → `Realtime` (visitors in last 5 min, recent events, recent locations)
-- `GET /sites/:id/sessions`, `GET /sites/:id/sessions/:sid` (cursor pagination)
-- `GET /sites/:id/events?name=` → paged events
+- `GET /sites/:id/realtime` → `Realtime` (visitors in last 5 min, recent events, and each located visit with its session, visitor, page, source, browser and device)
+- `GET /sites/:id/sessions`, `GET /sites/:id/sessions/:sid`
+- `GET /sites/:id/events?name=&type=` → paged events
+- Lists (sessions, events, payments) → `Page<T> { items, nextCursor, total }`; params `limit`, `cursor` (default order only), `offset`, `sort`, `order=asc|desc`, `search`, `visitor` (one visitor id); payments also `kind`, `provider`, `attributed=true|false`. Unknown values and cursor+sort/offset → 400.
 - `GET/POST/DELETE /sites/:id/funnels`, `GET /sites/:id/funnels/:fid` → `FunnelResult`
 - `GET /sites/:id/payments`, `POST /sites/:id/rematch`
 - `GET /sites/:id/export?format=json|csv` — all data for backup
@@ -100,7 +104,7 @@ Same logical tables in every dialect (SQL files per dialect in `storage/migratio
 `sessions`(attribution, device and geo fields, including `lat`, `lon`) ·
 `events`(id, site_id, session_id, visitor_id, ts, type, name, path, props json) ·
 `payments`(id, site_id, provider, ts, amount minor units, kind payment|refund, currency, visitor_id, session_id, customer_id, email, name, renewal, matched_by, subscription_id, order_id) ·
-`payment_claims` · `funnels` · `salts`(month, value) · `schema_migrations`(version, applied_at).
+`payment_claims` · `funnels` · `salts`(month, value) · `preferences`(key, value json, updated_at) · `schema_migrations`(version, applied_at).
 
 Failed logins are counted in an internal rate-limit table (`rate_limits`).
 
@@ -133,7 +137,7 @@ Script tag (new):
 <script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
 ```
 
-Attributes: `data-site`, `data-api` (default origin of src + `/api/event`), `data-mode`, `data-allow-localhost`, `data-domain`, `data-require-interaction`, `data-keep-query`, `data-debug`, `data-auto-outbound` (default true), `data-auto-track-attrs` (default true).
+Attributes: `data-site`, `data-api` (default origin of src + `/api/event`), `data-mode`, `data-allow-localhost`, `data-domain`, `data-require-interaction`, `data-keep-query`, `data-ping-interval` (seconds between activity updates, default 240, min 30, `0` = only on leaving), `data-debug`, `data-auto-outbound` (default true), `data-auto-track-attrs` (default true).
 
 `?analytik_ignore=true` opts the browser out (stored in `localStorage` as `analytik_ignore`); `?analytik_ignore=false` undoes it. A payload without `m` is treated as `strict`.
 
@@ -145,7 +149,7 @@ React (`analytik/react`): `<AnalytikProvider client | site api mode>`, `useAnaly
 
 ## Dashboard (`analytik/dashboard`)
 
-`<Dashboard api="/api" siteId? />` talks to the admin routes with cookie auth (login form included, `<Dashboard fetcher>` to inject). Parts exported individually. Styles: `analytik/dashboard/styles.css`, CSS variables only (tokens from `design/DESIGN.md`, `--analytik-*` prefix mapped to the design tokens), light and dark via `prefers-color-scheme` and `[data-theme]`. Base UI, Motion and Recharts are optional peer dependencies of this subpath; the chart code and Recharts load lazily with the first chart. Views: Overview (visitors, sessions, pageviews, bounce, duration, revenue, conversion, revenue per visitor with period delta, chart), Sources, Pages (top, entry, exit), Events and goals, Funnels, Revenue (by channel/source/campaign/page/country), Sessions and visitor timeline, Realtime, Settings (site, snippet, privacy mode, allowed domains, API key, webhooks, retention, export, ignored IPs).
+`<Dashboard api="/api" siteId? favicons? syncPreferences? credits? />` talks to the admin routes with cookie auth (login form included, `<Dashboard fetcher>` to inject). Parts exported individually. Styles: `analytik/dashboard/styles.css`, CSS variables only (tokens from `design/DESIGN.md`, `--analytik-*` prefix mapped to the design tokens), light and dark via `prefers-color-scheme` and `[data-theme]`. Base UI, Motion and Recharts are optional peer dependencies of this subpath; the chart code and Recharts load lazily with the first chart, the browser and payment marks with the first one shown. Views: Overview (visitors, sessions, pageviews, bounce, duration, revenue, conversion, revenue per visitor with period delta, chart), Sources, Pages (top, entry, exit), Events and goals, Funnels, Revenue (by channel/source/campaign/page/country), Sessions and visitor timeline, Realtime, Settings in sections, each with an icon: General (name, domain, time zone, currency; pause or resume tracking; delete the site after the admin password), Privacy (mode, retention, ignored IPs, localhost), Tracking code, Campaign links (with a preview), Payments and API (webhooks, API key), Data (export, re-run attribution, delete), Formatting (number grouping, currency symbol or code, cents, date style, 12/24-hour clock, each option with an example; saved in the preferences), Debug in green (bulk test data with presets, delete test sites; needs `debug: true` on the server). Destructive actions confirm in a dialog.
 
 ## Features (v1)
 

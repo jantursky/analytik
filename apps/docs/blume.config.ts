@@ -28,13 +28,13 @@ export default defineConfig({
     site: 'https://analytik-docs.vercel.app',
   },
   theme: {
-    accent: { light: '#1e40af', dark: '#3b82f6' },
+    accent: { light: '#3a4fd8', dark: '#8a97ff' },
     background: { light: '#ffffff', dark: '#0a0a0a' },
     radius: 'md',
     mode: 'system',
     fonts: {
-      display: { name: 'Bricolage Grotesque', weights: [500, 600, 700] },
-      body: { name: 'Bricolage Grotesque', weights: [400, 500, 600, 700] },
+      display: { name: 'Figtree', weights: [500, 600, 700] },
+      body: { name: 'Figtree', weights: [400, 500, 600, 700] },
       mono: 'geist-mono',
     },
   },

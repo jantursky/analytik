@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS sites (
   webhook_secrets TEXT NOT NULL DEFAULT '{}',
   retention_days INTEGER,
   allow_localhost INTEGER NOT NULL DEFAULT 0,
+  paused INTEGER NOT NULL DEFAULT 0,
   ignored_ips TEXT NOT NULL DEFAULT '[]',
   share_token TEXT,
   created_at ${big} NOT NULL
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS sessions_site_time ON sessions (site_id, started_at);
 CREATE INDEX IF NOT EXISTS sessions_visitor ON sessions (site_id, visitor_id, last_seen_at);
+CREATE INDEX IF NOT EXISTS sessions_site_seen ON sessions (site_id, last_seen_at, visitor_id);
 
 CREATE TABLE IF NOT EXISTS events (
   id TEXT PRIMARY KEY,
@@ -112,6 +114,7 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 CREATE INDEX IF NOT EXISTS payments_site_time ON payments (site_id, ts);
 CREATE INDEX IF NOT EXISTS payments_customer ON payments (site_id, customer_id);
+CREATE INDEX IF NOT EXISTS payments_visitor ON payments (site_id, visitor_id, ts);
 CREATE INDEX IF NOT EXISTS payments_order ON payments (site_id, order_id);
 
 -- Ids a visitor's browser brought back from checkout, waiting for (or pointing at) the matching payment.
@@ -137,6 +140,13 @@ CREATE TABLE IF NOT EXISTS salts (
   month TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   created_at ${big} NOT NULL
+);
+
+-- Dashboard settings shared by every admin (overview layout, live refresh, chart choices), as JSON text.
+CREATE TABLE IF NOT EXISTS preferences (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at ${big} NOT NULL
 );
 
 -- Fixed-window counters keyed by a hash, for login attempts and the attribution endpoint.

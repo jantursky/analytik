@@ -25,15 +25,6 @@ export function View({ children }: { children: ReactNode }) {
   )
 }
 
-/** Fades content in whenever `id` changes, e.g. a tab panel. */
-export function Reveal({ id, children }: { id: string; children: ReactNode }) {
-  return (
-    <motion.div key={id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-      {children}
-    </motion.div>
-  )
-}
-
 /** A number that tweens to each new value; the first value shows at once. */
 export function AnimatedNumber({ value, format }: { value: number; format: (value: number) => string }) {
   const [shown, setShown] = useState(value)

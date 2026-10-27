@@ -1,84 +1,239 @@
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
 
-import type { Overview as OverviewData, TimeseriesPoint } from '../../shared/types'
-import { AreaChart } from '../charts'
-import { requestKey, useDashboard } from '../context'
-import { useResource } from '../data'
-import { formatBucket, formatDuration, formatMoney, formatNumber, formatPercent } from '../format'
-import { StatTile, Status } from '../ui'
-import { AnimatedNumber, rise, View } from '../ui/motion'
-import { BreakdownCard } from './Breakdown'
+import { useDashboard } from '../context'
+import { usePreferences } from '../preferences'
+import { Icon } from '../icons'
+import { EASE, View } from '../ui/motion'
+import { BLOCK_IDS, BLOCKS, type BlockId } from './blocks'
+import { BlockPicker } from './BlockPicker'
 
-/** Loads the overview numbers and the timeseries for the current query. */
-export function useOverview() {
-  const { client, site, query } = useDashboard()
-  const overview = useResource<OverviewData>(requestKey('overview', site.id, query), () =>
-    client.overview(site.id, query),
-  )
-  const series = useResource<TimeseriesPoint[]>(requestKey('timeseries', site.id, query), () =>
-    client.timeseries(site.id, query),
-  )
-  return { overview, series }
+export { useOverview } from './useOverview'
+
+export interface LayoutItem {
+  id: BlockId
+  /** Spans both columns. */
+  wide: boolean
 }
 
-// Chart series colours; the stat tiles use the same ones as legend markers.
-const VISITORS = 'var(--analytik-series-1)'
-const REVENUE = 'var(--analytik-series-2)'
+const DEFAULT_IDS: readonly BlockId[] = ['summary', 'sources', 'locations', 'pages', 'technology', 'goals']
 
-export function Overview() {
-  const { site, range, openView } = useDashboard()
-  const { overview, series } = useOverview()
-  const data = overview.data
-  const points = series.data ?? []
-  const money = (v: number): string => formatMoney(v, data?.currency ?? site.currency)
+export const DEFAULT_LAYOUT: readonly LayoutItem[] = DEFAULT_IDS.map((id) => ({ id, wide: BLOCKS[id].wide }))
+
+const isBlock = (id: unknown): id is BlockId => typeof id === 'string' && (BLOCK_IDS as string[]).includes(id)
+
+/**
+ * A saved layout (the list, or its JSON), cleaned up: unknown and repeated blocks dropped; nothing usable gives the
+ * default.
+ */
+export function parseLayout(stored: unknown): LayoutItem[] {
+  let items: LayoutItem[] = []
+  try {
+    const parsed: unknown = typeof stored === 'string' ? JSON.parse(stored) : stored
+    if (Array.isArray(parsed)) {
+      items = parsed
+        .filter(
+          (item): item is { id: BlockId; wide?: unknown } =>
+            !!item && typeof item === 'object' && isBlock((item as LayoutItem).id),
+        )
+        .map((item) => ({ id: item.id, wide: item.wide === true }))
+    }
+  } catch {
+    // A broken value counts as none.
+  }
+  const unique = items.filter((item, index) => items.findIndex((other) => other.id === item.id) === index)
+  return unique.length ? unique : [...DEFAULT_LAYOUT]
+}
+
+/** The blocks of the overview, their order and width, saved with the dashboard settings. */
+function useLayout(): [LayoutItem[], (next: LayoutItem[]) => void] {
+  const { values, update } = usePreferences()
+  return [parseLayout(values.layout), (layout) => update({ layout })]
+}
+
+/** Moves the item at `index` by `by` places, staying in bounds. */
+export function moveItem<T>(items: readonly T[], index: number, by: number): T[] {
+  const target = Math.max(0, Math.min(items.length - 1, index + by))
+  const next = [...items]
+  const [item] = next.splice(index, 1)
+  if (item !== undefined) next.splice(target, 0, item)
+  return next
+}
+
+interface BlockChange {
+  move?: number
+  wide?: boolean
+  remove?: boolean
+}
+
+function BlockControls({
+  item,
+  index,
+  count,
+  onChange,
+}: {
+  item: LayoutItem
+  index: number
+  count: number
+  onChange: (change: BlockChange) => void
+}) {
+  const name = BLOCKS[item.id].name
+  return (
+    <div className="analytik-block-bar" role="group" aria-label={`${name} layout`}>
+      <span className="analytik-block-name">{name}</span>
+      <button
+        type="button"
+        className="analytik-pill-icon"
+        aria-label={`Move ${name} earlier`}
+        disabled={index === 0}
+        onClick={() => onChange({ move: -1 })}
+      >
+        <Icon name="prev" />
+      </button>
+      <button
+        type="button"
+        className="analytik-pill-icon"
+        aria-label={`Move ${name} later`}
+        disabled={index === count - 1}
+        onClick={() => onChange({ move: 1 })}
+      >
+        <Icon name="next" />
+      </button>
+      <button
+        type="button"
+        className="analytik-block-toggle"
+        aria-pressed={item.wide}
+        onClick={() => onChange({ wide: !item.wide })}
+      >
+        {item.wide ? 'Full width' : 'Half width'}
+      </button>
+      <button
+        type="button"
+        className="analytik-pill-icon"
+        aria-label={`Remove ${name}`}
+        onClick={() => onChange({ remove: true })}
+      >
+        <Icon name="trash" />
+      </button>
+    </div>
+  )
+}
+
+/** Where a picked block goes: at an index of the layout, described for the picker. */
+interface Insertion {
+  index: number
+  label: string
+}
+
+export interface OverviewProps {
+  /** Shows the layout editor. Without it, the overview follows the dashboard toolbar's Customize button. */
+  customizing?: boolean
+}
+
+/**
+ * The overview: blocks in two columns, by default the summary and five breakdowns. While customizing, blocks can be
+ * moved, made full or half width, removed, and new ones added from a catalogue at the end or next to another block.
+ */
+export function Overview({ customizing }: OverviewProps = {}) {
+  const { customizing: fromToolbar } = useDashboard()
+  const editing = customizing ?? fromToolbar ?? false
+  const [layout, setLayout] = useLayout()
+  const [insertion, setInsertion] = useState<Insertion>()
+  const change = (index: number, edit: BlockChange): void => {
+    if (edit.remove) {
+      setLayout(layout.filter((_, i) => i !== index))
+      return
+    }
+    const next = layout.map((item, i) => (i === index && edit.wide !== undefined ? { ...item, wide: edit.wide } : item))
+    setLayout(edit.move ? moveItem(next, index, edit.move) : next)
+  }
+  const add = (id: BlockId): void => {
+    if (!insertion) return
+    const next = [...layout]
+    next.splice(insertion.index, 0, { id, wide: BLOCKS[id].wide })
+    setLayout(next)
+    setInsertion(undefined)
+  }
+  const used = new Set(layout.map((item) => item.id))
+  const full = used.size === BLOCK_IDS.length
 
   return (
     <View>
-      <motion.section className="analytik-card analytik-overview" aria-label="Summary" variants={rise}>
-        <Status loading={overview.loading && !data} error={overview.error}>
-          {data && (
-            <div className="analytik-stats">
-              <StatTile label="Visitors" delta={data.visitors} format={formatNumber} marker={VISITORS} />
-              <StatTile label="Revenue" delta={data.revenue} format={money} marker={REVENUE} />
-              <StatTile label="Conversion rate" delta={data.conversionRate} format={formatPercent} />
-              <StatTile label="Revenue per visitor" delta={data.revenuePerVisitor} format={money} />
-              <StatTile label="Bounce rate" delta={data.bounceRate} format={formatPercent} invert />
-              <StatTile label="Session time" delta={data.avgDurationMs} format={formatDuration} />
-              <div className="analytik-stat">
-                <span className="analytik-stat-label">
-                  <span className="analytik-live-dot" data-idle={data.online ? undefined : ''} aria-hidden="true" />
-                  Online
+      <div className="analytik-board" data-editing={editing ? '' : undefined}>
+        {layout.map((item, index) => {
+          const name = BLOCKS[item.id].name
+          return (
+            <motion.div
+              key={item.id}
+              layout="position"
+              className="analytik-block"
+              data-wide={item.wide ? '' : undefined}
+              data-configurable={'configurable' in BLOCKS[item.id] ? '' : undefined}
+              // Each block starts its own entrance, so one added later fades in too instead of staying hidden.
+              initial="hidden"
+              animate="show"
+              variants={{ hidden: {}, show: { transition: { delayChildren: Math.min(index, 8) * 0.05 } } }}
+              transition={{ duration: 0.3, ease: EASE }}
+            >
+              {editing && (
+                <>
+                  <BlockControls item={item} index={index} count={layout.length} onChange={(e) => change(index, e)} />
+                  {!full &&
+                    (['before', 'after'] as const).map((side) => (
+                      <button
+                        key={side}
+                        type="button"
+                        className="analytik-insert"
+                        data-side={side}
+                        aria-label={`Add a block ${side} ${name}`}
+                        onClick={() =>
+                          setInsertion({ index: side === 'before' ? index : index + 1, label: `${side} ${name}` })
+                        }
+                      >
+                        <Icon name="plus" />
+                      </button>
+                    ))}
+                </>
+              )}
+              {BLOCKS[item.id].render({ editing })}
+            </motion.div>
+          )
+        })}
+        <AnimatePresence>
+          {editing && (
+            <motion.div
+              key="add"
+              className="analytik-block analytik-add-block"
+              data-wide={layout.length % 2 === 0 ? '' : undefined}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <button
+                type="button"
+                className="analytik-add-tile"
+                disabled={full}
+                onClick={() => setInsertion({ index: layout.length, label: 'at the end' })}
+              >
+                <span className="analytik-add-icon" aria-hidden="true">
+                  <Icon name="plus" />
                 </span>
-                <span className="analytik-stat-value">
-                  <AnimatedNumber value={data.online} format={formatNumber} />
+                <strong>{full ? 'Every block is on the overview' : 'Add a block'}</strong>
+                <span className="analytik-muted">
+                  {full ? 'Remove one to add it somewhere else.' : 'Charts, tables and numbers from the catalogue.'}
                 </span>
-                {openView && (
-                  <button type="button" className="analytik-link" onClick={() => openView('realtime')}>
-                    View on map
-                  </button>
-                )}
-              </div>
-            </div>
+              </button>
+            </motion.div>
           )}
-        </Status>
-        <Status loading={series.loading && !series.data} error={series.error}>
-          <AreaChart
-            label="Visitors"
-            points={points.map((p) => ({ ts: p.ts, value: p.visitors }))}
-            formatValue={formatNumber}
-            formatTime={(ts) => formatBucket(ts, range.interval, site.timezone)}
-            secondary={{ label: 'Revenue', values: points.map((p) => p.revenue), formatValue: money }}
-            height={260}
-          />
-        </Status>
-      </motion.section>
-      <div className="analytik-grid">
-        <BreakdownCard title="Sources" dimensions={['channel', 'referrer', 'campaign', 'term']} limit={8} />
-        <BreakdownCard title="Locations" dimensions={['country', 'region', 'city']} limit={8} />
-        <BreakdownCard title="Pages" dimensions={['page', 'entry', 'exit', 'outbound']} limit={8} />
-        <BreakdownCard title="Technology" dimensions={['browser', 'os', 'device']} limit={8} />
-        <BreakdownCard title="Goals" dimensions={['goal', 'event']} limit={8} />
+        </AnimatePresence>
       </div>
+      <BlockPicker
+        open={!!insertion}
+        place={insertion?.label ?? ''}
+        used={used}
+        onPick={add}
+        onClose={() => setInsertion(undefined)}
+      />
     </View>
   )
 }

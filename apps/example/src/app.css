@@ -466,7 +466,7 @@ textarea.input {
 
 .tabs button[aria-selected='true'] {
   background: var(--surface);
-  box-shadow: 0 1px 2px rgb(28 27 24 / 0.08);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.08);
   color: var(--text);
   font-weight: 600;
 }
@@ -595,7 +595,7 @@ textarea.input {
 
 .segmented button[aria-pressed='true'] {
   background: var(--surface);
-  box-shadow: 0 1px 2px rgb(28 27 24 / 0.08);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.08);
   color: var(--text);
   font-weight: 600;
 }
@@ -707,8 +707,21 @@ textarea.input {
 .dashboard-host {
   display: grid;
   min-height: 480px;
-  overflow: hidden;
+  /* clip, not hidden: hidden would make this a scroll box and stop the dashboard's header and toolbar sticking. */
+  overflow: clip;
   border-radius: 0 0 var(--radius-card) var(--radius-card);
+  --analytik-sticky-top: var(--header-height, 0px);
+}
+
+/* On a phone the demo's header scrolls away, so the dashboard's toolbar sticks to the very top. */
+@media (max-width: 760px) {
+  .header {
+    position: static;
+  }
+
+  .dashboard-host {
+    --analytik-sticky-top: 0px;
+  }
 }
 
 .sr-only {

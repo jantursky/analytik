@@ -146,16 +146,38 @@ describe('engaged time', () => {
     ])
   })
 
-  it('pings every minute while visible, at most 30 times per page', async () => {
+  it('pings every 4 minutes while visible, for half an hour per page', async () => {
     vi.useFakeTimers()
     start()
-    vi.advanceTimersByTime(60000 * 35)
-    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(30)
+    vi.advanceTimersByTime(240_000 * 12)
+    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(8)
     history.pushState({}, '', '/next')
-    vi.advanceTimersByTime(60000)
+    vi.advanceTimersByTime(240_000)
     const sent = await wire.sent()
     expect(sent.at(-2)?.body).toMatchObject({ t: 'pageview', u: 'https://example.com/next' })
-    expect(sent.at(-1)?.body).toMatchObject({ t: 'ping', d: 60000, u: 'https://example.com/next' })
+    expect(sent.at(-1)?.body).toMatchObject({ t: 'ping', d: 240_000, u: 'https://example.com/next' })
+  })
+
+  it('pings as often as pingInterval says, at least every 30 s, or only on leaving with 0', async () => {
+    vi.useFakeTimers()
+    start({ pingInterval: 60 })
+    vi.advanceTimersByTime(60_000 * 35)
+    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(30)
+    engine?.destroy()
+
+    wire.clear()
+    start({ pingInterval: 5 })
+    vi.advanceTimersByTime(60_000)
+    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(2)
+    engine?.destroy()
+
+    wire.clear()
+    start({ pingInterval: 0 })
+    vi.advanceTimersByTime(600_000)
+    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(0)
+    hide()
+    const pings = (await wire.sent()).filter((s) => s.body.t === 'ping')
+    expect(pings.map((p) => [p.body.d, p.beacon])).toEqual([[600_000, true]])
   })
 
   it('flushes the previous page before a navigation', async () => {

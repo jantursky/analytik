@@ -71,6 +71,18 @@ describe('script tag', () => {
     expect(await wire.types()).toEqual(['pageview'])
   })
 
+  it('reads data-ping-interval', async () => {
+    vi.useFakeTimers()
+    await load({
+      src: '/analytik.js',
+      'data-site': 'site_1',
+      'data-require-interaction': 'false',
+      'data-ping-interval': '60',
+    })
+    vi.advanceTimersByTime(120_000)
+    expect((await wire.types()).filter((t) => t === 'ping')).toHaveLength(2)
+  })
+
   it('posts to data-api and reads the persistent mode and cookie domain', async () => {
     await load({
       'data-site': 'site_2',

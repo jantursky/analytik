@@ -11,15 +11,19 @@ export interface DateRange {
   interval: Interval
 }
 
-export const RANGE_PRESETS: { value: RangePreset; label: string }[] = [
-  { value: 'today', label: 'Today' },
-  { value: '24h', label: 'Last 24 hours' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-  { value: '12m', label: 'Last 12 months' },
-  { value: 'custom', label: 'Custom' },
-]
+const PRESET_LABELS: Record<RangePreset, string> = {
+  today: 'Today',
+  '24h': 'Past 24 hours',
+  '7d': 'Past 7 days',
+  '30d': 'Past 30 days',
+  '90d': 'Past 90 days',
+  '12m': 'Past 12 months',
+  custom: 'Custom',
+}
+
+export const RANGE_PRESETS: { value: RangePreset; label: string }[] = (
+  Object.entries(PRESET_LABELS) as [RangePreset, string][]
+).map(([value, label]) => ({ value, label }))
 
 const HOUR = 3600000
 const DAY = 24 * HOUR

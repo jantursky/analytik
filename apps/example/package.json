@@ -11,7 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/figtree": "^5.3.0",
     "@fontsource/geist-mono": "^5.3.0",
     "analytik": "workspace:*",
     "hono": "^4.13.14",

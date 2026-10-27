@@ -26,6 +26,7 @@ interface SiteRow {
   webhook_secrets: string
   retention_days: number | null
   allow_localhost: number
+  paused: number
   ignored_ips: string
   share_token: string | null
   created_at: number
@@ -49,6 +50,7 @@ function toRecord(row: SiteRow): SiteRecord {
     privacyMode: row.privacy_mode,
     retentionDays: row.retention_days,
     allowLocalhost: Boolean(row.allow_localhost),
+    paused: Boolean(row.paused),
     ignoredIps: parseJson<string[]>(row.ignored_ips, []),
     createdAt: row.created_at,
     apiKeyHash: row.api_key_hash,
@@ -102,6 +104,8 @@ export interface SiteInput {
   privacyMode?: PrivacyMode
   retentionDays?: number | null
   allowLocalhost?: boolean
+  /** Drop tracker events and server goals until set back to false; payments are still recorded. */
+  paused?: boolean
   ignoredIps?: string[]
   /** Set or (with null) remove a provider's webhook secret. */
   webhookSecrets?: Partial<Record<PaymentProvider, string | null>>
@@ -147,6 +151,10 @@ function validate(input: Record<string, unknown>, current: SiteRecord | null): C
     if (typeof input.allowLocalhost !== 'boolean') fail('allowLocalhost must be a boolean')
     columns.allow_localhost = input.allowLocalhost
   }
+  if (input.paused !== undefined) {
+    if (typeof input.paused !== 'boolean') fail('paused must be a boolean')
+    columns.paused = input.paused
+  }
   if (input.ignoredIps !== undefined) {
     const ips = input.ignoredIps
     if (
@@ -190,6 +198,7 @@ export async function createSite(
     webhook_secrets: '{}',
     retention_days: null,
     allow_localhost: false,
+    paused: false,
     ignored_ips: '[]',
     ...columns,
     api_key_hash: await hashApiKey(apiKey),

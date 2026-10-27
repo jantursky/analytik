@@ -1,11 +1,12 @@
-import { type ReactNode, type SubmitEvent, useState } from 'react'
+import { type ReactNode, type SubmitEvent, useId, useState } from 'react'
 
 import type { Site } from '../shared/types'
+import { cleanDomain, domainProblem } from '../shared/url'
 import type { ApiClient } from './api'
 import { Field } from './ui'
-import { Combobox } from './ui/combobox'
+import { CurrencySelect } from './ui/currency'
 import { Dialog } from './ui/dialog'
-import { Select } from './ui/select'
+import { localTimeZone, TimeZoneSelect } from './ui/timezone'
 
 const message = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
@@ -43,34 +44,61 @@ export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () 
         </p>
       )}
       <button type="submit" className="analytik-button" data-variant="primary" disabled={busy}>
-        {busy ? 'Signing in…' : 'Sign in'}
+        {busy ? 'Checking…' : 'Sign in'}
       </button>
     </form>
   )
 }
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'CZK', 'PLN', 'SEK', 'NOK', 'DKK', 'INR', 'BRL']
-
-const localTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone
-
-const timeZones = (): string[] => {
-  const local = localTimeZone()
-  let all: string[] = []
-  try {
-    all = Intl.supportedValuesOf('timeZone')
-  } catch {
-    // Older engines: offer the local zone only.
-  }
-  return all.includes(local) ? all : [local, ...all]
+/** The domain input of a site form: says what is wrong once the field is left, and what will be tracked. */
+export function DomainField({
+  value,
+  onChange,
+  hint,
+  touched,
+  onBlur,
+}: {
+  value: string
+  onChange: (value: string) => void
+  hint: string
+  /** Show the problem; true once the field was left or the form submitted. */
+  touched: boolean
+  onBlur: () => void
+}) {
+  const errorId = useId()
+  const problem = touched ? domainProblem(value) : null
+  const clean = cleanDomain(value)
+  const differs = clean && clean !== value.trim().toLowerCase()
+  return (
+    <Field
+      label="Domain"
+      hint={
+        differs ? (
+          <>
+            Tracked as <strong>{clean}</strong>. {hint}
+          </>
+        ) : (
+          hint
+        )
+      }
+      error={problem ? { id: errorId, text: problem } : null}
+    >
+      <input
+        className="analytik-input"
+        value={value}
+        placeholder="example.com"
+        inputMode="url"
+        autoComplete="off"
+        spellCheck={false}
+        aria-invalid={problem ? true : undefined}
+        aria-describedby={problem ? errorId : undefined}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        required
+      />
+    </Field>
+  )
 }
-
-/** `https://www.Example.com/path` → `www.example.com`. */
-export const cleanDomain = (input: string): string =>
-  input
-    .trim()
-    .toLowerCase()
-    .replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
-    .replace(/[/?#].*$/, '')
 
 function SiteForm({
   client,
@@ -86,15 +114,26 @@ function SiteForm({
   const [name, setName] = useState('')
   const [timezone, setTimezone] = useState(localTimeZone)
   const [currency, setCurrency] = useState('USD')
+  const [retention, setRetention] = useState('')
+  const [touched, setTouched] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const ready = !!cleanDomain(domain) && !!name.trim() && !busy
+  const clean = domainProblem(domain) ? null : cleanDomain(domain)
+  const days = retention.trim() ? Number(retention) : null
+  const retentionProblem =
+    days !== null && (!Number.isInteger(days) || days < 1 || days > 36500)
+      ? 'Use a whole number of days from 1 to 36500, or leave it empty.'
+      : null
+  const retentionId = useId()
+  const ready = !!name.trim() && !busy && !retentionProblem
 
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
+    setTouched(true)
+    if (!clean) return
     setBusy(true)
     client
-      .createSite({ name: name.trim(), domain: cleanDomain(domain), timezone, currency })
+      .createSite({ name: name.trim(), domain: clean, timezone, currency, retentionDays: days })
       .then(onCreated, (e: unknown) => setError(message(e)))
       .finally(() => setBusy(false))
   }
@@ -102,17 +141,13 @@ function SiteForm({
   return (
     <form className="analytik-site-form" onSubmit={submit}>
       {children}
-      <Field label="Domain" hint="Subdomains (app.example.com) are tracked under the same site.">
-        <input
-          className="analytik-input"
-          value={domain}
-          placeholder="example.com"
-          inputMode="url"
-          autoComplete="off"
-          onChange={(e) => setDomain(e.target.value)}
-          required
-        />
-      </Field>
+      <DomainField
+        value={domain}
+        onChange={setDomain}
+        hint="Subdomains (app.example.com) are tracked under the same site."
+        touched={touched}
+        onBlur={() => setTouched(!!domain.trim())}
+      />
       <Field label="Name">
         <input
           className="analytik-input"
@@ -123,14 +158,28 @@ function SiteForm({
         />
       </Field>
       <div className="analytik-row">
-        <Combobox label="Timezone" value={timezone} options={timeZones()} onChange={setTimezone} />
-        <Select
-          label="Revenue currency"
-          value={currency}
-          options={CURRENCIES.map((c) => ({ value: c, label: c }))}
-          onChange={setCurrency}
-        />
+        <TimeZoneSelect label="Timezone" value={timezone} onChange={setTimezone} />
+        <CurrencySelect label="Revenue currency" value={currency} onChange={setCurrency} />
       </div>
+      <Field
+        label="Keep data for (days)"
+        hint="Optional. Older visits and events are deleted, payments stay. Empty keeps everything."
+        error={retentionProblem ? { id: retentionId, text: retentionProblem } : null}
+      >
+        <input
+          className="analytik-input"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={36500}
+          step={1}
+          value={retention}
+          placeholder="Keep everything"
+          aria-invalid={retentionProblem ? true : undefined}
+          aria-describedby={retentionProblem ? retentionId : undefined}
+          onChange={(e) => setRetention(e.target.value)}
+        />
+      </Field>
       {error && (
         <p className="analytik-error" role="alert">
           {error}

@@ -2,7 +2,17 @@
 
 export type Channel = 'Direct' | 'Organic Search' | 'Organic Social' | 'AI' | 'Referral' | 'Email' | 'Paid'
 
-export interface KnownSource {
+export const CHANNELS: readonly Channel[] = [
+  'Direct',
+  'Organic Search',
+  'Organic Social',
+  'AI',
+  'Referral',
+  'Email',
+  'Paid',
+]
+
+export interface SourceEntry {
   name: string
   channel: Channel
   /**
@@ -82,7 +92,7 @@ const CATALOG: [Channel, Entry[]][] = [
   ],
 ]
 
-export const KNOWN_SOURCES: readonly KnownSource[] = CATALOG.flatMap(([channel, entries]) =>
+export const SOURCE_CATALOG: readonly SourceEntry[] = CATALOG.flatMap(([channel, entries]) =>
   entries.map(([name, hosts, tags = []]) => ({ name, channel, hosts, tags })),
 )
 
@@ -113,17 +123,17 @@ function hostScore(host: string, pattern: string): number {
  * The known source named by a tag (`twitter`) or hostname (`m.youtube.com`). The most specific host wins,
  * so `mail.google.com` is Gmail rather than Google.
  */
-export function findKnownSource(key: string | null | undefined): KnownSource | undefined {
+export function matchSource(key: string | null | undefined): SourceEntry | undefined {
   const value = key
     ?.trim()
     .toLowerCase()
     .replace(/^www\./, '')
   if (!value) return undefined
-  const tagged = KNOWN_SOURCES.find((source) => source.tags.includes(value))
+  const tagged = SOURCE_CATALOG.find((source) => source.tags.includes(value))
   if (tagged) return tagged
-  let best: KnownSource | undefined
+  let best: SourceEntry | undefined
   let bestScore = 0
-  for (const source of KNOWN_SOURCES) {
+  for (const source of SOURCE_CATALOG) {
     for (const pattern of source.hosts) {
       const score = hostScore(value, pattern)
       if (score > bestScore) [best, bestScore] = [source, score]
@@ -133,8 +143,8 @@ export function findKnownSource(key: string | null | undefined): KnownSource | u
 }
 
 /** The domain to show a favicon for, when the source is a known one with a website. */
-export function domainForSource(name: string): string | undefined {
-  const host = KNOWN_SOURCES.find((source) => source.name === name)?.hosts[0]
+export function sourceDomain(name: string): string | undefined {
+  const host = SOURCE_CATALOG.find((source) => source.name === name)?.hosts[0]
   return host?.replace(/\.\*$/, '.com')
 }
 
@@ -157,7 +167,7 @@ export interface SourceAndChannel {
 export function classify({ referrerDomain, utmSource, utmMedium, ref }: ClassifyInput): SourceAndChannel {
   // Empty tags count as missing.
   const tag = [utmSource, ref].find((value) => !!value) ?? null
-  const known = findKnownSource(tag) ?? findKnownSource(referrerDomain)
+  const known = matchSource(tag) ?? matchSource(referrerDomain)
   const source = known?.name ?? tag ?? referrerDomain ?? DIRECT_SOURCE
   const medium = utmMedium?.trim().toLowerCase() ?? ''
   const byMedium = MEDIUM_CHANNELS.find(([pattern]) => pattern.test(medium))?.[1]

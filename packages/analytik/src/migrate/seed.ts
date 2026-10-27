@@ -6,7 +6,7 @@ import type { Statement, Storage } from '../storage/types'
 export interface SeedOptions {
   /** Same seed and `now` give the same data. Default 1. */
   seed?: number
-  /** Days of history ending today. Default 30. */
+  /** Days of history ending today; 0 makes the site without traffic. Default 30. */
   days?: number
   /** Average visitors per day. Default 120. */
   visitorsPerDay?: number
@@ -20,6 +20,8 @@ export interface SeedOptions {
   name?: string
   /** Default `USD`. */
   currency?: string
+  /** Multiplies every price, e.g. 1000 for revenue in the millions. Default 1. */
+  priceScale?: number
 }
 
 export interface SeedResult {
@@ -107,6 +109,7 @@ const NEXT: Weighted<string> = [
 ]
 
 const PLANS = [900, 2900, 9900] as const
+const BATCH = 500
 
 /**
  * Fills a storage with a believable month of traffic, goals and payments for a demo site.
@@ -120,6 +123,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
   const siteId = options.siteId ?? 'demo'
   const domain = options.domain ?? 'demo.analytik.dev'
   const currency = options.currency ?? 'USD'
+  const priceScale = options.priceScale ?? 1
   const tag = `${options.seed ?? 1}`
 
   const pick = <T>(items: Weighted<T>): T => {
@@ -136,7 +140,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
 
   await storage.migrate()
   const apiKey = `ak_demo${tag.padStart(4, '0')}${hex(24)}`
-  const first = startOfBucket(now - (days - 1) * DAY, 'day', 'UTC')
+  const first = startOfBucket(now - Math.max(days - 1, 0) * DAY, 'day', 'UTC')
   const statements: Statement[] = [
     {
       sql: `INSERT INTO sites (id, name, domain, timezone, currency, privacy_mode, api_key_hash, webhook_secrets,
@@ -146,6 +150,12 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
     },
   ]
   const counts = { visitors: 0, sessions: 0, events: 0, payments: 0, funnels: 0 }
+  // Written in chunks as they are made, so a year of heavy traffic doesn't sit in memory at once.
+  const flush = async (all = false): Promise<void> => {
+    while (statements.length >= BATCH || (all && statements.length > 0)) {
+      await storage.batch(statements.splice(0, BATCH))
+    }
+  }
   const visitors: string[] = []
   const customers = new Map<string, string>()
   let serial = 0
@@ -265,7 +275,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
       }
 
       if (checkout && random() < 0.4 && ts + MINUTE < now) {
-        const amount = PLANS[Math.floor(random() * PLANS.length)] as number
+        const amount = Math.round((PLANS[Math.floor(random() * PLANS.length)] as number) * priceScale)
         const paymentId = `cs_demo_${hex(16)}`
         const customer = customers.get(visitorId) ?? `cus_demo_${hex(10)}`
         const renewal = customers.has(visitorId)
@@ -313,6 +323,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
           )
         }
       }
+      if (statements.length >= BATCH) await flush()
     }
   }
 
@@ -343,9 +354,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
     })
   }
 
-  for (let index = 0; index < statements.length; index += 500) {
-    await storage.batch(statements.slice(index, index + 500))
-  }
+  await flush(true)
   return { siteId, apiKey, counts }
 }
 

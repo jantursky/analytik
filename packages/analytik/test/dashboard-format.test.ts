@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { niceMax } from '../src/dashboard/scale'
+import { DEFAULT_SUMMARY, formatMetric, METRIC_KEYS, parseSummary, statLabel } from '../src/dashboard/views/metrics'
 import {
   countryName,
   flagEmoji,
@@ -8,15 +9,22 @@ import {
   formatBucket,
   formatChange,
   formatDateTime,
+  DEFAULT_FORMAT,
+  formatDayRange,
   formatDuration,
   formatMoney,
+  formatMoneyShort,
   formatNumber,
   formatPercent,
+  parseFormatSettings,
+  setFormatSettings,
 } from '../src/dashboard/format'
 import { groupPlaces, landCells, project } from '../src/dashboard/map'
 import { customRange, intervalFor, intervalsFor, presetRange, shiftRange, toDateInput } from '../src/dashboard/range'
+import { DEFAULT_LAYOUT, moveItem, parseLayout } from '../src/dashboard/views/Overview'
 import { describeEvent } from '../src/dashboard/views/Realtime'
 import { buildCampaignUrl, buildSnippet } from '../src/dashboard/snippet'
+import { visit } from './dashboard-fixtures'
 
 describe('format', () => {
   it('formats numbers, money, percentages, durations and changes', () => {
@@ -41,9 +49,72 @@ describe('format', () => {
     ])
   })
 
+  describe('with formatting settings', () => {
+    afterEach(() => setFormatSettings(DEFAULT_FORMAT))
+    const ts = Date.UTC(2026, 9, 7, 14, 5)
+    const sample = () => [
+      formatNumber(1234),
+      formatMoney(123456, 'EUR'),
+      formatMoney(120000, 'EUR'),
+      formatMoneyShort(1234567890, 'USD'),
+      formatPercent(0.0525),
+      formatDateTime(ts, 'UTC'),
+      formatBucket(ts, 'day', 'UTC'),
+      formatBucket(ts, 'month', 'UTC'),
+      formatDayRange(ts, ts + 2 * 86_400_000),
+    ]
+
+    it('defaults to US English', () => {
+      expect(sample().map((text) => text.replace(/\s/g, ' '))).toEqual([
+        '1,234',
+        '€1,234.56',
+        '€1,200.00',
+        '$12.3M',
+        '5.3%',
+        'Oct 7, 2026, 2:05 PM',
+        'Oct 7',
+        'Oct 2026',
+        'Oct 7 – 9, 2026',
+      ])
+    })
+
+    it('writes numbers, money and dates the chosen way', () => {
+      setFormatSettings({ numbers: 'dot', currency: 'code', cents: 'auto', date: 'dmy', time: '24h' })
+      expect(sample().map((text) => text.replace(/\s/g, ' '))).toEqual([
+        '1.234',
+        '1.234,56 EUR',
+        '1.200 EUR',
+        '12,3 Mio. USD',
+        '5,3 %',
+        '07.10.2026 14:05',
+        '07.10.',
+        '10.2026',
+        '07.10.2026 – 09.10.2026',
+      ])
+      setFormatSettings({ ...DEFAULT_FORMAT, date: 'iso', numbers: 'apostrophe' })
+      expect([formatNumber(1234), formatDateTime(ts, 'UTC'), formatBucket(ts, 'day', 'UTC')]).toEqual([
+        "1'234",
+        '2026-10-07 2:05 PM',
+        '10-07',
+      ])
+      setFormatSettings({ ...DEFAULT_FORMAT, date: 'gb' })
+      expect([formatDateTime(ts, 'UTC'), formatDayRange(ts, ts)]).toEqual(['7 Oct 2026, 2:05 PM', '7 Oct 2026'])
+      setFormatSettings({ ...DEFAULT_FORMAT, date: 'mdy' })
+      expect([formatDateTime(ts, 'UTC'), formatBucket(ts, 'month', 'UTC')]).toEqual(['10/07/2026 2:05 PM', '10/2026'])
+    })
+
+    it('replaces unknown saved values with the default', () => {
+      expect(parseFormatSettings(undefined)).toEqual(DEFAULT_FORMAT)
+      expect(parseFormatSettings({ numbers: 'space', date: 'nope', time: 24 })).toEqual({
+        ...DEFAULT_FORMAT,
+        numbers: 'space',
+      })
+    })
+  })
+
   it('formats dates in a time zone', () => {
     const ts = Date.UTC(2026, 9, 27, 14, 30)
-    expect(formatBucket(ts, 'hour', 'UTC')).toBe('02:30 PM')
+    expect(formatBucket(ts, 'hour', 'UTC')).toBe('2:30 PM')
     expect(formatBucket(ts, 'day', 'UTC')).toBe('Oct 27')
     expect(formatBucket(ts, 'week', 'UTC')).toBe('Oct 27')
     expect(formatBucket(ts, 'month', 'UTC')).toBe('Oct 2026')
@@ -126,10 +197,10 @@ describe('places and the map', () => {
 
   it('groups locations and projects them flat or on a globe', () => {
     const places = groupPlaces([
-      { lat: 48.15, lon: 17.11, country: 'SK', city: 'Bratislava' },
-      { lat: 0, lon: 0, country: null, city: null },
-      { lat: 48.15, lon: 17.11, country: 'SK', city: 'Bratislava' },
-      { lat: 10, lon: 20, country: null, city: null },
+      visit({ lat: 48.15, lon: 17.11, country: 'SK', city: 'Bratislava' }, 's1', '/'),
+      visit({ lat: 0, lon: 0, country: null, city: null }, 's2', '/'),
+      visit({ lat: 48.15, lon: 17.11, country: 'SK', city: 'Bratislava' }, 's3', '/'),
+      visit({ lat: 10, lon: 20, country: null, city: null }, 's4', '/'),
     ])
     expect(places.map((p) => [p.label, p.count, p.known])).toEqual([
       ['Bratislava, Slovakia', 2, true],
@@ -171,6 +242,7 @@ describe('snippet', () => {
         requireInteraction: true,
         autoOutbound: true,
         keepQuery: ' ',
+        pingInterval: 240,
         debug: false,
       }),
     ).toBe('<script defer src="https://stats.example.net/analytik.js" data-site="site_1"></script>')
@@ -185,10 +257,11 @@ describe('snippet', () => {
         requireInteraction: false,
         autoOutbound: false,
         keepQuery: 'page,tab',
+        pingInterval: 0,
         debug: true,
       }),
     ).toBe(
-      '<script defer src="https://example.com/analytik.js" data-site="a&quot;b" data-api="https://example.com/stats/api" data-mode="persistent" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page,tab" data-debug="true"></script>',
+      '<script defer src="https://example.com/analytik.js" data-site="a&quot;b" data-api="https://example.com/stats/api" data-mode="persistent" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page,tab" data-ping-interval="0" data-debug="true"></script>',
     )
   })
 
@@ -211,5 +284,51 @@ describe('niceMax', () => {
     expect([niceMax(0), niceMax(7), niceMax(180), niceMax(230), niceMax(4100), niceMax(10)]).toEqual([
       1, 10, 200, 250, 5000, 10,
     ])
+  })
+})
+
+describe('overview layout', () => {
+  it('keeps known blocks once, falls back to the default and moves within bounds', () => {
+    expect(parseLayout(null)).toEqual(DEFAULT_LAYOUT)
+    expect(parseLayout('not json')).toEqual(DEFAULT_LAYOUT)
+    expect(parseLayout('{"id":"pages"}')).toEqual(DEFAULT_LAYOUT)
+    const stored = parseLayout(
+      JSON.stringify([{ id: 'goals', wide: true, hidden: 'yes' }, { id: 'planets' }, { id: 'goals' }, null, 4]),
+    )
+    expect(stored).toEqual([{ id: 'goals', wide: true }])
+    expect(parseLayout('[{"id":"funnel"},{"id":"kpis","wide":true}]')).toEqual([
+      { id: 'funnel', wide: false },
+      { id: 'kpis', wide: true },
+    ])
+    expect(parseLayout('[]')).toEqual(DEFAULT_LAYOUT)
+    expect(moveItem(['a', 'b', 'c'], 0, -1)).toEqual(['a', 'b', 'c'])
+    expect(moveItem(['a', 'b', 'c'], 0, 1)).toEqual(['b', 'a', 'c'])
+    expect(moveItem(['a', 'b', 'c'], 2, 5)).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('summary settings', () => {
+  it('keeps known numbers once and falls back to the default chart', () => {
+    expect(parseSummary(undefined)).toEqual(DEFAULT_SUMMARY)
+    expect(parseSummary({ stats: [], primary: 'nope' })).toEqual(DEFAULT_SUMMARY)
+    expect(
+      parseSummary({
+        stats: ['orders', 'orders', 'planets', 'online'],
+        chart: ['revenue', 'revenue', 'planets', 'orders'],
+      }),
+    ).toEqual({ stats: ['orders', 'online'], chart: ['revenue', 'orders'] })
+    expect(parseSummary({ chart: METRIC_KEYS }).chart).toEqual(METRIC_KEYS.slice(0, 4))
+    // Saved before the chart could combine more than two metrics.
+    expect(parseSummary({ primary: 'sessions', secondary: null }).chart).toEqual(['sessions'])
+    expect(parseSummary({ primary: 'revenue', secondary: 'revenue' }).chart).toEqual(['revenue'])
+    expect(parseSummary({ stats: [...METRIC_KEYS, 'online'] }).stats).toHaveLength(8)
+  })
+
+  it('formats each metric by its unit', () => {
+    expect(formatMetric('revenue', 'EUR')(1250)).toBe('€12.50')
+    expect(formatMetric('bounceRate', 'EUR')(0.42)).toBe('42%')
+    expect(formatMetric('avgDurationMs', 'EUR')(83000)).toBe('1m 23s')
+    expect(formatMetric('visitors', 'EUR')(1200)).toBe('1,200')
+    expect(statLabel('online')).toBe('Live now')
   })
 })

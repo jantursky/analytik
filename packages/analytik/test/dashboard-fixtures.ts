@@ -5,6 +5,7 @@ import type {
   Overview,
   Payment,
   Realtime,
+  RealtimeVisit,
   SessionSummary,
   Site,
   TimeseriesPoint,
@@ -19,6 +20,7 @@ export const site: Site = {
   privacyMode: 'strict',
   retentionDays: null,
   allowLocalhost: false,
+  paused: false,
   ignoredIps: ['10.0.0.1'],
   createdAt: Date.UTC(2026, 0, 1),
 }
@@ -30,6 +32,25 @@ const delta = (value: number, previous: number) => ({
   previous,
   change: previous ? (value - previous) / previous : null,
 })
+
+/** A live visit at a place, for the realtime map. */
+export function visit(
+  place: Pick<RealtimeVisit, 'lat' | 'lon' | 'country' | 'city'>,
+  sessionId: string,
+  page: string,
+): RealtimeVisit {
+  return {
+    ...place,
+    sessionId,
+    visitorId: `vis_${sessionId}`,
+    page,
+    source: 'news.ycombinator.com',
+    browser: 'Firefox',
+    device: 'Desktop',
+    startedAt: Date.now() - 120000,
+    lastSeen: Date.now() - 5000,
+  }
+}
 
 export const overview: Overview = {
   visitors: delta(1200, 1000),
@@ -52,6 +73,11 @@ export const timeseries: TimeseriesPoint[] = [0, 1, 2, 3].map((i) => ({
   sessions: 150 + i,
   pageviews: 400 + i,
   revenue: [0, 4990, 0, 9900][i] ?? 0,
+  orders: [0, 1, 0, 2][i] ?? 0,
+  bounceRate: [0.5, 0.4, 0.45, 0.3][i] ?? 0,
+  avgDurationMs: [60000, 90000, 75000, 120000][i] ?? 0,
+  conversionRate: [0, 0.0033, 0, 0.0033][i] ?? 0,
+  revenuePerVisitor: [0, 16.6, 0, 16.5][i] ?? 0,
 }))
 
 export const row = (key: string, visitors: number, revenue = 0): BreakdownRow => ({
@@ -118,9 +144,9 @@ export const realtime: Realtime = {
     { ts: Date.now() - 90000, type: 'goal', name: 'signup', path: '/', country: null },
   ],
   locations: [
-    { lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' },
-    { lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' },
-    { lat: 0, lon: 0, country: null, city: null },
+    visit({ lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' }, 'sess_1', '/pricing'),
+    visit({ lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' }, 'sess_3', '/docs'),
+    visit({ lat: 0, lon: 0, country: null, city: null }, 'sess_4', '/'),
   ],
 }
 
@@ -139,7 +165,14 @@ type Handler = (request: Recorded) => unknown
  */
 export function fakeApi(overrides: Record<string, Handler> = {}) {
   const requests: Recorded[] = []
-  const state = { sites: [site, otherSite], funnels: [funnel], loggedIn: true }
+  const state = {
+    sites: [site, otherSite],
+    funnels: [funnel],
+    loggedIn: true,
+    preferences: {} as Record<string, unknown>,
+    debug: false,
+    login: 'password' as 'password' | 'custom',
+  }
 
   const routes: Record<string, Handler> = {
     'POST /auth/login': ({ body }) => {
@@ -153,12 +186,48 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       return { ok: true }
     },
     'GET /sites': () => state.sites,
+    'GET /summary': () =>
+      state.sites.map((s) => ({
+        siteId: s.id,
+        visitors: 1200,
+        revenue: 129_900,
+        orders: 13,
+        currency: s.currency,
+        online: 4,
+      })),
     'POST /sites': ({ body }) => {
       const created = { ...site, ...(body as Partial<Site>), id: 'site_new' }
       state.sites = [...state.sites, created]
-      return created
+      return { site: created, apiKey: 'ak_live_new' }
     },
-    'PATCH /sites/:id': ({ body }) => ({ ...site, ...(body as Partial<Site>) }),
+    'GET /preferences': () => state.preferences,
+    'PUT /preferences': ({ body }) => {
+      state.preferences = body as Record<string, unknown>
+      return state.preferences
+    },
+    'GET /auth/me': () => ({ loggedIn: state.loggedIn, login: state.login }),
+    'DELETE /sites/:id': ({ path, body }) => {
+      const proof = (body ?? {}) as { password?: string; confirm?: string }
+      const target = state.sites.find((s) => path.endsWith(`/${s.id}`))
+      if (proof.confirm !== target?.domain) return Response.json({ error: 'type the domain' }, { status: 400 })
+      if (state.login === 'password' && proof.password !== 'secret')
+        return Response.json({ error: 'wrong password' }, { status: 403 })
+      state.sites = state.sites.filter((s) => s !== target)
+      return { ok: true }
+    },
+    'GET /debug': () => ({ enabled: state.debug }),
+    'POST /debug/generate': () => ({
+      sites: [{ id: 'debug-a1', name: 'Test site a1' }],
+      counts: { visitors: 5210, sessions: 6020, events: 16_844, payments: 151 },
+      durationMs: 1840,
+    }),
+    'DELETE /debug/sites': () => ({ deleted: 3 }),
+    'PATCH /sites/:id': ({ path, body }) => {
+      const target = state.sites.find((s) => path.endsWith(`/${s.id}`)) ?? site
+      const updated = { ...target, ...(body as Partial<Site>) }
+      state.sites = state.sites.map((s) => (s.id === updated.id ? updated : s))
+      return updated
+    },
     'POST /sites/:id/rotate-key': () => ({ apiKey: 'ak_live_123' }),
     'GET /sites/:id/overview': () => overview,
     'GET /sites/:id/timeseries': () => timeseries,
@@ -170,9 +239,9 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
           : [row(`${params.dimension}-a`, 10)],
     'GET /sites/:id/realtime': () => realtime,
     'GET /sites/:id/sessions': ({ params }) =>
-      params.cursor
-        ? { items: [{ ...session, id: 'sess_2' }], nextCursor: null }
-        : { items: [session], nextCursor: 'c2' },
+      Number(params.offset ?? 0) > 0
+        ? { items: [{ ...session, id: 'sess_2' }], nextCursor: null, total: 30 }
+        : { items: [session], nextCursor: null, total: 30 },
     'GET /sites/:id/sessions/:sid': () => ({
       session,
       events: [
@@ -212,6 +281,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         },
       ],
       nextCursor: null,
+      total: 1,
     }),
     'GET /sites/:id/funnels': () => state.funnels,
     'POST /sites/:id/funnels': ({ body }) => {
@@ -236,6 +306,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         { ...payment, id: 'ref_1', kind: 'refund', amount: -4990, renewal: false, matchedBy: null, name: null },
       ],
       nextCursor: null,
+      total: 2,
     }),
     'POST /sites/:id/rematch': () => ({ matched: 1 }),
     'DELETE /sites/:id/data': () => ({ deleted: 10 }),
@@ -267,7 +338,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     const handler = match(method, path)
     if (!handler) return Response.json({ error: `No route ${method} ${path}` }, { status: 404 })
-    const result = handler(recorded)
+    const result = await handler(recorded)
     return result instanceof Response ? result : Response.json(result)
   }
 

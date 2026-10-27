@@ -56,6 +56,8 @@ interface Site {
   privacyMode: PrivacyMode
   retentionDays: number | null
   allowLocalhost: boolean
+  /** Tracking is paused: tracker events and server goals are dropped, payments are still recorded. */
+  paused: boolean
   ignoredIps: string[]
   createdAt: number // Unix milliseconds
   /** Which providers have a webhook secret configured. Secrets are never returned. */
@@ -174,12 +176,26 @@ interface Overview {
   otherCurrencies: { currency: string; amount: number; orders: number }[]
 }
 
+interface SiteSummary {
+  siteId: string
+  visitors: number
+  revenue: number // in the site's currency, minor units
+  orders: number
+  currency: string
+  online: number
+}
+
 interface TimeseriesPoint {
   ts: number // bucket start, Unix ms
   visitors: number
   sessions: number
   pageviews: number
   revenue: number
+  orders: number
+  bounceRate: number // 0 to 1
+  avgDurationMs: number
+  conversionRate: number // 0 to 1
+  revenuePerVisitor: number
 }
 
 interface BreakdownRow {
@@ -195,7 +211,23 @@ interface BreakdownRow {
 interface Realtime {
   online: number
   recent: { ts: number; type: EventType; name: string | null; path: string | null; country: string | null }[]
-  locations: { lat: number; lon: number; country: string | null; city: string | null }[]
+  locations: RealtimeVisit[]
+}
+
+// A visit active in the last five minutes that has a location.
+interface RealtimeVisit {
+  lat: number
+  lon: number
+  country: string | null
+  city: string | null
+  sessionId: string
+  visitorId: string
+  page: string | null // the page the visitor is on now
+  source: string
+  browser: string | null
+  device: string | null
+  startedAt: number
+  lastSeen: number
 }
 
 interface SessionSummary {
@@ -217,9 +249,23 @@ interface SessionSummary {
   revenue: number
 }
 
+interface EventRow {
+  id: string
+  ts: number
+  type: EventType
+  name: string | null
+  path: string | null
+  props: Props | null
+  sessionId: string
+  visitorId: string
+}
+
 interface Page<T> {
   items: T[]
+  /** `null` on the last page, and whenever `sort` or `offset` is used. */
   nextCursor: string | null
+  /** Every match, not only this page. */
+  total: number
 }
 ```
 
@@ -241,5 +287,35 @@ interface FunnelStep {
 interface FunnelResult {
   funnel: Funnel
   steps: { match: string; visitors: number; dropOff: number | null }[]
+}
+```
+
+## Test data
+
+Body and answer of `POST /debug/generate`, for servers created with `debug: true`.
+
+```ts
+interface TestDataInput {
+  /** Write into this site instead of making new test sites. */
+  siteId?: string
+  /** New test sites to make, 1 to 20. Default 1. */
+  sites?: number
+  /** Days of history ending now, 0 to 730; 0 makes empty sites. Default 30. */
+  days?: number
+  /** Average visits per day and site, 0 to 100,000; 0 makes empty sites. Default 500. */
+  visitorsPerDay?: number
+  /** Multiplies every price (900, 2,900 and 9,900 minor units). Default 1. */
+  priceScale?: number
+  /** Currency of new test sites. Default `USD`. */
+  currency?: string
+  /** New sites differ like real ones (empty, quiet, busy, just launched, paused…); visitorsPerDay and priceScale don't apply. */
+  mix?: boolean
+}
+
+interface TestDataResult {
+  sites: { id: string; name: string }[]
+  counts: { visitors: number; sessions: number; events: number; payments: number }
+  /** How long writing took, in ms. */
+  durationMs: number
 }
 ```

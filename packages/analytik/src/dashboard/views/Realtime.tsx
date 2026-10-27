@@ -1,18 +1,23 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
-import type { Realtime as RealtimeData } from '../../shared/types'
+import type { Realtime as RealtimeData, RealtimeVisit } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
-import { useResource } from '../data'
+import { liveSignature, usePolling, useResource } from '../data'
 import { countryName, formatAgo, formatNumber } from '../format'
 import { Icon } from '../icons'
-import { WorldMap } from '../map'
+import { groupPlaces, type MapPlace, WorldMap } from '../map'
 import { SiteTile, Status } from '../ui'
 import { LayerContext } from '../ui/layer'
 import { AnimatedNumber, EASE, View } from '../ui/motion'
 import { Tooltip } from '../ui/tooltip'
+import { Browser, Visitor } from './cells'
+import { SessionDialog } from './Sessions'
 
-const REFRESH_MS = 5000
+// Each poll is a billed request on serverless hosts; ten seconds still feels live, and a quiet site is asked at most
+// once a minute.
+const REFRESH_MS = 10_000
+const QUIET_REFRESH_MS = 60_000
 const FEED_LENGTH = 6
 
 type RecentEvent = RealtimeData['recent'][number]
@@ -73,6 +78,27 @@ function IconButton({
   )
 }
 
+/** An on/off view choice remembered in this browser, e.g. the globe view. */
+function useStoredFlag(name: string): [boolean, (on: boolean) => void] {
+  const key = `analytik:realtime-${name}`
+  const [on, setOn] = useState(() => {
+    try {
+      return localStorage.getItem(key) === '1'
+    } catch {
+      return false
+    }
+  })
+  const set = (next: boolean): void => {
+    setOn(next)
+    try {
+      localStorage.setItem(key, next ? '1' : '0')
+    } catch {
+      // Without storage the choice lasts until the view closes.
+    }
+  }
+  return [on, set]
+}
+
 /** Stable keys for feed lines, so a new event slides in on top instead of every line re-rendering. */
 export function feedKeys(events: readonly RecentEvent[]): string[] {
   const seen = new Map<string, number>()
@@ -84,31 +110,93 @@ export function feedKeys(events: readonly RecentEvent[]): string[] {
   })
 }
 
+/** The visitors at one place on the map: where they are on the site, where they came from, and since when. */
+function PlaceCard({
+  place,
+  now,
+  onOpen,
+  onClose,
+}: {
+  place: MapPlace
+  now: number
+  onOpen: (visit: RealtimeVisit) => void
+  onClose: () => void
+}) {
+  return (
+    <motion.div
+      className="analytik-float analytik-place-card"
+      role="region"
+      aria-label={`Visitors in ${place.label}`}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 12, transition: { duration: 0.15 } }}
+      transition={{ duration: 0.25, ease: EASE }}
+      onKeyDown={(event) => event.key === 'Escape' && onClose()}
+    >
+      <div className="analytik-place-head">
+        <div>
+          <h3>{place.label}</h3>
+          <p className="analytik-muted">
+            {formatNumber(place.count)} {place.count === 1 ? 'visitor' : 'visitors'} right now
+          </p>
+        </div>
+        <IconButton label="Close details" onClick={onClose}>
+          <Icon name="close" />
+        </IconButton>
+      </div>
+      <ul className="analytik-place-list">
+        {place.visits.map((visit) => (
+          <li key={visit.sessionId}>
+            <button
+              type="button"
+              className="analytik-place-visit"
+              onClick={() => onOpen(visit)}
+              aria-label={`Open the visit of ${visit.visitorId.slice(-6)}`}
+            >
+              <Visitor id={visit.visitorId} />
+              <span className="analytik-place-page analytik-mono">{visit.page ?? '—'}</span>
+              <span className="analytik-place-meta">
+                <span>{visit.source}</span>
+                <Browser browser={visit.browser} />
+                <span className="analytik-muted">arrived {formatAgo(visit.startedAt, now)}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </motion.div>
+  )
+}
+
 /** Who is on the site right now: a map of their locations, the live count and a feed of what they do. */
 export function Realtime() {
   const { client, site, openView } = useDashboard()
   const live = useResource<RealtimeData>(requestKey('realtime', site.id), () => client.realtime(site.id))
   const [now, setNow] = useState(() => Date.now())
-  const [globe, setGlobe] = useState(false)
-  const [lightMap, setLightMap] = useState(false)
+  const [globe, setGlobe] = useStoredFlag('globe')
+  const [lightMap, setLightMap] = useStoredFlag('light-map')
   const [sound, setSound] = useState(false)
   const [root, setRoot] = useState<HTMLElement | null>(null)
+  const [placeKey, setPlaceKey] = useState<string | null>(null)
+  const [session, setSession] = useState<string | null>(null)
   const seen = useRef(0)
   const { reload } = live
   const data = live.data
   const latest = data?.recent[0]?.ts ?? 0
   const feed = data?.recent.slice(0, FEED_LENGTH) ?? []
   const keys = feedKeys(feed)
+  // The chosen place, refreshed with the data; it closes once nobody is there.
+  const place = data && placeKey ? groupPlaces(data.locations).find((p) => p.key === placeKey) : undefined
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        setNow(Date.now())
-        reload()
-      }
-    }, REFRESH_MS)
-    return () => clearInterval(timer)
-  }, [reload])
+  usePolling(
+    () => {
+      setNow(Date.now())
+      reload()
+    },
+    liveSignature(data),
+    REFRESH_MS,
+    QUIET_REFRESH_MS,
+  )
 
   useEffect(() => {
     if (sound && seen.current && latest > seen.current) ping()
@@ -135,7 +223,24 @@ export function Realtime() {
             ref={setRoot}
           >
             <LayerContext value={root}>
-              <WorldMap locations={data.locations} globe={globe} />
+              <WorldMap
+                locations={data.locations}
+                globe={globe}
+                selected={place?.key}
+                onSelect={(key) => setPlaceKey(key === placeKey ? null : key)}
+              />
+              <AnimatePresence>
+                {place && (
+                  <PlaceCard
+                    key={place.key}
+                    place={place}
+                    now={now}
+                    onOpen={(visit) => setSession(visit.sessionId)}
+                    onClose={() => setPlaceKey(null)}
+                  />
+                )}
+              </AnimatePresence>
+              <SessionDialog sessionId={session} onClose={() => setSession(null)} />
               <div className="analytik-float analytik-live-card">
                 <div className="analytik-live-head">
                   <SiteTile site={site} />

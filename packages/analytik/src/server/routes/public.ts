@@ -10,7 +10,7 @@ import { MINUTE } from '../../shared/time'
 import type { PaymentInput, PaymentProvider } from '../../shared/types'
 import { clip } from '../../shared/url'
 import { AnalytikError, type Context } from '../context'
-import { SESSION_WINDOW, cleanProps, ingest } from '../ingest'
+import { SESSION_WINDOW, cleanProps, ingest, sessionUpdate } from '../ingest'
 import { recordPayment } from '../payments'
 import { hashedKey, strictVisitorId } from '../privacy'
 import { hit } from '../ratelimit'
@@ -109,6 +109,7 @@ export function publicRoutes(app: Hono, ctx: Context): void {
   app.post('/v1/goals', async (c) => {
     const site = await siteByApiKey(ctx, bearer(c.req.raw))
     if (!site) throw new AnalytikError('invalid api key', 401)
+    if (site.paused) return c.json({ ok: true, filtered: 'paused' }, 202)
     const body = ((await readJson(c.req.raw, API_LIMIT)) ?? {}) as Record<string, unknown>
     const name = clip(body.name, 100)
     const visitorId = body.visitorId
@@ -129,10 +130,7 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     const props = cleanProps(body.props)
     const now = ctx.now()
     await ctx.storage.batch([
-      {
-        sql: 'UPDATE sessions SET goals = goals + 1 WHERE site_id = ? AND id = ?',
-        params: [site.id, session.id],
-      },
+      sessionUpdate(site.id, session.id, { goals: 1 }),
       {
         sql: `INSERT INTO events (id, site_id, session_id, visitor_id, ts, type, name, path, props)
               VALUES (?, ?, ?, ?, ?, 'goal', ?, ?, ?)`,

@@ -11,6 +11,7 @@ import type {
   Page,
   Payment,
   PaymentInput,
+  PaymentKind,
   PrivacyMode,
   Query,
   Realtime,
@@ -88,6 +89,11 @@ export interface CreateAnalytikOptions {
   trustProxy?: TrustProxy
   /** Your own client IP lookup; overrides `trustProxy`. Return null when unknown. */
   clientIp?: (request: Request) => string | null
+  /**
+   * Turns on the admin routes under `/debug` that fill the database with generated test data, and the dashboard's
+   * Debug settings that use them. For local testing: leave it off where the data is real. Default false.
+   */
+  debug?: boolean
 }
 
 export interface IngestInput {
@@ -103,7 +109,7 @@ export interface IngestInput {
   doNotTrack?: boolean
 }
 
-export type IngestFiltered = 'bot' | 'ignored-ip'
+export type IngestFiltered = 'bot' | 'ignored-ip' | 'paused'
 
 export type IngestResult =
   | { status: 202; visitorId: string | null; sessionId: string | null; filtered?: IngestFiltered }
@@ -122,14 +128,32 @@ export interface RecordPaymentResult {
 }
 
 export interface PageOptions {
+  /** Keyset cursor from the previous page; only in the default order (newest first) and without `offset`. */
   cursor?: string | null
   /** Default 50, at most 500. */
   limit?: number
+  /** Rows to skip, for numbered pages. */
+  offset?: number
+  /** A column of the list (see each list's sort keys); default the time, newest first. */
+  sort?: string
+  /** Default `desc`. */
+  order?: 'asc' | 'desc'
+  /** Case-insensitive text matched anywhere in the list's text columns. */
+  search?: string
+  /** Only rows of this visitor id. */
+  visitor?: string
 }
 
 export interface EventsOptions extends PageOptions {
   name?: string
   type?: EventType
+}
+
+export interface PaymentsOptions extends PageOptions {
+  kind?: PaymentKind
+  provider?: string
+  /** `true` for payments matched to a visit, `false` for unattributed ones. */
+  attributed?: boolean
 }
 
 export type ExportFormat = 'json' | 'csv'
@@ -156,7 +180,7 @@ export interface StatsApi {
   session(siteId: string, sessionId: string): Promise<SessionDetail | null>
   events(siteId: string, query: Query, options?: EventsOptions): Promise<Page<EventRow>>
   funnel(siteId: string, funnelId: string, query: Query): Promise<FunnelResult | null>
-  payments(siteId: string, query: Query, options?: PageOptions): Promise<Page<Payment>>
+  payments(siteId: string, query: Query, options?: PaymentsOptions): Promise<Page<Payment>>
   /** JSON: everything for the site. CSV: one table (default `events`). */
   export(siteId: string, format: ExportFormat, table?: ExportTable): Promise<string>
   /**

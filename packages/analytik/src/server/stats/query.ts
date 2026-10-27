@@ -1,9 +1,10 @@
 import { fromBase64, toBase64Url } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, startOfBucket } from '../../shared/time'
-import type { Dimension, Filters, Interval, Query } from '../../shared/types'
+import type { Dimension, Filters, Interval, Page, Query } from '../../shared/types'
 import { placeholders } from '../../storage/sql/statements'
-import { AnalytikError } from '../context'
+import { AnalytikError, type Context } from '../context'
 import type { SiteRecord } from '../sites'
+import type { PageOptions } from '../types'
 
 export const DIMENSIONS: readonly Dimension[] = [
   'channel',
@@ -183,6 +184,83 @@ export function decodeCursor(cursor: string | null | undefined): { ts: number; i
     // Fall through to the error below.
   }
   throw new AnalytikError('cursor is invalid')
+}
+
+/** ` AND (...)`: any of `columns` contains `search`, ignoring case. LIKE wildcards in the search are literal. */
+export function searchSql(columns: readonly string[], search: string | undefined): Fragment {
+  const term = search?.trim().toLowerCase()
+  if (!term) return { sql: '', params: [] }
+  const pattern = `%${term.replace(/[\\%_]/g, (char) => `\\${char}`)}%`
+  return {
+    sql: ` AND (${columns.map((column) => `LOWER(${column}) LIKE ? ESCAPE '\\'`).join(' OR ')})`,
+    params: columns.map(() => pattern),
+  }
+}
+
+/** How a list can be searched and sorted. */
+export interface ListSpec {
+  /** Sort keys and the SQL each orders by; nullable ones sort their unknowns last. */
+  sorts: Record<string, { sql: string; nullable?: boolean }>
+  /** The time and id columns: the default order (newest first) and the keyset cursor. */
+  time: string
+  id: string
+  /** Text columns `search` looks in. */
+  search: readonly string[]
+}
+
+export interface ListQuery {
+  select: string
+  /** Parameters of placeholders inside `select`, which come before the WHERE clause. */
+  selectParams?: unknown[]
+  from: string
+  where: Fragment
+}
+
+/**
+ * One page of a list with the total: numbered pages (`offset`) in any order, or keyset pages (`cursor`) in the
+ * default order. Sort keys are looked up in `spec`, so no user text reaches the SQL.
+ */
+export async function listPage<R, T>(
+  ctx: Context,
+  query: ListQuery,
+  spec: ListSpec,
+  options: PageOptions,
+  toItem: (row: R) => T,
+  key: (row: R) => { ts: number; id: string },
+): Promise<Page<T>> {
+  const limit = pageLimit(options.limit)
+  const offset = Math.max(0, Math.trunc(options.offset ?? 0) || 0)
+  const order = options.order === 'asc' ? 'ASC' : 'DESC'
+  const sort = options.sort === undefined ? undefined : spec.sorts[options.sort]
+  if (options.sort !== undefined && !sort) {
+    throw new AnalytikError(`sort must be one of ${Object.keys(spec.sorts).join(', ')}`)
+  }
+  const keyset = !sort && order === 'DESC' && offset === 0
+  const cursor = decodeCursor(options.cursor)
+  if (cursor && !keyset) throw new AnalytikError('cursor works only in the default order and without offset')
+
+  const search = searchSql(spec.search, options.search)
+  const where = `${query.where.sql}${search.sql}`
+  const params = [...query.where.params, ...search.params]
+  const after = cursor ? ` AND (${spec.time} < ? OR (${spec.time} = ? AND ${spec.id} < ?))` : ''
+  const orderBy = sort
+    ? `${sort.nullable ? `${sort.sql} IS NULL, ` : ''}${sort.sql} ${order}, ${spec.time} DESC, ${spec.id} DESC`
+    : `${spec.time} ${order}, ${spec.id} ${order}`
+  const [rows, counted] = await Promise.all([
+    ctx.storage.query<R>(
+      `SELECT ${query.select} FROM ${query.from} WHERE ${where}${after}
+       ORDER BY ${orderBy} LIMIT ${limit + 1}${offset ? ` OFFSET ${offset}` : ''}`,
+      [...(query.selectParams ?? []), ...params, ...(cursor ? [cursor.ts, cursor.ts, cursor.id] : [])],
+    ),
+    // Drivers return COUNT as a number or, for 64-bit counts, a string.
+    ctx.storage.query<{ total: number | string }>(`SELECT COUNT(*) AS total FROM ${query.from} WHERE ${where}`, params),
+  ])
+  const page = toPage(rows, limit, key)
+  return {
+    items: page.items.map(toItem),
+    nextCursor: keyset ? page.nextCursor : null,
+    total: Number(counted[0]?.total ?? 0),
+  }
 }
 
 /** Returns the page and the cursor for the next one; rows were fetched with `limit + 1`. */

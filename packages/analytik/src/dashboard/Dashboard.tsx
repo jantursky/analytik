@@ -1,16 +1,18 @@
 import { AnimatePresence, motion, MotionConfig } from 'motion/react'
-import { type ComponentType, useEffect, useMemo, useState } from 'react'
+import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Filters, Site } from '../shared/types'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
+import { Credits } from './credits'
 import { DashboardProvider, requestKey } from './context'
 import { useResource } from './data'
 import { Icon } from './icons'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
+import { PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange } from './range'
 import { FilterBar, IntervalPicker, RangePicker } from './Toolbar'
-import { SiteTile, Status } from './ui'
+import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
 import { LayerContext } from './ui/layer'
 import { Select } from './ui/select'
 import { Switch } from './ui/switch'
@@ -32,18 +34,18 @@ type SiteView = Exclude<DashboardView, 'sites'>
 
 const VIEWS: Record<SiteView, { label: string; component: ComponentType; ranged: boolean }> = {
   overview: { label: 'Overview', component: Overview, ranged: true },
-  sources: { label: 'Sources', component: Sources, ranged: true },
+  sources: { label: 'Acquisition', component: Sources, ranged: true },
   pages: { label: 'Pages', component: Pages, ranged: true },
   events: { label: 'Events', component: Events, ranged: true },
   funnels: { label: 'Funnels', component: Funnels, ranged: true },
   revenue: { label: 'Revenue', component: Revenue, ranged: true },
   sessions: { label: 'Sessions', component: Sessions, ranged: true },
-  realtime: { label: 'Realtime', component: Realtime, ranged: false },
+  realtime: { label: 'Live', component: Realtime, ranged: false },
   settings: { label: 'Settings', component: Settings, ranged: false },
 }
 
 const NAV: { value: DashboardView; label: string }[] = [
-  { value: 'sites', label: 'Websites' },
+  { value: 'sites', label: 'All sites' },
   ...(Object.keys(VIEWS) as SiteView[]).map((value) => ({ value, label: VIEWS[value].label })),
 ]
 
@@ -58,24 +60,50 @@ export interface DashboardProps {
   theme?: 'light' | 'dark'
   /** View shown first. Default `overview`. */
   view?: DashboardView
+  /**
+   * Site icons. Default `true`: each site's `/favicon.ico`, requested by the browser from the site itself. `false`
+   * shows the site's initial; a function returns the icon URL for a site, or `undefined` for the initial.
+   */
+  favicons?: FaviconSource
+  /**
+   * Default `true`: the overview layout, live refresh and chart choices are saved in the database and follow the
+   * admin to every browser. `false` keeps them in this browser only, e.g. for a shared read-only demo.
+   */
+  syncPreferences?: boolean
+  /** The line under the dashboard saying it is analytik, with links to its source and its author. Default true. */
+  credits?: boolean
 }
 
 const NEW_SITE = '\u0000new'
-const LIVE_MS = 30000
+// A live refresh reads the whole range again; once a minute keeps that affordable on metered databases.
+const LIVE_MS = 60_000
+// Long enough for a view's first data to arrive, short enough that a shorter view soon gives the space back.
+const HOLD_HEIGHT_MS = 1200
 
 /** The same preset ending now, keeping the chosen interval; custom ranges stay as they are. */
 const renew = (range: DateRange): DateRange =>
   range.preset === 'custom' ? range : { ...presetRange(range.preset, Date.now()), interval: range.interval }
 
 /** The full dashboard: login, sites overview, site switcher, date range, filters and every view. */
-export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'overview' }: DashboardProps) {
+export function Dashboard({
+  api,
+  siteId,
+  fetcher,
+  theme,
+  view: initialView = 'overview',
+  favicons = true,
+  syncPreferences = true,
+  credits = true,
+}: DashboardProps) {
   const [unauthorized, setUnauthorized] = useState(false)
   const [chosenId, setChosenId] = useState(siteId)
-  const [view, setView] = useState<DashboardView>(initialView)
+  const [view, setViewState] = useState<DashboardView>(initialView)
+  const [customizing, setCustomizing] = useState(false)
   const [range, setRange] = useState(() => presetRange('7d', Date.now()))
   const [filters, setFilters] = useState<Filters>({})
   const [adding, setAdding] = useState(false)
-  const [live, setLive] = useState(false)
+  // A site just added opens on its tracking code, the next thing to do with it.
+  const [justAdded, setJustAdded] = useState<string | null>(null)
   // Bumped by "Refresh" on a custom range, which has no newer data window to move to; remounts the view.
   const [generation, setGeneration] = useState(0)
   // Popups portal into the root so they inherit its theme variables.
@@ -93,6 +121,48 @@ export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'ov
   const sites = useResource<Site[]>(requestKey('sites', api, unauthorized), () =>
     unauthorized ? Promise.resolve([]) : client.sites(),
   )
+  // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on.
+  const preferences = usePreferencesStore(syncPreferences ? client : undefined, !unauthorized)
+  const live = preferences.values.live === true
+  const setLive = (on: boolean): void => preferences.update({ live: on })
+
+  // Switching views swaps the content for a short loading state. Without holding the old height, the page shrinks
+  // under the scroll position and jumps; and when the toolbar is stuck, the new view starts at its top instead.
+  const main = useRef<HTMLDivElement>(null)
+  const release = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(release.current), [])
+  const setView = (next: DashboardView): void => {
+    if (next !== 'settings') setJustAdded(null)
+    const element = main.current
+    if (element && next !== view) {
+      element.style.minHeight = `${element.offsetHeight}px`
+      clearTimeout(release.current)
+      release.current = setTimeout(() => {
+        element.style.minHeight = ''
+      }, HOLD_HEIGHT_MS)
+      const toolbar = element.querySelector('.analytik-toolbar')
+      if (toolbar) {
+        const stuckAt = toolbar.getBoundingClientRect().top
+        if (element.getBoundingClientRect().top < stuckAt) {
+          element.style.scrollMarginTop = `${stuckAt}px`
+          element.scrollIntoView({ block: 'start' })
+        }
+      }
+    }
+    setViewState(next)
+  }
+
+  // The header's height, so the sticky toolbar sits right under it.
+  const header = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const element = header.current
+    if (!element || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() =>
+      root?.style.setProperty('--analytik-header-height', `${element.offsetHeight}px`),
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  })
 
   const liveOn = live && range.preset !== 'custom'
   useEffect(() => {
@@ -116,25 +186,27 @@ export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'ov
     setFilters({})
   }
   const refresh = (): void => {
+    client.clearCache()
     if (range.preset === 'custom') setGeneration((g) => g + 1)
     else setRange(renew(range))
   }
   const created = (next: Site): void => {
     setAdding(false)
     setChosenId(next.id)
+    setJustAdded(next.id)
     setView('settings')
     sites.reload()
   }
 
-  let main
+  let content
   if (unauthorized) {
-    main = <LoginForm client={client} onLogin={() => setUnauthorized(false)} />
+    content = <LoginForm client={client} onLogin={() => setUnauthorized(false)} />
   } else if (sites.loading || sites.error) {
-    main = <Status loading={sites.loading} error={sites.error} />
+    content = <Status loading={sites.loading} error={sites.error} />
   } else if (!site) {
-    main = <CreateSiteForm client={client} onCreated={created} />
+    content = <CreateSiteForm client={client} onCreated={created} />
   } else if (!current) {
-    main = (
+    content = (
       <SitesOverview
         client={client}
         sites={list}
@@ -143,11 +215,12 @@ export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'ov
           setView('overview')
         }}
         onAdd={() => setAdding(true)}
+        onChange={sites.reload}
       />
     )
   } else {
     const View = current.component
-    main = (
+    content = (
       <DashboardProvider
         client={client}
         apiUrl={apiUrl}
@@ -157,50 +230,101 @@ export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'ov
         onFilter={addFilter}
         onSiteChange={sites.reload}
         onViewChange={setView}
+        customizing={customizing && view === 'overview'}
       >
         <div className="analytik-toolbar">
-          <h1 className="analytik-sr-only">{current.label}</h1>
-          <Select
-            label="Site"
-            hideLabel
-            className="analytik-pill analytik-switcher"
-            leading={<SiteTile site={site} />}
-            value={site.id}
-            options={[...list.map((s) => ({ value: s.id, label: s.name })), { value: NEW_SITE, label: 'Add website…' }]}
-            onChange={(id) => {
-              if (id === NEW_SITE) setAdding(true)
-              else openSite(id)
-            }}
-          />
-          {current.ranged && (
-            <>
-              <RangePicker range={range} onChange={setRange} />
-              <IntervalPicker range={range} onChange={setRange} />
-              <Switch
-                className="analytik-pill analytik-live-toggle"
-                checked={liveOn}
-                disabled={range.preset === 'custom'}
-                onChange={setLive}
-              >
-                <span className="analytik-live-dot" data-idle={liveOn ? undefined : ''} aria-hidden="true" />
-                Live
-              </Switch>
-              <Tooltip label="Refresh">
-                <button
-                  type="button"
-                  className="analytik-pill-icon analytik-pill"
-                  aria-label="Refresh"
-                  onClick={refresh}
+          <div className="analytik-action-left">
+            <h1 className="analytik-sr-only">{current.label}</h1>
+            <Select
+              label="Site"
+              hideLabel
+              className="analytik-pill analytik-switcher"
+              leading={<SiteTile site={site} />}
+              value={site.id}
+              options={[
+                ...list.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                  description: s.domain,
+                  icon: <SiteTile site={s} />,
+                })),
+                {
+                  value: NEW_SITE,
+                  label: 'Add website…',
+                  icon: (
+                    <span className="analytik-tile analytik-tile-add" aria-hidden="true">
+                      +
+                    </span>
+                  ),
+                },
+              ]}
+              onChange={(id) => {
+                if (id === NEW_SITE) setAdding(true)
+                else openSite(id)
+              }}
+            />
+            {current.ranged && (
+              <>
+                <RangePicker range={range} onChange={setRange} />
+                <IntervalPicker range={range} onChange={setRange} />
+                <Switch
+                  className="analytik-pill analytik-live-toggle"
+                  checked={liveOn}
+                  disabled={range.preset === 'custom'}
+                  onChange={setLive}
                 >
-                  <Icon name="refresh" />
-                </button>
-              </Tooltip>
-            </>
-          )}
+                  <span className="analytik-live-dot" data-idle={liveOn ? undefined : ''} aria-hidden="true" />
+                  Live
+                </Switch>
+                <Tooltip label="Refresh">
+                  <button
+                    type="button"
+                    className="analytik-pill-icon analytik-pill"
+                    aria-label="Refresh"
+                    onClick={refresh}
+                  >
+                    <Icon name="refresh" />
+                  </button>
+                </Tooltip>
+              </>
+            )}
+          </div>
+          <div className="analytik-action-right">
+            {view === 'overview' && customizing && (
+              <ConfirmButton
+                label="Reset"
+                icon="reset"
+                tone="plain"
+                title="Reset the overview?"
+                description="The overview goes back to the six default blocks, and the summary to its default numbers and chart. This changes it for every admin."
+                confirmLabel="Reset layout"
+                onConfirm={() => preferences.update({ layout: undefined, summary: undefined })}
+              />
+            )}
+            {view === 'overview' && (
+              <button
+                type="button"
+                className="analytik-button analytik-customize"
+                data-variant={customizing ? 'primary' : undefined}
+                aria-pressed={customizing}
+                onClick={() => setCustomizing(!customizing)}
+              >
+                <Icon name={customizing ? 'check' : 'layout'} />
+                {customizing ? 'Done' : 'Customize'}
+              </button>
+            )}
+          </div>
         </div>
         {current.ranged && <FilterBar filters={filters} onChange={setFilters} />}
         <AnimatePresence mode="wait">
-          <View key={`${view}-${site.id}-${generation}`} />
+          {view === 'settings' ? (
+            <Settings
+              key={`${view}-${site.id}-${generation}`}
+              section={justAdded === site.id ? 'tracking' : undefined}
+            />
+          ) : (
+            <View key={`${view}-${site.id}-${generation}`} />
+          )}
         </AnimatePresence>
       </DashboardProvider>
     )
@@ -209,47 +333,57 @@ export function Dashboard({ api, siteId, fetcher, theme, view: initialView = 'ov
   return (
     <MotionConfig reducedMotion="user">
       <div className="analytik" data-theme={theme} ref={setRoot}>
-        <LayerContext value={root}>
-          {!unauthorized && site && (
-            <header className="analytik-header">
-              <span className="analytik-brand">
-                <BrandMark />
-                analytik
-              </span>
-              <nav aria-label="Dashboard">
-                <ul>
-                  {NAV.map(({ value, label }) => (
-                    <li key={value}>
-                      <button
-                        type="button"
-                        className="analytik-nav-item"
-                        aria-current={value === view ? 'page' : undefined}
-                        onClick={() => setView(value)}
-                      >
-                        {value === view && (
-                          <motion.span className="analytik-nav-pill" layoutId="analytik-nav-pill" aria-hidden="true" />
-                        )}
-                        <span>{label}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-              <button
-                type="button"
-                className="analytik-button analytik-signout"
-                onClick={() => void client.logout().finally(() => setUnauthorized(true))}
-              >
-                Log out
-              </button>
-            </header>
-          )}
-          {/* Not a <main>: the dashboard is embedded in pages that have their own. */}
-          <div className="analytik-main">{main}</div>
-          {!unauthorized && (
-            <AddSiteDialog client={client} open={adding} onCreated={created} onClose={() => setAdding(false)} />
-          )}
-        </LayerContext>
+        <PreferencesProvider value={preferences}>
+          <LayerContext value={root}>
+            <FaviconsContext value={favicons}>
+              {!unauthorized && site && (
+                <header className="analytik-header" ref={header}>
+                  <span className="analytik-brand">
+                    <BrandMark />
+                  </span>
+                  <nav aria-label="Dashboard">
+                    <ul>
+                      {NAV.map(({ value, label }) => (
+                        <li key={value}>
+                          <button
+                            type="button"
+                            className="analytik-nav-item"
+                            aria-current={value === view ? 'page' : undefined}
+                            onClick={() => setView(value)}
+                          >
+                            {value === view && (
+                              <motion.span
+                                className="analytik-nav-pill"
+                                layoutId="analytik-nav-pill"
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{label}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                  <button
+                    type="button"
+                    className="analytik-button analytik-signout"
+                    onClick={() => void client.logout().finally(() => setUnauthorized(true))}
+                  >
+                    Log out
+                  </button>
+                </header>
+              )}
+              {/* Not a <main>: the dashboard is embedded in pages that have their own. */}
+              <div className="analytik-main" ref={main}>
+                {content}
+              </div>
+              {credits && <Credits />}
+              {!unauthorized && (
+                <AddSiteDialog client={client} open={adding} onCreated={created} onClose={() => setAdding(false)} />
+              )}
+            </FaviconsContext>
+          </LayerContext>
+        </PreferencesProvider>
       </div>
     </MotionConfig>
   )
