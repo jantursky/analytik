@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.4.1]
+
+### Changed
+
+- The Live map and its cards follow the dashboard theme (light by default, dark in a dark dashboard). The Light map
+  button is gone.
+
+### Fixed
+
+- Empty and loading states had their padding overridden by the reset and sat flush against the card.
+
 ## [1.4.0]
 
 ### Added
