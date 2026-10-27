@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useId, useState } from 'react'
 import type { PrivacyMode } from 'analytik'
+import { useCallback, useEffect, useId, useState } from 'react'
 
 import { SITE_ID } from '../config'
 import { MODES, deriveVisitorId, randomSalt, readDeviceStorage, type DeviceStorage } from '../lib/privacy'
@@ -35,19 +35,21 @@ export function PrivacyExample() {
 
   return (
     <div className="stack">
-      <div className="segmented" role="group" aria-label="Privacy mode">
-        {MODES.map((entry) => (
-          <button
-            key={entry.mode}
-            type="button"
-            aria-pressed={mode === entry.mode}
-            onClick={() => {
-              setMode(entry.mode)
-            }}
-          >
-            {entry.title}
-          </button>
-        ))}
+      <div>
+        <div className="segmented" role="group" aria-label="Privacy mode">
+          {MODES.map((entry) => (
+            <button
+              key={entry.mode}
+              type="button"
+              aria-pressed={mode === entry.mode}
+              onClick={() => {
+                setMode(entry.mode)
+              }}
+            >
+              {entry.title}
+            </button>
+          ))}
+        </div>
       </div>
 
       <table className="table">
