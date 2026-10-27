@@ -6,6 +6,24 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.2.0]
+
+### Added
+
+- Update notice in the dashboard: a dismissible bar says when a newer version is on npm. Dismissing it hides that
+  version only. `GET /version` backs it, and `updateCheck: false` turns the check off.
+- `analytik upgrade [dir]` installs the latest version into a project and redeploys it (Cloudflare).
+- Dependabot configuration in the Cloudflare and Vercel templates, limited to `analytik`.
+- Theme switch on the standalone login and add-website screens.
+- Site icons are fetched on the server (`GET /sites/:id/favicon`), so sites without `/favicon.ico` get their icon.
+
+### Changed
+
+- Redesigned login screen and error notes (icon, title, accent edge, animation).
+- Pause tracking uses a warning style and Delete website a danger style, both with icons.
+- The header content lines up with the main column.
+- The name is written as Analytik everywhere, and the page title and icon use the brand mark.
+
 ## [1.1.0]
 
 ### Added
