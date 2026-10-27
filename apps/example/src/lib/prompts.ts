@@ -80,7 +80,7 @@ const SECRETS =
   '`ADMIN_PASSWORD` (the dashboard password, not empty) and `SESSION_SECRET` (`openssl rand -hex 32`, at least 32 characters)'
 
 const vercelFunction = (mode: PrivacyMode, comment: string, options: string): CodeFile => ({
-  path: 'api/[[...path]].ts',
+  path: 'api/index.ts',
   lang: 'ts',
   code: `import postgres from 'postgres'
 import { createAnalytik } from 'analytik/server'
@@ -97,6 +97,15 @@ const { app } = createAnalytik({
 
 export default { fetch: app.fetch }`,
 })
+
+// A catch-all file name only catches one level of path on Vercel, so every /api/* path is rewritten to the function.
+const VERCEL_JSON: CodeFile = {
+  path: 'vercel.json',
+  lang: 'json',
+  code: `{
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }]
+}`,
+}
 
 const bunServer = (mode: PrivacyMode, storage: string, imports: string, network: string): CodeFile => ({
   path: 'server.ts',
@@ -221,6 +230,7 @@ export default {
         "Supabase's transaction pooler (port 6543) has no prepared statements, so turn them off.",
         '{ prepare: false, max: 1 }',
       ),
+      VERCEL_JSON,
     ],
     steps: [
       `${COPY_TRACKER}; Vercel serves \`public/\` as static files.`,
@@ -241,6 +251,7 @@ export default {
         "Neon's pooled connection runs through PgBouncer, so prepared statements stay off.",
         "{ prepare: false, max: 1, ssl: 'require' }",
       ),
+      VERCEL_JSON,
     ],
     steps: [
       `${COPY_TRACKER}; Vercel serves \`public/\` as static files.`,

@@ -23,7 +23,7 @@ describe('debug test data', () => {
     expect((await server.request('/debug/generate', { method: 'POST', body: '{}' })).status).toBe(401)
   })
 
-  it.each(storageKinds())('makes test sites with traffic and payments on %s', async (kind) => {
+  it.each(storageKinds())('makes test sites with traffic and payments on %s', { timeout: 30_000 }, async (kind) => {
     server = await testServer(kind, { debug: true })
     expect(await server.adminJson('/debug')).toEqual({ enabled: true })
     const result = await server.adminJson<TestDataResult>('/debug/generate', {

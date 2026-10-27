@@ -11,5 +11,8 @@
       "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
     }
   ],
-  "rewrites": [{ "source": "/((?!api/|assets/|.*\\..*).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/|assets/|.*\\..*).*)", "destination": "/index.html" }
+  ]
 }
