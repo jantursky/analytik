@@ -3,14 +3,20 @@ import { cpSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } 
 import { basename, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+export type CreateTarget = 'cloudflare' | 'vercel'
+
+export const CREATE_TARGETS: readonly CreateTarget[] = ['cloudflare', 'vercel']
+
 export interface CreateOptions {
+  /** Cloudflare Workers with D1 (the default), or a Vercel function with Postgres. */
+  target?: CreateTarget
   /** Where the project is written; must be missing or empty. */
   dir: string
   /** The Worker and database name. Defaults to the folder's name. */
   name?: string
   /** The analytik version the project depends on. */
   version: string
-  /** Install, create the database, deploy and set the secrets. Off, only the files are written. */
+  /** Install, create the database, deploy and set the secrets (Cloudflare only). Off, only the files are written. */
   deploy: boolean
   /** The dashboard password; a random one is made when missing. */
   password?: string
@@ -43,12 +49,12 @@ export const realIo: CreateIo = {
 }
 
 /** The project files ship in the package, next to `dist`; from source they sit two folders up. */
-function templateDir(): string {
-  for (const relative of ['../templates/cloudflare', '../../templates/cloudflare']) {
+function templateDir(target: CreateTarget): string {
+  for (const relative of [`../templates/${target}`, `../../templates/${target}`]) {
     const path = fileURLToPath(new URL(relative, import.meta.url))
     if (existsSync(path)) return path
   }
-  throw new Error('the Cloudflare project template is missing from this installation')
+  throw new Error(`the ${target} project template is missing from this installation`)
 }
 
 /** A Worker name Cloudflare accepts: lowercase letters, digits and dashes. */
@@ -64,29 +70,41 @@ function rewrite(path: string, change: (text: string) => string): void {
   writeFileSync(path, change(readFileSync(path, 'utf8')))
 }
 
-/** Writes the project: the template with the name and version filled in, local secrets in `.dev.vars`, a `.gitignore`. */
+/** Writes the project: the template with the name and version filled in, local secrets, a `.gitignore`. */
 export function scaffold(
   options: CreateOptions,
   io: CreateIo,
 ): { name: string; password: string; sessionSecret: string } {
+  const target = options.target ?? 'cloudflare'
   const dir = resolve(options.dir)
   if (existsSync(dir) && readdirSync(dir).length > 0) throw new Error(`${options.dir} exists and is not empty`)
   const name = workerName(options.name ?? basename(dir))
-  cpSync(templateDir(), dir, { recursive: true })
-  rewrite(join(dir, 'wrangler.jsonc'), (text) =>
-    text
-      .replace('"name": "analytik"', `"name": "${name}"`)
-      .replace('"database_name": "analytik"', `"database_name": "${name}"`),
-  )
+  cpSync(templateDir(target), dir, { recursive: true })
+  if (target === 'cloudflare') {
+    rewrite(join(dir, 'wrangler.jsonc'), (text) =>
+      text
+        .replace('"name": "analytik"', `"name": "${name}"`)
+        .replace('"database_name": "analytik"', `"database_name": "${name}"`),
+    )
+  }
   rewrite(join(dir, 'package.json'), (text) =>
     text
-      .replace('"name": "analytik-worker"', `"name": "${name}"`)
+      .replace(/"name": "analytik-[a-z]+"/, `"name": "${name}"`)
       .replace('"analytik": "^1.1.0"', `"analytik": "^${options.version}"`),
   )
   const password = options.password ?? io.random(10)
   const sessionSecret = io.random(32)
-  writeFileSync(join(dir, '.dev.vars'), `ADMIN_PASSWORD=${password}\nSESSION_SECRET=${sessionSecret}\n`)
-  writeFileSync(join(dir, '.gitignore'), 'node_modules\n.wrangler\n.dev.vars\n')
+  const secrets = `ADMIN_PASSWORD=${password}\nSESSION_SECRET=${sessionSecret}\n`
+  if (target === 'cloudflare') {
+    writeFileSync(join(dir, '.dev.vars'), secrets)
+    writeFileSync(join(dir, '.gitignore'), 'node_modules\n.wrangler\n.dev.vars\n')
+  } else {
+    writeFileSync(
+      join(dir, '.env'),
+      `${secrets}# The pooled Postgres connection string from Supabase or Neon.\nDATABASE_URL=\n`,
+    )
+    writeFileSync(join(dir, '.gitignore'), 'node_modules\n.vercel\n.env\n')
+  }
   return { name, password, sessionSecret }
 }
 
@@ -101,7 +119,7 @@ export function createProject(options: CreateOptions, io: CreateIo): CreateResul
   const dir = resolve(options.dir)
   const result: CreateResult = { dir, name, password }
   io.log(`Created ${options.dir}`)
-  if (!options.deploy) return result
+  if (!options.deploy || options.target === 'vercel') return result
 
   const step = (label: string, command: string, args: string[], capture = false): string => {
     io.log(`\n${label}`)

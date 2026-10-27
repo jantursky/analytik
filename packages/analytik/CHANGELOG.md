@@ -13,8 +13,8 @@ All notable changes to this project are documented in this file. The format foll
 - `analytik/standalone`: `withDashboard(app)` serves the dashboard and the tracker script in front of an analytik app,
   so a single Worker or server needs no separate dashboard app.
 - `analytik create [dir]` makes a Cloudflare project from a template, installs it, signs in, creates the D1 database,
-  deploys and sets the secrets (`--no-deploy` writes the files only). `npm create analytik` runs it.
-- A Cloudflare project template with a Deploy to Cloudflare button.
+  deploys and sets the secrets (`--no-deploy` writes the files only). `--target vercel` writes a Vercel project instead.
+- Cloudflare and Vercel project templates, with Deploy to Cloudflare and Deploy with Vercel buttons.
 - Dashboard theme setting (Settings, Appearance): the page's `data-theme`, light or dark. A light theme set on the page
   now also wins over a dark system setting.
 

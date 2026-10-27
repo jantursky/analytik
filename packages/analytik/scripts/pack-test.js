@@ -13,7 +13,7 @@ try {
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], packageDir))
   const files = packed.files.map((file) => file.path).sort()
   const allowed =
-    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|templates\/cloudflare\/[\w./-]+|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
+    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|templates\/(cloudflare|vercel)\/[\w./-]+|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
   const unexpected = files.filter((file) => !allowed.test(file))
   if (unexpected.length > 0) throw new Error(`Unexpected files in the tarball: ${unexpected.join(', ')}`)
   console.log(`tarball: ${packed.filename}, ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB`)
@@ -68,10 +68,14 @@ console.log('consumer: server, storage, migrate and every subpath load and work'
 `,
   )
   console.log(run('node', ['consumer.js'], dir).trim())
-  // The Cloudflare project the CLI scaffolds, written from the installed package.
+  // The projects the CLI scaffolds, written from the installed package.
   run('npx', ['--no-install', 'analytik', 'create', 'scaffold', '--no-deploy'], dir)
+  run('npx', ['--no-install', 'analytik', 'create', 'scaffold-vercel', '--target', 'vercel'], dir)
   const worker = readFileSync(join(dir, 'scaffold', 'src', 'worker.ts'), 'utf8')
   if (!worker.includes('withDashboard')) throw new Error('the scaffolded Worker does not serve the dashboard')
+  if (!readFileSync(join(dir, 'scaffold-vercel', 'api', 'index.ts'), 'utf8').includes('withDashboard')) {
+    throw new Error('the scaffolded Vercel function does not serve the dashboard')
+  }
   console.log(`cli: analytik ${run('npx', ['--no-install', 'analytik', '--version'], dir).trim()}`)
 } finally {
   rmSync(dir, { recursive: true, force: true })

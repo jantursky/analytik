@@ -113,12 +113,14 @@ analytik.revenue('purchase', 49.9, { currency: 'EUR', orderId: '1042' })
 ### Cloudflare in one command
 
 ```bash
-npm create analytik@latest my-stats
+npx analytik@latest create my-stats
 ```
 
 It installs the packages, signs you in to Cloudflare, creates the D1 database, deploys a Worker that serves the dashboard, the tracker and the API, and sets the secrets. You get the address and a dashboard password at the end: open it, sign in, add your site and paste the snippet. A small site fits Cloudflare's free plan.
 
-Prefer to click? [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jantursky/analytik/tree/main/packages/analytik/templates/cloudflare) copies the template to your GitHub and deploys it.
+Prefer to click? [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jantursky/analytik/tree/main/packages/analytik/templates/cloudflare) [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjantursky%2Fanalytik&root-directory=packages%2Fanalytik%2Ftemplates%2Fvercel&project-name=analytik&env=DATABASE_URL,ADMIN_PASSWORD,SESSION_SECRET&envDescription=A%20pooled%20Postgres%20URL%2C%20the%20dashboard%20password%20and%2032%2B%20random%20characters)
+
+The Cloudflare button copies the template to your GitHub and deploys it; the Vercel one does the same for a function with Postgres (Supabase or Neon) and asks for the connection string and the two secrets. `npx analytik@latest create my-stats --target vercel` writes the Vercel project to deploy yourself.
 
 The Worker is a few lines. The dashboard is built into `analytik/standalone`, so there is no app to build:
 

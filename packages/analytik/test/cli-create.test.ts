@@ -133,6 +133,28 @@ describe('creating a project', () => {
   })
 })
 
+describe('the Vercel project', () => {
+  it('writes the function, the rewrite and the secrets, and never runs anything', () => {
+    const dir = temp('shop-stats')
+    const { io, calls } = fakeIo()
+    const result = createProject({ dir, target: 'vercel', version: '1.2.0', deploy: true, password: 'pw' }, io)
+    expect(calls).toEqual([])
+    expect(result.name).toBe('shop-stats')
+    expect(readFileSync(join(dir, 'api/index.ts'), 'utf8')).toContain('withDashboard(app)')
+    expect(readFileSync(join(dir, 'vercel.json'), 'utf8')).toContain('"destination": "/api"')
+    expect(readFileSync(join(dir, '.env'), 'utf8')).toMatch(
+      /^ADMIN_PASSWORD=pw\nSESSION_SECRET=0+1\n.*\nDATABASE_URL=\n$/s,
+    )
+    expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('.env')
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
+      name: string
+      dependencies: Record<string, string>
+    }
+    expect(pkg).toMatchObject({ name: 'shop-stats', dependencies: { analytik: '^1.2.0' } })
+    expect(existsSync(join(dir, 'wrangler.jsonc'))).toBe(false)
+  })
+})
+
 describe('the create command', () => {
   it('writes a project from the command line', async () => {
     const dir = temp('from-cli')
@@ -146,5 +168,22 @@ describe('the create command', () => {
     })
     expect(output).toContain('Sign in with the password: hunter22')
     expect(existsSync(join(dir, 'src/worker.ts'))).toBe(true)
+  })
+
+  it('takes a target, and refuses an unknown one', async () => {
+    const run = (...args: string[]) =>
+      new Promise<{ code: number; stdout: string; stderr: string }>((resolve) => {
+        execFile('bun', ['src/cli.ts', 'create', ...args], { cwd: packageDir }, (error, stdout, stderr) =>
+          resolve({ code: error ? Number(error.code ?? 1) : 0, stdout, stderr }),
+        )
+      })
+    const vercel = temp('vercel-cli')
+    const made = await run(vercel, '--target', 'vercel')
+    expect(made.code).toBe(0)
+    expect(made.stdout).toContain('npx vercel')
+    expect(existsSync(join(vercel, 'api/index.ts'))).toBe(true)
+    const refused = await run(temp('nope'), '--target', 'heroku')
+    expect(refused.code).toBe(2)
+    expect(refused.stderr).toContain('--target must be one of cloudflare, vercel')
   })
 })

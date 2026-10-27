@@ -8,12 +8,12 @@ This is the smallest deployment: one Worker with a D1 database. It can serve the
 ## One command
 
 ```bash
-npm create analytik@latest my-stats
+npx analytik@latest create my-stats
 ```
 
 It makes the project folder, installs the packages, signs you in to Cloudflare if needed, creates the D1 database, deploys the Worker and sets both secrets. At the end it prints the address and a generated dashboard password (kept in `.dev.vars`, which is git-ignored). Open the address, sign in, add your site and paste the tracking snippet it shows.
 
-Add `-- --name shop-stats` to choose the Worker and database name, or `-- --no-deploy` to write the files only and run the Wrangler steps yourself. `npx analytik create my-stats` does the same.
+Add `--name shop-stats` to choose the Worker and database name, or `--no-deploy` to write the files only and run the Wrangler steps yourself.
 
 ## Deploy button
 

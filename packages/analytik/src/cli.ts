@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 import pkg from '../package.json'
-import { type CreateIo, createProject, realIo } from './create'
+import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo } from './create'
 import { openStorage, seedDemo } from './migrate'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
 import { migrations } from './storage/migrations/sqlite'
@@ -11,7 +11,8 @@ import type { Storage } from './storage/types'
 const USAGE = `Usage: analytik <command> [options]
 
 Commands:
-  create [dir] [--name <name>] [--no-deploy]   Make a Cloudflare project with the dashboard and put it online
+  create [dir] [--target cloudflare|vercel] [--name <name>] [--no-deploy]
+                                           Make a project that serves the dashboard; on Cloudflare, put it online
   init [--target worker|vercel|bun|node]   Print a server entry file to start from
   migrate --db <url>                       Create or update the database schema
   migrate --print-sql sqlite|postgres      Print the schema SQL (for wrangler d1 execute --file)
@@ -229,23 +230,22 @@ async function main(argv: string[]): Promise<number> {
   switch (command) {
     case 'create': {
       const dir = positionals[1] ?? 'analytik'
+      const target = (values.target ?? 'cloudflare') as CreateTarget
+      if (!CREATE_TARGETS.includes(target)) throw new UsageError(`--target must be one of ${CREATE_TARGETS.join(', ')}`)
+      const deploy = target === 'cloudflare' && values['no-deploy'] !== true
       const result = createProject(
-        {
-          dir,
-          name: values.name,
-          version: pkg.version,
-          deploy: values['no-deploy'] !== true,
-          password: values.password,
-        },
+        { dir, target, name: values.name, version: pkg.version, deploy, password: values.password },
         processIo,
       )
-      const next = values['no-deploy']
-        ? `cd ${dir} && npm install && npx wrangler d1 create ${result.name}   # then see README.md`
-        : result.url
+      const next = deploy
+        ? result.url
           ? `Open ${result.url}`
           : 'Open the Worker address printed above'
+        : target === 'vercel'
+          ? `cd ${dir} && npm install, then put your pooled Postgres URL in .env and run \`npx vercel\` (see README.md)`
+          : `cd ${dir} && npm install && npx wrangler d1 create ${result.name}   # then see README.md`
       console.log(
-        `\n${next}\nSign in with the password: ${result.password}\nIt is also in ${dir}/.dev.vars, which stays out of git.`,
+        `\n${next}\nSign in with the password: ${result.password}\nIt is also in ${dir}/${target === 'vercel' ? '.env' : '.dev.vars'}, which stays out of git.`,
       )
       return 0
     }
