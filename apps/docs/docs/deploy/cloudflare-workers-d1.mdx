@@ -19,7 +19,7 @@ Add `--name shop-stats` to choose the Worker and database name, or `--no-deploy`
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jantursky/analytik/tree/main/packages/analytik/templates/cloudflare)
 
-The button copies the template into your GitHub or GitLab account, creates the D1 database and deploys. It asks for the two secrets: `ADMIN_PASSWORD` is the password you will sign in with, and `SESSION_SECRET` is at least 32 random characters (`openssl rand -hex 32`).
+The button copies the template into your GitHub or GitLab account, creates the D1 database and deploys. **Before you confirm, fill in the two secrets it asks for on its screen:** `ADMIN_PASSWORD` is the password you will sign in with, and `SESSION_SECRET` is at least 32 random characters (`openssl rand -hex 32`). The Worker refuses to start without them; if you skipped them, add both under the Worker's Settings, Variables and Secrets.
 
 ## The files it makes
 

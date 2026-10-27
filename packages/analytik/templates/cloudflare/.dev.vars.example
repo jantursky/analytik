@@ -1,0 +1,5 @@
+# The Deploy to Cloudflare button asks for these two values; for local work copy this file to .dev.vars.
+# The password you sign in to the dashboard with. Pick a long one.
+ADMIN_PASSWORD=
+# Signs the dashboard's session cookie: at least 32 random characters, for example the output of `openssl rand -hex 32`.
+SESSION_SECRET=
