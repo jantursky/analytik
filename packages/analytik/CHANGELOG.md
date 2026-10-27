@@ -6,6 +6,21 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.3.0]
+
+### Added
+
+- Several blocks can be added to the overview at once: the block picker takes any number of picks.
+- Theme switch in the dashboard header, next to Log out.
+
+### Changed
+
+- Blocks already on the overview are faded, grey and dashed in the block picker.
+- The Debug section of Settings shows only when the server runs with `debug: true`.
+- The formatting preview is laid out as tiles.
+- Empty states have more padding, the live count more space after the dot, and the paused badge on a site card no
+  longer covers the name.
+
 ## [1.2.0]
 
 ### Added
