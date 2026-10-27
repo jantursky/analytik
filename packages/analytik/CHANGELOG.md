@@ -6,6 +6,19 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.4.0]
+
+### Added
+
+- `urlState` on `<Dashboard>`: keeps the open site and view in the address (`?site=<id>&section=pages`), so a refresh,
+  a bookmark or a shared link opens the same place and Back steps through the views. The standalone dashboard turns it
+  on; an embedded one leaves the host page's address alone.
+
+### Changed
+
+- Smaller footer without the brand mark, name and tagline.
+- Switching views no longer holds the page height for a moment, which made the page jump.
+
 ## [1.3.0]
 
 ### Added
