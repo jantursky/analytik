@@ -45,3 +45,19 @@ h1 {
 h1 {
   font-size: clamp(2.25rem, 4vw, 3rem);
 }
+
+/* Inline code: a visible chip with a border in both themes, not a darker patch on the page. */
+:root :not(pre) > code {
+  padding: 0.12em 0.4em;
+  border: 1px solid #cfd6e6;
+  border-radius: 6px;
+  background: #e4e9f5;
+  color: #1c2a6b;
+  font-size: 0.88em;
+}
+
+:root[data-theme='dark'] :not(pre) > code {
+  border-color: #3a4766;
+  background: #1c2742;
+  color: #d3dbff;
+}

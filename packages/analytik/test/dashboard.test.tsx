@@ -1111,16 +1111,13 @@ describe('Dashboard views', () => {
     const turned = land()
     await actAsync(() => map.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
     expect(land()).toBe(turned)
-    await click(button('Light map'))
-    expect(container.querySelector('.analytik-realtime')?.getAttribute('data-map')).toBe('light')
     await click(button('Close real-time view'))
     await settled()
     expect(nav(container, 'Overview')?.getAttribute('aria-current')).toBe('page')
-    // The globe and the light map are remembered for the next visit.
+    // The globe is remembered for the next visit.
     await click(nav(container, 'Live'))
     await settled()
     expect(container.querySelector('.analytik-map > circle')).not.toBeNull()
-    expect(container.querySelector('.analytik-realtime')?.getAttribute('data-map')).toBe('light')
   })
 
   it('Realtime shows a tooltip on a marker and the visitors there on a click', async () => {

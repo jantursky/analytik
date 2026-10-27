@@ -174,7 +174,6 @@ export function Realtime() {
   const live = useResource<RealtimeData>(requestKey('realtime', site.id), () => client.realtime(site.id))
   const [now, setNow] = useState(() => Date.now())
   const [globe, setGlobe] = useStoredFlag('globe')
-  const [lightMap, setLightMap] = useStoredFlag('light-map')
   const [sound, setSound] = useState(false)
   const [root, setRoot] = useState<HTMLElement | null>(null)
   const [placeKey, setPlaceKey] = useState<string | null>(null)
@@ -216,12 +215,7 @@ export function Realtime() {
     <View>
       <Status loading={live.loading && !data} error={live.error}>
         {data && (
-          <section
-            className="analytik-realtime"
-            data-map={lightMap ? 'light' : 'dark'}
-            aria-label="Real-time visitors"
-            ref={setRoot}
-          >
+          <section className="analytik-realtime" aria-label="Real-time visitors" ref={setRoot}>
             <LayerContext value={root}>
               <WorldMap
                 locations={data.locations}
@@ -254,9 +248,6 @@ export function Realtime() {
                     </IconButton>
                     <IconButton label="Globe view" pressed={globe} onClick={() => setGlobe(!globe)}>
                       <Icon name={globe ? 'globe' : 'flat'} />
-                    </IconButton>
-                    <IconButton label="Light map" pressed={lightMap} onClick={() => setLightMap(!lightMap)}>
-                      <Icon name="theme" />
                     </IconButton>
                     {document.fullscreenEnabled && (
                       <IconButton label="Full screen" onClick={toggleFullscreen}>

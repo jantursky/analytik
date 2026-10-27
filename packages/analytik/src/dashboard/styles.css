@@ -2276,14 +2276,15 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 
 /* ---- realtime map */
 
+/* The map follows the theme: light by default, dark where the dashboard is dark. */
 .analytik-realtime {
-  --analytik-map-bg: #0c1024;
-  --analytik-map-land: #2c3570;
-  --analytik-map-grid: #161c3d;
-  --analytik-map-card: rgb(17 22 48 / 0.82);
-  --analytik-map-text: #eceffd;
-  --analytik-map-muted: #aab2d6;
-  --analytik-focus: #a3adff;
+  --analytik-map-bg: #eef0fb;
+  --analytik-map-land: #b5bde6;
+  --analytik-map-grid: #dde1f5;
+  --analytik-map-card: rgb(255 255 255 / 0.85);
+  --analytik-map-text: #101828;
+  --analytik-map-muted: #4a5568;
+  --analytik-focus: #3a4fd8;
 
   position: relative;
   display: grid;
@@ -2295,14 +2296,27 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   color: var(--analytik-map-text);
 }
 
-.analytik-realtime[data-map='light'] {
-  --analytik-map-bg: #eef0fb;
-  --analytik-map-land: #b5bde6;
-  --analytik-map-grid: #dde1f5;
-  --analytik-map-card: rgb(255 255 255 / 0.85);
-  --analytik-map-text: #101828;
-  --analytik-map-muted: #4a5568;
-  --analytik-focus: #3a4fd8;
+@media (prefers-color-scheme: dark) {
+  .analytik:not([data-theme='light']):not(:where([data-theme='light'] *)) .analytik-realtime {
+    --analytik-map-bg: #0c1024;
+    --analytik-map-land: #2c3570;
+    --analytik-map-grid: #161c3d;
+    --analytik-map-card: rgb(17 22 48 / 0.82);
+    --analytik-map-text: #eceffd;
+    --analytik-map-muted: #aab2d6;
+    --analytik-focus: #a3adff;
+  }
+}
+
+.analytik[data-theme='dark'] .analytik-realtime,
+[data-theme='dark'] .analytik:not([data-theme='light']) .analytik-realtime {
+  --analytik-map-bg: #0c1024;
+  --analytik-map-land: #2c3570;
+  --analytik-map-grid: #161c3d;
+  --analytik-map-card: rgb(17 22 48 / 0.82);
+  --analytik-map-text: #eceffd;
+  --analytik-map-muted: #aab2d6;
+  --analytik-focus: #a3adff;
 }
 
 .analytik-realtime:fullscreen {
@@ -2836,8 +2850,8 @@ tr:hover .analytik-row-button {
 
 /* ---- states */
 
-.analytik-empty,
-.analytik-loading {
+.analytik .analytik-empty,
+.analytik .analytik-loading {
   padding: 40px 24px;
   color: var(--analytik-text-muted);
   text-align: center;
@@ -3819,7 +3833,7 @@ tr:hover .analytik-row-button {
 .analytik-credits {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: end;
   align-items: center;
   gap: 12px 24px;
   width: 100%;
