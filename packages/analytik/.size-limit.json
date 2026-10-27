@@ -23,7 +23,7 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "57 kB"
+    "limit": "64 kB"
   },
   {
     "name": "Dashboard styles",

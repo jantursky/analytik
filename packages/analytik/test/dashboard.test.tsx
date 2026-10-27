@@ -1410,6 +1410,34 @@ describe('Settings', () => {
     expect(byText(container, 'Data deleted', '[role="status"]')).toBeDefined()
   })
 
+  it('says per privacy mode what it stores and whether it needs a cookie banner', async () => {
+    const { container } = await open(fakeApi(), 'settings')
+    await section(container, 'Privacy')
+    expect(texts(container, '.analytik-mode-banner')).toEqual([
+      'No cookie banner needed',
+      'Cookie banner needed for the extra id',
+      'Cookie banner required in the EU',
+    ])
+    expect(container.querySelector('.analytik-mode-banner')?.getAttribute('data-need')).toBe('none')
+    const info = container.querySelector<HTMLElement>('[aria-label="What Persistent mode means"]')
+    await actAsync(() => info?.focus())
+    await waitFor(() => document.body.querySelector('.analytik-tooltip[data-rich]'))
+    const facts = document.body.querySelector('.analytik-mode-facts')?.textContent
+    expect(facts).toContain('analytik_vid')
+    expect(facts).toContain('Cookie banner')
+  })
+
+  it('offers a prompt that has a coding assistant add the tracker', async () => {
+    const { container } = await open(fakeApi(), 'settings')
+    await section(container, 'Tracking code')
+    const preview = await waitFor(() => container.querySelector('.analytik-prompt-preview'))
+    expect(preview.textContent).toContain('# Add Analytik tracking to your Plain HTML site')
+    expect(preview.textContent).toContain('data-site="site_1"')
+    await choose(selectTrigger(container, 'Framework or platform'), 'Vue')
+    await waitFor(() => container.querySelector('.analytik-prompt-preview')?.textContent.includes('your Vue site'))
+    expect(byText(container, 'Copy prompt', 'button')).toBeDefined()
+  })
+
   it('hides the debug section when the server has the debug tools off', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     expect(api.find('GET', '/debug')).toHaveLength(1)

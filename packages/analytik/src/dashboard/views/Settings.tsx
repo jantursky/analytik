@@ -9,6 +9,7 @@ import { useResource } from '../data'
 import { DomainField } from '../Login'
 import { Logo } from '../logo'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
+import { Tooltip } from '../ui/tooltip'
 import { Actions, Card, ConfirmButton, CopyButton, Field, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
 import { DatePicker } from '../ui/date-picker'
@@ -19,21 +20,9 @@ import { TimeZoneSelect } from '../ui/timezone'
 import { Icon, type IconName } from '../icons'
 import { DebugSettings } from './DebugSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
+import { IntegrationPrompt } from './IntegrationPrompt'
+import { MODE_INFO } from './privacy-modes'
 import { SiteLifecycle } from './SiteActions'
-
-const MODES: { value: PrivacyMode; label: string; hint: string }[] = [
-  {
-    value: 'strict',
-    label: 'Strict',
-    hint: 'No cookies or storage. Visitors are a server-side hash that changes every month.',
-  },
-  { value: 'enriched', label: 'Enriched', hint: 'Adds a per-tab id after the visitor consents.' },
-  {
-    value: 'persistent',
-    label: 'Persistent',
-    hint: 'First-party cookies for returning visitors. Needs consent in the EU.',
-  },
-]
 
 type SiteDraft = Omit<Site, 'id' | 'createdAt'>
 
@@ -134,7 +123,7 @@ export function PrivacySettings() {
         <fieldset className="analytik-choices">
           <legend className="analytik-field-label">Privacy mode</legend>
           <div className="analytik-choice-grid">
-            {MODES.map((mode) => (
+            {MODE_INFO.map((mode) => (
               <label key={mode.value} className="analytik-choice">
                 <input
                   type="radio"
@@ -144,7 +133,29 @@ export function PrivacySettings() {
                   onChange={() => set('privacyMode', mode.value)}
                 />
                 <span>
-                  <strong>{mode.label}</strong>
+                  <span className="analytik-choice-title">
+                    <strong>{mode.label}</strong>
+                    <Tooltip
+                      rich
+                      label={
+                        <dl className="analytik-mode-facts">
+                          {mode.details.map(({ title, text }) => (
+                            <div key={title}>
+                              <dt>{title}</dt>
+                              <dd>{text}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      }
+                    >
+                      <button type="button" className="analytik-mode-info" aria-label={`What ${mode.label} mode means`}>
+                        <Icon name="info" />
+                      </button>
+                    </Tooltip>
+                  </span>
+                  <span className="analytik-mode-banner" data-need={mode.banner}>
+                    {mode.bannerLabel}
+                  </span>
                   <span className="analytik-field-hint">{mode.hint}</span>
                 </span>
               </label>
@@ -206,6 +217,12 @@ const UPDATE_CHOICES: { value: UpdateChoice; label: string; description: string 
   },
 ]
 
+const MODE_OPTIONS = MODE_INFO.map(({ value, label, hint, bannerLabel }) => ({
+  value,
+  label,
+  description: `${hint} ${bannerLabel}.`,
+}))
+
 export function SnippetGenerator() {
   const { site, apiUrl } = useDashboard()
   const [mode, setMode] = useState<PrivacyMode>(site.privacyMode)
@@ -227,7 +244,7 @@ export function SnippetGenerator() {
   return (
     <Card title="Tracking snippet" description="Paste it into the head of every page.">
       <div className="analytik-row">
-        <Select label="Mode" value={mode} options={MODES} onChange={setMode} />
+        <Select label="Mode" value={mode} options={MODE_OPTIONS} onChange={setMode} />
         <Field label="Keep query parameters" hint="Comma-separated, besides utm_*, ref and source.">
           <input className="analytik-input" value={keepQuery} onChange={(e) => setKeepQuery(e.target.value)} />
         </Field>
@@ -548,7 +565,17 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     ),
   },
   { value: 'privacy', label: 'Privacy', icon: 'shield', content: PrivacySettings },
-  { value: 'tracking', label: 'Tracking code', icon: 'code', content: SnippetGenerator },
+  {
+    value: 'tracking',
+    label: 'Tracking code',
+    icon: 'code',
+    content: () => (
+      <>
+        <SnippetGenerator />
+        <IntegrationPrompt />
+      </>
+    ),
+  },
   { value: 'campaigns', label: 'Campaign links', icon: 'link', content: CampaignLinkBuilder },
   {
     value: 'payments',

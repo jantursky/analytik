@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Settings, Privacy: each privacy mode shows whether it needs a cookie banner and, on hover or focus, what it stores
+  on the device and the server, how the visitor id is made and its limits.
+- Settings, Tracking code: the Mode list explains each mode, and a new Site integration prompt copies instructions for a
+  coding assistant that adds the tracker in the right file for the chosen framework.
+
+### Fixed
+
+- A site icon no longer shows a thin edge of its tile colour in the dark theme.
+
 ## [1.4.1]
 
 ### Changed
