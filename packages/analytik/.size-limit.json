@@ -32,6 +32,13 @@
     "limit": "12 kB"
   },
   {
+    "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
+    "path": "dist/standalone.js",
+    "ignore": ["hono"],
+    "gzip": true,
+    "limit": "420 kB"
+  },
+  {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],

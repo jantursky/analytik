@@ -1,6 +1,8 @@
+import { spawnSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 import pkg from '../package.json'
+import { type CreateIo, createProject, realIo } from './create'
 import { openStorage, seedDemo } from './migrate'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
 import { migrations } from './storage/migrations/sqlite'
@@ -9,6 +11,7 @@ import type { Storage } from './storage/types'
 const USAGE = `Usage: analytik <command> [options]
 
 Commands:
+  create [dir] [--name <name>] [--no-deploy]   Make a Cloudflare project with the dashboard and put it online
   init [--target worker|vercel|bun|node]   Print a server entry file to start from
   migrate --db <url>                       Create or update the database schema
   migrate --print-sql sqlite|postgres      Print the schema SQL (for wrangler d1 execute --file)
@@ -83,6 +86,23 @@ const { app } = createAnalytik({
 
 serve({ fetch: app.fetch, port: 3000 })
 `,
+}
+
+// With inherited output the streams are null, whatever the types say.
+const text = (value: string | null | undefined): string => value ?? ''
+
+/** Runs commands for real: output passes straight through, or is collected when the caller wants to read it. */
+const processIo: CreateIo = {
+  ...realIo,
+  run: (command, args, { cwd, capture }) => {
+    const result = spawnSync(command, args, {
+      cwd,
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+      stdio: capture ? ['inherit', 'pipe', 'pipe'] : 'inherit',
+    })
+    return { status: result.status ?? 1, output: `${text(result.stdout)}${text(result.stderr)}` }
+  },
 }
 
 const ADMIN_NOTE = `Set ADMIN_PASSWORD and SESSION_SECRET (32+ random characters, e.g. openssl rand -hex 32);
@@ -191,6 +211,9 @@ async function main(argv: string[]): Promise<number> {
       days: { type: 'string' },
       seed: { type: 'string' },
       url: { type: 'string' },
+      name: { type: 'string' },
+      password: { type: 'string' },
+      'no-deploy': { type: 'boolean' },
     },
   })
   const [command] = positionals
@@ -204,6 +227,28 @@ async function main(argv: string[]): Promise<number> {
   }
 
   switch (command) {
+    case 'create': {
+      const dir = positionals[1] ?? 'analytik'
+      const result = createProject(
+        {
+          dir,
+          name: values.name,
+          version: pkg.version,
+          deploy: values['no-deploy'] !== true,
+          password: values.password,
+        },
+        processIo,
+      )
+      const next = values['no-deploy']
+        ? `cd ${dir} && npm install && npx wrangler d1 create ${result.name}   # then see README.md`
+        : result.url
+          ? `Open ${result.url}`
+          : 'Open the Worker address printed above'
+      console.log(
+        `\n${next}\nSign in with the password: ${result.password}\nIt is also in ${dir}/.dev.vars, which stays out of git.`,
+      )
+      return 0
+    }
     case 'init': {
       const sample = SAMPLES[values.target ?? 'worker']
       if (!sample) throw new UsageError(`--target must be one of ${Object.keys(SAMPLES).join(', ')}`)

@@ -1,0 +1,33 @@
+{
+  "name": "analytik-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "analytik": "^1.1.0",
+    "hono": "^4.13.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261023.1",
+    "typescript": "^5.9.0",
+    "wrangler": "^4.0.0"
+  },
+  "cloudflare": {
+    "label": "analytik",
+    "products": [
+      "Workers",
+      "D1"
+    ],
+    "bindings": {
+      "ADMIN_PASSWORD": {
+        "description": "The password you sign in to the dashboard with. Pick a long one."
+      },
+      "SESSION_SECRET": {
+        "description": "Signs the dashboard's session cookie: at least 32 random characters, for example the output of `openssl rand -hex 32`."
+      }
+    }
+  }
+}

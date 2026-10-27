@@ -110,19 +110,21 @@ analytik.revenue('purchase', 49.9, { currency: 'EUR', orderId: '1042' })
 | [**Railway**](https://analytik-docs.vercel.app/deploy/railway-postgres)                 | Railway Postgres          | A long-running service with a database  |
 | [**Bun or Node**](https://analytik-docs.vercel.app/deploy/bun-node-sqlite)              | SQLite file               | A VPS or a Docker container             |
 
-### Cloudflare in five minutes
-
-A Worker with a D1 database fits the free plan for small sites.
+### Cloudflare in one command
 
 ```bash
-mkdir analytik-worker && cd analytik-worker
-bun add analytik hono && bun add -d wrangler @cloudflare/workers-types typescript
-mkdir -p public src && cp node_modules/analytik/dist/analytik.js public/analytik.js
+npm create analytik@latest my-stats
 ```
 
+It installs the packages, signs you in to Cloudflare, creates the D1 database, deploys a Worker that serves the dashboard, the tracker and the API, and sets the secrets. You get the address and a dashboard password at the end: open it, sign in, add your site and paste the snippet. A small site fits Cloudflare's free plan.
+
+Prefer to click? [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jantursky/analytik/tree/main/packages/analytik/templates/cloudflare) copies the template to your GitHub and deploys it.
+
+The Worker is a few lines. The dashboard is built into `analytik/standalone`, so there is no app to build:
+
 ```ts
-// src/worker.ts
 import { createAnalytik } from 'analytik/server'
+import { withDashboard } from 'analytik/standalone'
 import { d1Storage } from 'analytik/storage/d1'
 
 interface Env {
@@ -131,47 +133,22 @@ interface Env {
   SESSION_SECRET: string
 }
 
-let app: ReturnType<typeof createAnalytik>['app'] | undefined
+let handler: ReturnType<typeof withDashboard<[Env, ExecutionContext]>> | undefined
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    app ??= createAnalytik({
-      storage: d1Storage(env.DB),
-      admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
-    }).app
-    return app.fetch(request, env, ctx)
+    handler ??= withDashboard(
+      createAnalytik({
+        storage: d1Storage(env.DB),
+        admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+      }).app,
+    )
+    return handler.fetch(request, env, ctx)
   },
 }
 ```
 
-```jsonc
-// wrangler.jsonc
-{
-  "name": "analytik",
-  "main": "src/worker.ts",
-  "compatibility_date": "2026-10-01",
-  "assets": { "directory": "./public", "run_worker_first": ["/api/*"] },
-  "d1_databases": [{ "binding": "DB", "database_name": "analytik", "database_id": "<id from the next step>" }],
-}
-```
-
-```bash
-npx wrangler d1 create analytik              # copy database_id into wrangler.jsonc
-npx wrangler secret put ADMIN_PASSWORD       # the dashboard password
-npx wrangler secret put SESSION_SECRET       # openssl rand -hex 32
-npx wrangler deploy
-```
-
-The schema is created on the first request. Then create a site through the admin API (replace the host with your Worker URL):
-
-```bash
-curl -c cookies.txt -X POST https://analytik.<you>.workers.dev/api/auth/login \
-  -H 'Content-Type: application/json' -d '{"password":"<ADMIN_PASSWORD>"}'
-curl -b cookies.txt -X POST https://analytik.<you>.workers.dev/api/sites \
-  -H 'Content-Type: application/json' -d '{"name":"My site","domain":"example.com"}'
-```
-
-Add `<script defer src="https://analytik.<you>.workers.dev/analytik.js" data-site="SITE_ID"></script>` to your pages, with the `site.id` from the response. The Worker serves the API and the tracker, not a dashboard page: [embed `<Dashboard />`](https://analytik-docs.vercel.app/guides/dashboard-embedding) in a React app (the [demo](https://analytik.vercel.app) is one) to see the numbers. A custom domain, the free-plan limits and a first-party route for ad blockers are in the [full Cloudflare guide](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1).
+The [Cloudflare guide](https://analytik-docs.vercel.app/deploy/cloudflare-workers-d1) has the manual steps, a custom domain, the free-plan limits and a first-party route for ad blockers. To put the dashboard inside your own React app instead, see [embedding the dashboard](https://analytik-docs.vercel.app/guides/dashboard-embedding).
 
 ## Alternatives
 

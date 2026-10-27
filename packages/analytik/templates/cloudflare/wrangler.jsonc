@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "analytik",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  // The Worker serves the dashboard, the tracker script and the API, so no static assets are needed.
+  // The D1 database is created on deploy; `analytik create` and `wrangler d1 create` add its id here.
+  "d1_databases": [{ "binding": "DB", "database_name": "analytik" }],
+  // To use your own domain, uncomment and put a hostname from a zone in your Cloudflare account.
+  // "routes": [{ "pattern": "analytics.example.com", "custom_domain": true }]
+}

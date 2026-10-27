@@ -1,0 +1,150 @@
+import { execFile } from 'node:child_process'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { describe, expect, it } from 'vitest'
+
+import { type CreateIo, createProject, workerName } from '../src/create'
+
+const packageDir = fileURLToPath(new URL('..', import.meta.url))
+const temp = (name: string) => join(mkdtempSync(join(tmpdir(), 'analytik-create-')), name)
+const DB_ID = '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d'
+
+interface Call {
+  command: string
+  args: string[]
+}
+
+/** A stand-in for npm and wrangler that records what was run and answers like they do. */
+function fakeIo(answers: Record<string, { status?: number; output?: string }> = {}) {
+  const calls: Call[] = []
+  const logs: string[] = []
+  let secrets = ''
+  let counter = 0
+  const io: CreateIo = {
+    run: (command, args, { cwd }) => {
+      calls.push({ command, args })
+      const key = args
+        .filter((arg) => arg !== '--no-install' && arg !== 'wrangler')
+        .slice(0, 2)
+        .join(' ')
+      if (key === 'secret bulk') secrets = readFileSync(join(cwd, '.secrets.tmp.json'), 'utf8')
+      const answer = answers[key]
+      if (answer) return { status: answer.status ?? 0, output: answer.output ?? '' }
+      if (key === 'whoami') return { status: 0, output: 'You are logged in with an OAuth Token' }
+      if (key === 'd1 create') return { status: 0, output: `"database_id": "${DB_ID}"` }
+      if (key === 'deploy') return { status: 0, output: 'Published analytik\n  https://shop-stats.jan.workers.dev' }
+      return { status: 0, output: '' }
+    },
+    log: (message) => logs.push(message),
+    random: (bytes) => String(++counter).padStart(bytes * 2, '0'),
+  }
+  return { io, calls, logs, secrets: () => secrets }
+}
+
+describe('naming', () => {
+  it('turns a folder name into a Worker name', () => {
+    expect(workerName('My Shop Stats!')).toBe('my-shop-stats')
+    expect(workerName('---')).toBe('analytik')
+    expect(workerName('a'.repeat(80))).toHaveLength(54)
+  })
+})
+
+describe('creating a project', () => {
+  it('writes the files with the name, version and local secrets, and stops there without deploy', () => {
+    const dir = temp('shop-stats')
+    const { io, calls } = fakeIo()
+    const result = createProject({ dir, version: '1.4.2', deploy: false }, io)
+    expect(calls).toEqual([])
+    expect(result).toMatchObject({ name: 'shop-stats', password: '00000000000000000001' })
+    const wrangler = readFileSync(join(dir, 'wrangler.jsonc'), 'utf8')
+    expect(wrangler).toContain('"name": "shop-stats"')
+    expect(wrangler).toContain('"database_name": "shop-stats"')
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
+      name: string
+      dependencies: Record<string, string>
+    }
+    expect(pkg.name).toBe('shop-stats')
+    expect(pkg.dependencies.analytik).toBe('^1.4.2')
+    expect(readFileSync(join(dir, '.dev.vars'), 'utf8')).toMatch(/^ADMIN_PASSWORD=0+1\nSESSION_SECRET=0+2\n$/)
+    expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('.dev.vars')
+    expect(readFileSync(join(dir, 'src/worker.ts'), 'utf8')).toContain('withDashboard')
+  })
+
+  it('refuses a folder that already has files, and uses the password it is given', () => {
+    const dir = temp('taken')
+    createProject({ dir, version: '1.0.0', deploy: false, password: 'my-own' }, fakeIo().io)
+    expect(readFileSync(join(dir, '.dev.vars'), 'utf8')).toContain('ADMIN_PASSWORD=my-own\n')
+    expect(() => createProject({ dir, version: '1.0.0', deploy: false }, fakeIo().io)).toThrow('is not empty')
+  })
+
+  it('installs, creates the database, deploys, then sets the secrets and removes the temporary file', () => {
+    const dir = temp('shop-stats')
+    const { io, calls, secrets } = fakeIo()
+    const result = createProject({ dir, version: '1.0.0', deploy: true, password: 'pw' }, io)
+    expect(
+      calls.map((call) => [call.command, ...call.args.filter((arg) => arg !== '--no-install')].slice(0, 4).join(' ')),
+    ).toEqual([
+      'npm install --no-audit --no-fund',
+      'npx wrangler whoami',
+      'npx wrangler d1 create',
+      'npx wrangler deploy',
+      'npx wrangler secret bulk',
+    ])
+    expect(result.url).toBe('https://shop-stats.jan.workers.dev')
+    expect(readFileSync(join(dir, 'wrangler.jsonc'), 'utf8')).toContain(`"database_id": "${DB_ID}"`)
+    expect(JSON.parse(secrets())).toEqual({
+      ADMIN_PASSWORD: 'pw',
+      SESSION_SECRET: `${'0'.repeat(63)}1`,
+    })
+    expect(existsSync(join(dir, '.secrets.tmp.json'))).toBe(false)
+  })
+
+  it('signs in first when wrangler is not logged in, and reuses a database that already exists', () => {
+    const dir = temp('again')
+    const { io, calls } = fakeIo({
+      whoami: { output: 'You are not authenticated. Please run `wrangler login`.' },
+      'd1 create': { status: 1, output: 'A database with that name already exists' },
+      'd1 info': { output: `{"uuid": "${DB_ID}"}` },
+    })
+    createProject({ dir, version: '1.0.0', deploy: true }, io)
+    const used = calls.map((call) =>
+      call.args
+        .filter((arg) => arg !== '--no-install' && arg !== 'wrangler')
+        .slice(0, 2)
+        .join(' '),
+    )
+    expect(used).toContain('login')
+    expect(used).toContain('d1 info')
+    expect(readFileSync(join(dir, 'wrangler.jsonc'), 'utf8')).toContain(DB_ID)
+  })
+
+  it('names the step that failed and keeps the project', () => {
+    const dir = temp('broken')
+    const { io } = fakeIo({ deploy: { status: 1, output: 'boom' } })
+    expect(() => createProject({ dir, version: '1.0.0', deploy: true }, io)).toThrow(/Deploying the Worker failed/)
+    expect(existsSync(join(dir, 'wrangler.jsonc'))).toBe(true)
+    const noDatabase = fakeIo({ 'd1 create': { status: 1, output: 'denied' }, 'd1 info': { status: 1 } })
+    expect(() => createProject({ dir: temp('nodb'), version: '1.0.0', deploy: true }, noDatabase.io)).toThrow(
+      /Creating the database failed/,
+    )
+  })
+})
+
+describe('the create command', () => {
+  it('writes a project from the command line', async () => {
+    const dir = temp('from-cli')
+    const output = await new Promise<string>((resolve, reject) => {
+      execFile(
+        'bun',
+        ['src/cli.ts', 'create', dir, '--no-deploy', '--password', 'hunter22'],
+        { cwd: packageDir },
+        (error, stdout, stderr) => (error ? reject(new Error(stderr)) : resolve(stdout)),
+      )
+    })
+    expect(output).toContain('Sign in with the password: hunter22')
+    expect(existsSync(join(dir, 'src/worker.ts'))).toBe(true)
+  })
+})

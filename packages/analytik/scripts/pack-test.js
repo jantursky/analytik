@@ -1,7 +1,7 @@
 // Installs the packed tarball into an empty project, the way a consumer gets it from npm, then runs the
 // server on in-memory SQLite in plain Node, loads every subpath export and runs the CLI. Run after `bun run build`.
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -13,7 +13,7 @@ try {
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], packageDir))
   const files = packed.files.map((file) => file.path).sort()
   const allowed =
-    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
+    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|templates\/cloudflare\/[\w./-]+|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
   const unexpected = files.filter((file) => !allowed.test(file))
   if (unexpected.length > 0) throw new Error(`Unexpected files in the tarball: ${unexpected.join(', ')}`)
   console.log(`tarball: ${packed.filename}, ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB`)
@@ -46,7 +46,7 @@ import { seedDemo } from 'analytik/migrate'
 
 for (const path of ['analytik', 'analytik/storage/d1', 'analytik/storage/postgres', 'analytik/storage/sqlite',
   'analytik/adapters/stripe', 'analytik/adapters/dodo', 'analytik/adapters/lemonsqueezy', 'analytik/client',
-  'analytik/react', 'analytik/dashboard']) {
+  'analytik/react', 'analytik/dashboard', 'analytik/standalone']) {
   await import(path)
 }
 
@@ -68,6 +68,10 @@ console.log('consumer: server, storage, migrate and every subpath load and work'
 `,
   )
   console.log(run('node', ['consumer.js'], dir).trim())
+  // The Cloudflare project the CLI scaffolds, written from the installed package.
+  run('npx', ['--no-install', 'analytik', 'create', 'scaffold', '--no-deploy'], dir)
+  const worker = readFileSync(join(dir, 'scaffold', 'src', 'worker.ts'), 'utf8')
+  if (!worker.includes('withDashboard')) throw new Error('the scaffolded Worker does not serve the dashboard')
   console.log(`cli: analytik ${run('npx', ['--no-install', 'analytik', '--version'], dir).trim()}`)
 } finally {
   rmSync(dir, { recursive: true, force: true })

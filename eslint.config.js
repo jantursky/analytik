@@ -11,6 +11,8 @@ export default defineConfig(
       '**/dist/**',
       '**/coverage/**',
       '**/node_modules/**',
+      // Project templates are copied out and installed on their own, with their own dependencies.
+      '**/templates/**',
       'apps/docs/.blume/**',
       'apps/docs/docs/_generated/**',
       '**/test-results/**',
