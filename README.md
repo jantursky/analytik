@@ -28,6 +28,17 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
   </picture>
 </a>
 
+<p>
+<a href="https://analytik.vercel.app/#dashboard"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/live-dark.png">
+  <img alt="The live view: a map of who is on the site now and what they just did" src=".github/assets/live-light.png" width="49%">
+</picture></a>
+<a href="https://analytik.vercel.app/#dashboard"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/revenue-dark.png">
+  <img alt="Revenue: totals, revenue over time, revenue by channel and the payments list" src=".github/assets/revenue-light.png" width="49%">
+</picture></a>
+</p>
+
 The demo also shows [how each privacy mode works](https://analytik.vercel.app/#privacy) and a [shop wired up with the React bindings](https://analytik.vercel.app/#site).
 
 ## What you get

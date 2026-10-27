@@ -28,6 +28,17 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
   </picture>
 </a>
 
+<p>
+<a href="https://analytik.vercel.app/#dashboard"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/live-dark.png">
+  <img alt="The live view: a map of who is on the site now and what they just did" src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/live-light.png" width="49%">
+</picture></a>
+<a href="https://analytik.vercel.app/#dashboard"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/revenue-dark.png">
+  <img alt="Revenue: totals, revenue over time, revenue by channel and the payments list" src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/revenue-light.png" width="49%">
+</picture></a>
+</p>
+
 ## What you get
 
 - **Strict mode by default.** The tracker stores no identifier on the visitor's device and no IP address is kept. The visitor id is a pseudonymous hash of IP, user agent and site, salted with a random value that is removed from the live database once the next month starts. Do Not Track visitors are still counted, in strict mode. Strict mode is designed to avoid needing consent, which is not legal advice.
