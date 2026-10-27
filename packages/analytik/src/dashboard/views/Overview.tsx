@@ -147,10 +147,10 @@ export function Overview({ customizing }: OverviewProps = {}) {
     const next = layout.map((item, i) => (i === index && edit.wide !== undefined ? { ...item, wide: edit.wide } : item))
     setLayout(edit.move ? moveItem(next, index, edit.move) : next)
   }
-  const add = (id: BlockId): void => {
+  const add = (ids: BlockId[]): void => {
     if (!insertion) return
     const next = [...layout]
-    next.splice(insertion.index, 0, { id, wide: BLOCKS[id].wide })
+    next.splice(insertion.index, 0, ...ids.map((id) => ({ id, wide: BLOCKS[id].wide })))
     setLayout(next)
     setInsertion(undefined)
   }

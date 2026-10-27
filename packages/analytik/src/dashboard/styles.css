@@ -432,6 +432,10 @@
   margin-left: auto;
 }
 
+.analytik-header .analytik-theme-toggle {
+  margin-left: 8px;
+}
+
 .analytik-range {
   padding: 0 3px;
   gap: 0;
@@ -2174,8 +2178,9 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 }
 
 .analytik-site-name .analytik-badge[data-tone='paused'] {
+  flex: none;
   gap: 4px;
-  margin: 0 32px 0 auto;
+  margin: 0 36px 0 0;
   background: var(--analytik-warning-soft);
   color: var(--analytik-warning);
 }
@@ -2231,8 +2236,15 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 
 .analytik-site-name > span:nth-child(2) {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   min-width: 0;
+}
+
+.analytik-site-name > span:nth-child(2) > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .analytik-site-name strong {
@@ -2520,7 +2532,7 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 .analytik-live-count {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
   margin-top: 10px;
 }
 
@@ -2826,7 +2838,7 @@ tr:hover .analytik-row-button {
 
 .analytik-empty,
 .analytik-loading {
-  padding: 24px 0;
+  padding: 40px 24px;
   color: var(--analytik-text-muted);
   text-align: center;
 }
@@ -3390,9 +3402,13 @@ tr:hover .analytik-row-button {
   box-shadow: 0 0 0 1px var(--analytik-primary);
 }
 
+/* A block already on the overview: faded, grey and dashed, so the ones left to add stand out. */
 .analytik-picker-tile[aria-disabled] {
-  cursor: default;
-  opacity: 0.55;
+  border-style: dashed;
+  background: var(--analytik-bg-subtle);
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.4;
 }
 
 .analytik-picker-head {
@@ -3970,21 +3986,31 @@ tr:hover .analytik-row-button {
 }
 
 .analytik-format-preview {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
   margin: 0;
+}
+
+.analytik-format-preview > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 14px 16px;
   border-radius: var(--analytik-radius-row);
   background: var(--analytik-bg-subtle);
-  color: var(--analytik-text-muted);
+  color: var(--analytik-text);
+  font-size: 18px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.analytik-format-preview strong {
-  color: var(--analytik-text);
-  font-size: 20px;
+.analytik-format-preview small {
+  color: var(--analytik-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* ---- debug settings */

@@ -12,7 +12,7 @@ test('customizes the overview: adds a block from the catalogue and resets the la
   await page.locator('.analytik-add-tile').click()
   const picker = page.getByRole('dialog', { name: 'Add a block' })
   await picker.getByRole('button', { name: /^Revenue/ }).click()
-  await picker.getByRole('radio', { name: /Average order value/ }).click()
+  await picker.getByRole('checkbox', { name: /Average order value/ }).click()
   await picker.getByRole('button', { name: 'Add block' }).click()
   await expect(blocks).toHaveCount(7)
   await expect(blocks.last()).toContainText('Average order value')
@@ -21,9 +21,15 @@ test('customizes the overview: adds a block from the catalogue and resets the la
   await page.getByRole('button', { name: 'Add a block after Acquisition' }).click()
   await page
     .getByRole('dialog', { name: 'Add a block' })
-    .getByRole('radio', { name: /Live now/ })
-    .dblclick()
+    .getByRole('checkbox', { name: /Live now/ })
+    .click()
+  await page
+    .getByRole('dialog', { name: 'Add a block' })
+    .getByRole('checkbox', { name: /Recent payments/ })
+    .click()
+  await page.getByRole('button', { name: 'Add 2 blocks' }).click()
   await expect(blocks.nth(2)).toContainText('Live now')
+  await expect(blocks.nth(3)).toContainText('Recent payments')
 
   await page.getByRole('button', { name: 'Reset', exact: true }).click()
   await page.getByRole('dialog', { name: 'Reset the overview?' }).getByRole('button', { name: 'Reset layout' }).click()

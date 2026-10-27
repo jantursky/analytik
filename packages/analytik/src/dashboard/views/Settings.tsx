@@ -5,6 +5,7 @@ import type { PaymentProvider, PrivacyMode, Site } from '../../shared/types'
 import { cleanDomain, domainProblem } from '../../shared/url'
 import type { ExportFormat } from '../api'
 import { useDashboard } from '../context'
+import { useResource } from '../data'
 import { DomainField } from '../Login'
 import { Logo } from '../logo'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
@@ -584,15 +585,19 @@ export type SettingsSection =
  * picks the one shown first, e.g. the tracking code right after a site was added.
  */
 export function Settings({ section: initial }: { section?: SettingsSection } = {}) {
+  const { client } = useDashboard()
+  // The debug tools write made-up data, so the section only shows on a server that opted in with `debug: true`.
+  const debug = useResource('debug', () => client.debug().catch(() => ({ enabled: false })))
+  const sections = SECTIONS.filter((s) => s.value !== 'debug' || debug.data?.enabled)
   const [section, setSection] = useState<string>(initial ?? SECTIONS[0].value)
-  const current = SECTIONS.find((s) => s.value === section) ?? SECTIONS[0]
+  const current = sections.find((s) => s.value === section) ?? SECTIONS[0]
   const Content = current.content
   return (
     <View>
       <div className="analytik-settings">
         <nav className="analytik-settings-nav" aria-label="Settings">
           <ul>
-            {SECTIONS.map(({ value, label, icon, tone }) => (
+            {sections.map(({ value, label, icon, tone }) => (
               <li key={value} data-tone={tone}>
                 <button
                   type="button"

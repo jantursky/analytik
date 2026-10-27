@@ -107,7 +107,7 @@ describe('Dashboard shell', () => {
     expect(blocks()[0]?.hasAttribute('data-wide')).toBe(true)
 
     await click(container.querySelector('[aria-label="Add a block after Pages"]'))
-    expect(byText(document.body, 'Pick a block to add after Pages.', 'p')).toBeDefined()
+    expect(byText(document.body, 'Pick one or more blocks to add after Pages.', 'p')).toBeDefined()
     expect(category('All blocks')?.textContent).toBe('All blocks16')
     await click(category('Revenue'))
     expect([...document.body.querySelectorAll('.analytik-picker-head strong')].map((t) => t.textContent)).toEqual([
@@ -119,6 +119,9 @@ describe('Dashboard shell', () => {
     ])
     await click(tile('Average order value'))
     expect(tile('Average order value')?.getAttribute('aria-checked')).toBe('true')
+    await click(tile('Recent payments'))
+    expect(byText(document.body, '2 blocks', 'strong')).toBeDefined()
+    await click(tile('Recent payments'))
     await click(byText(document.body, 'Add block', 'button'))
     expect(names()).toEqual(['Acquisition', 'Summary and chart', 'Pages', 'Average order value', 'Devices', 'Goals'])
     expect(byText(container, 'Average order value', '.analytik-card h2')).toBeDefined()
@@ -217,8 +220,14 @@ describe('Dashboard shell', () => {
     const tile = [...document.body.querySelectorAll<HTMLElement>('.analytik-picker-tile')].find(
       (t) => t.querySelector('.analytik-picker-head strong')?.textContent === 'Funnel',
     )
-    await actAsync(() => tile?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })))
-    expect(container.querySelectorAll('.analytik-block:not(.analytik-add-block)')).toHaveLength(7)
+    await click(tile)
+    await click(
+      [...document.body.querySelectorAll<HTMLElement>('.analytik-picker-tile')].find(
+        (t) => t.querySelector('.analytik-picker-head strong')?.textContent === 'Live now',
+      ),
+    )
+    await click(byText(document.body, 'Add 2 blocks', 'button'))
+    expect(container.querySelectorAll('.analytik-block:not(.analytik-add-block)')).toHaveLength(8)
   })
 
   it('renders overview stats with deltas, a dual-axis chart and breakdowns', async () => {
@@ -1376,15 +1385,10 @@ describe('Settings', () => {
     expect(byText(container, 'Data deleted', '[role="status"]')).toBeDefined()
   })
 
-  it('explains how to turn the debug tools on when the server has them off', async () => {
+  it('hides the debug section when the server has the debug tools off', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
-    await section(container, 'Debug')
     expect(api.find('GET', '/debug')).toHaveLength(1)
-    expect(container.querySelector('.analytik-settings-body')?.textContent).toContain('The debug tools are off')
-    expect(container.querySelector('.analytik-code')?.textContent).toBe(
-      'createAnalytik({ storage, admin, debug: true })',
-    )
-    expect(byText(container, 'Generate', 'button')).toBeUndefined()
+    expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')).toBeNull()
   })
 
   it('generates test data from a preset or custom amounts and removes test sites', async () => {
@@ -1610,10 +1614,9 @@ describe('formatting and credits', () => {
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({
       format: { numbers: 'dot', currency: 'symbol', cents: 'always', date: 'iso', time: '12h' },
     })
-    expect(container.querySelector('.analytik-format-preview strong')?.textContent.replace(/\s/g, ' ')).toBe(
-      '1.234.567,89 €',
-    )
-    expect(container.querySelector('.analytik-format-preview span')?.textContent).toMatch(/^\d{4}-\d{2}-\d{2} /)
+    const preview = [...container.querySelectorAll('.analytik-format-preview > span')].map((el) => el.textContent)
+    expect(preview[0]?.replace(/\s/g, ' ')).toBe('Payment1.234.567,89 €')
+    expect(preview[1]).toMatch(/^Date and time\d{4}-\d{2}-\d{2} /)
     await click(nav(container, 'Overview'))
     await settled()
     // The rest of the dashboard follows: the summary's visitors were "1,200".
@@ -1624,7 +1627,9 @@ describe('formatting and credits', () => {
   })
 
   it('marks the debug section apart with an icon', async () => {
-    const { container } = await open(fakeApi(), 'settings')
+    const api = fakeApi()
+    api.state.debug = true
+    const { container } = await open(api, 'settings')
     expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(9)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })

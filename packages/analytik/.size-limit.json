@@ -29,7 +29,7 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "12.5 kB"
+    "limit": "13 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",

@@ -139,13 +139,24 @@ export function FormatSettings() {
         </div>
       </Card>
       <Card title="Preview" description="A payment as the dashboard will show it.">
-        <p className="analytik-format-preview">
-          <strong>{formatMoney(AMOUNT, site.currency)}</strong>
-          <span>{formatDateTime(now, site.timezone)}</span>
+        <div className="analytik-format-preview">
           <span>
-            {formatNumber(NUMBER)} visitors · {formatPercent(0.0525)} converted
+            <small>Payment</small>
+            {formatMoney(AMOUNT, site.currency)}
           </span>
-        </p>
+          <span>
+            <small>Date and time</small>
+            {formatDateTime(now, site.timezone)}
+          </span>
+          <span>
+            <small>Visitors</small>
+            {formatNumber(NUMBER)}
+          </span>
+          <span>
+            <small>Conversion rate</small>
+            {formatPercent(0.0525)}
+          </span>
+        </div>
       </Card>
     </>
   )

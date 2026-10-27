@@ -3,9 +3,8 @@ import { useId, useState } from 'react'
 import { mixVisits, TEST_SITE_MIX } from '../../shared/test-sites'
 import type { TestDataInput, TestDataResult } from '../../shared/types'
 import { useDashboard } from '../context'
-import { useResource } from '../data'
 import { formatInteger, formatNumber } from '../format'
-import { Actions, Card, ConfirmButton, Field, Status, useOutcome } from '../ui'
+import { Actions, Card, ConfirmButton, Field, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
 import { Select } from '../ui/select'
 
@@ -96,28 +95,9 @@ const whole = (text: string): number => (/^\d+$/.test(text.trim()) ? Number(text
 
 /**
  * Generates made-up traffic and payments in bulk, to try the dashboard with many sites, long histories and large
- * numbers. Only works against a server started with `debug: true`; otherwise it says how to turn that on.
+ * numbers. Settings lists it only when the server was started with `debug: true`.
  */
 export function DebugSettings() {
-  const { client } = useDashboard()
-  const status = useResource('debug', () => client.debug().catch(() => ({ enabled: false })))
-  if (!status.data) return <Status loading={status.loading} error={status.error} />
-  if (!status.data.enabled) {
-    return (
-      <Card
-        title="Test data"
-        description="Fills the database with made-up visits and payments, to try the dashboard with many sites and large numbers."
-      >
-        <p className="analytik-muted">
-          The debug tools are off on this server. Start it with <code>debug: true</code> on a local or staging database,
-          never on one with real data:
-        </p>
-        <pre className="analytik-code">
-          <code>{'createAnalytik({ storage, admin, debug: true })'}</code>
-        </pre>
-      </Card>
-    )
-  }
   return (
     <>
       <TestDataGenerator />

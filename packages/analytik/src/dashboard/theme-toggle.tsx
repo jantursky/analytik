@@ -13,7 +13,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="analytik-pill-icon"
+      className="analytik-pill-icon analytik-theme-toggle"
       aria-label={`Theme: ${LABEL[current]}. Switch to ${LABEL[next].toLowerCase()}`}
       title={`Theme: ${LABEL[current]}`}
       onClick={() => update({ theme: next === 'system' ? undefined : next })}

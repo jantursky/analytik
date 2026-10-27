@@ -12,29 +12,33 @@ export interface BlockPickerProps {
   place: string
   /** Blocks already on the overview; they show but cannot be picked. */
   used: ReadonlySet<BlockId>
-  onPick: (id: BlockId) => void
+  /** The picked blocks, in the order they were chosen. */
+  onPick: (ids: BlockId[]) => void
   onClose: () => void
 }
 
 /** The block catalogue: categories with counts on the left, each block drawn small with sample numbers on the right. */
 export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerProps) {
   const [category, setCategory] = useState<BlockCategory | 'All'>('All')
-  const [chosen, setChosen] = useState<BlockId>()
+  const [chosen, setChosen] = useState<BlockId[]>([])
   const shown = BLOCK_IDS.filter((id) => category === 'All' || BLOCKS[id].category === category)
-  const pick = chosen && !used.has(chosen) ? chosen : undefined
+  const picks = chosen.filter((id) => !used.has(id))
   // Each opening starts from the whole catalogue.
   const clear = (): void => {
-    setChosen(undefined)
+    setChosen([])
     setCategory('All')
   }
   const close = (): void => {
     clear()
     onClose()
   }
-  const add = (id = pick): void => {
-    if (!id) return
+  const toggle = (id: BlockId): void =>
+    setChosen((ids) => (ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]))
+  const add = (): void => {
+    if (!picks.length) return
+    const ids = picks
     clear()
-    onPick(id)
+    onPick(ids)
   }
   const count = (c: BlockCategory | 'All') => BLOCK_IDS.filter((id) => c === 'All' || BLOCKS[id].category === c).length
 
@@ -47,12 +51,16 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
       footer={
         <>
           <p className="analytik-muted">
-            {pick ? (
+            {picks.length === 1 && picks[0] ? (
               <>
-                <strong>{BLOCKS[pick].name}</strong> goes {place}.
+                <strong>{BLOCKS[picks[0]].name}</strong> goes {place}.
+              </>
+            ) : picks.length ? (
+              <>
+                <strong>{picks.length} blocks</strong> go {place}.
               </>
             ) : (
-              `Pick a block to add ${place}.`
+              `Pick one or more blocks to add ${place}.`
             )}
           </p>
           <button type="button" className="analytik-button" onClick={close}>
@@ -62,10 +70,10 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
             type="button"
             className="analytik-button"
             data-variant="primary"
-            disabled={!pick}
-            onClick={() => add()}
+            disabled={!picks.length}
+            onClick={add}
           >
-            Add block
+            {picks.length > 1 ? `Add ${picks.length} blocks` : 'Add block'}
           </button>
         </>
       }
@@ -85,7 +93,7 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
             </button>
           ))}
         </nav>
-        <div className="analytik-picker-grid" role="radiogroup" aria-label="Blocks">
+        <div className="analytik-picker-grid" role="group" aria-label="Blocks">
           {shown.map((id) => {
             const block = BLOCKS[id]
             const added = used.has(id)
@@ -93,12 +101,11 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
               <button
                 key={id}
                 type="button"
-                role="radio"
+                role="checkbox"
                 className="analytik-picker-tile"
-                aria-checked={chosen === id}
+                aria-checked={chosen.includes(id)}
                 aria-disabled={added || undefined}
-                onClick={() => !added && setChosen(id)}
-                onDoubleClick={() => !added && add(id)}
+                onClick={() => !added && toggle(id)}
               >
                 <span className="analytik-picker-head">
                   <strong>{block.name}</strong>

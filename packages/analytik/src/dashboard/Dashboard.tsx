@@ -4,20 +4,21 @@ import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import type { Filters, Site } from '../shared/types'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
-import { Credits } from './credits'
 import { DashboardProvider, requestKey } from './context'
+import { Credits } from './credits'
 import { useResource } from './data'
 import { Icon } from './icons'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange } from './range'
+import { ThemeToggle } from './theme-toggle'
 import { FilterBar, IntervalPicker, RangePicker } from './Toolbar'
 import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
-import { UpdateNotice } from './update-notice'
 import { LayerContext } from './ui/layer'
 import { Select } from './ui/select'
 import { Switch } from './ui/switch'
 import { Tooltip } from './ui/tooltip'
+import { UpdateNotice } from './update-notice'
 import { Events } from './views/Events'
 import { Funnels } from './views/Funnels'
 import { Pages, Sources } from './views/Lists'
@@ -369,6 +370,7 @@ export function Dashboard({
                       ))}
                     </ul>
                   </nav>
+                  <ThemeToggle />
                   <button
                     type="button"
                     className="analytik-button analytik-signout"
