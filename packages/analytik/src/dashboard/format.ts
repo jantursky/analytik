@@ -53,21 +53,33 @@ const NUMBER_LOCALES: Record<FormatSettings['numbers'], string> = {
   apostrophe: 'de-CH',
 }
 
+interface NumberFormatter {
+  format: (value: number) => string
+}
+
 interface Formatters {
   settings: FormatSettings
-  locale: string
-  integer: Intl.NumberFormat
-  compact: Intl.NumberFormat
-  money: Map<string, Intl.NumberFormat>
+  /** A number format in the chosen style. */
+  numbers: (options: Intl.NumberFormatOptions) => NumberFormatter
+  integer: NumberFormatter
+  compact: NumberFormatter
+  money: Map<string, NumberFormatter>
 }
 
 function formattersFor(settings: FormatSettings): Formatters {
   const locale = NUMBER_LOCALES[settings.numbers]
+  // Swiss grouping is a plain apostrophe in some ICU versions and a typographic one in others; always write the plain one.
+  const numbers = (options: Intl.NumberFormatOptions): NumberFormatter => {
+    const format = new Intl.NumberFormat(locale, options)
+    return settings.numbers === 'apostrophe'
+      ? { format: (value) => format.format(value).replace(/\u2019/g, "'") }
+      : format
+  }
   return {
     settings,
-    locale,
-    integer: new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }),
-    compact: new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }),
+    numbers,
+    integer: numbers({ maximumFractionDigits: 0 }),
+    compact: numbers({ notation: 'compact', maximumFractionDigits: 1 }),
     money: new Map(),
   }
 }
@@ -87,11 +99,11 @@ export function setFormatSettings(settings: FormatSettings): void {
 
 export const formatSettings = (): FormatSettings => current.settings
 
-function moneyFormat(currency: string, compact = false): Intl.NumberFormat {
+function moneyFormat(currency: string, compact = false): NumberFormatter {
   const key = `${currency}${compact ? ':compact' : ''}`
   let format = current.money.get(key)
   if (!format) {
-    format = new Intl.NumberFormat(current.locale, {
+    format = current.numbers({
       style: 'currency',
       currency,
       currencyDisplay: current.settings.currency,
@@ -141,11 +153,13 @@ export function formatMoneyShort(minor: number, currency: string): string {
 /** A ratio (0.123) as a percentage (12.3%). */
 export function formatPercent(ratio: number): string {
   const digits = Math.abs(ratio) < 0.1 && ratio !== 0 ? 1 : 0
-  return new Intl.NumberFormat(current.locale, {
-    style: 'percent',
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(ratio)
+  return current
+    .numbers({
+      style: 'percent',
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    })
+    .format(ratio)
 }
 
 export function formatDuration(ms: number): string {

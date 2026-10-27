@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useEffectEvent, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import type { Realtime } from '../shared/types'
 
@@ -13,11 +13,23 @@ export interface Resource<T> {
 
 const toError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)))
 
+/**
+ * A stable function that always calls the latest `fn`, for effects that shouldn't rerun when it changes. React's own
+ * `useEffectEvent` only exists from 19.2, and the dashboard supports every React 19.
+ */
+function useLatest<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+  const ref = useRef(fn)
+  useLayoutEffect(() => {
+    ref.current = fn
+  })
+  return useCallback((...args: A) => ref.current(...args), [])
+}
+
 /** Loads data whenever `key` changes; late responses for an old key are ignored. */
 export function useResource<T>(key: string, load: () => Promise<T>): Resource<T> {
   const [state, setState] = useState<{ key: string; data?: T; error?: Error }>()
   const [version, setVersion] = useState(0)
-  const run = useEffectEvent(load)
+  const run = useLatest(load)
 
   useEffect(() => {
     let current = true
@@ -28,7 +40,7 @@ export function useResource<T>(key: string, load: () => Promise<T>): Resource<T>
     return () => {
       current = false
     }
-  }, [key, version])
+  }, [key, version, run])
 
   const reload = useCallback(() => setVersion((v) => v + 1), [])
   const fresh = state?.key === key
@@ -41,7 +53,7 @@ export function useResource<T>(key: string, load: () => Promise<T>): Resource<T>
  * view, goes back to `every`. A hidden tab isn't polled at all.
  */
 export function usePolling(poll: () => void, signature: string, every: number, max: number): void {
-  const run = useEffectEvent(poll)
+  const run = useLatest(poll)
 
   // Runs again whenever the answer changes, starting over at the short wait.
   useEffect(() => {
@@ -68,7 +80,7 @@ export function usePolling(poll: () => void, signature: string, every: number, m
       clearTimeout(timer)
       document.removeEventListener('visibilitychange', visibility)
     }
-  }, [every, max, signature])
+  }, [every, max, signature, run])
 }
 
 /** What a live answer shows, for `usePolling`: the same count, newest event and places mean nothing new happened. */

@@ -3,12 +3,12 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { type Server, createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
 import { fileURLToPath } from 'node:url'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { sqliteStorage } from '../src/storage/sqlite'
+import { openSqlite } from '../src/storage/sqlite-driver'
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url))
 const { version } = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8')) as { version: string }
@@ -105,10 +105,10 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
   it('prints the schema SQL for wrangler and points D1 migrations to it', async () => {
     const printed = await cli('migrate', '--print-sql', 'sqlite')
     expect(printed.code).toBe(0)
-    const db = new DatabaseSync(':memory:')
+    const db = await openSqlite(':memory:')
     db.exec(printed.stdout)
-    expect(db.prepare('SELECT version FROM schema_migrations').all()).toEqual([{ version: '0001_init' }])
-    expect(db.prepare("SELECT name FROM sqlite_master WHERE name = 'payments'").all()).toHaveLength(1)
+    expect(db.all('SELECT version FROM schema_migrations', [])).toEqual([{ version: '0001_init' }])
+    expect(db.all("SELECT name FROM sqlite_master WHERE name = 'payments'", [])).toHaveLength(1)
     db.close()
     expect((await cli('migrate', '--print-sql', 'postgres')).stdout).toContain('-- 0001_init')
     expect((await cli('migrate', '--print-sql', 'mysql')).code).toBe(2)

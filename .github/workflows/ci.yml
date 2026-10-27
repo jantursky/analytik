@@ -28,6 +28,9 @@ jobs:
         run: node scripts/samples.js --check
       - name: Format
         run: bun run format:check
+      # The demo and docs import the library's built types, so lint and typecheck need it first.
+      - name: Build the library
+        run: bun run build:lib
       - name: Lint
         run: bun run lint
       - name: Typecheck
