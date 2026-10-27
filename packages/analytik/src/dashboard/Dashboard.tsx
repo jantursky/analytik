@@ -75,6 +75,12 @@ export interface DashboardProps {
    * admin to every browser. `false` keeps them in this browser only, e.g. for a shared read-only demo.
    */
   syncPreferences?: boolean
+  /**
+   * Keeps the open site and view in the address as `?site=<id>&section=pages`, so a refresh, a bookmark or a shared
+   * link opens the same place, and Back steps through the views. Default false: an embedded dashboard leaves the
+   * host page's address alone.
+   */
+  urlState?: boolean
   /** The line under the dashboard saying it is analytik, with links to its source and its author. Default true. */
   credits?: boolean
 }
@@ -82,12 +88,21 @@ export interface DashboardProps {
 const NEW_SITE = '\u0000new'
 // A live refresh reads the whole range again; once a minute keeps that affordable on metered databases.
 const LIVE_MS = 60_000
-// Long enough for a view's first data to arrive, short enough that a shorter view soon gives the space back.
-const HOLD_HEIGHT_MS = 1200
 
 /** The same preset ending now, keeping the chosen interval; custom ranges stay as they are. */
 const renew = (range: DateRange): DateRange =>
   range.preset === 'custom' ? range : { ...presetRange(range.preset, Date.now()), interval: range.interval }
+
+/** The site and view an address names, `?site=<id>&section=pages`; anything unknown is left out. */
+function readAddress(): { site?: string; view?: DashboardView } {
+  const params = new URLSearchParams(location.search)
+  const section = params.get('section')
+  const id = params.get('site')
+  return {
+    site: id ?? undefined,
+    view: section && (section === 'sites' || section in VIEWS) ? (section as DashboardView) : undefined,
+  }
+}
 
 /** The full dashboard: login, sites overview, site switcher, date range, filters and every view. */
 export function Dashboard({
@@ -99,10 +114,11 @@ export function Dashboard({
   favicons = true,
   syncPreferences = true,
   credits = true,
+  urlState = false,
 }: DashboardProps) {
   const [unauthorized, setUnauthorized] = useState(false)
-  const [chosenId, setChosenId] = useState(siteId)
-  const [view, setViewState] = useState<DashboardView>(initialView)
+  const [chosenId, setChosenId] = useState(() => (urlState ? readAddress().site : undefined) ?? siteId)
+  const [view, setViewState] = useState<DashboardView>(() => (urlState ? readAddress().view : undefined) ?? initialView)
   const [customizing, setCustomizing] = useState(false)
   const [range, setRange] = useState(() => presetRange('7d', Date.now()))
   const [filters, setFilters] = useState<Filters>({})
@@ -131,27 +147,18 @@ export function Dashboard({
   const live = preferences.values.live === true
   const setLive = (on: boolean): void => preferences.update({ live: on })
 
-  // Switching views swaps the content for a short loading state. Without holding the old height, the page shrinks
-  // under the scroll position and jumps; and when the toolbar is stuck, the new view starts at its top instead.
+  // Switching views swaps the content for a short loading state. When the toolbar is stuck, the new view starts at
+  // its top instead of wherever the scroll position ends up.
   const main = useRef<HTMLDivElement>(null)
-  const release = useRef<ReturnType<typeof setTimeout>>(undefined)
-  useEffect(() => () => clearTimeout(release.current), [])
   const setView = (next: DashboardView): void => {
     if (next !== 'settings') setJustAdded(null)
     const element = main.current
-    if (element && next !== view) {
-      element.style.minHeight = `${element.offsetHeight}px`
-      clearTimeout(release.current)
-      release.current = setTimeout(() => {
-        element.style.minHeight = ''
-      }, HOLD_HEIGHT_MS)
-      const toolbar = element.querySelector('.analytik-toolbar')
-      if (toolbar) {
-        const stuckAt = toolbar.getBoundingClientRect().top
-        if (element.getBoundingClientRect().top < stuckAt) {
-          element.style.scrollMarginTop = `${stuckAt}px`
-          element.scrollIntoView({ block: 'start' })
-        }
+    const toolbar = element?.querySelector('.analytik-toolbar')
+    if (element && toolbar && next !== view) {
+      const stuckAt = toolbar.getBoundingClientRect().top
+      if (element.getBoundingClientRect().top < stuckAt) {
+        element.style.scrollMarginTop = `${stuckAt}px`
+        element.scrollIntoView({ block: 'start' })
       }
     }
     setViewState(next)
@@ -180,6 +187,30 @@ export function Dashboard({
 
   const list = sites.data ?? []
   const site = list.find((s) => s.id === chosenId) ?? list[0]
+
+  // The address follows the site and view: the first write only completes it, later ones are history entries.
+  const addressed = useRef(false)
+  const siteKey = site?.id
+  useEffect(() => {
+    if (!urlState || !siteKey) return
+    const url = new URL(location.href)
+    url.searchParams.set('site', siteKey)
+    if (view === 'overview') url.searchParams.delete('section')
+    else url.searchParams.set('section', view)
+    if (url.href !== location.href) history[addressed.current ? 'pushState' : 'replaceState'](null, '', url)
+    addressed.current = true
+  }, [urlState, siteKey, view])
+  useEffect(() => {
+    if (!urlState) return
+    const back = (): void => {
+      const { site: id, view: next } = readAddress()
+      setChosenId(id)
+      setViewState(next ?? 'overview')
+      setFilters({})
+    }
+    addEventListener('popstate', back)
+    return () => removeEventListener('popstate', back)
+  }, [urlState])
   const current = view === 'sites' ? undefined : VIEWS[view]
 
   const addFilter = (dimension: string, value: string): void => {

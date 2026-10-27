@@ -3819,16 +3819,16 @@ tr:hover .analytik-row-button {
 .analytik-credits {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 12px 24px;
   width: 100%;
   max-width: 1240px;
   margin: auto auto 0;
-  padding: 10px 24px 14px;
+  padding: 8px 24px 12px;
   border-top: 1px solid var(--analytik-border);
   color: var(--analytik-text-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .analytik-credits a {
@@ -3838,27 +3838,6 @@ tr:hover .analytik-row-button {
 
 .analytik-credits > * {
   animation: analytik-credits-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.analytik-credits > :last-child {
-  animation-delay: 120ms;
-}
-
-.analytik-credits-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.analytik-credits-brand strong {
-  color: var(--analytik-text);
-  font-size: 15px;
-  letter-spacing: -0.02em;
-}
-
-.analytik-credits-brand .analytik-brand-mark {
-  width: 22px;
-  height: 22px;
 }
 
 .analytik-credits-links {
@@ -3893,6 +3872,11 @@ tr:hover .analytik-row-button {
   color: var(--analytik-text);
 }
 
+.analytik-credits .analytik-github {
+  width: 14px;
+  height: 14px;
+}
+
 .analytik-github {
   fill: currentColor;
   stroke: none;
@@ -3905,7 +3889,7 @@ tr:hover .analytik-row-button {
 
 /*
  * The mark assembles when the dashboard opens: the blue body pops up and the yellow face slides into place. On
- * hover it wiggles and the face peeks out. Used by the header and the credits.
+ * hover it wiggles and the face peeks out. Used by the header.
  */
 .analytik-brand-body,
 .analytik-brand-face {
@@ -3926,11 +3910,11 @@ tr:hover .analytik-row-button {
   transition: transform 300ms ease;
 }
 
-:is(.analytik-brand, .analytik-credits-brand):hover .analytik-brand-mark {
+.analytik-brand:hover .analytik-brand-mark {
   animation: analytik-mark-wiggle 600ms ease;
 }
 
-:is(.analytik-brand, .analytik-credits-brand):hover .analytik-brand-face {
+.analytik-brand:hover .analytik-brand-face {
   transform: translate(-4%, -6%);
 }
 

@@ -30,7 +30,7 @@ Site tiles show each site's `/favicon.ico`. The browser requests it from the sit
 
 The **Add a website** dialog asks for the domain, a name, the time zone, the revenue currency and, optionally, how many days to keep visits and events. Once the site is saved, the dashboard opens its settings on **Tracking code**, with the snippet to paste into the site.
 
-Under the dashboard, a line says it is Analytik and links to its source and its author. Pass `credits={false}` to leave it out.
+Under the dashboard, a small line links to its source and its author. Pass `credits={false}` to leave it out.
 
 ## Pausing and deleting a site
 
@@ -238,3 +238,7 @@ A site can have a read-only link, but the dashboard has no screen for it. You sw
 A request that carries the token, as `?share=TOKEN` or an `x-analytik-share: TOKEN` header, can read the aggregate stats and the session list without logging in. That covers `overview`, `timeseries`, `breakdown`, `realtime`, `sessions`, `events` and the funnel results, so a viewer sees visitor ids, countries, cities, browsers, pages, referrers and event names. Payments and single-session details are not shared, and neither are settings, export or any write. See the [HTTP API](/reference/http-api#share-links). Treat the link like a password and revoke it when it is no longer needed.
 
 The dashboard component does not read the token itself. To build a public page, call the routes with the token, for example through `createApiClient` with a `fetcher` that appends `?share=TOKEN`.
+
+## Keeping the place in the address
+
+Pass `urlState` and the dashboard keeps the open site and view in the address, for example `?site=abc123&section=pages`. A refresh, a bookmark or a shared link opens the same place, and the browser's Back button steps through the views. The standalone dashboard served by `withDashboard` does this by default. An embedded dashboard leaves the host page's address alone unless you ask.

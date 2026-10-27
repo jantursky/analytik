@@ -1,5 +1,3 @@
-import { BrandMark } from './brand'
-
 const REPOSITORY = 'https://github.com/jantursky/analytik'
 const AUTHOR = 'https://jantursky.com'
 
@@ -12,17 +10,12 @@ function GitHubMark() {
 }
 
 /**
- * The line under the dashboard: what it is and who made it. The mark assembles when the dashboard opens and
- * wiggles on hover; `<Dashboard credits={false}>` leaves it out.
+ * The small line under the dashboard: a link to the source and to the author. `<Dashboard credits={false}>` leaves
+ * it out.
  */
 export function Credits() {
   return (
     <footer className="analytik-credits">
-      <a className="analytik-credits-brand" href={REPOSITORY} target="_blank" rel="noopener">
-        <BrandMark />
-        <strong>Analytik</strong>
-        <span className="analytik-credits-tagline">Open-source, privacy-first analytics</span>
-      </a>
       <span className="analytik-credits-links">
         <a className="analytik-credits-link" href={REPOSITORY} target="_blank" rel="noopener">
           <GitHubMark />

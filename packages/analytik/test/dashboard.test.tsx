@@ -16,7 +16,11 @@ import { fakeApi, otherSite, realtime, row, site } from './dashboard-fixtures'
 import { choose, comboboxInput, press, selectTrigger, switchFor, type, waitFor } from './dashboard-helpers'
 import { actAsync, byLabel, byText, click, fill, key, render, settled, submit } from './react-render'
 
-async function open(api = fakeApi(), view?: DashboardView, extra: { siteId?: string; theme?: 'dark' } = {}) {
+async function open(
+  api = fakeApi(),
+  view?: DashboardView,
+  extra: { siteId?: string; theme?: 'dark'; urlState?: boolean } = {},
+) {
   const result = await render(<Dashboard api="/api" fetcher={api.fetcher} view={view} {...extra} />)
   await settled()
   return { ...result, api }
@@ -70,6 +74,30 @@ describe('Dashboard shell', () => {
     await settled()
     expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Overview')
     expect(selectTrigger(container, 'Site')?.textContent).toBe('EExample')
+  })
+
+  it('keeps the site and view in the address when asked to', async () => {
+    history.replaceState(null, '', '/?section=pages&site=site_2')
+    try {
+      const { container } = await open(fakeApi(), undefined, { urlState: true })
+      expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Pages')
+      expect(location.search).toBe('?section=pages&site=site_2')
+      await click(nav(container, 'Events'))
+      expect(location.search).toBe('?section=events&site=site_2')
+      await click(nav(container, 'Overview'))
+      expect(location.search).toBe('?site=site_2')
+      history.back()
+      await waitFor(() => container.querySelector('.analytik-toolbar h1')?.textContent === 'Events')
+      history.replaceState(null, '', '/?section=nope')
+    } finally {
+      history.replaceState(null, '', '/')
+    }
+  })
+
+  it('leaves the address alone unless asked', async () => {
+    const { container } = await open()
+    await click(nav(container, 'Pages'))
+    expect(location.search).toBe('')
   })
 
   it('signs out', async () => {
@@ -1638,7 +1666,6 @@ describe('formatting and credits', () => {
     const { container } = await open()
     const links = [...container.querySelectorAll<HTMLAnchorElement>('.analytik-credits a')]
     expect(links.map((a) => [a.textContent.trim(), a.href])).toEqual([
-      ['AnalytikOpen-source, privacy-first analytics', 'https://github.com/jantursky/analytik'],
       ['Star on GitHub', 'https://github.com/jantursky/analytik'],
       ['Jan Tursky', 'https://jantursky.com/'],
     ])

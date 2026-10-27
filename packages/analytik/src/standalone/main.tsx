@@ -6,4 +6,4 @@ import { Dashboard } from '../dashboard'
 
 // The page the server sends carries the API path on the root element.
 const root = document.getElementById('root')
-if (root) createRoot(root).render(<Dashboard api={root.dataset.api ?? '/api'} />)
+if (root) createRoot(root).render(<Dashboard api={root.dataset.api ?? '/api'} urlState />)
