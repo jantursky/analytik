@@ -17,6 +17,7 @@ import type {
   SessionSummary,
   Site,
   SiteSummary,
+  VersionInfo,
   TestDataInput,
   TestDataResult,
   TimeseriesPoint,
@@ -95,6 +96,8 @@ export interface ApiClient {
   sites(): Promise<Site[]>
   /** Every site's visitors, revenue and orders in the range (default the last 24 hours) and who is online. */
   summary(range?: { from: number; to: number }): Promise<SiteSummary[]>
+  /** The running version and the newest release, when the server could look it up. */
+  version(): Promise<VersionInfo>
   site(siteId: string): Promise<Site>
   /** Creates the site and resolves to it; its API key is shown later in the settings by rotating it. */
   createSite(input: SiteInput): Promise<Site>
@@ -223,6 +226,7 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     logout: () => write('POST', '/auth/logout', {}),
     me: () => get('/auth/me'),
     sites: () => get('/sites'),
+    version: () => get('/version'),
     summary: (range) => get('/summary', range && new URLSearchParams({ from: iso(range.from), to: iso(range.to) })),
     site: (id) => get(site(id)),
     createSite: (input) => write<{ site: Site }>('POST', '/sites', input).then((created) => created.site),

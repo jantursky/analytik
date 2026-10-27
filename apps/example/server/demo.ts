@@ -33,6 +33,8 @@ const boot = async (local: boolean): Promise<{ handle: Handle; simulator: Simula
     privacy: { mode: 'strict' },
     basePath: API_BASE,
     debug: local,
+    // The demo is read-only and not meant to be updated.
+    updateCheck: false,
   })
   return {
     handle: (request) => Promise.resolve(analytik.app.fetch(request)),

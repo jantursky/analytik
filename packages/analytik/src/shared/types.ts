@@ -308,3 +308,9 @@ export interface TestDataResult {
   /** How long writing took, in ms. */
   durationMs: number
 }
+
+/** The running version, and the newest release on npm when it could be looked up. */
+export interface VersionInfo {
+  current: string
+  latest: string | null
+}

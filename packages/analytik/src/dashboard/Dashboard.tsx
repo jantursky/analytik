@@ -13,6 +13,7 @@ import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferen
 import { type DateRange, presetRange } from './range'
 import { FilterBar, IntervalPicker, RangePicker } from './Toolbar'
 import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
+import { UpdateNotice } from './update-notice'
 import { LayerContext } from './ui/layer'
 import { Select } from './ui/select'
 import { Switch } from './ui/switch'
@@ -339,6 +340,7 @@ export function Dashboard({
         <PreferencesProvider value={preferences}>
           <LayerContext value={root}>
             <FaviconsContext value={favicons === true ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon` : favicons}>
+              {!unauthorized && site && <UpdateNotice client={client} />}
               {!unauthorized && site && (
                 <header className="analytik-header" ref={header}>
                   <span className="analytik-brand">

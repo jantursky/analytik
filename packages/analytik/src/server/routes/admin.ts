@@ -7,6 +7,7 @@ import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
 import { siteFavicon } from '../favicon'
+import { versionInfo } from '../version'
 import { rematchPayments } from '../payments'
 import { getPreferences, savePreferences } from '../preferences'
 import { readText } from '../request'
@@ -141,6 +142,9 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   })
   app.post('/debug/generate', async (c) => c.json(await generateTestData(ctx, await body(c))))
   app.delete('/debug/sites', async (c) => c.json(await deleteTestSites(ctx)))
+
+  app.use('/version', requireAdmin(ctx))
+  app.get('/version', async (c) => c.json(await versionInfo(ctx)))
 
   // Every site's headline numbers in one request, for the sites overview. Default the last 24 hours.
   app.use('/summary', requireAdmin(ctx))

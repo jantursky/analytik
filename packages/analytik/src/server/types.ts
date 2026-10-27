@@ -94,6 +94,11 @@ export interface CreateAnalytikOptions {
    * Debug settings that use them. For local testing: leave it off where the data is real. Default false.
    */
   debug?: boolean
+  /**
+   * Lets the dashboard offer an update: `GET /version` asks the npm registry for the newest release, from this
+   * server, at most every six hours. Default true; `false` makes no request. The dashboard sends nothing to npm.
+   */
+  updateCheck?: boolean
 }
 
 export interface IngestInput {

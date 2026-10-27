@@ -194,7 +194,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 20px;
-  padding: 10px 24px 0;
+  /* The same left and right edge as .analytik-main: its gutter, inside its 1240px column. */
+  padding: 10px max(24px, calc((100% - 1240px) / 2 + 24px)) 0;
   border-bottom: 1px solid var(--analytik-border);
   background: var(--analytik-surface);
 }
@@ -3729,6 +3730,72 @@ tr:hover .analytik-row-button {
 
 .analytik-preview-live strong {
   font-size: 15px;
+}
+
+/* ---- update notice: a bar above the header */
+
+.analytik-update {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px max(24px, calc((100% - 1240px) / 2 + 24px));
+  border-bottom: 1px solid color-mix(in srgb, var(--analytik-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--analytik-primary) 9%, var(--analytik-surface));
+  font-size: 13px;
+  animation: analytik-update-in 320ms var(--analytik-ease) both;
+}
+
+.analytik-update p {
+  margin-right: auto;
+}
+
+.analytik-update-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--analytik-primary);
+}
+
+.analytik-update-dot::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--analytik-primary);
+  content: '';
+  animation: analytik-update-beat 1.8s ease-out infinite;
+}
+
+@keyframes analytik-update-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes analytik-update-beat {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-update,
+  .analytik-update-dot::after {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .analytik-update {
+    padding-inline: 16px;
+  }
 }
 
 /* ---- credits: the line under the dashboard */

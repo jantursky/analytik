@@ -169,6 +169,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     sites: [site, otherSite],
     funnels: [funnel],
     loggedIn: true,
+    version: { current: '1.1.0', latest: null as string | null },
     preferences: {} as Record<string, unknown>,
     debug: false,
     login: 'password' as 'password' | 'custom',
@@ -186,6 +187,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       return { ok: true }
     },
     'GET /sites': () => state.sites,
+    'GET /version': () => state.version,
     'GET /summary': () =>
       state.sites.map((s) => ({
         siteId: s.id,

@@ -1,6 +1,6 @@
 ---
 title: CLI
-description: 'The Analytik command line: init, migrate, seed and doctor.'
+description: 'The Analytik command line: create, upgrade, init, migrate, seed and doctor.'
 ---
 
 The package installs a binary named `analytik`. Run it with `npx analytik`, `bunx analytik`, or from your scripts.
@@ -24,6 +24,29 @@ Commands that open a database take `--db <url-or-path>`. The value is one of:
 Cloudflare D1 cannot be reached from the command line. See [migrate](#migrate) for how to load the schema with Wrangler.
 
 ## Commands
+
+### create
+
+Makes a project that serves the dashboard, the tracker and the API from one deployment. On Cloudflare (the default) it also puts it online: it installs the packages, signs in to Cloudflare if needed, creates the D1 database, deploys the Worker and sets the secrets, then prints the address and a generated dashboard password (kept in `.dev.vars`, which is git-ignored).
+
+```bash
+npx analytik@latest create my-stats
+npx analytik@latest create my-stats --name shop-stats --no-deploy
+npx analytik@latest create my-stats --target vercel
+```
+
+`--name` sets the Worker and database name (default: the folder's), `--password` the dashboard password (default: a random one) and `--no-deploy` writes the files only. `--target vercel` writes a Vercel function with Postgres; secrets go to `.env`, and you deploy with `npx vercel`. See [Cloudflare Workers and D1](/deploy/cloudflare-workers-d1).
+
+### upgrade
+
+Moves a project to the newest Analytik. Run it in the project folder, or pass the folder.
+
+```bash
+npx analytik upgrade
+npx analytik upgrade ./my-stats --no-deploy
+```
+
+It installs `analytik@latest` with the package manager the project uses (by lockfile: bun, pnpm, yarn, else npm) and, for a Cloudflare project, runs `wrangler deploy`. For Vercel it tells you to deploy. The database schema updates on the first request afterwards. See [Updating](/deploy/backups-retention-and-upgrades#updating).
 
 ### init
 

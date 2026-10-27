@@ -1537,6 +1537,48 @@ describe('site lifecycle', () => {
   })
 })
 
+describe('update notice', () => {
+  it('offers a newer release once, until it is dismissed for good', async () => {
+    const api = fakeApi()
+    api.state.version = { current: '1.1.0', latest: '1.2.0' }
+    const { container } = await open(api)
+    const notice = () => container.querySelector('.analytik-update')
+    expect(notice()?.textContent).toContain('Analytik 1.2.0 is available.')
+    expect(notice()?.textContent).toContain('You are running 1.1.0.')
+    expect([...container.querySelectorAll<HTMLAnchorElement>('.analytik-update a')].map((a) => a.href)).toEqual([
+      'https://github.com/jantursky/analytik/releases/tag/1.2.0',
+      'https://analytik-docs.vercel.app/deploy/backups-retention-and-upgrades#updating',
+    ])
+    await click(container.querySelector('.analytik-update button'))
+    expect(notice()).toBeNull()
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ updateDismissed: '1.2.0' })
+  })
+
+  it('remembers which release was dismissed, and shows the next one again', async () => {
+    const dismissed = fakeApi()
+    dismissed.state.version = { current: '1.1.0', latest: '1.2.0' }
+    dismissed.state.preferences = { updateDismissed: '1.2.0' }
+    expect((await open(dismissed)).container.querySelector('.analytik-update')).toBeNull()
+    const next = fakeApi()
+    next.state.version = { current: '1.1.0', latest: '1.3.0' }
+    next.state.preferences = { updateDismissed: '1.2.0' }
+    expect((await open(next)).container.querySelector('.analytik-update')?.textContent).toContain('1.3.0')
+  })
+
+  it('stays away when up to date, ahead, or when the lookup found nothing', async () => {
+    for (const version of [
+      { current: '1.2.0', latest: '1.2.0' },
+      { current: '1.3.0', latest: '1.2.0' },
+      { current: '1.1.0', latest: null },
+    ]) {
+      const api = fakeApi()
+      api.state.version = version
+      expect((await open(api)).container.querySelector('.analytik-update')).toBeNull()
+    }
+  })
+})
+
 describe('formatting and credits', () => {
   it('saves the theme, which the dashboard root then carries', async () => {
     const { container, api } = await open(fakeApi(), 'settings')

@@ -1,0 +1,10 @@
+# Opens a pull request when a new Analytik version is out. Merging it redeploys: the schema updates itself.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+    allow:
+      - dependency-name: analytik
+    open-pull-requests-limit: 1

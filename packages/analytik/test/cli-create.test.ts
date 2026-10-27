@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { type CreateIo, createProject, workerName } from '../src/create'
+import { upgradeProject } from '../src/create/upgrade'
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url))
 const temp = (name: string) => join(mkdtempSync(join(tmpdir(), 'analytik-create-')), name)
@@ -130,6 +131,75 @@ describe('creating a project', () => {
     expect(() => createProject({ dir: temp('nodb'), version: '1.0.0', deploy: true }, noDatabase.io)).toThrow(
       /Creating the database failed/,
     )
+  })
+})
+
+describe('upgrading a project', () => {
+  /** Installs "the newest version" by writing it where the package manager would. */
+  function installer(version: string) {
+    const { io, calls, logs } = fakeIo()
+    const run: CreateIo['run'] = (command, args, options) => {
+      calls.push({ command, args })
+      if (args.includes('analytik@latest')) {
+        mkdirSync(join(options.cwd, 'node_modules/analytik'), { recursive: true })
+        writeFileSync(join(options.cwd, 'node_modules/analytik/package.json'), JSON.stringify({ version }))
+      }
+      return { status: args.includes('fail') ? 1 : 0, output: '' }
+    }
+    return { io: { ...io, run }, calls, logs }
+  }
+
+  it("installs the newest version with the project's package manager, then deploys a Worker", () => {
+    const dir = temp('stats')
+    createProject({ dir, version: '1.1.0', deploy: false }, fakeIo().io)
+    writeFileSync(join(dir, 'bun.lock'), '')
+    const { io, calls } = installer('1.2.0')
+    expect(upgradeProject({ dir, deploy: true }, io)).toEqual({ from: null, to: '1.2.0' })
+    expect(calls).toEqual([
+      { command: 'bun', args: ['add', 'analytik@latest'] },
+      { command: 'npx', args: ['--no-install', 'wrangler', 'deploy'] },
+    ])
+  })
+
+  it('picks pnpm, yarn or npm by lockfile, and can skip the deploy', () => {
+    for (const [lock, command] of [
+      ['pnpm-lock.yaml', 'pnpm'],
+      ['yarn.lock', 'yarn'],
+      ['package-lock.json', 'npm'],
+    ] as const) {
+      const dir = temp(command)
+      createProject({ dir, version: '1.1.0', deploy: false }, fakeIo().io)
+      writeFileSync(join(dir, lock), '')
+      const { io, calls } = installer('1.2.0')
+      upgradeProject({ dir, deploy: false }, io)
+      expect(calls.map((call) => call.command)).toEqual([command])
+    }
+  })
+
+  it('tells a Vercel project how to deploy, reports no change, and names what failed', () => {
+    const dir = temp('vercel')
+    createProject({ dir, target: 'vercel', version: '1.1.0', deploy: false }, fakeIo().io)
+    const { io, logs } = installer('1.1.0')
+    mkdirSync(join(dir, 'node_modules/analytik'), { recursive: true })
+    writeFileSync(join(dir, 'node_modules/analytik/package.json'), JSON.stringify({ version: '1.1.0' }))
+    expect(upgradeProject({ dir, deploy: true }, io)).toEqual({ from: '1.1.0', to: '1.1.0' })
+    expect(logs.join('\n')).toContain('npx vercel --prod')
+    expect(() => upgradeProject({ dir: temp('empty'), deploy: false }, io)).toThrow('is not an Analytik project')
+    const failing: CreateIo = { ...io, run: () => ({ status: 1, output: '' }) }
+    expect(() => upgradeProject({ dir, deploy: false }, failing)).toThrow('Installing the new version failed')
+    const worker = temp('worker')
+    createProject({ dir: worker, version: '1.1.0', deploy: false }, fakeIo().io)
+    const deployFails: CreateIo = {
+      ...io,
+      run: (_command, args) => ({ status: args.includes('deploy') ? 1 : 0, output: '' }),
+    }
+    expect(() => upgradeProject({ dir: worker, deploy: true }, deployFails)).toThrow('Deploying failed')
+  })
+
+  it('ships a Dependabot config so a deploy button copy hears about new versions', () => {
+    const dir = temp('bot')
+    createProject({ dir, version: '1.1.0', deploy: false }, fakeIo().io)
+    expect(readFileSync(join(dir, '.github/dependabot.yml'), 'utf8')).toContain('dependency-name: analytik')
   })
 })
 

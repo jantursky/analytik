@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 
 import pkg from '../package.json'
+import { upgradeProject } from './create/upgrade'
 import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo } from './create'
 import { openStorage, seedDemo } from './migrate'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
@@ -13,6 +14,7 @@ const USAGE = `Usage: analytik <command> [options]
 Commands:
   create [dir] [--target cloudflare|vercel] [--name <name>] [--no-deploy]
                                            Make a project that serves the dashboard; on Cloudflare, put it online
+  upgrade [dir] [--no-deploy]              Update a project to the newest Analytik and deploy it
   init [--target worker|vercel|bun|node]   Print a server entry file to start from
   migrate --db <url>                       Create or update the database schema
   migrate --print-sql sqlite|postgres      Print the schema SQL (for wrangler d1 execute --file)
@@ -247,6 +249,14 @@ async function main(argv: string[]): Promise<number> {
       console.log(
         `\n${next}\nSign in with the password: ${result.password}\nIt is also in ${dir}/${target === 'vercel' ? '.env' : '.dev.vars'}, which stays out of git.`,
       )
+      return 0
+    }
+    case 'upgrade': {
+      const { from, to } = upgradeProject(
+        { dir: positionals[1] ?? '.', deploy: values['no-deploy'] !== true },
+        processIo,
+      )
+      console.log(from === to ? 'Nothing to update.' : `Done: ${to}. The schema updates on the first request.`)
       return 0
     }
     case 'init': {

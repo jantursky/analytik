@@ -66,6 +66,18 @@ Strict-mode salts are handled separately and automatically, whatever retention y
 
 Retention and salt deletion apply to the live database only. A backup, a Time Travel restore point or a Postgres point-in-time recovery window still holds the data and the salts as they were when it was taken. If you promise visitors that old data is gone, keep backups only as long as you keep the data itself: set a retention period for your backups that matches `retentionDays`, and delete old dumps.
 
+## Updating
+
+The dashboard tells you when a newer release is out: a bar above the header says "Analytik 1.2.0 is available" and links to what's new and to this page. Closing it hides that version for every admin; the next release shows it again. The server looks the version up on the npm registry at most every six hours (the browser contacts nobody); pass `updateCheck: false` to `createAnalytik()` to turn it off.
+
+How to update depends on how you deployed:
+
+- **Created with `npx analytik create`:** from the project folder, run `npx analytik upgrade`. It installs the newest `analytik` with the package manager the project uses and, for a Cloudflare project, deploys it. `--no-deploy` only updates the package. On Vercel it installs and tells you to deploy with `npx vercel --prod` or by pushing.
+- **Created with a deploy button:** the template ships a Dependabot config, so GitHub opens a pull request when a new release is out. Merge it and the connected host (Workers Builds, Vercel) redeploys. Without Dependabot, raise the `analytik` version in `package.json` and push.
+- **Your own project:** `bun add analytik@latest` (or the same with npm, pnpm or yarn) and deploy the way you always do.
+
+The database schema updates itself on the first request after a deploy (`autoMigrate`, on by default), so there is nothing else to run. For a major release, read the [changelog](/changelog) first, and see the careful steps below.
+
 ## Upgrades
 
 Analytik follows semantic versioning, and the [changelog](/changelog) lists every change. Migrations are ordered SQL files applied once each and recorded in `schema_migrations`.
