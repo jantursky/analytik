@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 import { watchErrors } from './helpers'
 
 test('customizes the overview: adds a block from the catalogue and resets the layout', async ({ page }) => {
+  // WebKit on the Linux runners takes about 25 seconds waiting for the picker tiles to settle, right at the default limit.
+  test.slow()
   const errors = watchErrors(page)
   await page.goto('/#dashboard')
   const blocks = page.locator('.analytik-board > .analytik-block:not(.analytik-add-block)')
