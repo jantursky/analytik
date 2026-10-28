@@ -712,4 +712,69 @@ export default {
   'Turn Live off': '실시간 끄기',
   'Turn Live on': '실시간 켜기',
   'Type a command, a page, a range or a value…': '명령, 페이지, 기간 또는 값을 입력하세요…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    '다른 분석 도구의 기록을 이 사이트에 추가합니다. 가져온 방문은 이 사이트가 직접 기록한 방문과 따로 보관됩니다.',
+  'Already imported': '이미 가져옴',
+  'Export files': '내보내기 파일',
+  'First visit': '첫 방문',
+  'Import {count, plural, one {# visit} other {# visits}}': '{count, plural, other {방문 #건}} 가져오기',
+  'Import data': '데이터 가져오기',
+  'Import from': '가져올 출처',
+  'Import removed': '가져오기를 삭제했습니다',
+  Imported: '가져옴',
+  'Imported data': '가져온 데이터',
+  'Importing {done} of {total} visits': '방문 {total}건 중 {done}건 가져오는 중',
+  'Last visit': '마지막 방문',
+  'No visits found in these files.': '이 파일에서 방문을 찾지 못했습니다.',
+  'Older than the retention limit': '보관 기간보다 오래됨',
+  'Remove import': '가져오기 삭제',
+  'Remove the {source} import?': '{source}에서 가져온 데이터를 삭제할까요?',
+  'Row {row}: {reason}': '{row}행: {reason}',
+  'Skipped rows': '건너뛴 행',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    '방문 {total}건 중 {done}건에서 중단되었습니다. 같은 파일을 다시 선택하면 이어서 마칠 수 있으며, 이미 저장된 데이터는 중복 추가되지 않습니다.',
+  'The CSV from the raw data export, with pages and events together.':
+    '원시 데이터 내보내기의 CSV로, 페이지와 이벤트가 함께 들어 있습니다.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    '이 사이트에는 이 기간에 이미 {count, plural, other {방문 #건}}이 있습니다. 가져온 방문은 그 옆에 추가됩니다.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'website_event 내보내기와, 있다면 session 및 event_data 내보내기.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    '{source}에서 가져온 {visits, plural, other {방문 #건}}과 {events, plural, other {이벤트 #건}}이 삭제됩니다. 트래커가 기록한 데이터는 그대로 유지됩니다.',
+  Visits: '방문',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    '각 도구가 이 사이트에 추가한 내용입니다. 가져오기를 삭제하면 해당 방문과 이벤트가 삭제되며, 트래커가 기록한 모든 데이터는 그대로 남습니다.',
+  'Sample import files': '가져오기용 샘플 파일',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    '다른 분석 플랫폼 형식의 가상 내보내기 파일을 내려받아 실제 내보내기 없이 데이터 가져오기를 시험합니다. Umami는 파일 3개를 만드니 함께 가져오세요.',
+  'Spread over the last 30 days.': '최근 30일에 걸쳐 분포합니다.',
+  'Visits go from 1 to 5,000.': '방문은 1에서 5,000까지입니다.',
+  'Download {source}': '{source} 다운로드',
+  'a new website': '새 웹사이트',
+  'A new website': '새 웹사이트',
+  Back: '뒤로',
+  Change: '변경',
+  'Choose files': '파일 선택',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    '원시 데이터 내보내기의 CSV(페이지와 이벤트가 함께 있는 것)를 놓아 주세요.',
+  'Drop the export files here': '내보낸 파일을 여기에 놓으세요',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'website_event 내보내기와, 있다면 session 및 event_data 내보내기도 놓아 주세요(CSV 또는 JSON).',
+  'Import from another tool': '다른 도구에서 가져오기',
+  'Import into': '가져올 사이트',
+  'Imported into {site}.': '{site}(으)로 가져왔습니다.',
+  'New website': '새 웹사이트',
+  'Open site': '사이트 열기',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible과 Google Analytics 4는 개별 방문을 내보내지 않아 가져올 수 없습니다.',
+  'Reading…': '읽는 중…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    '파일에서 가져온 값입니다. 가져올 사이트가 아니라면 바꾸세요.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    '추적된 방문과 따로 보관되며, 가져오기는 나중에 설정에서 삭제할 수 있습니다.',
+  'Which tool are you importing from?': '어떤 도구에서 가져오나요?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{source}의 {visits, plural, other {방문 #회}}과 {events, plural, other {이벤트 #개}}를 {site}(으)로 가져올까요?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'http://와 https:// 주소 모두 사용할 수 있습니다. 프로토콜은 제거되고 도메인만 남습니다.',
 } satisfies Messages

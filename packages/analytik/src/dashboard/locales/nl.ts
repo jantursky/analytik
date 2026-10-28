@@ -721,4 +721,70 @@ export default {
   'Turn Live off': 'Live uitzetten',
   'Turn Live on': 'Live aanzetten',
   'Type a command, a page, a range or a value…': 'Typ een opdracht, pagina, periode of waarde…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Voeg de geschiedenis van een andere analysetool toe aan deze site. Geïmporteerde bezoeken blijven gescheiden van de bezoeken die deze site zelf heeft vastgelegd.',
+  'Already imported': 'Al geïmporteerd',
+  'Export files': 'Exportbestanden',
+  'First visit': 'Eerste bezoek',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    '{count, plural, one {# bezoek} other {# bezoeken}} importeren',
+  'Import data': 'Gegevens importeren',
+  'Import from': 'Importeren uit',
+  'Import removed': 'Import verwijderd',
+  Imported: 'Geïmporteerd',
+  'Imported data': 'Geïmporteerde gegevens',
+  'Importing {done} of {total} visits': '{done} van {total} bezoeken importeren',
+  'Last visit': 'Laatste bezoek',
+  'No visits found in these files.': 'Geen bezoeken gevonden in deze bestanden.',
+  'Older than the retention limit': 'Ouder dan de bewaartermijn',
+  'Remove import': 'Import verwijderen',
+  'Remove the {source} import?': 'De import uit {source} verwijderen?',
+  'Row {row}: {reason}': 'Rij {row}: {reason}',
+  'Skipped rows': 'Overgeslagen rijen',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Gestopt na {done} van {total} bezoeken. Kies dezelfde bestanden opnieuw om af te maken; wat al is opgeslagen, wordt niet dubbel toegevoegd.',
+  'The CSV from the raw data export, with pages and events together.':
+    "De CSV uit de export van ruwe gegevens, met pagina's en gebeurtenissen samen.",
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'De site heeft in deze periode al {count, plural, one {# bezoek} other {# bezoeken}}. De geïmporteerde worden ernaast toegevoegd.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'De website_event-export en, als je ze hebt, ook de session- en event_data-exports.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Hiermee worden {visits, plural, one {# bezoek} other {# bezoeken}} en {events, plural, one {# gebeurtenis} other {# gebeurtenissen}} verwijderd die uit {source} zijn geïmporteerd. Wat de tracker heeft vastgelegd, blijft ongemoeid.',
+  Visits: 'Bezoeken',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Wat elke tool aan deze site heeft toegevoegd. Als je een import verwijdert, verdwijnen de bijbehorende bezoeken en gebeurtenissen; alles wat de tracker heeft vastgelegd blijft.',
+  'Sample import files': 'Voorbeeldbestanden voor import',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Downloadt verzonnen exports in het formaat van een ander analyseplatform, om Gegevens importeren te proberen zonder echte export. Umami maakt drie bestanden; importeer ze samen.',
+  'Spread over the last 30 days.': 'Verspreid over de laatste 30 dagen.',
+  'Visits go from 1 to 5,000.': 'Bezoeken lopen van 1 tot 5.000.',
+  'Download {source}': '{source} downloaden',
+  'a new website': 'een nieuwe website',
+  'A new website': 'Een nieuwe website',
+  Back: 'Terug',
+  Change: 'Wijzigen',
+  'Choose files': 'Bestanden kiezen',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Sleep de CSV van de export van ruwe gegevens hierheen, met pagina’s en gebeurtenissen samen.',
+  'Drop the export files here': 'Sleep de exportbestanden hierheen',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Sleep de website_event-export hierheen, en de exports van session en event_data als je ze hebt (CSV of JSON).',
+  'Import from another tool': 'Importeren uit een andere tool',
+  'Import into': 'Importeren in',
+  'Imported into {site}.': 'Geïmporteerd in {site}.',
+  'New website': 'Nieuwe website',
+  'Open site': 'Website openen',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible en Google Analytics 4 kunnen niet worden geïmporteerd: ze exporteren geen afzonderlijke bezoeken.',
+  'Reading…': 'Lezen…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Overgenomen uit de bestanden; pas aan als dit niet de website is waarin je importeert.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Ze worden apart bewaard van gevolgde bezoeken en je kunt de import later verwijderen in Instellingen.',
+  'Which tool are you importing from?': 'Uit welke tool importeer je?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{visits, plural, one {# bezoek} other {# bezoeken}} en {events, plural, one {# gebeurtenis} other {# gebeurtenissen}} uit {source} importeren in {site}?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Werkt met http://- en https://-adressen; het protocol wordt weggelaten en alleen het domein blijft over.',
 } satisfies Messages

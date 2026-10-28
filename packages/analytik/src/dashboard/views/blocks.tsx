@@ -3,6 +3,7 @@ import { type ReactNode, useState } from 'react'
 
 import type { BreakdownRow, Funnel, FunnelResult, Page, Payment, Realtime as RealtimeData } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
+import { CopyId, pageUrl } from '../copy-id'
 import { liveSignature, usePolling, useResource } from '../data'
 import { formatAgo, formatMoney, formatNumber, formatPercent } from '../format'
 import { Icon, type IconName } from '../icons'
@@ -348,10 +349,16 @@ function LiveBlock() {
             <ul className="analytik-feed-list">
               {data.recent.slice(0, 5).map((event, index) => {
                 const { who, action, target } = describeEvent(event)
+                const url = event.type === 'goal' ? null : pageUrl(site.domain, target)
                 return (
                   <li key={`${event.ts}-${index}`}>
                     <span>
                       {who} {action} <strong>{target || '—'}</strong>
+                      {url && (
+                        <span className="analytik-cell-actions">
+                          <CopyId text={url} label={t('Copy URL')} />
+                        </span>
+                      )}
                     </span>
                     <span className="analytik-muted">{formatAgo(event.ts, now)}</span>
                   </li>

@@ -11,6 +11,7 @@ import { ThemeToggle } from './theme-toggle'
 import { ErrorNote, Field } from './ui'
 import { CurrencySelect } from './ui/currency'
 import { Dialog } from './ui/dialog'
+import { Tooltip } from './ui/tooltip'
 import { localTimeZone, TimeZoneSelect } from './ui/timezone'
 
 const message = (error: unknown): string => (error instanceof Error ? error.message : String(error))
@@ -120,10 +121,14 @@ export function DomainField({
       error={problem ? { id: errorId, text: problem } : null}
     >
       <span className="analytik-input-group">
-        <span className="analytik-input-lead" aria-hidden="true">
-          <Icon name="globe" />
-          https://
-        </span>
+        <Tooltip
+          label={t('Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.')}
+        >
+          <span className="analytik-input-lead" aria-hidden="true">
+            <Icon name="globe" />
+            https://
+          </span>
+        </Tooltip>
         <input
           className="analytik-input"
           value={value}
@@ -143,7 +148,7 @@ export function DomainField({
 }
 
 /** A name for a site from its domain: `www.example.com` is "Example", `docs.example.com` is "Docs". */
-const nameFromDomain = (domain: string): string => {
+export const nameFromDomain = (domain: string): string => {
   const label = domain.split('.').find((part) => part !== 'www') ?? ''
   return label.charAt(0).toUpperCase() + label.slice(1)
 }

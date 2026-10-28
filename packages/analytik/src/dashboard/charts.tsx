@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type CSSProperties, lazy, type ReactNode, Suspense, useState } from 'react'
 
+import { CopyId } from './copy-id'
 import { formatChange } from './format'
 import { Icon } from './icons'
 import { t } from './i18n'
@@ -259,6 +260,8 @@ export interface BarListRow {
   value: number
   /** The row's value in the comparison period: shows the change beside the value. */
   previous?: number
+  /** Text a copy button next to the label puts on the clipboard, e.g. a page's address. */
+  copy?: { text: string; label: string }
 }
 
 export interface BarListProps {
@@ -307,7 +310,16 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 transition={{ duration: 0.6, ease: EASE, delay: Math.min(index, 10) * 0.03 }}
                 aria-hidden="true"
               />
-              <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
+              {row.copy ? (
+                <span className="analytik-bar-name">
+                  <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
+                  <span className="analytik-cell-actions">
+                    <CopyId text={row.copy.text} label={row.copy.label} nested />
+                  </span>
+                </span>
+              ) : (
+                <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
+              )}
               <span className="analytik-bar-figures">
                 <span className="analytik-bar-value">{formatValue(row.value)}</span>
                 {row.previous !== undefined && <RowChange value={row.value} previous={row.previous} />}

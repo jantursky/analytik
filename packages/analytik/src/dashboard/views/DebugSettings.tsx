@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 
+import type { ImportSource } from '../../shared/import/types'
 import { mixVisits, TEST_SITE_MIX } from '../../shared/test-sites'
 import type { TestDataInput, TestDataResult } from '../../shared/types'
 import { useDashboard } from '../context'
@@ -132,6 +133,7 @@ export function DebugSettings() {
   return (
     <>
       <TestDataGenerator />
+      <SampleExports />
       <TestSiteCleanup />
     </>
   )
@@ -343,6 +345,75 @@ function TestDataGenerator() {
         >
           {busy ? t('Generating…') : t('Generate')}
         </button>
+      </Actions>
+    </Card>
+  )
+}
+
+const SAMPLE_SOURCES: { value: ImportSource; label: string }[] = [
+  { value: 'umami', label: 'Umami' },
+  { value: 'simple-analytics', label: 'Simple Analytics' },
+]
+
+/** Hands the browser a text file to save. */
+function saveFile(name: string, content: string): void {
+  const url = URL.createObjectURL(new Blob([content], { type: 'text/csv' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+/** Sample export files in each platform's format, to try the import wizard and `analytik import`. */
+function SampleExports() {
+  const [visits, setVisits] = useState('200')
+  const count = whole(visits)
+  const problem = count >= 1 && count <= 5000 ? null : t('Visits go from 1 to 5,000.')
+  return (
+    <Card
+      title={t('Sample import files')}
+      description={t(
+        'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.',
+      )}
+    >
+      <div className="analytik-row">
+        <Field label={t('Visits')} hint={t('Spread over the last 30 days.')}>
+          <input
+            className="analytik-input"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={5000}
+            value={visits}
+            onChange={(e) => setVisits(e.target.value)}
+          />
+        </Field>
+      </div>
+      {problem && (
+        <p className="analytik-debug-estimate" role="status" data-problem="">
+          {problem}
+        </p>
+      )}
+      <Actions>
+        {SAMPLE_SOURCES.map((source) => (
+          <button
+            key={source.value}
+            type="button"
+            className="analytik-button"
+            disabled={problem !== null}
+            onClick={() => {
+              // Loaded on click: the generator is only for trying the importer.
+              void import('../../shared/import/samples').then(({ sampleExport }) => {
+                for (const file of sampleExport(source.value, { visits: count, days: 30, now: Date.now() })) {
+                  saveFile(file.name, file.content)
+                }
+              })
+            }}
+          >
+            {t('Download {source}', { source: source.label })}
+          </button>
+        ))}
       </Actions>
     </Card>
   )

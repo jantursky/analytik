@@ -1,14 +1,14 @@
-import { AnimatePresence, motion } from 'motion/react'
-import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 
 import { Flag } from '../flags'
 import { countryName } from '../format'
 import { Icon, type IconName } from '../icons'
 import { t } from '../i18n'
 import { hasLogo, Logo } from '../logo'
+import { CopyId } from '../copy-id'
 import { useTableFilter } from './DataTable'
 
-const COPIED_MS = 1600
+export { CopyId }
 
 /** Keeps a click on a cell's own button from also opening the row. */
 const own =
@@ -17,39 +17,6 @@ const own =
     event.stopPropagation()
     action()
   }
-
-/** A small icon button that copies `text`; shows a green check for a moment once copied. Revealed on row hover. */
-export function CopyId({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false)
-  useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), COPIED_MS)
-    return () => clearTimeout(timer)
-  }, [copied])
-  const icon: IconName = copied ? 'check' : 'copy'
-  return (
-    <button
-      type="button"
-      className="analytik-cell-action"
-      data-done={copied ? '' : undefined}
-      aria-label={copied ? t('Copied') : label}
-      title={label}
-      onClick={own(() => void navigator.clipboard.writeText(text).then(() => setCopied(true)))}
-    >
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={icon}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 26 }}
-        >
-          <Icon name={icon} />
-        </motion.span>
-      </AnimatePresence>
-    </button>
-  )
-}
 
 /** Narrows the surrounding table to this value; nothing outside a table. */
 function FilterBy({ name, value, label }: { name: string; value: string; label: string }) {

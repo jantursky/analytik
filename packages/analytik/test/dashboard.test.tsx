@@ -82,6 +82,8 @@ describe('Dashboard shell', () => {
     const { container } = await open(api, 'sites')
     await click(byText(container, 'Add website', 'button'))
     await settled()
+    await press(byText(document.body, 'New website', '[role="menuitem"]'))
+    await settled()
     expect(byLabel(container, 'Keep data for (days)')?.value).toBe('90')
     expect(container.querySelector('.analytik-site-options-summary')?.textContent).toBe('UTC · EUR · keeps 90 days')
   })
@@ -959,6 +961,8 @@ describe('Dashboard shell', () => {
     expect(api.find('GET', '/sites/site_2/overview')).toHaveLength(0)
     await click(byText(container, 'Add website', 'button'))
     await settled()
+    await press(byText(document.body, 'New website', '[role="menuitem"]'))
+    await settled()
     expect(container.querySelector('[role="dialog"]')).not.toBeNull()
     await click(container.querySelector('[role="dialog"] [aria-label="Close"]'))
     await settled()
@@ -1517,6 +1521,31 @@ describe('Settings', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('copies a page address from its row in Pages without applying the row filter', async () => {
+    const writeText = vi.fn(() => Promise.resolve())
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+    const api = fakeApi()
+    const { container } = await open(api, 'pages')
+    const copy = container.querySelector<HTMLElement>('.analytik-bars [aria-label="Copy URL"]')
+    expect(copy).not.toBeNull()
+    await click(copy)
+    await settled()
+    expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^https:\/\/example\.com\//))
+    expect(container.querySelector('[aria-label="Copied"]')).not.toBeNull()
+    await key(copy, 'Enter')
+    expect(writeText).toHaveBeenCalledTimes(2)
+  })
+
+  it('offers to copy a page address in the Events table', async () => {
+    const writeText = vi.fn(() => Promise.resolve())
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+    const { container } = await open(fakeApi(), 'events')
+    const copy = container.querySelector<HTMLElement>('table [aria-label="Copy URL"]')
+    expect(copy).not.toBeNull()
+    await click(copy)
+    expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^https:\/\/example\.com\//))
   })
 
   it('generates the snippet and copies it', async () => {

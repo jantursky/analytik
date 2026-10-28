@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import type { Realtime as RealtimeData, RealtimeVisit } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
+import { CopyId, pageUrl } from '../copy-id'
 import { liveSignature, usePolling, useResource } from '../data'
 import { countryName, formatAgo, formatNumber } from '../format'
 import { t } from '../i18n'
@@ -280,6 +281,7 @@ export function Realtime() {
                     <AnimatePresence initial={false} mode="popLayout">
                       {feed.map((e, i) => {
                         const { who, action, target } = describeEvent(e)
+                        const url = e.type === 'goal' ? null : pageUrl(site.domain, target)
                         return (
                           <motion.li
                             key={keys[i]}
@@ -292,6 +294,11 @@ export function Realtime() {
                           >
                             <span>
                               {who} {action} <strong>{target || '—'}</strong>
+                              {url && (
+                                <span className="analytik-cell-actions">
+                                  <CopyId text={url} label={t('Copy URL')} />
+                                </span>
+                              )}
                             </span>
                             <span className="analytik-muted">{formatAgo(e.ts, now)}</span>
                           </motion.li>

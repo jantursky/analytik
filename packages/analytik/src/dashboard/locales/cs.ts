@@ -723,4 +723,70 @@ export default {
   'Turn Live off': 'Vypnout Live',
   'Turn Live on': 'Zapnout Live',
   'Type a command, a page, a range or a value…': 'Zadejte příkaz, stránku, období nebo hodnotu…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Přidejte k tomuto webu historii jiného analytického nástroje. Importované návštěvy jsou oddělené od těch, které tento web sledoval.',
+  'Already imported': 'Již importováno',
+  'Export files': 'Exportované soubory',
+  'First visit': 'První návštěva',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    'Importovat {count, plural, one {# návštěvu} few {# návštěvy} other {# návštěv}}',
+  'Import data': 'Import dat',
+  'Import from': 'Importovat z',
+  'Import removed': 'Import odstraněn',
+  Imported: 'Importováno',
+  'Imported data': 'Importovaná data',
+  'Importing {done} of {total} visits': 'Importuje se {done} z {total} návštěv',
+  'Last visit': 'Poslední návštěva',
+  'No visits found in these files.': 'V těchto souborech nebyly nalezeny žádné návštěvy.',
+  'Older than the retention limit': 'Starší než limit uchovávání',
+  'Remove import': 'Odstranit import',
+  'Remove the {source} import?': 'Odstranit import z {source}?',
+  'Row {row}: {reason}': 'Řádek {row}: {reason}',
+  'Skipped rows': 'Přeskočené řádky',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Zastaveno po {done} z {total} návštěv. Vyberte stejné soubory znovu a import dokončete; co je už uloženo, se nepřidá dvakrát.',
+  'The CSV from the raw data export, with pages and events together.':
+    'CSV z exportu surových dat, se stránkami a událostmi dohromady.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'Web má v těchto dnech již {count, plural, one {# návštěvu} few {# návštěvy} other {# návštěv}}. Importované se přidají vedle nich.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'Export website_event a, pokud je máte, i exporty session a event_data.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Odstraní {visits, plural, one {# návštěvu} few {# návštěvy} other {# návštěv}} a {events, plural, one {# událost} few {# události} other {# událostí}} importované z {source}. To, co zaznamenal tracker, se nezmění.',
+  Visits: 'Návštěvy',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Co každý nástroj přidal k tomuto webu. Odstraněním importu se smažou jeho návštěvy a události; vše, co zaznamenal tracker, zůstane.',
+  'Sample import files': 'Vzorové soubory pro import',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Stáhne vymyšlené exporty ve formátu jiné analytické platformy, aby šlo vyzkoušet Import dat bez skutečného exportu. Umami vytvoří tři soubory; importujte je společně.',
+  'Spread over the last 30 days.': 'Rozložené do posledních 30 dnů.',
+  'Visits go from 1 to 5,000.': 'Návštěv může být od 1 do 5 000.',
+  'Download {source}': 'Stáhnout {source}',
+  'a new website': 'nový web',
+  'A new website': 'Nový web',
+  Back: 'Zpět',
+  Change: 'Změnit',
+  'Choose files': 'Vybrat soubory',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Přetáhněte CSV z exportu surových dat, se stránkami a událostmi dohromady.',
+  'Drop the export files here': 'Přetáhněte sem soubory exportu',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Přetáhněte export website_event a také exporty session a event_data, pokud je máte (CSV nebo JSON).',
+  'Import from another tool': 'Importovat z jiného nástroje',
+  'Import into': 'Importovat do',
+  'Imported into {site}.': 'Importováno do {site}.',
+  'New website': 'Nový web',
+  'Open site': 'Otevřít web',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible a Google Analytics 4 nelze importovat: neexportují jednotlivé návštěvy.',
+  'Reading…': 'Čtení…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Převzato ze souborů; změňte, pokud to není web, do kterého importujete.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Jsou vedeny odděleně od sledovaných návštěv a import můžete později odebrat v Nastavení.',
+  'Which tool are you importing from?': 'Z jakého nástroje importujete?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    'Importovat {visits, plural, one {# návštěvu} few {# návštěvy} other {# návštěv}} a {events, plural, one {# událost} few {# události} other {# událostí}} z {source} do {site}?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Funguje s adresami http:// i https://; protokol se zahodí a zachová se jen doména.',
 } satisfies Messages

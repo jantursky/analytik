@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process'
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { type Server, createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -53,7 +53,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     const help = await cli('--help')
     expect(help.code).toBe(0)
     expect(help.stdout).toContain('seed --db <url> [--days 30] [--seed 1]')
-    expect(help.stdout).not.toContain('import')
+    expect(help.stdout).toContain('import --from umami|simple-analytics')
     expect((await cli()).stdout).toContain('Usage: analytik')
     expect((await cli('--version')).stdout.trim()).toBe(version)
   })
@@ -84,8 +84,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     const db = temp('analytik.db')
     expect((await cli('doctor', '--db', db)).stdout).toContain('✗ schema not up to date')
     const migrate = await cli('migrate', '--db', db)
-    expect(migrate).toMatchObject({ code: 0, stdout: 'Applied 0001_init\n' })
-    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0001_init)\n')
+    expect(migrate).toMatchObject({ code: 0, stdout: 'Applied 0001_init, 0002_imported\n' })
+    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0002_imported)\n')
     const seed = await cli('seed', '--db', db, '--days', '2', '--seed', '5')
     expect(seed.code).toBe(0)
     expect(seed.stdout).toMatch(/Seeded site demo \(API key ak_demo0005\w+\)/)
@@ -93,7 +93,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(doctor.code).toBe(0)
     expect(doctor.stdout).toContain('✓ Bun')
     expect(doctor.stdout).toContain('✓ database reachable (sqlite)')
-    expect(doctor.stdout).toContain('✓ schema up to date (0001_init)')
+    expect(doctor.stdout).toContain('✓ schema up to date (0002_imported)')
     expect(doctor.stdout).toContain(`✓ ${healthUrl}/api/health answered 200`)
 
     const storage = sqliteStorage(db)
@@ -102,15 +102,119 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     await storage.close?.()
   })
 
+  describe('import', () => {
+    const fixtures = join(packageDir, 'test/fixtures/import')
+    const umami = ['umami-events.csv', 'umami-sessions.csv', 'umami-event-data.csv'].flatMap((name) => [
+      '--file',
+      join(fixtures, name),
+    ])
+
+    const seeded = async () => {
+      const db = temp('import.db')
+      expect((await cli('seed', '--db', db, '--days', '1', '--seed', '3')).code).toBe(0)
+      return db
+    }
+    const imported = async (db: string) => {
+      const storage = sqliteStorage(db)
+      const [row] = await storage.query<{ n: number }>('SELECT COUNT(*) AS n FROM sessions WHERE imported IS NOT NULL')
+      await storage.close?.()
+      return row?.n
+    }
+
+    it('imports Umami files, tells the files apart by their columns and recognises a repeat', async () => {
+      const db = await seeded()
+      const first = await cli('import', '--from', 'umami', ...umami, '--site', 'demo', '--db', db)
+      expect(first.code).toBe(0)
+      expect(first.stdout).toContain('Imported 3 visits and 5 events from umami into demo')
+      expect(first.stdout).toContain('skipped rows: 4')
+      expect(first.stdout).toContain('events row 6: created_at is missing or not a date')
+      expect(await imported(db)).toBe(3)
+
+      const again = await cli('import', '--from', 'umami', ...umami, '--site', 'demo', '--db', db)
+      expect(again.stdout).toContain('Imported 0 visits and 0 events')
+      expect(again.stdout).toContain('already there: 3 visits, 5 events')
+      expect(await imported(db)).toBe(3)
+    })
+
+    it('imports a Simple Analytics file', async () => {
+      const db = await seeded()
+      const run = await cli(
+        'import',
+        ...['--from', 'simple-analytics', '--file', join(fixtures, 'simple-analytics.csv')],
+        ...['--site', 'demo', '--db', db],
+      )
+      expect(run.stdout).toContain('Imported 3 visits and 5 events from simple-analytics into demo')
+      expect(run.stdout).toContain('export row 6: made by a robot')
+    })
+
+    it('stores nothing and names the problem for a wrong file, a missing column or an unknown site', async () => {
+      const db = await seeded()
+      const events = join(fixtures, 'umami-events.csv')
+      const wrong = await cli(
+        'import',
+        '--from',
+        'umami',
+        '--file',
+        join(fixtures, 'simple-analytics.csv'),
+        '--site',
+        'demo',
+        '--db',
+        db,
+      )
+      expect(wrong).toMatchObject({ code: 1 })
+      expect(wrong.stderr).toContain('is not an Umami export')
+
+      const noEvents = await cli(
+        'import',
+        '--from',
+        'umami',
+        '--file',
+        join(fixtures, 'umami-sessions.csv'),
+        '--site',
+        'demo',
+        '--db',
+        db,
+      )
+      expect(noEvents.stderr).toContain('no Umami events found')
+
+      const lacking = temp('events.csv')
+      writeFileSync(lacking, 'event_type,url_path\n1,/\n')
+      const missing = await cli('import', '--from', 'umami', '--file', lacking, '--site', 'demo', '--db', db)
+      expect(missing.stderr).toContain('lacks the column created_at, session_id')
+
+      const site = await cli('import', '--from', 'umami', '--file', events, '--site', 'nope', '--db', db)
+      expect(site.code).toBe(1)
+      expect(site.stderr).toContain('site not found')
+      expect(await imported(db)).toBe(0)
+    })
+
+    it('rejects bad arguments with exit code 2', async () => {
+      expect((await cli('import', '--from', 'matomo', '--file', 'x', '--site', 's', '--db', ':memory:')).code).toBe(2)
+      expect((await cli('import', '--from', 'umami', '--site', 's', '--db', ':memory:')).stderr).toContain(
+        'Missing --file',
+      )
+      expect((await cli('import', '--file', 'x', '--site', 's', '--db', ':memory:')).stderr).toContain('Missing --from')
+      expect((await cli('import', '--from', 'umami', '--file', 'x', '--db', ':memory:')).stderr).toContain(
+        'Missing --site',
+      )
+    })
+  })
+
   it('prints the schema SQL for wrangler and points D1 migrations to it', async () => {
     const printed = await cli('migrate', '--print-sql', 'sqlite')
     expect(printed.code).toBe(0)
     const db = await openSqlite(':memory:')
     db.exec(printed.stdout)
-    expect(db.all('SELECT version FROM schema_migrations', [])).toEqual([{ version: '0001_init' }])
+    expect(db.all('SELECT version FROM schema_migrations', [])).toEqual([
+      { version: '0001_init' },
+      { version: '0002_imported' },
+    ])
     expect(db.all("SELECT name FROM sqlite_master WHERE name = 'payments'", [])).toHaveLength(1)
     db.close()
-    expect((await cli('migrate', '--print-sql', 'postgres')).stdout).toContain('-- 0001_init')
+    const postgres = (await cli('migrate', '--print-sql', 'postgres')).stdout
+    expect(postgres).toContain('-- 0001_init')
+    expect(postgres).toContain('-- 0002_imported')
+    expect(postgres).toContain('ALTER TABLE sessions ADD COLUMN imported TEXT')
     expect((await cli('migrate', '--print-sql', 'mysql')).code).toBe(2)
     const d1 = await cli('migrate', '--d1', 'analytik-db')
     expect(d1.code).toBe(1)

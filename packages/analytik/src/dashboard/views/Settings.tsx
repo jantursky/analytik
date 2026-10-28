@@ -22,6 +22,7 @@ import { Icon, type IconName } from '../icons'
 import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
+import { ImportedData } from './ImportData'
 import { IntegrationPrompt } from './IntegrationPrompt'
 import { MODE_INFO } from './privacy-modes'
 import { SiteLifecycle } from './SiteActions'
@@ -628,6 +629,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     content: () => (
       <>
         <DataExport />
+        <ImportedData />
         <DataDeletion />
       </>
     ),

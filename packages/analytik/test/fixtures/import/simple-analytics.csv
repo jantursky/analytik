@@ -1,0 +1,9 @@
+added_iso,hostname,path,datapoint,is_robot,is_unique,document_referrer,referrer_hostname,referrer_path,utm_source,utm_medium,utm_campaign,duration_seconds,user_agent,device_type,country_code,browser_name,browser_version,os_name,os_version,screen_width,screen_height,lang_language,lang_region,uuid,session_id
+2026-03-10T09:00:00.000Z,example.com,/,pageview,false,true,https://www.google.com/,www.google.com,/,,,,12,UA-A,desktop,SK,Chrome,141,Mac OS X,10.15,1920,1080,en,US,u1,p1
+2026-03-10T09:00:12.000Z,example.com,/pricing/,pageview,false,false,https://example.com/,example.com,/,,,,30,UA-A,desktop,SK,Chrome,141,Mac OS X,10.15,1920,1080,en,US,u2,p2
+2026-03-10T09:00:40.000Z,example.com,/pricing,signup,false,false,,,,,,,,UA-A,desktop,SK,Chrome,141,Mac OS X,10.15,1920,1080,en,US,u3,p2
+2026-03-10T09:50:00.000Z,example.com,/,pageview,false,false,,,,,,,,UA-A,desktop,SK,Chrome,141,Mac OS X,10.15,1920,1080,en,US,u4,p3
+2026-03-10T10:00:00.000Z,example.com,/blog,pageview,false,true,,,,newsletter,email,march,,UA-B,mobile,DE,Safari,18,iOS,18.0,390,844,de,DE,u5,p4
+2026-03-10T10:00:30.000Z,example.com,/blog,pageview,true,true,,,,,,,,UA-BOT,desktop,US,Chrome,141,Linux,,1024,768,en,US,u6,p5
+2026-03-10T10:05:00.000Z,example.com,,pageview,false,false,,,,,,,,UA-B,mobile,DE,Safari,18,iOS,18.0,390,844,de,DE,u7,p4
+not-a-date,example.com,/x,pageview,false,false,,,,,,,,UA-B,mobile,DE,Safari,18,iOS,18.0,390,844,de,DE,u8,p4

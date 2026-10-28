@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { BreakdownRow, Dimension } from '../../shared/types'
 import { BarList, type BarListRow } from '../charts'
 import { requestKey, useDashboard } from '../context'
+import { pageUrl } from '../copy-id'
 import { useResource } from '../data'
 import { Flag } from '../flags'
 import { countryName, formatMoney, formatNumber } from '../format'
@@ -48,6 +49,14 @@ export interface BreakdownCardProps {
 }
 
 const EXPANDED_LIMIT = 100
+
+/** Dimensions whose rows are page paths or addresses, so a row can offer to copy its URL. */
+const ADDRESS_DIMENSIONS = new Set<Dimension>(['page', 'entry', 'exit', 'outbound'])
+
+function copyFor(domain: string, key: string): { copy: { text: string; label: string } } | null {
+  const url = pageUrl(domain, key)
+  return url ? { copy: { text: url, label: t('Copy URL') } } : null
+}
 
 const DEVICE_ICONS = { Desktop: 'desktop', Mobile: 'mobile', Tablet: 'tablet' } as const
 
@@ -121,6 +130,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
               rows={data.map((r) => ({
                 key: r.key,
                 label: rowLabel(shown.dimension, r.key),
+                ...(ADDRESS_DIMENSIONS.has(shown.dimension) && copyFor(site.domain, r.key)),
                 value: r[metric],
                 ...(r.previous && { previous: r.previous[metric] }),
               }))}

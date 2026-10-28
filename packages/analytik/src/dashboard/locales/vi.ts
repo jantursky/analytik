@@ -719,4 +719,69 @@ export default {
   'Turn Live off': 'Tắt Live',
   'Turn Live on': 'Bật Live',
   'Type a command, a page, a range or a value…': 'Nhập lệnh, trang, khoảng thời gian hoặc giá trị…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Thêm lịch sử của một công cụ phân tích khác vào trang web này. Các lượt truy cập được nhập sẽ được giữ tách biệt với những lượt mà trang web này tự ghi nhận.',
+  'Already imported': 'Đã nhập trước đó',
+  'Export files': 'Tệp xuất',
+  'First visit': 'Lượt truy cập đầu tiên',
+  'Import {count, plural, one {# visit} other {# visits}}': 'Nhập {count, plural, other {# lượt truy cập}}',
+  'Import data': 'Nhập dữ liệu',
+  'Import from': 'Nhập từ',
+  'Import removed': 'Đã xóa bản nhập',
+  Imported: 'Đã nhập',
+  'Imported data': 'Dữ liệu đã nhập',
+  'Importing {done} of {total} visits': 'Đang nhập {done} trên {total} lượt truy cập',
+  'Last visit': 'Lượt truy cập gần nhất',
+  'No visits found in these files.': 'Không tìm thấy lượt truy cập nào trong các tệp này.',
+  'Older than the retention limit': 'Cũ hơn giới hạn lưu trữ',
+  'Remove import': 'Xóa bản nhập',
+  'Remove the {source} import?': 'Xóa bản nhập từ {source}?',
+  'Row {row}: {reason}': 'Dòng {row}: {reason}',
+  'Skipped rows': 'Các dòng bị bỏ qua',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Đã dừng sau {done} trên {total} lượt truy cập. Hãy chọn lại cùng các tệp để hoàn tất; những gì đã lưu sẽ không bị thêm hai lần.',
+  'The CSV from the raw data export, with pages and events together.':
+    'Tệp CSV từ bản xuất dữ liệu thô, gồm cả trang và sự kiện.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'Trang web đã có {count, plural, other {# lượt truy cập}} trong các ngày này. Các lượt được nhập sẽ được thêm bên cạnh.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'Bản xuất website_event và, nếu có, cả bản xuất session và event_data.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Thao tác này xóa {visits, plural, other {# lượt truy cập}} và {events, plural, other {# sự kiện}} được nhập từ {source}. Những gì trình theo dõi đã ghi nhận không bị ảnh hưởng.',
+  Visits: 'Lượt truy cập',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Những gì mỗi công cụ đã thêm vào trang web này. Xóa một bản nhập sẽ xóa các lượt truy cập và sự kiện của nó; mọi thứ trình theo dõi đã ghi nhận vẫn được giữ lại.',
+  'Sample import files': 'Tệp nhập mẫu',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Tải về các bản xuất giả theo định dạng của nền tảng phân tích khác, để thử Nhập dữ liệu mà không cần bản xuất thật. Umami tạo ba tệp; hãy nhập chúng cùng lúc.',
+  'Spread over the last 30 days.': 'Trải đều trong 30 ngày qua.',
+  'Visits go from 1 to 5,000.': 'Lượt truy cập từ 1 đến 5.000.',
+  'Download {source}': 'Tải {source}',
+  'a new website': 'một trang web mới',
+  'A new website': 'Một trang web mới',
+  Back: 'Quay lại',
+  Change: 'Đổi',
+  'Choose files': 'Chọn tệp',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Thả CSV từ bản xuất dữ liệu thô, gồm cả trang và sự kiện.',
+  'Drop the export files here': 'Thả các tệp xuất vào đây',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Thả bản xuất website_event, cùng bản xuất session và event_data nếu có (CSV hoặc JSON).',
+  'Import from another tool': 'Nhập từ công cụ khác',
+  'Import into': 'Nhập vào',
+  'Imported into {site}.': 'Đã nhập vào {site}.',
+  'New website': 'Trang web mới',
+  'Open site': 'Mở trang web',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Không thể nhập Plausible và Google Analytics 4: chúng không xuất từng lượt truy cập.',
+  'Reading…': 'Đang đọc…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Lấy từ các tệp; hãy đổi nếu đó không phải trang bạn đang nhập vào.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Chúng được lưu tách khỏi các lượt truy cập được theo dõi, và bạn có thể xóa bản nhập sau trong Cài đặt.',
+  'Which tool are you importing from?': 'Bạn nhập từ công cụ nào?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    'Nhập {visits, plural, other {# lượt truy cập}} và {events, plural, other {# sự kiện}} từ {source} vào {site}?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Dùng được với địa chỉ http:// và https://; giao thức bị bỏ và chỉ giữ lại tên miền.',
 } satisfies Messages

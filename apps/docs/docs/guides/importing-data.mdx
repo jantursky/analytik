@@ -1,0 +1,100 @@
+---
+title: Importing data
+description: Bring the history of Umami or Simple Analytics into a site, what each export must contain, and how fields are mapped.
+---
+
+Import adds the past visits, pageviews and custom events from another analytics tool to one of your sites, so the dashboard does not start empty. Imported rows carry the name of their source, are kept apart from what the tracker recorded, and can be removed again without touching tracked data.
+
+- Importing the same file twice adds nothing the second time, and a run that stopped halfway can be started again with the same file.
+- Rows older than the site's retention limit are skipped, because the next purge would delete them.
+- Imported and tracked visitors are never merged, even when they cover the same days.
+- Fields a source does not record stay empty and show as unknown, never as zero. Visits without a known length are left out of the average visit duration.
+
+## Import in the dashboard
+
+Open Settings, then **Data**, and find **Import data**. Choose the source and the export files. The dashboard reads them in your browser and shows a preview before anything is stored: how many visits and events it found, the first and last visit, how many rows it skipped, a note when the site already has visits in those dates, and the first few visits as they will be stored.
+
+**Import** then sends the visits in small chunks, with a progress bar, so a large file does not hit the request limit of a Worker. **Cancel** stops after the chunk that is running; choose the same files again to finish, and what is already stored is not added twice. The result lists what was imported, what was already there, what was older than the retention limit, and the first skipped rows with their reason.
+
+Everything an import added is listed under **Imported data**, with its date range and counts. **Remove** deletes that import's visits and events after you confirm the numbers, and leaves everything the tracker recorded.
+
+Nothing is stored when a file is not the one the source exports: the dashboard says which file, or which column, is the problem.
+
+## Import from the command line
+
+```sh
+analytik import --from umami --file events.csv --file sessions.csv --file event-data.csv --site SITE_ID --db "$DATABASE_URL"
+analytik import --from simple-analytics --file simple-analytics.csv --site SITE_ID --db sqlite:analytik.db
+```
+
+`--db` takes the same values as `analytik migrate`: `postgres://...`, `sqlite:<path>` or a `.db` file. The command applies pending migrations first, reads and maps every file, and only then writes, so a wrong file stores nothing. It prints how many visits and events were imported, how many were already there, how many were older than the site's retention limit, and the first skipped rows with their reason.
+
+Cloudflare D1 cannot be reached from the command line. Use the import in Settings, which sends the file in small chunks.
+
+## Supported sources
+
+| Source           | What it gives                                          | Status       |
+| ---------------- | ------------------------------------------------------ | ------------ |
+| Umami            | Visits, pageviews and custom events with their details | Supported    |
+| Simple Analytics | Raw pageviews and events                               | Supported    |
+| Matomo           | Visits and actions                                     | Planned      |
+| Plausible        | Daily totals only, no visits                           | Not possible |
+| Google Analytics | Raw data only through BigQuery                         | Not possible |
+
+Plausible's export is a set of daily totals (visitors and pageviews per page, source and country), so individual visits cannot be rebuilt from it. Google Analytics 4 keeps raw events only in a BigQuery export and offers aggregates through its API. Both would need a separate way to show totals next to visits, so they are not part of import.
+
+## Umami
+
+Umami keeps its data in three tables. Export each one as CSV, with the column names as they are in the database:
+
+```sh
+psql "$DATABASE_URL" -c "\copy (SELECT * FROM website_event WHERE website_id = 'WEBSITE_ID') TO 'events.csv' CSV HEADER"
+psql "$DATABASE_URL" -c "\copy (SELECT * FROM session WHERE website_id = 'WEBSITE_ID') TO 'sessions.csv' CSV HEADER"
+psql "$DATABASE_URL" -c "\copy (SELECT d.* FROM event_data d WHERE d.website_id = 'WEBSITE_ID') TO 'event-data.csv' CSV HEADER"
+```
+
+Only the events file is required. The sessions file adds browser, operating system, device and place, and the event data file adds the properties of custom events. A JSON file with the same fields works too, with either `snake_case` or `camelCase` names.
+
+| Umami                                                                 | Analytik                                                                               |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `visit_id`                                                            | the visit                                                                              |
+| `session_id`                                                          | the visitor                                                                            |
+| `created_at`                                                          | event time; the first one starts the visit                                             |
+| `event_type` 1 (pageview)                                             | a pageview on `url_path`                                                               |
+| `event_type` 2 and `event_name`                                       | a goal with that name and its `event_data` properties                                  |
+| `referrer_domain`, `referrer_path`, `referrer_query`                  | the referrer of the visit's first event, then source and channel as for tracked visits |
+| `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` | the campaign fields of the visit                                                       |
+| `browser`, `os`, `device`, `country`, `region`, `city`                | the same fields, written the way the tracker writes them                               |
+| `hostname`                                                            | the visit's hostname                                                                   |
+
+Umami has no separate visit length, so a visit is as long as the time between its first and last event, which is also how Umami itself counts it. A visit with one event has no known length. Exports from before Umami recorded `visit_id` are split into visits by session, with a new visit after 30 minutes without events.
+
+Link and pixel events (`event_type` 3 and 4) and rows without a time, a session or a page are skipped, and the result lists them with their row number.
+
+## Simple Analytics
+
+Export the raw data points from Simple Analytics, pages and events together (`type=all`), and name the fields you want, because leaving `fields` out returns an older set:
+
+```sh
+curl -H "Api-Key: $SA_API_KEY" \
+  "https://simpleanalytics.com/api/export/datapoints?version=6&format=csv&hostname=example.com&start=2025-01-01&end=2026-03-01&type=all&fields=added_iso,hostname,path,datapoint,is_robot,is_unique,document_referrer,referrer_hostname,referrer_path,utm_source,utm_medium,utm_campaign,utm_content,utm_term,duration_seconds,user_agent,device_type,country_code,browser_name,browser_version,os_name,os_version,screen_width,screen_height,lang_language,lang_region" \
+  -o simple-analytics.csv
+```
+
+Only `added_iso` and `path` are required. Every other field improves the result, and the browser, system, device and country fields matter most, because they decide which rows belong to one visit.
+
+Simple Analytics keeps no visitor or visit id. Its `session_id` identifies a single page load, so Analytik cannot use it. A visit is rebuilt from rows that share browser, system, device, country, screen and language, with no gap longer than 30 minutes, and that combination is also the visitor. Two people on identical setups in the same country can end up as one visitor, the same trade-off as a cookieless tracker.
+
+| Simple Analytics                                                | Analytik                                                  |
+| --------------------------------------------------------------- | --------------------------------------------------------- |
+| `added_iso`                                                     | event time; the first one starts the visit                |
+| `datapoint` = `pageview`                                        | a pageview on `path`                                      |
+| any other `datapoint`                                           | a goal with that name                                     |
+| `document_referrer`, or `referrer_hostname` and `referrer_path` | the referrer of the visit's first row                     |
+| `utm_*`                                                         | the campaign fields of the visit                          |
+| `duration_seconds`                                              | summed into the visit length, otherwise first to last row |
+| `browser_name`, `os_name`, `device_type`, `country_code`        | the same fields, written the way the tracker writes them  |
+
+Rows with `is_robot` set, and rows without a time or a path, are skipped and listed with their row number.
+
+If you import a second export that overlaps the first, no row is stored twice. Exporting the same date range again is the safest way to continue an import that stopped.

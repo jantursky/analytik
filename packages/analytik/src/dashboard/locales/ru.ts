@@ -725,4 +725,70 @@ export default {
   'Turn Live off': 'Выключить Live',
   'Turn Live on': 'Включить Live',
   'Type a command, a page, a range or a value…': 'Введите команду, страницу, период или значение…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Добавьте на этот сайт историю другого инструмента аналитики. Импортированные визиты хранятся отдельно от тех, что записал сам сайт.',
+  'Already imported': 'Уже импортировано',
+  'Export files': 'Файлы экспорта',
+  'First visit': 'Первый визит',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    'Импортировать {count, plural, one {# визит} few {# визита} many {# визитов} other {# визита}}',
+  'Import data': 'Импорт данных',
+  'Import from': 'Импортировать из',
+  'Import removed': 'Импорт удалён',
+  Imported: 'Импортировано',
+  'Imported data': 'Импортированные данные',
+  'Importing {done} of {total} visits': 'Импорт: {done} из {total} визитов',
+  'Last visit': 'Последний визит',
+  'No visits found in these files.': 'В этих файлах не найдено визитов.',
+  'Older than the retention limit': 'Старше лимита хранения',
+  'Remove import': 'Удалить импорт',
+  'Remove the {source} import?': 'Удалить импорт из {source}?',
+  'Row {row}: {reason}': 'Строка {row}: {reason}',
+  'Skipped rows': 'Пропущенные строки',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Остановлено после {done} из {total} визитов. Выберите те же файлы снова, чтобы завершить; уже сохранённое не будет добавлено дважды.',
+  'The CSV from the raw data export, with pages and events together.':
+    'CSV из экспорта необработанных данных, со страницами и событиями вместе.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'На сайте уже есть {count, plural, one {# визит} few {# визита} many {# визитов} other {# визита}} за эти даты. Импортированные добавятся рядом с ними.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'Экспорт website_event и, если они есть, экспорты session и event_data.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Будет удалено: {visits, plural, one {# визит} few {# визита} many {# визитов} other {# визита}} и {events, plural, one {# событие} few {# события} many {# событий} other {# события}}, импортированных из {source}. То, что записал трекер, не затрагивается.',
+  Visits: 'Визиты',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Что каждый инструмент добавил на этот сайт. При удалении импорта удаляются его визиты и события; всё, что записал трекер, остаётся.',
+  'Sample import files': 'Образцы файлов для импорта',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Скачивает выдуманные экспорты в формате другой платформы аналитики, чтобы попробовать импорт данных без настоящего экспорта. Umami создаёт три файла; импортируйте их вместе.',
+  'Spread over the last 30 days.': 'Распределены по последним 30 дням.',
+  'Visits go from 1 to 5,000.': 'Визитов может быть от 1 до 5 000.',
+  'Download {source}': 'Скачать {source}',
+  'a new website': 'новый сайт',
+  'A new website': 'Новый сайт',
+  Back: 'Назад',
+  Change: 'Изменить',
+  'Choose files': 'Выбрать файлы',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Перетащите CSV из экспорта необработанных данных, со страницами и событиями вместе.',
+  'Drop the export files here': 'Перетащите сюда файлы экспорта',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Перетащите экспорт website_event, а также экспорты session и event_data, если они есть (CSV или JSON).',
+  'Import from another tool': 'Импорт из другого инструмента',
+  'Import into': 'Импортировать в',
+  'Imported into {site}.': 'Импортировано в {site}.',
+  'New website': 'Новый сайт',
+  'Open site': 'Открыть сайт',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible и Google Analytics 4 нельзя импортировать: они не экспортируют отдельные визиты.',
+  'Reading…': 'Чтение…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Взято из файлов; измените, если это не тот сайт, в который вы импортируете.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Они хранятся отдельно от отслеживаемых визитов, а импорт можно позже удалить в Настройках.',
+  'Which tool are you importing from?': 'Из какого инструмента вы импортируете?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    'Импортировать {visits, plural, one {# визит} few {# визита} many {# визитов} other {# визита}} и {events, plural, one {# событие} few {# события} many {# событий} other {# события}} из {source} в {site}?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Работает с адресами http:// и https://; протокол отбрасывается, остаётся только домен.',
 } satisfies Messages

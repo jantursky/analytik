@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-const MAX_BODY = 64 * 1024
+// Above the library's own largest limit (1 MB for an import chunk), which does the real refusing.
+const MAX_BODY = 2 * 1024 * 1024
 
 const readBody = async (req: IncomingMessage): Promise<Buffer> => {
   const chunks: Buffer[] = []

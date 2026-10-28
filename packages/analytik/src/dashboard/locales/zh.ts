@@ -698,4 +698,69 @@ export default {
   'Turn Live off': '关闭实时',
   'Turn Live on': '开启实时',
   'Type a command, a page, a range or a value…': '输入命令、页面、时间范围或数值…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    '将其他分析工具的历史数据添加到此网站。导入的访问与此网站自己记录的访问分开保存。',
+  'Already imported': '已导入过',
+  'Export files': '导出文件',
+  'First visit': '首次访问',
+  'Import {count, plural, one {# visit} other {# visits}}': '导入 {count, plural, other {# 次访问}}',
+  'Import data': '导入数据',
+  'Import from': '导入来源',
+  'Import removed': '已删除导入',
+  Imported: '已导入',
+  'Imported data': '已导入的数据',
+  'Importing {done} of {total} visits': '正在导入，{done} / {total} 次访问',
+  'Last visit': '最近访问',
+  'No visits found in these files.': '这些文件中没有找到访问。',
+  'Older than the retention limit': '早于保留期限',
+  'Remove import': '删除导入',
+  'Remove the {source} import?': '删除来自 {source} 的导入？',
+  'Row {row}: {reason}': '第 {row} 行：{reason}',
+  'Skipped rows': '跳过的行',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    '已在 {done} / {total} 次访问后停止。再次选择相同的文件即可完成；已保存的内容不会重复添加。',
+  'The CSV from the raw data export, with pages and events together.':
+    '来自原始数据导出的 CSV，页面和事件在同一文件中。',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    '此网站在这些日期内已有{count, plural, other {# 次访问}}。导入的访问会添加在它们旁边。',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'website_event 导出文件；如果有的话，还有 session 和 event_data 导出文件。',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    '这将删除从 {source} 导入的{visits, plural, other {# 次访问}}和{events, plural, other {# 个事件}}。跟踪器记录的数据不受影响。',
+  Visits: '访问',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    '每个工具向此网站添加了什么。删除导入会删除其访问和事件；跟踪器记录的所有内容都会保留。',
+  'Sample import files': '导入示例文件',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    '下载按其他分析平台格式生成的虚构导出文件，无需真实导出即可试用“导入数据”。Umami 会生成三个文件，请一起导入。',
+  'Spread over the last 30 days.': '分布在过去 30 天内。',
+  'Visits go from 1 to 5,000.': '访问数为 1 到 5,000。',
+  'Download {source}': '下载 {source}',
+  'a new website': '一个新网站',
+  'A new website': '一个新网站',
+  Back: '返回',
+  Change: '更改',
+  'Choose files': '选择文件',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    '拖入原始数据导出的 CSV（页面和事件在一起）。',
+  'Drop the export files here': '把导出文件拖到这里',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    '拖入 website_event 导出文件；如果有，也拖入 session 和 event_data 的导出文件（CSV 或 JSON）。',
+  'Import from another tool': '从其他工具导入',
+  'Import into': '导入到',
+  'Imported into {site}.': '已导入到 {site}。',
+  'New website': '新网站',
+  'Open site': '打开网站',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible 和 Google Analytics 4 无法导入：它们不导出单次访问。',
+  'Reading…': '正在读取…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    '取自文件；如果不是你要导入的网站，请修改。',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    '它们与已跟踪的访问分开保存，你以后可以在设置中移除这次导入。',
+  'Which tool are you importing from?': '从哪个工具导入？',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '将 {source} 中的 {visits, plural, other {# 次访问}}和{events, plural, other {# 个事件}} 导入到 {site}？',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    '支持 http:// 和 https:// 地址；协议会被去掉，只保留域名。',
 } satisfies Messages

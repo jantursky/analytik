@@ -719,4 +719,70 @@ export default {
   'Turn Live off': "Live'ı kapat",
   'Turn Live on': "Live'ı aç",
   'Type a command, a page, a range or a value…': 'Bir komut, sayfa, aralık veya değer yazın…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Başka bir analiz aracının geçmişini bu siteye ekleyin. İçe aktarılan ziyaretler, bu sitenin kaydettiklerinden ayrı tutulur.',
+  'Already imported': 'Zaten içe aktarıldı',
+  'Export files': 'Dışa aktarma dosyaları',
+  'First visit': 'İlk ziyaret',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    '{count, plural, one {# ziyareti} other {# ziyareti}} içe aktar',
+  'Import data': 'Veri içe aktar',
+  'Import from': 'Şuradan içe aktar',
+  'Import removed': 'İçe aktarma kaldırıldı',
+  Imported: 'İçe aktarıldı',
+  'Imported data': 'İçe aktarılan veriler',
+  'Importing {done} of {total} visits': '{total} ziyaretin {done} tanesi içe aktarılıyor',
+  'Last visit': 'Son ziyaret',
+  'No visits found in these files.': 'Bu dosyalarda ziyaret bulunamadı.',
+  'Older than the retention limit': 'Saklama sınırından eski',
+  'Remove import': 'İçe aktarmayı kaldır',
+  'Remove the {source} import?': '{source} içe aktarması kaldırılsın mı?',
+  'Row {row}: {reason}': 'Satır {row}: {reason}',
+  'Skipped rows': 'Atlanan satırlar',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    '{total} ziyaretin {done} tanesinden sonra durduruldu. Bitirmek için aynı dosyaları yeniden seçin; kaydedilenler iki kez eklenmez.',
+  'The CSV from the raw data export, with pages and events together.':
+    'Ham veri dışa aktarmasından CSV; sayfalar ve olaylar birlikte.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'Sitede bu tarihlerde zaten {count, plural, one {# ziyaret} other {# ziyaret}} var. İçe aktarılanlar bunların yanına eklenir.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'website_event dışa aktarması ve varsa session ile event_data dışa aktarmaları.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Bu, {source} kaynağından içe aktarılan {visits, plural, one {# ziyareti} other {# ziyareti}} ve {events, plural, one {# olayı} other {# olayı}} siler. İzleyicinin kaydettikleri etkilenmez.',
+  Visits: 'Ziyaretler',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Her aracın bu siteye ne eklediği. Bir içe aktarmayı kaldırmak onun ziyaretlerini ve olaylarını siler; izleyicinin kaydettiği her şey kalır.',
+  'Sample import files': 'Örnek içe aktarma dosyaları',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Gerçek bir dışa aktarım olmadan Veri içe aktarmayı denemek için başka bir analitik platformunun biçiminde uydurma dışa aktarımlar indirir. Umami üç dosya üretir; hepsini birlikte içe aktarın.',
+  'Spread over the last 30 days.': 'Son 30 güne yayılır.',
+  'Visits go from 1 to 5,000.': 'Ziyaretler 1 ile 5.000 arasındadır.',
+  'Download {source}': '{source} indir',
+  'a new website': 'yeni bir site',
+  'A new website': 'Yeni bir site',
+  Back: 'Geri',
+  Change: 'Değiştir',
+  'Choose files': 'Dosya seç',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Ham veri dışa aktarımının CSV dosyasını, sayfalar ve olaylar birlikte olacak şekilde bırakın.',
+  'Drop the export files here': 'Dışa aktarım dosyalarını buraya bırakın',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'website_event dışa aktarımını ve varsa session ile event_data dışa aktarımlarını bırakın (CSV veya JSON).',
+  'Import from another tool': 'Başka bir araçtan içe aktar',
+  'Import into': 'Şuraya aktar',
+  'Imported into {site}.': '{site} sitesine aktarıldı.',
+  'New website': 'Yeni site',
+  'Open site': 'Siteyi aç',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible ve Google Analytics 4 içe aktarılamaz: tek tek ziyaretleri dışa aktarmazlar.',
+  'Reading…': 'Okunuyor…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Dosyalardan alındı; içe aktardığınız site değilse değiştirin.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'İzlenen ziyaretlerden ayrı tutulurlar ve içe aktarımı daha sonra Ayarlar’dan kaldırabilirsiniz.',
+  'Which tool are you importing from?': 'Hangi araçtan içe aktarıyorsunuz?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{visits, plural, one {# ziyaret} other {# ziyaret}} ve {events, plural, one {# olay} other {# olay}}, {source} kaynağından {site} sitesine aktarılsın mı?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'http:// ve https:// adresleriyle çalışır; protokol atılır, yalnızca alan adı tutulur.',
 } satisfies Messages

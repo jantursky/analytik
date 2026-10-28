@@ -4,6 +4,7 @@ import { CHANNELS } from '../../shared/channels'
 import type { BreakdownRow, SessionSummary } from '../../shared/types'
 import type { SessionDetail } from '../api'
 import { requestKey, useDashboard } from '../context'
+import { CopyPageUrl } from '../copy-id'
 import { useResource } from '../data'
 import { formatDateTime, formatDuration, formatMoney, formatNumber } from '../format'
 import { msg, t } from '../i18n'
@@ -38,7 +39,10 @@ function TimelineBody({ sessionId }: { sessionId: string }) {
                 <span className="analytik-badge" data-type={e.type}>
                   {e.type}
                 </span>
-                <span>{e.name ?? e.path ?? '—'}</span>
+                <span>
+                  {e.name ?? e.path ?? '—'}
+                  {e.type !== 'goal' && <CopyPageUrl target={e.path} />}
+                </span>
               </li>
             ))}
           </ol>

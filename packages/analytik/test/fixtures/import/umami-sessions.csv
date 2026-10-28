@@ -1,0 +1,4 @@
+session_id,website_id,browser,os,device,screen,language,country,region,city,distinct_id,created_at
+s1,w1,chrome,Mac OS,desktop,1920x1080,en-US,SK,SK-BL,Bratislava,,2026-03-10 09:00:00.000+00
+s2,w1,ios,iOS,mobile,390x844,de-DE,Germany,DE-BE,Berlin,,2026-03-10 10:30:00.000+00
+s3,w1,edge-chromium,Windows 10,laptop,1366x768,en-GB,GB,,,,2026-03-11 08:00:00.000+00

@@ -5,6 +5,8 @@ import pkg from '../package.json'
 import { upgradeProject } from './create/upgrade'
 import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo } from './create'
 import { openStorage, seedDemo } from './migrate'
+import { importFiles } from './migrate/import'
+import { IMPORT_SOURCES, isImportSource } from './shared/import/types'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
 import { migrations } from './storage/migrations/sqlite'
 import type { Storage } from './storage/types'
@@ -19,6 +21,8 @@ Commands:
   migrate --db <url>                       Create or update the database schema
   migrate --print-sql sqlite|postgres      Print the schema SQL (for wrangler d1 execute --file)
   seed --db <url> [--days 30] [--seed 1]   Fill a database with demo data
+  import --from umami|simple-analytics --file <path>... --site <id> --db <url>
+                                           Add the history of another analytics tool to a site
   doctor [--db <url>] [--url <deployment>] Check the runtime, database and a deployment
 
 Databases: postgres://user:pass@host/db, sqlite:<path>, a .db file path or :memory:
@@ -212,6 +216,9 @@ async function main(argv: string[]): Promise<number> {
       d1: { type: 'boolean' },
       'print-sql': { type: 'string' },
       days: { type: 'string' },
+      from: { type: 'string' },
+      file: { type: 'string', multiple: true },
+      site: { type: 'string' },
       seed: { type: 'string' },
       url: { type: 'string' },
       name: { type: 'string' },
@@ -291,6 +298,37 @@ async function main(argv: string[]): Promise<number> {
       const result = await withStorage(required(values.db, '--db'), (storage) => seedDemo(storage, { days, seed }))
       console.log(`Seeded site ${result.siteId} (API key ${result.apiKey})`)
       for (const [table, rows] of Object.entries(result.counts)) console.log(`  ${table}: ${rows}`)
+      return 0
+    }
+    case 'import': {
+      const source = required(values.from, '--from')
+      if (!isImportSource(source)) throw new UsageError(`--from must be one of ${IMPORT_SOURCES.join(', ')}`)
+      const files = values.file ?? []
+      if (files.length === 0) throw new UsageError('Missing --file')
+      const siteId = required(values.site, '--site')
+      const report = await withStorage(required(values.db, '--db'), (storage) =>
+        importFiles(storage, {
+          source,
+          files,
+          site: siteId,
+          onProgress: (done, total) => {
+            if (total > 500) console.error(`  ${done} of ${total} visits`)
+          },
+        }),
+      )
+      const { result, skipped } = report
+      console.log(`Imported ${result.visits} visits and ${result.events} events from ${source} into ${siteId}`)
+      if (result.existing.visits || result.existing.events) {
+        console.log(`  already there: ${result.existing.visits} visits, ${result.existing.events} events`)
+      }
+      if (result.tooOld.visits || result.tooOld.events) {
+        console.log(`  older than the retention limit: ${result.tooOld.visits} visits, ${result.tooOld.events} events`)
+      }
+      if (skipped.length > 0) {
+        console.log(`  skipped rows: ${skipped.length}`)
+        for (const row of skipped.slice(0, 10)) console.log(`    ${row.file} row ${row.row}: ${row.reason}`)
+        if (skipped.length > 10) console.log(`    and ${skipped.length - 10} more`)
+      }
       return 0
     }
     case 'doctor':

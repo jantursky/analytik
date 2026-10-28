@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { EventType } from '../../shared/types'
 import type { EventRow } from '../api'
 import { requestKey, useDashboard } from '../context'
+import { CopyPageUrl } from '../copy-id'
 import { formatDateTime } from '../format'
 import { msg, t } from '../i18n'
 import { View } from '../ui/motion'
@@ -40,7 +41,12 @@ export function Events() {
       key: 'page',
       label: t('Page'),
       sort: 'page',
-      render: (e) => <span className="analytik-mono">{e.path ?? '—'}</span>,
+      render: (e) => (
+        <>
+          <span className="analytik-mono">{e.path ?? '—'}</span>
+          <CopyPageUrl target={e.path} />
+        </>
+      ),
     },
     { key: 'visitor', label: t('Visitor'), render: (e) => <VisitorCell id={e.visitorId} /> },
   ]

@@ -22,6 +22,7 @@ import type {
   TestDataResult,
   TimeseriesPoint,
 } from '../shared/types'
+import type { ImportRemoval, ImportResult, ImportSource, ImportSummary, ImportVisit } from '../shared/import/types'
 
 export type Fetcher = (input: string, init?: RequestInit) => Promise<Response>
 
@@ -131,6 +132,12 @@ export interface ApiClient {
   payments(siteId: string, query: Query & Paging & PaymentFilters): Promise<Page<Payment>>
   rematch(siteId: string): Promise<unknown>
   purge(siteId: string, before: number): Promise<unknown>
+  /** What each source imported into the site. */
+  imports(siteId: string): Promise<ImportSummary[]>
+  /** Stores one chunk of visits from another tool; at most 200 visits and 1000 events per call. */
+  importVisits(siteId: string, source: ImportSource, visits: readonly ImportVisit[]): Promise<ImportResult>
+  /** Deletes everything a source imported into the site. */
+  removeImport(siteId: string, source: ImportSource): Promise<ImportRemoval>
   /** URL of the export download (cookie auth, so it works as a plain link). */
   exportUrl(siteId: string, format: ExportFormat): string
   /** Forgets the answers kept for a short while, so the next reads go to the server. */
@@ -252,6 +259,9 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     payments: (id, query) => get(`${site(id)}/payments`, queryParams(query)),
     rematch: (id) => write('POST', `${site(id)}/rematch`, {}),
     purge: (id, before) => write('DELETE', `${site(id)}/data`, undefined, new URLSearchParams({ before: iso(before) })),
+    imports: (id) => get(`${site(id)}/imports`, undefined, true),
+    importVisits: (id, source, visits) => write('POST', `${site(id)}/import`, { source, visits }),
+    removeImport: (id, source) => write('DELETE', `${site(id)}/imports/${encodeURIComponent(source)}`),
     exportUrl: (id, format) => `${base}${site(id)}/export?format=${format}`,
     clearCache: () => cache.clear(),
   }

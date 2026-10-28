@@ -715,4 +715,69 @@ export default {
   'Turn Live off': 'Live をオフにする',
   'Turn Live on': 'Live をオンにする',
   'Type a command, a page, a range or a value…': 'コマンド、ページ、期間、値を入力…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    '他の解析ツールの履歴をこのサイトに追加します。インポートした訪問は、このサイトが記録した訪問とは別に保持されます。',
+  'Already imported': '以前にインポート済み',
+  'Export files': 'エクスポートファイル',
+  'First visit': '最初の訪問',
+  'Import {count, plural, one {# visit} other {# visits}}': '{count, plural, other {# 件の訪問}}をインポート',
+  'Import data': 'データのインポート',
+  'Import from': 'インポート元',
+  'Import removed': 'インポートを削除しました',
+  Imported: '今回インポート',
+  'Imported data': 'インポートしたデータ',
+  'Importing {done} of {total} visits': '{total} 件中 {done} 件の訪問をインポート中',
+  'Last visit': '最後の訪問',
+  'No visits found in these files.': 'これらのファイルに訪問は見つかりませんでした。',
+  'Older than the retention limit': '保持期間より古い',
+  'Remove import': 'インポートを削除',
+  'Remove the {source} import?': '{source} のインポートを削除しますか？',
+  'Row {row}: {reason}': '{row} 行目: {reason}',
+  'Skipped rows': 'スキップした行',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    '{total} 件中 {done} 件の訪問で停止しました。同じファイルをもう一度選ぶと続きから完了します。保存済みの分は重複して追加されません。',
+  'The CSV from the raw data export, with pages and events together.':
+    '生データのエクスポートから得た CSV（ページとイベントを一緒に含むもの）。',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'この期間には、すでに{count, plural, other {# 件の訪問}}があります。インポートした訪問はそれらと並べて追加されます。',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'website_event のエクスポートと、お持ちの場合は session と event_data のエクスポート。',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    '{source} からインポートした{visits, plural, other {# 件の訪問}}と{events, plural, other {# 件のイベント}}を削除します。トラッカーが記録したものには影響しません。',
+  Visits: '訪問',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    '各ツールがこのサイトに追加したもの。インポートを削除すると、その訪問とイベントが削除されます。トラッカーが記録したものはすべて残ります。',
+  'Sample import files': 'インポート用サンプルファイル',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    '別の解析プラットフォームの形式で作った架空のエクスポートをダウンロードします。実際のエクスポートなしでデータのインポートを試せます。Umami は 3 つのファイルを作るので、まとめてインポートしてください。',
+  'Spread over the last 30 days.': '過去 30 日間に分散。',
+  'Visits go from 1 to 5,000.': '訪問数は 1〜5,000 です。',
+  'Download {source}': '{source} をダウンロード',
+  'a new website': '新しいサイト',
+  'A new website': '新しいサイト',
+  Back: '戻る',
+  Change: '変更',
+  'Choose files': 'ファイルを選択',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    '生データのエクスポートの CSV（ページとイベントが一緒になったもの）をドロップしてください。',
+  'Drop the export files here': 'エクスポートしたファイルをここにドロップ',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'website_event のエクスポートと、あれば session と event_data のエクスポートもドロップしてください（CSV または JSON）。',
+  'Import from another tool': '他のツールからインポート',
+  'Import into': 'インポート先',
+  'Imported into {site}.': '{site} にインポートしました。',
+  'New website': '新しいサイト',
+  'Open site': 'サイトを開く',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible と Google Analytics 4 は個々の訪問をエクスポートしないため、インポートできません。',
+  'Reading…': '読み込み中…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'ファイルから取得しました。インポート先のサイトでなければ変更してください。',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'トラッキングされた訪問とは別に保存され、インポートは後で設定から削除できます。',
+  'Which tool are you importing from?': 'どのツールからインポートしますか？',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{source} から {visits, plural, other {# 件の訪問}}と{events, plural, other {# 件のイベント}}を {site} にインポートしますか？',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'http:// と https:// のどちらのアドレスも使えます。プロトコルは除かれ、ドメインだけが残ります。',
 } satisfies Messages

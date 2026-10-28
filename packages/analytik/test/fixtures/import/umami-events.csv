@@ -1,0 +1,10 @@
+event_id,website_id,session_id,visit_id,created_at,url_path,url_query,utm_source,utm_medium,utm_campaign,referrer_domain,referrer_path,referrer_query,page_title,event_type,event_name,hostname
+e1,w1,s1,v1,2026-03-10 09:00:00.000+00,/,,newsletter,email,march,,,,Home,1,,www.example.com
+e2,w1,s1,v1,2026-03-10 09:00:20.000+00,/pricing/,,,,,,,,Pricing,1,,www.example.com
+e3,w1,s1,v1,2026-03-10 09:00:25.000+00,/pricing,,,,,,,,Pricing,2,signup,www.example.com
+e4,w1,s2,v2,2026-03-10 10:30:00.000+00,/blog/hello,?a=1,,,,news.ycombinator.com,/item,?id=1,Hello,1,,www.example.com
+e5,w1,s2,v2,2026-03-10 10:30:05.000+00,/blog/hello,,,,,,,,Hello,3,link-click,www.example.com
+e6,w1,s3,v3,not-a-date,/,,,,,,,,Home,1,,www.example.com
+e7,w1,,v4,2026-03-10 11:00:00.000+00,/,,,,,,,,Home,1,,www.example.com
+e8,w1,s3,v3,2026-03-11 08:00:00.000+00,,,,,,,,,Home,1,,www.example.com
+e9,w1,s3,v3,2026-03-11 08:00:00.000+00,/about,,,,,,,,About,1,,www.example.com

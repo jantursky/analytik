@@ -10,7 +10,7 @@ import { msg, t } from '../i18n'
 import { Icon } from '../icons'
 import { usePreferences } from '../preferences'
 import { Shortened, SiteTile } from '../ui'
-import { ActionMenu } from '../ui/menu'
+import { ActionMenu, MenuButton } from '../ui/menu'
 import { rise, View } from '../ui/motion'
 import { Select } from '../ui/select'
 import { DeleteSiteDialog, togglePaused } from './SiteActions'
@@ -128,6 +128,7 @@ function SiteCard({
           {
             label: site.paused ? t('Resume tracking') : t('Pause tracking'),
             icon: site.paused ? 'play' : 'pause',
+            tone: site.paused ? 'success' : 'warning',
             onSelect: () => void togglePaused(client, site).then(onChange, onChange),
           },
           { label: t('Delete website'), icon: 'trash', tone: 'danger', onSelect: () => setDeleting(true) },
@@ -143,6 +144,8 @@ export interface SitesOverviewProps {
   sites: Site[]
   onOpen: (site: Site) => void
   onAdd: () => void
+  /** Opens the dialog that brings another tool's history in; without it "Add website" is a plain button. */
+  onImport?: () => void
   /** Called after a site was paused, resumed or deleted from its menu, to reload the list. */
   onChange?: () => void
 }
@@ -151,7 +154,14 @@ export interface SitesOverviewProps {
  * Every site on a card with its visitors, revenue and orders in the last 24 hours and who is online now, in an order
  * the admin picks. The numbers of all sites come in one request.
  */
-export function SitesOverview({ client, sites, onOpen, onAdd, onChange = () => undefined }: SitesOverviewProps) {
+export function SitesOverview({
+  client,
+  sites,
+  onOpen,
+  onAdd,
+  onImport,
+  onChange = () => undefined,
+}: SitesOverviewProps) {
   // Fixed on mount and to the minute, so the request isn't repeated on every render and opening the view again
   // within the minute is answered from the client's cache.
   const [since] = useState(() => Math.floor(Date.now() / MINUTE) * MINUTE - DAY)
@@ -189,10 +199,21 @@ export function SitesOverview({ client, sites, onOpen, onAdd, onChange = () => u
               </button>
             </div>
           )}
-          <button type="button" className="analytik-button" data-variant="primary" onClick={onAdd}>
-            <Icon name="plus" />
-            {t('Add website')}
-          </button>
+          {onImport ? (
+            <MenuButton
+              label={t('Add website')}
+              variant="primary"
+              actions={[
+                { label: t('New website'), icon: 'plus', onSelect: onAdd },
+                { label: t('Import from another tool'), icon: 'upload', onSelect: onImport },
+              ]}
+            />
+          ) : (
+            <button type="button" className="analytik-button" data-variant="primary" onClick={onAdd}>
+              <Icon name="plus" />
+              {t('Add website')}
+            </button>
+          )}
         </div>
       </div>
       <ul className="analytik-site-grid" aria-label={t('Sites')}>

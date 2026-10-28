@@ -155,7 +155,7 @@ Optional provider props are `filters`, `onFilter`, `onSiteChange`, `onViewChange
 
 The dashboard module exports these building blocks:
 
-- Views: `Overview`, `Sources`, `Pages`, `Events`, `Funnels`, `Revenue`, `Sessions`, `Realtime`, `Settings`, plus `SitesOverview` (a card per site; takes `client`, `sites`, `onOpen` and `onAdd`).
+- Views: `Overview`, `Sources`, `Pages`, `Events`, `Funnels`, `Revenue`, `Sessions`, `Realtime`, `Settings`, plus `SitesOverview` (a card per site; takes `client`, `sites`, `onOpen` and `onAdd`, and optionally `onImport` to turn "Add website" into a menu with an import entry).
 - Dialogs and forms: `AddSiteDialog` (takes `client`, `onCreated` and `onClose`), `CreateSiteForm`, `LoginForm`.
 - Pieces of a view: `BreakdownCard`, `SessionTimeline`, `SiteSettings`, `PrivacySettings`, `SnippetGenerator`, `CampaignLinkBuilder`.
 - Charts and widgets: `AreaChart`, `BarList`, `Sparkline`, `StatTile`, `DeltaBadge`, and `WorldMap` (takes `locations` from a `Realtime` result, an optional `globe`, and `selected` with `onSelect` to make the markers buttons).

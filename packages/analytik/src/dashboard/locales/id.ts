@@ -716,4 +716,69 @@ export default {
   'Turn Live off': 'Matikan Live',
   'Turn Live on': 'Nyalakan Live',
   'Type a command, a page, a range or a value…': 'Ketik perintah, halaman, rentang, atau nilai…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Tambahkan riwayat dari alat analitik lain ke situs ini. Kunjungan yang diimpor disimpan terpisah dari kunjungan yang dicatat situs ini.',
+  'Already imported': 'Sudah diimpor',
+  'Export files': 'File ekspor',
+  'First visit': 'Kunjungan pertama',
+  'Import {count, plural, one {# visit} other {# visits}}': 'Impor {count, plural, other {# kunjungan}}',
+  'Import data': 'Impor data',
+  'Import from': 'Impor dari',
+  'Import removed': 'Impor dihapus',
+  Imported: 'Diimpor',
+  'Imported data': 'Data yang diimpor',
+  'Importing {done} of {total} visits': 'Mengimpor {done} dari {total} kunjungan',
+  'Last visit': 'Kunjungan terakhir',
+  'No visits found in these files.': 'Tidak ada kunjungan di file ini.',
+  'Older than the retention limit': 'Lebih lama dari batas penyimpanan',
+  'Remove import': 'Hapus impor',
+  'Remove the {source} import?': 'Hapus impor dari {source}?',
+  'Row {row}: {reason}': 'Baris {row}: {reason}',
+  'Skipped rows': 'Baris yang dilewati',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Berhenti setelah {done} dari {total} kunjungan. Pilih file yang sama lagi untuk menyelesaikan; yang sudah tersimpan tidak ditambahkan dua kali.',
+  'The CSV from the raw data export, with pages and events together.':
+    'CSV dari ekspor data mentah, berisi halaman dan peristiwa sekaligus.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'Situs ini sudah memiliki {count, plural, other {# kunjungan}} pada tanggal ini. Yang diimpor ditambahkan di samping kunjungan tersebut.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'Ekspor website_event, ditambah ekspor session dan event_data jika Anda memilikinya.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Ini menghapus {visits, plural, other {# kunjungan}} dan {events, plural, other {# peristiwa}} yang diimpor dari {source}. Yang dicatat tracker tidak disentuh.',
+  Visits: 'Kunjungan',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Apa yang ditambahkan setiap alat ke situs ini. Menghapus impor akan menghapus kunjungan dan peristiwanya; semua yang dicatat tracker tetap ada.',
+  'Sample import files': 'File impor contoh',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Mengunduh ekspor rekaan dalam format platform analitik lain, untuk mencoba Impor data tanpa ekspor asli. Umami membuat tiga file; impor bersamaan.',
+  'Spread over the last 30 days.': 'Tersebar dalam 30 hari terakhir.',
+  'Visits go from 1 to 5,000.': 'Kunjungan berkisar dari 1 hingga 5.000.',
+  'Download {source}': 'Unduh {source}',
+  'a new website': 'situs baru',
+  'A new website': 'Situs baru',
+  Back: 'Kembali',
+  Change: 'Ubah',
+  'Choose files': 'Pilih file',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Letakkan CSV dari ekspor data mentah, dengan halaman dan peristiwa bersama.',
+  'Drop the export files here': 'Letakkan file ekspor di sini',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Letakkan ekspor website_event, serta ekspor session dan event_data jika ada (CSV atau JSON).',
+  'Import from another tool': 'Impor dari alat lain',
+  'Import into': 'Impor ke',
+  'Imported into {site}.': 'Diimpor ke {site}.',
+  'New website': 'Situs baru',
+  'Open site': 'Buka situs',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible dan Google Analytics 4 tidak bisa diimpor: keduanya tidak mengekspor kunjungan satu per satu.',
+  'Reading…': 'Membaca…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Diambil dari file; ubah jika itu bukan situs tujuan impor Anda.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Semuanya disimpan terpisah dari kunjungan yang dilacak, dan Anda bisa menghapus impor nanti di Pengaturan.',
+  'Which tool are you importing from?': 'Impor dari alat apa?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    'Impor {visits, plural, other {# kunjungan}} dan {events, plural, other {# peristiwa}} dari {source} ke {site}?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Berfungsi dengan alamat http:// maupun https://; protokol dibuang dan hanya domain yang disimpan.',
 } satisfies Messages

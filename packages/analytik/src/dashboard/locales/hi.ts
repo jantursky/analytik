@@ -717,4 +717,70 @@ export default {
   'Turn Live off': 'Live बंद करें',
   'Turn Live on': 'Live चालू करें',
   'Type a command, a page, a range or a value…': 'कमांड, पेज, अवधि या मान टाइप करें…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'किसी दूसरे एनालिटिक्स टूल का इतिहास इस साइट में जोड़ें। इंपोर्ट की गई विज़िट उन विज़िट से अलग रखी जाती हैं जो इस साइट ने खुद दर्ज की हैं।',
+  'Already imported': 'पहले ही इंपोर्ट हो चुका',
+  'Export files': 'एक्सपोर्ट फ़ाइलें',
+  'First visit': 'पहली विज़िट',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    '{count, plural, one {# विज़िट} other {# विज़िट}} इंपोर्ट करें',
+  'Import data': 'डेटा इंपोर्ट करें',
+  'Import from': 'इससे इंपोर्ट करें',
+  'Import removed': 'इंपोर्ट हटाया गया',
+  Imported: 'इंपोर्ट किया गया',
+  'Imported data': 'इंपोर्ट किया गया डेटा',
+  'Importing {done} of {total} visits': '{total} में से {done} विज़िट इंपोर्ट हो रही हैं',
+  'Last visit': 'आखिरी विज़िट',
+  'No visits found in these files.': 'इन फ़ाइलों में कोई विज़िट नहीं मिली।',
+  'Older than the retention limit': 'डेटा रखने की सीमा से पुराना',
+  'Remove import': 'इंपोर्ट हटाएँ',
+  'Remove the {source} import?': '{source} से किया गया इंपोर्ट हटाएँ?',
+  'Row {row}: {reason}': 'पंक्ति {row}: {reason}',
+  'Skipped rows': 'छोड़ी गई पंक्तियाँ',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    '{total} में से {done} विज़िट के बाद रुका। पूरा करने के लिए वही फ़ाइलें फिर चुनें; जो पहले से सेव है वह दोबारा नहीं जुड़ेगा।',
+  'The CSV from the raw data export, with pages and events together.':
+    'रॉ डेटा एक्सपोर्ट की CSV, जिसमें पेज और इवेंट साथ हों।',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'इन तारीखों में साइट पर पहले से {count, plural, one {# विज़िट} other {# विज़िट}} हैं। इंपोर्ट की गई विज़िट उनके साथ जुड़ जाएँगी।',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'website_event एक्सपोर्ट, और अगर आपके पास हों तो session और event_data एक्सपोर्ट भी।',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'इससे {source} से इंपोर्ट की गई {visits, plural, one {# विज़िट} other {# विज़िट}} और {events, plural, one {# इवेंट} other {# इवेंट}} हट जाएँगे। ट्रैकर ने जो दर्ज किया है उसे छुआ नहीं जाएगा।',
+  Visits: 'विज़िट',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'हर टूल ने इस साइट में क्या जोड़ा। इंपोर्ट हटाने पर उसकी विज़िट और इवेंट हट जाते हैं; ट्रैकर ने जो दर्ज किया है वह सब बना रहता है।',
+  'Sample import files': 'नमूना इंपोर्ट फ़ाइलें',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'किसी दूसरे एनालिटिक्स प्लेटफ़ॉर्म के फ़ॉर्मैट में बनावटी एक्सपोर्ट डाउनलोड करता है, ताकि असली एक्सपोर्ट के बिना डेटा इंपोर्ट आज़माया जा सके। Umami तीन फ़ाइलें बनाता है; उन्हें साथ में इंपोर्ट करें।',
+  'Spread over the last 30 days.': 'पिछले 30 दिनों में फैली हुई।',
+  'Visits go from 1 to 5,000.': 'विज़िट 1 से 5,000 तक हो सकती हैं।',
+  'Download {source}': '{source} डाउनलोड करें',
+  'a new website': 'एक नई वेबसाइट',
+  'A new website': 'एक नई वेबसाइट',
+  Back: 'वापस',
+  Change: 'बदलें',
+  'Choose files': 'फ़ाइलें चुनें',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'रॉ डेटा एक्सपोर्ट की CSV यहाँ छोड़ें, जिसमें पेज और इवेंट साथ हों।',
+  'Drop the export files here': 'एक्सपोर्ट फ़ाइलें यहाँ छोड़ें',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'website_event एक्सपोर्ट यहाँ छोड़ें, और अगर हों तो session व event_data के एक्सपोर्ट भी (CSV या JSON)।',
+  'Import from another tool': 'किसी दूसरे टूल से इंपोर्ट करें',
+  'Import into': 'इसमें इंपोर्ट करें',
+  'Imported into {site}.': '{site} में इंपोर्ट हो गया।',
+  'New website': 'नई वेबसाइट',
+  'Open site': 'साइट खोलें',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible और Google Analytics 4 इंपोर्ट नहीं हो सकते: वे अलग-अलग विज़िट एक्सपोर्ट नहीं करते।',
+  'Reading…': 'पढ़ा जा रहा है…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'फ़ाइलों से लिया गया; अगर आप किसी और साइट में इंपोर्ट कर रहे हैं तो बदलें।',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'इन्हें ट्रैक की गई विज़िट से अलग रखा जाता है, और इंपोर्ट को आप बाद में सेटिंग्स में हटा सकते हैं।',
+  'Which tool are you importing from?': 'आप किस टूल से इंपोर्ट कर रहे हैं?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{source} से {visits, plural, one {# विज़िट} other {# विज़िट}} और {events, plural, one {# इवेंट} other {# इवेंट}} को {site} में इंपोर्ट करें?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'http:// और https:// दोनों पतों के साथ काम करता है; प्रोटोकॉल हटा दिया जाता है और सिर्फ़ डोमेन रखा जाता है।',
 } satisfies Messages

@@ -723,4 +723,70 @@ export default {
   'Turn Live off': 'Live ausschalten',
   'Turn Live on': 'Live einschalten',
   'Type a command, a page, a range or a value…': 'Befehl, Seite, Zeitraum oder Wert eingeben…',
+  'Add the history of another analytics tool to this site. Imported visits are kept apart from the ones this site tracked.':
+    'Fügen Sie dieser Website den Verlauf eines anderen Analysetools hinzu. Importierte Besuche werden getrennt von den Besuchen geführt, die diese Website selbst erfasst hat.',
+  'Already imported': 'Bereits importiert',
+  'Export files': 'Exportdateien',
+  'First visit': 'Erster Besuch',
+  'Import {count, plural, one {# visit} other {# visits}}':
+    '{count, plural, one {# Besuch} other {# Besuche}} importieren',
+  'Import data': 'Daten importieren',
+  'Import from': 'Importieren aus',
+  'Import removed': 'Import entfernt',
+  Imported: 'Importiert',
+  'Imported data': 'Importierte Daten',
+  'Importing {done} of {total} visits': '{done} von {total} Besuchen werden importiert',
+  'Last visit': 'Letzter Besuch',
+  'No visits found in these files.': 'In diesen Dateien wurden keine Besuche gefunden.',
+  'Older than the retention limit': 'Älter als das Aufbewahrungslimit',
+  'Remove import': 'Import entfernen',
+  'Remove the {source} import?': 'Import aus {source} entfernen?',
+  'Row {row}: {reason}': 'Zeile {row}: {reason}',
+  'Skipped rows': 'Übersprungene Zeilen',
+  'Stopped after {done} of {total} visits. Choose the same files again to finish; what is stored is not added twice.':
+    'Nach {done} von {total} Besuchen gestoppt. Wählen Sie dieselben Dateien erneut, um den Import abzuschließen; bereits Gespeichertes wird nicht doppelt hinzugefügt.',
+  'The CSV from the raw data export, with pages and events together.':
+    'Die CSV-Datei aus dem Rohdaten-Export, mit Seiten und Ereignissen zusammen.',
+  'The site already has {count, plural, one {# visit} other {# visits}} in these dates. The imported ones are added next to them.':
+    'Die Website hat in diesem Zeitraum bereits {count, plural, one {# Besuch} other {# Besuche}}. Die importierten werden daneben hinzugefügt.',
+  'The website_event export, plus the session and event_data exports if you have them.':
+    'Der Export von website_event sowie die Exporte von session und event_data, falls vorhanden.',
+  'This deletes {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} imported from {source}. What the tracker recorded is not touched.':
+    'Dadurch werden {visits, plural, one {# Besuch} other {# Besuche}} und {events, plural, one {# Ereignis} other {# Ereignisse}} gelöscht, die aus {source} importiert wurden. Was der Tracker erfasst hat, bleibt unberührt.',
+  Visits: 'Besuche',
+  'What each tool added to this site. Removing an import deletes its visits and events and leaves everything the tracker recorded.':
+    'Was jedes Tool zu dieser Website beigetragen hat. Beim Entfernen eines Imports werden dessen Besuche und Ereignisse gelöscht; alles, was der Tracker erfasst hat, bleibt erhalten.',
+  'Sample import files': 'Beispieldateien zum Import',
+  'Downloads made-up exports in the format of another analytics platform, to try Import data without a real export. Umami makes three files; import them together.':
+    'Lädt erfundene Exporte im Format einer anderen Analytics-Plattform herunter, um den Datenimport ohne echten Export auszuprobieren. Umami erzeugt drei Dateien; importiere sie zusammen.',
+  'Spread over the last 30 days.': 'Verteilt auf die letzten 30 Tage.',
+  'Visits go from 1 to 5,000.': 'Besuche gehen von 1 bis 5.000.',
+  'Download {source}': '{source} herunterladen',
+  'a new website': 'eine neue Website',
+  'A new website': 'Eine neue Website',
+  Back: 'Zurück',
+  Change: 'Ändern',
+  'Choose files': 'Dateien wählen',
+  'Drop the CSV from the raw data export, with pages and events together.':
+    'Zieh die CSV aus dem Rohdaten-Export hierher, mit Seiten und Ereignissen zusammen.',
+  'Drop the export files here': 'Exportdateien hierher ziehen',
+  'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
+    'Zieh den website_event-Export hierher, dazu die Exporte session und event_data, falls vorhanden (CSV oder JSON).',
+  'Import from another tool': 'Aus einem anderen Tool importieren',
+  'Import into': 'Importieren in',
+  'Imported into {site}.': 'In {site} importiert.',
+  'New website': 'Neue Website',
+  'Open site': 'Website öffnen',
+  'Plausible and Google Analytics 4 cannot be imported: they do not export individual visits.':
+    'Plausible und Google Analytics 4 lassen sich nicht importieren: Sie exportieren keine einzelnen Besuche.',
+  'Reading…': 'Wird gelesen…',
+  'Taken from the files; change it if it is not the site you are importing into.':
+    'Aus den Dateien übernommen; ändere es, wenn es nicht die Website ist, in die du importierst.',
+  'They are kept apart from tracked visits, and you can remove the import later in Settings.':
+    'Sie werden getrennt von erfassten Besuchen gehalten, und den Import kannst du später in den Einstellungen entfernen.',
+  'Which tool are you importing from?': 'Aus welchem Tool importierst du?',
+  'Import {visits, plural, one {# visit} other {# visits}} and {events, plural, one {# event} other {# events}} from {source} into {site}?':
+    '{visits, plural, one {# Besuch} other {# Besuche}} und {events, plural, one {# Ereignis} other {# Ereignisse}} aus {source} in {site} importieren?',
+  'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
+    'Funktioniert mit http://- und https://-Adressen; das Protokoll wird entfernt, nur die Domain bleibt.',
 } satisfies Messages

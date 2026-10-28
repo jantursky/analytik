@@ -1,10 +1,9 @@
 import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import { type ComponentType, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
+import { parseSegments } from '../shared/segments'
 import type { Comparison, Filters, Site } from '../shared/types'
 import { type AddressState, readAddress as parseAddress, writeAddress } from './address'
-import { sameFilters } from './segments'
-import { parseSegments } from '../shared/segments'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
 import { DashboardProvider, requestKey } from './context'
@@ -16,6 +15,7 @@ import { LanguageSwitch } from './language-switch'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange, shiftRange } from './range'
+import { sameFilters } from './segments'
 import { useShortcuts } from './shortcuts'
 import { NEXT_THEME, ThemeToggle } from './theme-toggle'
 import { ComparePicker, FilterBar, IntervalPicker, RangePicker } from './Toolbar'
@@ -36,6 +36,7 @@ import { Settings, SETTINGS_SECTIONS, type SettingsSection } from './views/Setti
 import { SitesOverview } from './views/Sites'
 
 // The palette and the shortcuts help load the first time they are opened.
+const ImportDialog = lazy(() => import('./views/ImportDialog').then((m) => ({ default: m.ImportDialog })))
 const Palette = lazy(() => import('./palette').then((m) => ({ default: m.Palette })))
 const ShortcutHelp = lazy(() => import('./palette').then((m) => ({ default: m.ShortcutHelp })))
 
@@ -153,6 +154,7 @@ export function Dashboard({
   // A segment named in the address, applied once the saved segments are known (they may still be loading).
   const [pendingSegment, setPendingSegment] = useState(initial?.segment)
   const [adding, setAdding] = useState(false)
+  const [importing, setImporting] = useState(false)
   // Bumped by "Refresh" on a custom range, which has no newer data window to move to; remounts the view.
   const [generation, setGeneration] = useState(0)
   // Popups portal into the root so they inherit its theme variables.
@@ -221,6 +223,24 @@ export function Dashboard({
     }
     setViewState(next)
   }
+
+  // A shadow under the toolbar once the view's content has scrolled beneath it.
+  useEffect(() => {
+    const update = (): void => {
+      const toolbar = main.current?.querySelector('.analytik-toolbar')
+      const content = main.current?.querySelector('.analytik-view')
+      if (!toolbar || !content) return
+      const under = content.getBoundingClientRect().top < toolbar.getBoundingClientRect().bottom - 1
+      toolbar.toggleAttribute('data-stuck', under)
+    }
+    update()
+    document.addEventListener('scroll', update, { capture: true, passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      document.removeEventListener('scroll', update, { capture: true })
+      window.removeEventListener('resize', update)
+    }
+  })
 
   // The header's height, so the sticky toolbar sits right under it.
   const header = useRef<HTMLElement>(null)
@@ -348,6 +368,7 @@ export function Dashboard({
           setView('overview')
         }}
         onAdd={() => setAdding(true)}
+        onImport={() => setImporting(true)}
         onChange={sites.reload}
       />
     )
@@ -561,6 +582,21 @@ export function Dashboard({
                 )}
                 {overlay === 'help' && <ShortcutHelp views={NAV} onClose={() => setOverlay(null)} />}
               </Suspense>
+              {!unauthorized && importing && (
+                <Suspense>
+                  <ImportDialog
+                    client={client}
+                    sites={list}
+                    open
+                    onClose={() => setImporting(false)}
+                    onImported={sites.reload}
+                    onOpen={(next) => {
+                      openSite(next.id)
+                      setView('overview')
+                    }}
+                  />
+                </Suspense>
+              )}
               {!unauthorized && (
                 <AddSiteDialog
                   client={client}

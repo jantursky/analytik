@@ -59,6 +59,8 @@ CI runs all of them on every pull request, plus the server tests on Postgres and
 - Every behavior change comes with a test. Server tests use the in-memory storage unless the behavior depends on a real database.
 - Code samples in `packages/analytik/README.md` and `apps/docs` are type-checked. After editing them, run `bun run sync:samples`.
 - Add a line under `## [Unreleased]` in `packages/analytik/CHANGELOG.md` for anything users will notice.
+  The file is also shown in Settings → Changelog, so keep entries short: one line per change, no implementation
+  detail, and merge related changes of a release into one bullet. Group them as Added, Changed or Fixed.
 - Breaking changes need a new major version and an entry under **Changed**.
 - Schema changes are new migration files in each dialect folder they affect. Don't edit a migration that has shipped.
 

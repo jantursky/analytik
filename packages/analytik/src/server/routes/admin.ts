@@ -4,9 +4,13 @@ import { timingSafeEqual } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, parseDate } from '../../shared/time'
 import type { Comparison, EventType, Interval } from '../../shared/types'
 import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
+import { isImportSource } from '../../shared/import/types'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
 import { siteFavicon } from '../favicon'
+import { importVisits } from '../import/core'
+import { listImports, removeImport } from '../import/manage'
+import { IMPORT_BODY_LIMIT, parseImportBody } from '../import/validate'
 import { versionInfo } from '../version'
 import { rematchPayments } from '../payments'
 import { getPreferences, savePreferences } from '../preferences'
@@ -53,8 +57,8 @@ export interface AdminEnv {
   Variables: { site: SiteRecord }
 }
 
-async function body(c: HonoContext): Promise<Record<string, unknown>> {
-  const text = await readText(c.req.raw, BODY_LIMIT)
+async function body(c: HonoContext, limit = BODY_LIMIT): Promise<Record<string, unknown>> {
+  const text = await readText(c.req.raw, limit)
   if (text === null) throw new AnalytikError('payload too large', 413)
   try {
     const value = JSON.parse(text || '{}') as unknown
@@ -253,6 +257,18 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     if (format !== 'csv' || !EXPORT_TABLES.includes(table)) throw new AnalytikError('format must be json or csv')
     c.header('content-disposition', `attachment; filename="analytik-${site.id}-${table}-${date}.csv"`)
     return c.body(await exportCsv(ctx, site, table), 200, { 'content-type': 'text/csv; charset=utf-8' })
+  })
+
+  // History from another tool. The browser sends it in chunks; every row is checked and rebuilt from known fields.
+  app.get('/sites/:id/imports', async (c) => c.json(await listImports(ctx, c.get('site').id)))
+  app.post('/sites/:id/import', async (c) => {
+    const { source, visits } = parseImportBody(await body(c, IMPORT_BODY_LIMIT), ctx.now())
+    return c.json(await importVisits(ctx, c.get('site'), source, visits))
+  })
+  app.delete('/sites/:id/imports/:source', async (c) => {
+    const source = c.req.param('source')
+    if (!isImportSource(source)) throw new AnalytikError('unknown import source', 404)
+    return c.json(await removeImport(ctx, c.get('site').id, source))
   })
 
   app.delete('/sites/:id/data', async (c) => {

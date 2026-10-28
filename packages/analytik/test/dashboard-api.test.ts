@@ -49,6 +49,23 @@ describe('createApiClient', () => {
     expect(client.exportUrl('site_1', 'csv')).toBe('/api/sites/site_1/export?format=csv')
   })
 
+  it('reads, sends and removes imports, and never serves a stale list after a write', async () => {
+    const api = fakeApi()
+    const client = createApiClient('/api', api.fetcher)
+    expect(await client.imports('site_1')).toEqual([])
+    const visits = [{ id: 'a', visitor: 'b', events: [{ ts: 1, type: 'pageview' as const, name: null, path: '/' }] }]
+    expect(await client.importVisits('site_1', 'umami', visits)).toMatchObject({ visits: 1 })
+    expect(await client.removeImport('site_1', 'umami')).toEqual({ visits: 0, events: 0, visitors: 0 })
+    await client.imports('site_1')
+    expect(api.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
+      'GET /sites/site_1/imports',
+      'POST /sites/site_1/import',
+      'DELETE /sites/site_1/imports/umami',
+      'GET /sites/site_1/imports',
+    ])
+    expect(api.requests[1]?.body).toEqual({ source: 'umami', visits })
+  })
+
   it('sends JSON bodies with credentials', async () => {
     const fetcher = vi.fn(() => Promise.resolve(Response.json({ ok: true })))
     const client = createApiClient('https://stats.example.net/api', fetcher)

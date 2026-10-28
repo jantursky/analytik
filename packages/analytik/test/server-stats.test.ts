@@ -609,7 +609,7 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     const csv = await server.admin(`/sites/${site.id}/export?format=csv&table=events`)
     expect(csv.headers.get('content-type')).toContain('text/csv')
     const text = await csv.text()
-    expect(text.split('\n')[0]).toBe('id,site_id,session_id,visitor_id,ts,type,name,path,props')
+    expect(text.split('\n')[0]).toBe('id,site_id,session_id,visitor_id,ts,type,name,path,props,imported')
     expect(text).toContain(`"'=HYPERLINK(""x"")"`)
     expect(text).toContain('"{""plan"":""pro""}"')
     for (const table of ['visitors', 'sessions', 'payments']) {

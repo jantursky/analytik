@@ -21,6 +21,8 @@ interface Totals {
   pageviews: number
   bounces: number
   duration: number
+  /** Sessions whose duration is known; imported visits without one are left out of the average. */
+  timed: number
 }
 
 interface Revenue {
@@ -54,11 +56,15 @@ export const REVENUE_COLUMNS = `COALESCE(SUM(p.amount), 0) AS revenue,
   COALESCE(SUM(CASE WHEN p.kind = 'payment' THEN 1 ELSE 0 END), 0) AS orders,
   COUNT(DISTINCT CASE WHEN p.kind = 'payment' AND p.renewal = 0 THEN COALESCE(p.visitor_id, p.id) END) AS customers`
 
+/** 1 for a visit whose duration is known; imports from tools that don't record it store 0, which means unknown. */
+const TIMED = 'CASE WHEN s.imported IS NOT NULL AND s.duration = 0 THEN 0 ELSE 1 END'
+
 async function totals(ctx: Context, where: Fragment): Promise<Totals> {
   const [row] = (await ctx.storage.query<Totals>(
     `SELECT COUNT(DISTINCT s.visitor_id) AS visitors, COUNT(*) AS sessions, COALESCE(SUM(s.pageviews), 0) AS pageviews,
        COALESCE(SUM(CASE WHEN s.goals > 0 OR s.pageviews > 1 THEN 0 ELSE 1 END), 0) AS bounces,
-       COALESCE(SUM(s.duration), 0) AS duration
+       COALESCE(SUM(s.duration), 0) AS duration,
+       COALESCE(SUM(${TIMED}), 0) AS timed
      FROM sessions s WHERE ${where.sql}`,
     where.params,
   )) as [Totals]
@@ -163,7 +169,7 @@ export async function overview(ctx: Context, site: SiteRecord, query: StatsQuery
     sessions: pair((t) => t.sessions),
     pageviews: pair((t) => t.pageviews),
     bounceRate: pair((t) => ratio(t.bounces, t.sessions)),
-    avgDurationMs: pair((t) => Math.round(ratio(t.duration, t.sessions))),
+    avgDurationMs: pair((t) => Math.round(ratio(t.duration, t.timed))),
     revenue: pair((_, r) => r.revenue),
     orders: pair((_, r) => r.orders),
     conversionRate: pair((t, r) => ratio(r.customers, t.visitors)),
@@ -195,6 +201,8 @@ interface TrafficRow {
   pageviews: number
   bounces: number
   duration: number
+  /** Sessions whose duration is known; imported visits without one are left out of the average. */
+  timed: number
 }
 
 /**
@@ -224,7 +232,8 @@ async function series(ctx: Context, site: SiteRecord, query: StatsQuery): Promis
        SELECT b.bucket, COUNT(DISTINCT s.visitor_id) AS visitors, COUNT(*) AS sessions,
               COALESCE(SUM(s.pageviews), 0) AS pageviews,
               COALESCE(SUM(CASE WHEN s.goals > 0 OR s.pageviews > 1 THEN 0 ELSE 1 END), 0) AS bounces,
-              COALESCE(SUM(s.duration), 0) AS duration
+              COALESCE(SUM(s.duration), 0) AS duration,
+              COALESCE(SUM(${TIMED}), 0) AS timed
        FROM b JOIN sessions s ON s.site_id = ? AND s.started_at >= b.low AND s.started_at < b.high${filters.sql}
        GROUP BY b.bucket`,
       [site.id, ...filters.params],
@@ -254,7 +263,7 @@ async function series(ctx: Context, site: SiteRecord, query: StatsQuery): Promis
       revenue,
       orders: m?.orders ?? 0,
       bounceRate: ratio(t?.bounces ?? 0, sessions),
-      avgDurationMs: Math.round(ratio(t?.duration ?? 0, sessions)),
+      avgDurationMs: Math.round(ratio(t?.duration ?? 0, t?.timed ?? 0)),
       conversionRate: ratio(m?.customers ?? 0, visitors),
       revenuePerVisitor: ratio(revenue, visitors),
     }

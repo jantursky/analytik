@@ -324,6 +324,14 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     }),
     'POST /sites/:id/rematch': () => ({ matched: 1 }),
     'DELETE /sites/:id/data': () => ({ deleted: 10 }),
+    'GET /sites/:id/imports': () => [],
+    'POST /sites/:id/import': ({ body }) => ({
+      visits: (body as { visits: unknown[] }).visits.length,
+      events: 0,
+      existing: { visits: 0, events: 0 },
+      tooOld: { visits: 0, events: 0 },
+    }),
+    'DELETE /sites/:id/imports/:source': () => ({ visits: 0, events: 0, visitors: 0 }),
     ...overrides,
   }
 

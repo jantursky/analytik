@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { applyMigrations } from '../src/storage/migrator'
+import { memoryStorage } from '../src/storage/memory'
+import { migrations } from '../src/storage/migrations/sqlite'
 import type { Storage } from '../src/storage/types'
 import { createStorage, storageKinds } from './helpers/databases'
 
@@ -13,12 +16,12 @@ describe.each(storageKinds())('%s storage', (kind) => {
   it('applies migrations once and records them', async () => {
     storage = await createStorage(kind)
     const first = await storage.migrate()
-    expect(first.applied).toEqual(['0001_init'])
-    expect(first.version).toBe('0001_init')
+    expect(first.applied).toEqual(['0001_init', '0002_imported'])
+    expect(first.version).toBe('0002_imported')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
-    expect(rows.map((row) => row.version)).toEqual(['0001_init'])
+    expect(rows.map((row) => row.version)).toEqual(['0001_init', '0002_imported'])
   })
 
   it('runs parameterized statements and returns numbers for counts and sums', async () => {
@@ -69,5 +72,25 @@ describe.each(storageKinds())('%s storage', (kind) => {
     const rows = await storage.query<{ month: string }>('SELECT month FROM salts ORDER BY month')
     expect(rows.map((row) => row.month)).toEqual(['2026-01', '2026-02'])
     await storage.batch([])
+  })
+})
+
+describe('0002_imported', () => {
+  it('upgrades a database that already holds data and leaves tracked rows unmarked', async () => {
+    const storage = memoryStorage()
+    await applyMigrations(storage, migrations.slice(0, 1))
+    await storage.run(
+      `INSERT INTO sessions (site_id, id, visitor_id, started_at, last_seen_at, source, channel)
+       VALUES ('s', 'a', 'v', 1, 1, 'direct', 'direct')`,
+    )
+    await storage.run(
+      `INSERT INTO events (id, site_id, session_id, visitor_id, ts, type) VALUES ('e', 's', 'a', 'v', 1, 'pageview')`,
+    )
+
+    const result = await applyMigrations(storage, migrations)
+    expect(result.applied).toEqual(['0002_imported'])
+    expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
+    expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])
+    await storage.close?.()
   })
 })
