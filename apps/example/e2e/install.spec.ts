@@ -33,7 +33,7 @@ test('generates a script tag from the options', async ({ page }) => {
   await page.getByLabel('Track localhost (for testing)').check()
 
   const code = page.locator('.code').first()
-  await expect(code).toContainText('src="https://stats.acme.dev/analytik.js"')
+  await expect(code).toContainText('src="https://stats.acme.dev/js/analytik.js"')
   await expect(code).toContainText('data-site="acme"')
   await expect(code).toContainText('data-mode="enriched"')
   await expect(code).toContainText('data-allow-localhost="true"')

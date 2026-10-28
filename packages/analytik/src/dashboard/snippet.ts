@@ -22,7 +22,7 @@ export function buildSnippet(options: SnippetOptions): string {
   const api = new URL(options.apiUrl)
   const base = api.href.replace(/\/+$/, '')
   const attrs: [string, string | null][] = [
-    ['src', `${api.origin}/analytik.js`],
+    ['src', `${api.origin}/js/analytik.js`],
     ['data-site', options.site],
     ['data-api', base === `${api.origin}/api` ? null : base],
     ['data-mode', options.mode === 'strict' ? null : options.mode],

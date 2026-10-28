@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.6.0]
+
+### Changed
+
+- The tracker is served at `/js/analytik.js` (it was `/analytik.js`). The snippet in the dashboard, the prompts, the
+  templates and the docs use the new path. `withDashboard` still answers the old `/analytik.js`, so snippets pasted
+  earlier keep working. If you serve the file yourself, put it where your snippet points.
+
 ## [1.5.0]
 
 ### Added

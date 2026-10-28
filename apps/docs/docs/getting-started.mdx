@@ -34,7 +34,7 @@ const analytik = createAnalytik({
 const app = new Hono()
 app.route('/', analytik.app)
 // The server does not serve the tracker script; see "Add the script" below.
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 export default {
   port: 8787,
@@ -67,16 +67,16 @@ The response is `{ "site": { ... }, "apiKey": "ak_..." }`. Take the site id from
 ## Add the script
 
 ```html index.html
-<script defer src="http://localhost:8787/analytik.js" data-site="SITE_ID" data-allow-localhost></script>
+<script defer src="http://localhost:8787/js/analytik.js" data-site="SITE_ID" data-allow-localhost></script>
 ```
 
 The Analytik server does not serve the tracker script. The file is `dist/analytik.js` in the package (exported as `analytik/analytik.js`). Copy it into the folder your server or host serves as static files, and copy it again after you upgrade the package:
 
 ```bash
-mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js
+mkdir -p public/js && cp node_modules/analytik/dist/analytik.js public/js/analytik.js
 ```
 
-The server above serves that file at `/analytik.js`. Without `data-api` the tracker sends events to the same origin as the script, under `/api`, which matches this setup.
+The server above serves that file at `/js/analytik.js`. Without `data-api` the tracker sends events to the same origin as the script, under `/api`, which matches this setup.
 
 `data-allow-localhost` is only for local work; without it the tracker does nothing on `localhost`, and the server rejects events from hosts that are not the site's domain unless the site has `allowLocalhost` set. All attributes are listed in the [tracker attributes reference](/reference/tracker-attributes).
 

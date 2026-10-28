@@ -30,7 +30,7 @@ describe('site integration prompt', () => {
       allowLocalhost: true,
       autoOutbound: false,
     })
-    expect(prompt).toContain('https://analytics.example.com/analytik.js')
+    expect(prompt).toContain('https://analytics.example.com/js/analytik.js')
     expect(prompt).toContain('data-site="my-site"')
     expect(prompt).toContain('data-mode="persistent"')
     expect(prompt).toContain('data-require-interaction="false"')

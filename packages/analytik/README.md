@@ -79,7 +79,7 @@ export default {
 Then add the tracker to your site:
 
 ```html
-<script defer src="https://analytics.example.com/analytik.js" data-site="my-site" data-mode="strict"></script>
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="my-site" data-mode="strict"></script>
 ```
 
 Track an event or a sale from your own code:

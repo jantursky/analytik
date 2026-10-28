@@ -75,7 +75,7 @@ interface ServerGuide {
 }
 
 const ADMIN = 'admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },'
-const COPY_TRACKER = '`mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js`'
+const COPY_TRACKER = '`mkdir -p public/js && cp node_modules/analytik/dist/analytik.js public/js/analytik.js`'
 const SECRETS =
   '`ADMIN_PASSWORD` (the dashboard password, not empty) and `SESSION_SECRET` (`openssl rand -hex 32`, at least 32 characters)'
 
@@ -125,7 +125,7 @@ const analytik = createAnalytik({
 const app = new Hono()
 app.route('/', analytik.app)
 // The Analytik app serves the API only; the tracker is a static file.
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 export default { port: Number(process.env.PORT ?? 3000), fetch: app.fetch }`,
 })
@@ -149,7 +149,7 @@ const analytik = createAnalytik({
 const app = new Hono()
 app.route('/', analytik.app)
 // The Analytik app serves the API only; the tracker is a static file.
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) })`,
 })
@@ -162,7 +162,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 COPY . .
-RUN mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js
+RUN mkdir -p public/js && cp node_modules/analytik/dist/analytik.js public/js/analytik.js
 ENV PORT=3000
 EXPOSE 3000
 CMD ["bun", "server.ts"]`,
@@ -297,7 +297,7 @@ export default {
     steps: [
       'Create a Render Postgres database and set its internal connection string as `DATABASE_URL` on the web service.',
       `Set ${SECRETS} as environment variables.`,
-      'Build command `npm ci && mkdir -p public && cp node_modules/analytik/dist/analytik.js public/analytik.js`.',
+      'Build command `npm ci && mkdir -p public/js && cp node_modules/analytik/dist/analytik.js public/js/analytik.js`.',
       'Start command `node server.ts` (Node 22.18+ runs TypeScript directly). Render sets `PORT`.',
       'Add the analytics hostname as a custom domain.',
     ],
@@ -440,7 +440,7 @@ export const serverPrompt = (target: ServerTarget, options: SnippetOptions): str
 
 ## Goal
 
-Deploy analytik (privacy-first, self-hosted web analytics, npm package \`analytik\`) as ${guide.stack}. It must answer at ${host}: the API under \`/api\` and the tracker script at \`/analytik.js\`. Work in a new, separate project, not inside the website that will be tracked.
+Deploy analytik (privacy-first, self-hosted web analytics, npm package \`analytik\`) as ${guide.stack}. It must answer at ${host}: the API under \`/api\` and the tracker script at \`/js/analytik.js\`. Work in a new, separate project, not inside the website that will be tracked.
 
 ## Install
 
@@ -477,7 +477,7 @@ Use the real domain of the tracked website (events from other hosts are rejected
 
 ${numbered([
   `\`curl ${host}/api/health\` returns \`{"ok":true,...}\`.`,
-  `\`curl -I ${host}/analytik.js\` returns 200 with a JavaScript content type.`,
+  `\`curl -I ${host}/js/analytik.js\` returns 200 with a JavaScript content type.`,
   `\`npx analytik doctor --url ${host}\` reports no problems.`,
   `A test event is accepted with 202: \`curl -i -X POST ${host}/api/event -H 'Content-Type: text/plain' -H 'Origin: https://example.com' -d '{"w":"<site id>","t":"pageview","u":"https://example.com/"}'\` (use the site's domain).`,
 ])}

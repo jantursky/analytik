@@ -8,7 +8,7 @@ The tracker is one file, `analytik.js`, under 4 KB gzipped, with no dependencies
 ## The script tag
 
 ```html
-<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
 ```
 
 `data-site` is the site id from your server. `data-mode` defaults to `strict`; the server processes events in the lower of the tracker's mode and the site's mode. The tracker posts events to `/api/event` on the origin the script was loaded from, unless you set `data-api` to another base path.

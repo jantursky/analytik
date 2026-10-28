@@ -43,10 +43,11 @@ describe('the dashboard served in front of the app', () => {
     expect(await icon.text()).toContain('<svg')
   })
 
-  it('serves the tracker at /analytik.js and leaves everything else to the app', async () => {
+  it('serves the tracker at /js/analytik.js, and still at the old /analytik.js, and leaves everything else to the app', async () => {
     const handler = withDashboard(app())
-    const tracker = await get(handler, '/analytik.js')
+    const tracker = await get(handler, '/js/analytik.js')
     expect(await tracker.text()).toBe('(function(){})()')
+    expect(await (await get(handler, '/analytik.js')).text()).toBe('(function(){})()')
     expect(tracker.headers.get('cache-control')).toBe('public, max-age=86400')
     expect(await (await get(handler, '/api/health')).json()).toEqual({ ok: true, dialect: 'memory' })
     // Only reads are answered here; a POST to the same paths belongs to the app.

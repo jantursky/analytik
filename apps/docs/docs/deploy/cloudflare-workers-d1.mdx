@@ -34,7 +34,7 @@ mkdir analytik-worker && cd analytik-worker
 bun add analytik hono
 bun add -d wrangler @cloudflare/workers-types typescript
 mkdir -p public src
-cp node_modules/analytik/dist/analytik.js public/analytik.js
+cp node_modules/analytik/dist/analytik.js public/js/analytik.js
 ```
 
 The last line puts the tracker where Workers serves static files from. Repeat it when you upgrade the package.
@@ -69,7 +69,7 @@ Location comes from Cloudflare's `cf-ipcountry` header and `request.cf`, so no g
 
 ### With the dashboard built in
 
-`withDashboard()` from `analytik/standalone` puts the dashboard and the tracker in front of the app: `/` is the dashboard, `/analytik.js` the tracker, and every other request goes to the app. Wrap the app and leave out the `public` folder and the `assets` block of `wrangler.jsonc`:
+`withDashboard()` from `analytik/standalone` puts the dashboard and the tracker in front of the app: `/` is the dashboard, `/js/analytik.js` the tracker, and every other request goes to the app. Wrap the app and leave out the `public` folder and the `assets` block of `wrangler.jsonc`:
 
 ```ts src/worker.ts
 import { createAnalytik } from 'analytik/server'
@@ -145,7 +145,7 @@ The Analytik command line cannot reach D1, so the schema goes in through Wrangle
 Create the first site as shown in [Getting started](/getting-started#create-a-site), or in the dashboard, and add the script:
 
 ```html
-<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID"></script>
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID"></script>
 ```
 
 Allowed origins default to the registered site domain and its subdomains, so one deployment serves several sites; add each one as its own site.

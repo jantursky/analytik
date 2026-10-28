@@ -1,4 +1,4 @@
-/*! analytik | MIT | <script defer src="https://YOUR-HOST/analytik.js" data-site="SITE_ID"></script> */
+/*! analytik | MIT | <script defer src="https://YOUR-HOST/js/analytik.js" data-site="SITE_ID"></script> */
 import type { PrivacyMode } from '../shared/types'
 import { createEngine } from './engine'
 import { replay, toGlobal } from './global'

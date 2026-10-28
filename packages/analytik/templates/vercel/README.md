@@ -10,4 +10,4 @@ One Vercel function that serves the [Analytik](https://github.com/jantursky/anal
 
 Open the project's address, sign in, add your site and paste the tracking snippet it shows. The schema is created on the first request.
 
-The `vercel.json` rewrite sends every path to the one function, which answers `/` with the dashboard, `/analytik.js` with the tracker and `/api/*` with the API.
+The `vercel.json` rewrite sends every path to the one function, which answers `/` with the dashboard, `/js/analytik.js` with the tracker and `/api/*` with the API.

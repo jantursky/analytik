@@ -134,7 +134,7 @@ Attribution order (`matched_by`): `metadata` (visitorId/sessionId present) → `
 Script tag (new):
 
 ```html
-<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID" data-mode="strict"></script>
 ```
 
 Attributes: `data-site`, `data-api` (default origin of src + `/api/event`), `data-mode`, `data-allow-localhost`, `data-domain`, `data-require-interaction`, `data-keep-query`, `data-ping-interval` (seconds between activity updates, default 240, min 30, `0` = only on leaving), `data-debug`, `data-auto-outbound` (default true), `data-auto-track-attrs` (default true).

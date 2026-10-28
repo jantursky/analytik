@@ -23,7 +23,7 @@ const analytik = createAnalytik({
 
 const app = new Hono()
 app.route('/', analytik.app)
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 export default { port: Number(process.env.PORT ?? 3000), fetch: app.fetch }
 ```
@@ -53,7 +53,7 @@ const analytik = createAnalytik({
 
 const app = new Hono()
 app.route('/', analytik.app)
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) })
 ```

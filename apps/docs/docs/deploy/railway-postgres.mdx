@@ -11,7 +11,7 @@ Railway runs Analytik as a normal long-lived process, which is the simplest mode
 mkdir analytik-server && cd analytik-server
 bun init -y
 bun add analytik hono postgres
-mkdir public && cp node_modules/analytik/dist/analytik.js public/analytik.js
+mkdir -p public/js && cp node_modules/analytik/dist/analytik.js public/js/analytik.js
 ```
 
 ```ts server.ts
@@ -30,7 +30,7 @@ const analytik = createAnalytik({
 
 const app = new Hono()
 app.route('/', analytik.app)
-app.use('/analytik.js', serveStatic({ path: './public/analytik.js' }))
+app.use('/js/analytik.js', serveStatic({ path: './public/js/analytik.js' }))
 
 export default {
   port: Number(process.env.PORT ?? 3000),
@@ -59,7 +59,7 @@ Use the database's private networking address (`*.railway.internal`) for `DATABA
 In the service's settings, generate a Railway domain or add a custom one and create the CNAME record Railway shows. Use the resulting hostname in the script tag:
 
 ```html
-<script defer src="https://analytics.example.com/analytik.js" data-site="SITE_ID"></script>
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID"></script>
 ```
 
 Railway puts a proxy in front of the service and passes the visitor's address in `X-Forwarded-For`. Analytik ignores that header unless you set `trustProxy: 'forwarded'`, as in the code above, because otherwise a visitor could send it themselves. That mode reads the rightmost public address, so it is only safe behind a proxy that sets or appends the header. Check that this holds for your Railway setup. Without a client IP, strict mode tells visitors apart by user agent only. Railway does not add location headers, so countries and cities are empty unless you supply your own lookup with the `geo` option or put Cloudflare in front of the domain.

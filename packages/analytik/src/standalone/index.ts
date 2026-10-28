@@ -30,7 +30,7 @@ const SECURITY = {
 
 /**
  * Puts the dashboard and the tracker script in front of an analytik app, so one deployment serves everything:
- * `/` is the dashboard (sign in with the admin password), `/analytik.js` is the tracker, and every other request
+ * `/` is the dashboard (sign in with the admin password), `/js/analytik.js` is the tracker, and every other request
  * goes to `app`. Returns an object with the same `fetch` as `app`, ready to export from a Worker or hand to a server.
  *
  * The dashboard is built into this module, so importing it adds about a megabyte to the bundle; leave it out of
@@ -77,7 +77,8 @@ export function withDashboard<A extends unknown[]>(
         const { pathname } = new URL(request.url)
         if (pathname === '/' || pathname === '/index.html') return page()
         if (pathname === '/favicon.svg') return asset(icon, 'image/svg+xml', 'public, max-age=86400')
-        if (pathname === '/analytik.js') {
+        // The old path keeps working for snippets pasted before the tracker moved under /js.
+        if (pathname === '/js/analytik.js' || pathname === '/analytik.js') {
           return asset(assets.tracker, 'text/javascript; charset=utf-8', 'public, max-age=86400')
         }
         const match = /^\/_analytik\/([0-9a-f]{12})\.(js|css)$/.exec(pathname)

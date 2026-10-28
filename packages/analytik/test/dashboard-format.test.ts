@@ -245,7 +245,7 @@ describe('snippet', () => {
         pingInterval: 240,
         debug: false,
       }),
-    ).toBe('<script defer src="https://stats.example.net/analytik.js" data-site="site_1"></script>')
+    ).toBe('<script defer src="https://stats.example.net/js/analytik.js" data-site="site_1"></script>')
   })
 
   it('writes every non-default option, escaped', () => {
@@ -261,7 +261,7 @@ describe('snippet', () => {
         debug: true,
       }),
     ).toBe(
-      '<script defer src="https://example.com/analytik.js" data-site="a&quot;b" data-api="https://example.com/stats/api" data-mode="persistent" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page,tab" data-ping-interval="0" data-debug="true"></script>',
+      '<script defer src="https://example.com/js/analytik.js" data-site="a&quot;b" data-api="https://example.com/stats/api" data-mode="persistent" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page,tab" data-ping-interval="0" data-debug="true"></script>',
     )
   })
 

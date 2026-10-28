@@ -45,7 +45,7 @@ export const siteOf = (options: SnippetOptions): string => options.siteId.trim()
 export const scriptAttributes = (options: SnippetOptions): [string, string][] => {
   const attributes: [string, string][] = [
     ['defer', ''],
-    ['src', `${hostOf(options)}/analytik.js`],
+    ['src', `${hostOf(options)}/js/analytik.js`],
     ['data-site', siteOf(options)],
     ['data-mode', options.mode],
   ]

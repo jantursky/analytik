@@ -1317,14 +1317,14 @@ describe('Settings', () => {
     const { container } = await open(fakeApi(), 'settings')
     await section(container, 'Tracking code')
     const snippet = () => container.querySelector('[aria-label="Snippet"]')?.textContent
-    expect(snippet()).toBe(`<script defer src="${location.origin}/analytik.js" data-site="site_1"></script>`)
+    expect(snippet()).toBe(`<script defer src="${location.origin}/js/analytik.js" data-site="site_1"></script>`)
     await choose(selectTrigger(container, 'Mode'), 'Enriched')
     await fill(byLabel(container, 'Keep query parameters'), 'page')
     await click(switchFor(container, 'Track clicks on outbound links'))
     await click(switchFor(container, 'Wait for an interaction or 3 seconds on screen before counting (filters bots)'))
     await choose(selectTrigger(container, 'Activity updates'), 'Only when leaving')
     expect(snippet()).toBe(
-      `<script defer src="${location.origin}/analytik.js" data-site="site_1" data-mode="enriched" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page" data-ping-interval="0"></script>`,
+      `<script defer src="${location.origin}/js/analytik.js" data-site="site_1" data-mode="enriched" data-require-interaction="false" data-auto-outbound="false" data-keep-query="page" data-ping-interval="0"></script>`,
     )
     await click(byText(container, 'Copy snippet', 'button'))
     await settled()
@@ -1714,7 +1714,7 @@ describe('parts', () => {
     )
     await settled()
     expect(container.querySelector('[aria-label="Snippet"]')?.textContent).toContain(
-      'src="https://stats.example.net/analytik.js"',
+      'src="https://stats.example.net/js/analytik.js"',
     )
     expect(texts(container, '.analytik-stat-label')).toHaveLength(7)
     expect(byText(container, 'Open live map', 'button')).toBeUndefined()

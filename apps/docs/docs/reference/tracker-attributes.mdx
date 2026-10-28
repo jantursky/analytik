@@ -8,7 +8,7 @@ Set these on the `script` tag that loads `analytik.js`.
 ```html
 <script
   defer
-  src="https://analytics.example.com/analytik.js"
+  src="https://analytics.example.com/js/analytik.js"
   data-site="SITE_ID"
   data-mode="strict"
   data-keep-query="plan,coupon"
@@ -34,7 +34,7 @@ Set these on the `script` tag that loads `analytik.js`.
 `data-keep-query` only changes what the tracker sends. Campaign keys (`utm_*`, `ref`, `source`) and the payment return ids (`payment_id`, `session_id`, `subscription_id`) are always sent, and private keys such as `email`, `token` and `code` are always dropped, even when listed. What ends up in the stored page path is decided by the server: only the keys in `createAnalytik({ privacy: { keepQuery } })` are kept, and the same private keys are dropped there as well. To keep `plan` in your page paths, set both:
 
 ```html
-<script defer src="/analytik.js" data-site="SITE_ID" data-keep-query="plan"></script>
+<script defer src="/js/analytik.js" data-site="SITE_ID" data-keep-query="plan"></script>
 ```
 
 ```ts
