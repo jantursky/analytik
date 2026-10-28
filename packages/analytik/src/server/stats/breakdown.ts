@@ -2,7 +2,16 @@ import type { BreakdownRow, Dimension } from '../../shared/types'
 import type { Context } from '../context'
 import type { SiteRecord } from '../sites'
 import { REVENUE_COLUMNS } from './overview'
-import { EVENT_DIMENSIONS, SESSION_COLUMNS, type StatsQuery, filterSql, ratio, sessionWhere } from './query'
+import {
+  EVENT_DIMENSIONS,
+  SESSION_COLUMNS,
+  type StatsQuery,
+  comparisonWindow,
+  filterSql,
+  pageLimit,
+  ratio,
+  sessionWhere,
+} from './query'
 
 interface TrafficRow {
   key: string | null
@@ -103,13 +112,39 @@ async function byEvent(ctx: Context, site: SiteRecord, dimension: Dimension, que
  * Top values of a dimension. For pages, goals and outbound links `pageviews` counts the events
  * themselves; `conversionRate` is paying visitors over visitors.
  */
-export function breakdown(
+export async function breakdown(
   ctx: Context,
   site: SiteRecord,
   dimension: Dimension,
   query: StatsQuery,
   limit: number,
 ): Promise<BreakdownRow[]> {
+  const { compare, ...own } = query
+  const rows = await rowsFor(ctx, site, dimension, own, limit)
+  if (!compare || rows.length === 0) return rows
+  // The same values over the comparison window, matched by key. Asked for at the largest page, so a value that was
+  // small before still has its number; one that is missing had no visits then.
+  const earlier = new Map(
+    (await rowsFor(ctx, site, dimension, { ...own, ...comparisonWindow(own, compare) }, pageLimit(500))).map((row) => [
+      row.key,
+      row,
+    ]),
+  )
+  return rows.map((row) => {
+    const { key: _key, ...before } = earlier.get(row.key) ?? {
+      key: row.key,
+      visitors: 0,
+      sessions: 0,
+      pageviews: 0,
+      revenue: 0,
+      orders: 0,
+      conversionRate: 0,
+    }
+    return { ...row, previous: before }
+  })
+}
+
+function rowsFor(ctx: Context, site: SiteRecord, dimension: Dimension, query: StatsQuery, limit: number) {
   const column = SESSION_COLUMNS[dimension]
   return column ? bySession(ctx, site, column, query, limit) : byEvent(ctx, site, dimension, query, limit)
 }

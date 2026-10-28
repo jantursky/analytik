@@ -1,7 +1,7 @@
 import { MotionConfig } from 'motion/react'
 import { createContext, type ReactNode, use, useMemo } from 'react'
 
-import type { Filters, Query, Site } from '../shared/types'
+import type { Comparison, Filters, Query, Site } from '../shared/types'
 import type { ApiClient } from './api'
 import type { DashboardView } from './Dashboard'
 import { OwnPreferences } from './preferences'
@@ -14,6 +14,10 @@ export interface DashboardState {
   site: Site
   range: DateRange
   filters: Filters
+  /** Also load the period before (or a year earlier), set by the toolbar's Compare. */
+  compare?: Comparison
+  /** Values each breakdown block has loaded, by dimension, for the command palette. */
+  known?: Map<string, string[]>
   /** The stats query for the range and filters, in the site timezone. */
   query: Query
   addFilter: (dimension: string, value: string) => void
@@ -40,6 +44,8 @@ export interface DashboardProviderProps {
   site: Site
   range: DateRange
   filters?: Filters
+  compare?: Comparison
+  known?: Map<string, string[]>
   onFilter?: (dimension: string, value: string) => void
   onSiteChange?: (site: Site) => void
   /** Lets parts link to other views, e.g. "Open live map" to the realtime view. */
@@ -61,6 +67,8 @@ export function DashboardProvider({
   site,
   range,
   filters = {},
+  compare,
+  known,
   onFilter = ignore,
   onSiteChange = ignore,
   onViewChange,
@@ -74,13 +82,22 @@ export function DashboardProvider({
       site,
       range,
       filters,
-      query: { from: range.from, to: range.to, interval: range.interval, tz: site.timezone, filters },
+      compare,
+      known,
+      query: {
+        from: range.from,
+        to: range.to,
+        interval: range.interval,
+        tz: site.timezone,
+        filters,
+        ...(compare && { compare }),
+      },
       addFilter: onFilter,
       onSiteChange,
       openView: onViewChange,
       customizing,
     }),
-    [client, apiUrl, site, range, filters, onFilter, onSiteChange, onViewChange, customizing],
+    [client, apiUrl, site, range, filters, compare, known, onFilter, onSiteChange, onViewChange, customizing],
   )
   // Motion follows the visitor's reduced-motion setting here and in <Dashboard>.
   return (

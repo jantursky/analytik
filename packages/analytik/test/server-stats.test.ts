@@ -132,6 +132,57 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     })
   })
 
+  it('compare: overview deltas against the same dates a year earlier', async () => {
+    const overview = await get<Overview>(`/overview?${RANGE}&compare=year`)
+    expect(overview.visitors).toEqual({ value: 3, previous: 0, change: null })
+    expect((await get<Overview>(`/overview?${RANGE}&compare=previous`)).visitors).toEqual({
+      value: 3,
+      previous: 1,
+      change: 2,
+    })
+  })
+
+  it('compare: the series comes back with the earlier bucket at the same position', async () => {
+    const plain = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=hour`)
+    expect(plain.some((point) => 'previous' in point)).toBe(false)
+    const hourly = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=hour&compare=previous`)
+    expect(hourly).toHaveLength(24)
+    // The visit the day before was at 12:00.
+    expect(hourly[12]?.previous).toMatchObject({ ts: DAY_START - DAY + 12 * HOUR, visitors: 1, sessions: 1 })
+    expect(hourly[11]?.previous).toMatchObject({ visitors: 0, sessions: 0 })
+    expect(hourly[8]).toMatchObject({ visitors: 1, previous: { visitors: 0 } })
+    const year = await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=day&compare=year`)
+    expect(year[0]?.previous).toMatchObject({ visitors: 0, revenue: 0 })
+  })
+
+  it('compare: breakdown rows carry their numbers from the earlier period', async () => {
+    const plain = await get<BreakdownRow[]>(`/breakdown?${RANGE}&dimension=channel`)
+    expect(plain.some((row) => 'previous' in row)).toBe(false)
+    const rows = await get<BreakdownRow[]>(`/breakdown?${RANGE}&dimension=channel&compare=previous`)
+    expect(rows.find((row) => row.key === 'Direct')?.previous).toMatchObject({ visitors: 1, sessions: 1 })
+    expect(rows.find((row) => row.key === 'Email')?.previous).toEqual({
+      visitors: 0,
+      sessions: 0,
+      pageviews: 0,
+      revenue: 0,
+      orders: 0,
+      conversionRate: 0,
+    })
+  })
+
+  it('compare: ignores unknown values and works through the stats API', async () => {
+    expect((await get<TimeseriesPoint[]>(`/timeseries?${RANGE}&interval=day&compare=bogus`))[0]).not.toHaveProperty(
+      'previous',
+    )
+    const [point] = await server.analytik.stats.timeseries(site.id, {
+      from: DAY_START,
+      to: DAY_START + DAY,
+      interval: 'day',
+      compare: 'previous',
+    })
+    expect(point?.previous?.visitors).toBe(1)
+  })
+
   it('summary: every site in one request, matching the overview', async () => {
     const empty = await server.createSite({ domain: 'quiet.example.org', currency: 'EUR' })
     const summary = await server.adminJson<SiteSummary[]>('/summary?from=2026-03-16&to=2026-03-16')

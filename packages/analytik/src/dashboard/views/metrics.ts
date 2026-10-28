@@ -3,7 +3,7 @@ import { msg, t } from '../i18n'
 import { formatDuration, formatInteger, formatMoney, formatMoneyShort, formatNumber, formatPercent } from '../format'
 
 /** A number the overview can show on a tile and plot over time. */
-export type MetricKey = keyof Omit<TimeseriesPoint, 'ts'>
+export type MetricKey = keyof Omit<TimeseriesPoint, 'ts' | 'previous'>
 
 /** How a metric is drawn on its own: counts as an area, money and durations as bars, rates as a line. */
 export type ChartKind = 'area' | 'line' | 'bars'

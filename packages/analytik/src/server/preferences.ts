@@ -1,4 +1,5 @@
-import type { Context } from './context'
+import { segmentsProblem } from '../shared/segments'
+import { AnalytikError, type Context } from './context'
 
 /** The one key the dashboard uses; the table allows more, e.g. per-admin settings later. */
 const DASHBOARD = 'dashboard'
@@ -15,8 +16,13 @@ export async function getPreferences(ctx: Context): Promise<Record<string, unkno
   }
 }
 
-/** Replaces the dashboard settings. */
+/**
+ * Replaces the dashboard settings. The server stores them as sent, except the saved filter segments, whose shape and
+ * number it checks (the request body size is capped for the whole document).
+ */
 export async function savePreferences(ctx: Context, value: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const problem = segmentsProblem(value.segments)
+  if (problem) throw new AnalytikError(problem)
   await ctx.storage.run(
     `INSERT INTO preferences (key, value, updated_at) VALUES (?, ?, ?)
      ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,

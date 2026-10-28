@@ -82,6 +82,8 @@ Admin routes need a session cookie from `POST /auth/login`, or `Authorization: B
 
 All take `from`, `to`, `interval`, `tz` and filters. `GET /sites/:id/realtime` takes none of them.
 
+`overview`, `timeseries` and `breakdown` also take `compare=previous` (the period of the same length just before) or `compare=year` (the same dates a year earlier). The comparison comes back in the same response: every `TimeseriesPoint` and `BreakdownRow` gets a `previous` object (the bucket at the same position, matched by index; the row's numbers, all 0 when the value had no visits), and `overview` measures its changes against that period. Without `compare` nothing extra is read, and with it every one of these requests reads the data twice, so leave it off on a dashboard you keep open all day on a database that bills rows read.
+
 | Method and path                       | Returns                                                                                |
 | ------------------------------------- | -------------------------------------------------------------------------------------- |
 | `GET /sites/:id/overview`             | `Overview`. Revenue counts only the site's currency; the rest is in `otherCurrencies`. |

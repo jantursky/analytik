@@ -1,7 +1,7 @@
 import { fromBase64, toBase64Url } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, startOfBucket } from '../../shared/time'
 import { DIMENSIONS } from '../../shared/dimensions'
-import type { Dimension, Filters, Interval, Page, Query } from '../../shared/types'
+import type { Comparison, Dimension, Filters, Interval, Page, Query } from '../../shared/types'
 import { placeholders } from '../../storage/sql/statements'
 import { AnalytikError, type Context } from '../context'
 import type { SiteRecord } from '../sites'
@@ -46,11 +46,29 @@ export interface StatsQuery {
   interval: Interval
   tz: string
   filters: FilterValues
+  /** Set when the response should carry the comparison period too. */
+  compare?: Comparison
 }
 
 export interface Fragment {
   sql: string
   params: unknown[]
+}
+
+export const COMPARISONS: readonly Comparison[] = ['previous', 'year']
+
+/** `[from, to)` of the period to compare with: the same length just before, or the same dates a year earlier. */
+export function comparisonWindow(
+  query: Pick<StatsQuery, 'from' | 'to'>,
+  compare: Comparison,
+): { from: number; to: number } {
+  if (compare === 'previous') return { from: query.from - (query.to - query.from), to: query.from }
+  const back = (ms: number): number => {
+    const date = new Date(ms)
+    date.setUTCFullYear(date.getUTCFullYear() - 1)
+    return date.getTime()
+  }
+  return { from: back(query.from), to: back(query.to) }
 }
 
 export function isDimension(value: string): value is Dimension {
@@ -133,7 +151,15 @@ export function toStatsQuery(site: SiteRecord, query: Query): StatsQuery {
   for (const [key, value] of Object.entries(query.filters ?? ({} satisfies Filters))) {
     if (value !== undefined && isDimension(key)) filters[key] = [value]
   }
-  return { from: query.from, to: query.to, interval: clampInterval(query.from, query.to, query.interval), tz, filters }
+  const compare = query.compare && COMPARISONS.includes(query.compare) ? query.compare : undefined
+  return {
+    from: query.from,
+    to: query.to,
+    interval: clampInterval(query.from, query.to, query.interval),
+    tz,
+    filters,
+    ...(compare && { compare }),
+  }
 }
 
 /** The last 30 days including today, in the given timezone. */

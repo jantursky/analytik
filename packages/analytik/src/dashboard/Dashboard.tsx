@@ -1,8 +1,10 @@
 import { AnimatePresence, motion, MotionConfig } from 'motion/react'
-import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
+import { type ComponentType, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { Filters, Site } from '../shared/types'
+import type { Comparison, Filters, Site } from '../shared/types'
 import { type AddressState, readAddress as parseAddress, writeAddress } from './address'
+import { sameFilters } from './segments'
+import { parseSegments } from '../shared/segments'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
 import { DashboardProvider, requestKey } from './context'
@@ -13,9 +15,10 @@ import { Icon } from './icons'
 import { LanguageSwitch } from './language-switch'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
-import { type DateRange, presetRange } from './range'
-import { ThemeToggle } from './theme-toggle'
-import { FilterBar, IntervalPicker, RangePicker } from './Toolbar'
+import { type DateRange, presetRange, shiftRange } from './range'
+import { useShortcuts } from './shortcuts'
+import { NEXT_THEME, ThemeToggle } from './theme-toggle'
+import { ComparePicker, FilterBar, IntervalPicker, RangePicker } from './Toolbar'
 import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
 import { LayerContext } from './ui/layer'
 import { Select } from './ui/select'
@@ -31,6 +34,10 @@ import { Revenue } from './views/Revenue'
 import { Sessions } from './views/Sessions'
 import { Settings, SETTINGS_SECTIONS, type SettingsSection } from './views/Settings'
 import { SitesOverview } from './views/Sites'
+
+// The palette and the shortcuts help load the first time they are opened.
+const Palette = lazy(() => import('./palette').then((m) => ({ default: m.Palette })))
+const ShortcutHelp = lazy(() => import('./palette').then((m) => ({ default: m.ShortcutHelp })))
 
 export type DashboardView =
   'sites' | 'overview' | 'sources' | 'pages' | 'events' | 'funnels' | 'revenue' | 'sessions' | 'realtime' | 'settings'
@@ -85,6 +92,12 @@ export interface DashboardProps {
    */
   urlState?: boolean
   /**
+   * Keyboard shortcuts and the ⌘K / Ctrl+K command palette. Default `true`. They act only while focus is inside the
+   * dashboard (or on the page, when `urlState` says the dashboard owns it), never while typing in a field or when a
+   * dialog is open. Pass `false` when the host page needs the keys.
+   */
+  shortcuts?: boolean
+  /**
    * The language, `'en'` or `'sk'`. Without it the dashboard follows the Language setting, which by default follows the
    * browser's language, else English.
    */
@@ -122,6 +135,7 @@ export function Dashboard({
   syncPreferences = true,
   credits = true,
   urlState = false,
+  shortcuts = true,
   locale,
   messages,
 }: DashboardProps) {
@@ -135,6 +149,9 @@ export function Dashboard({
   const [customizing, setCustomizing] = useState(false)
   const [range, setRange] = useState(() => initial?.range ?? presetRange('7d', Date.now()))
   const [filters, setFilters] = useState<Filters>(() => initial?.filters ?? {})
+  const [compare, setCompare] = useState<Comparison | undefined>(initial?.compare)
+  // A segment named in the address, applied once the saved segments are known (they may still be loading).
+  const [pendingSegment, setPendingSegment] = useState(initial?.segment)
   const [adding, setAdding] = useState(false)
   // Bumped by "Refresh" on a custom range, which has no newer data window to move to; remounts the view.
   const [generation, setGeneration] = useState(0)
@@ -156,6 +173,17 @@ export function Dashboard({
   // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on.
   const preferences = usePreferencesStore(syncPreferences ? client : undefined, !unauthorized)
   const live = preferences.values.live === true
+  const segments = parseSegments(preferences.values.segments)
+  // Set while rendering, as React allows for a component's own state, rather than in an effect that renders twice.
+  const linked = pendingSegment ? segments.find((s) => s.id === pendingSegment) : undefined
+  if (linked) {
+    setFilters(linked.filters)
+    setPendingSegment(undefined)
+  }
+  const changeFilters = (next: Filters): void => {
+    setPendingSegment(undefined)
+    setFilters(next)
+  }
 
   // The language comes from the prop, the saved choice or the browser. A catalog is fetched once per language; until
   // it arrives the dashboard reads in English. Like the format settings, it is set before the children render.
@@ -223,7 +251,20 @@ export function Dashboard({
   const written = useRef<{ site: string; view: string } | null>(null)
   const siteKey = site?.id
   const nextUrl =
-    urlState && siteKey ? writeAddress(new URL(location.href), { site: siteKey, view, tab, range, filters }) : null
+    urlState && siteKey
+      ? writeAddress(new URL(location.href), {
+          site: siteKey,
+          view,
+          tab,
+          range,
+          compare,
+          filters,
+          // A segment stands for its filters; until the saved segments have loaded the one in the address is kept.
+          segment:
+            segments.find((s) => Object.keys(filters).length > 0 && sameFilters(s.filters, filters))?.id ??
+            (Object.keys(filters).length === 0 ? pendingSegment : undefined),
+        })
+      : null
   const nextHref = nextUrl?.href
   useEffect(() => {
     if (!nextUrl || !siteKey) return
@@ -241,6 +282,8 @@ export function Dashboard({
       setViewState((next.view as DashboardView | undefined) ?? 'overview')
       setTab(next.tab as SettingsSection | undefined)
       setRange(next.range ?? presetRange('7d', Date.now()))
+      setCompare(next.compare)
+      setPendingSegment(next.segment)
       setFilters(next.filters)
     }
     addEventListener('popstate', back)
@@ -249,18 +292,36 @@ export function Dashboard({
   const current = view === 'sites' ? undefined : VIEWS[view]
 
   const addFilter = (dimension: string, value: string): void => {
+    setPendingSegment(undefined)
     setFilters((f) => ({ ...f, [dimension]: value }))
     if (!current?.ranged) setView('overview')
   }
   const openSite = (id: string): void => {
     setChosenId(id)
-    setFilters({})
+    changeFilters({})
   }
   const refresh = (): void => {
     client.clearCache()
     if (range.preset === 'custom') setGeneration((g) => g + 1)
     else setRange(renew(range))
   }
+  const [overlay, setOverlay] = useState<'palette' | 'help' | null>(null)
+  // The values each breakdown block has loaded, so the palette can offer them as filters without asking again.
+  const [known] = useState(() => new Map<string, string[]>())
+  const pending = useShortcuts(
+    root,
+    {
+      go: setView,
+      step: (direction) => {
+        const next = view !== 'sites' && VIEWS[view].ranged ? shiftRange(range, direction, Date.now()) : null
+        if (next) setRange(next)
+      },
+      refresh,
+      help: () => setOverlay('help'),
+      palette: () => setOverlay('palette'),
+    },
+    { enabled: shortcuts && !unauthorized && sites.data !== undefined, global: urlState },
+  )
   const created = (next: Site): void => {
     setAdding(false)
     setChosenId(next.id)
@@ -299,6 +360,8 @@ export function Dashboard({
         site={site}
         range={range}
         filters={filters}
+        compare={compare}
+        known={known}
         onFilter={addFilter}
         onSiteChange={sites.reload}
         onViewChange={setView}
@@ -339,6 +402,7 @@ export function Dashboard({
               <>
                 <RangePicker range={range} onChange={setRange} />
                 <IntervalPicker range={range} onChange={setRange} />
+                <ComparePicker compare={compare} onChange={setCompare} />
                 <Switch
                   className="analytik-pill analytik-live-toggle"
                   checked={liveOn}
@@ -389,7 +453,7 @@ export function Dashboard({
             )}
           </div>
         </div>
-        {current.ranged && <FilterBar filters={filters} onChange={setFilters} />}
+        {current.ranged && <FilterBar filters={filters} onChange={changeFilters} />}
         <AnimatePresence mode="wait">
           {view === 'settings' ? (
             <Settings key={`${view}-${site.id}-${generation}`} section={tab} onSectionChange={setTab} />
@@ -460,6 +524,43 @@ export function Dashboard({
                 {content}
               </div>
               {credits && <Credits />}
+              {pending && (
+                <div className="analytik-chord-hint" role="status">
+                  <kbd>{pending}</kbd> {t('then a letter to go to a view')}
+                </div>
+              )}
+              <Suspense fallback={null}>
+                {overlay === 'palette' && site && (
+                  <Palette
+                    onClose={() => setOverlay(null)}
+                    controls={{
+                      views: NAV,
+                      go: setView,
+                      sites: list,
+                      siteId: site.id,
+                      openSite,
+                      setRange,
+                      live,
+                      setLive,
+                      cycleTheme: () => {
+                        const theme = parseTheme(preferences.values.theme) ?? 'system'
+                        const next = NEXT_THEME[theme]
+                        preferences.update({ theme: next === 'system' ? undefined : next })
+                      },
+                      refresh,
+                      compare,
+                      setCompare,
+                      segments,
+                      applySegment: (segment) => changeFilters({ ...segment.filters }),
+                      filters,
+                      clearFilters: () => changeFilters({}),
+                      addFilter,
+                      known,
+                    }}
+                  />
+                )}
+                {overlay === 'help' && <ShortcutHelp views={NAV} onClose={() => setOverlay(null)} />}
+              </Suspense>
               {!unauthorized && (
                 <AddSiteDialog
                   client={client}

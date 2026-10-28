@@ -19,7 +19,7 @@ import { actAsync, byLabel, byText, click, fill, key, render, settled, submit } 
 async function open(
   api = fakeApi(),
   view?: DashboardView,
-  extra: { siteId?: string; theme?: 'dark'; urlState?: boolean } = {},
+  extra: { siteId?: string; theme?: 'dark'; urlState?: boolean; shortcuts?: boolean } = {},
 ) {
   const result = await render(<Dashboard api="/api" fetcher={api.fetcher} view={view} {...extra} />)
   await settled()
@@ -84,6 +84,133 @@ describe('Dashboard shell', () => {
     await settled()
     expect(byLabel(container, 'Keep data for (days)')?.value).toBe('90')
     expect(container.querySelector('.analytik-site-options-summary')?.textContent).toBe('UTC · EUR · keeps 90 days')
+  })
+
+  it('compares with an earlier period: carried by the same requests, with changes on the rows', async () => {
+    history.replaceState(null, '', '/?compare=year')
+    try {
+      const { container, api } = await open(fakeApi(), undefined, { urlState: true })
+      expect(api.find('GET', '/sites/site_1/timeseries').every((call) => call.params.compare === 'year')).toBe(true)
+      expect(selectTrigger(container, 'Compare')?.textContent).toBe('Same period last year')
+      await waitFor(() => container.querySelector('.analytik-bar-change') !== null)
+      // The first row doubled, the second had no visits before: a percentage and "No data", never 0% or infinity.
+      expect(texts(container, '.analytik-bar-change').slice(0, 2)).toEqual([
+        'Change from previous period: +100%',
+        'No data',
+      ])
+      expect(container.querySelector('.analytik-compare-note')).toBeNull()
+
+      await choose(selectTrigger(container, 'Compare'), 'No comparison')
+      expect(location.search).toBe('?site=site_1')
+      const timeseries = api.find('GET', '/sites/site_1/timeseries')
+      expect(timeseries.at(-1)?.params).not.toHaveProperty('compare')
+      expect(container.querySelector('.analytik-bar-change')).toBeNull()
+
+      const before = api.find('GET', '/sites/site_1/overview').length
+      await choose(selectTrigger(container, 'Compare'), 'Previous period')
+      expect(location.search).toBe('?site=site_1&compare=previous')
+      // One more overview request, carrying the comparison; nothing keeps polling.
+      expect(api.find('GET', '/sites/site_1/overview').length).toBe(before + 1)
+      expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.compare).toBe('previous')
+    } finally {
+      history.replaceState(null, '', '/')
+    }
+  })
+
+  describe('saved filter segments', () => {
+    const menuItem = (text: string) =>
+      [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === text)
+    const openMenu = async (container: HTMLElement) => {
+      await click(container.querySelector('.analytik-segments-trigger'))
+      await settled()
+    }
+    const chip = (container: HTMLElement) => container.querySelector('[aria-label="Remove filter country is SK"]')
+
+    it('saves the active filters, applies them with one reload and puts the segment in the address', async () => {
+      history.replaceState(null, '', '/?f.country=SK')
+      try {
+        const { container, api } = await open(fakeApi(), undefined, { urlState: true })
+        await openMenu(container)
+        expect(document.querySelector('.analytik-menu-empty')?.textContent).toBe('No saved segments yet')
+        await press(menuItem('Save the active filters…'))
+        await fill(document.querySelector('.analytik-segment-form input'), 'Slovak visitors')
+        await submit(document.querySelector('.analytik-segment-form'))
+        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        const saved = api.find('PUT', '/preferences').at(-1)?.body as { segments: { id: string; name: string }[] }
+        expect(saved.segments).toEqual([
+          { id: expect.any(String) as string, name: 'Slovak visitors', filters: { country: 'SK' } },
+        ])
+        const id = saved.segments[0]?.id ?? ''
+        // The segment stands for its filters in the address.
+        expect(location.search).toBe(`?site=site_1&segment=${id}`)
+
+        await click(chip(container))
+        await settled()
+        expect(chip(container)).toBeNull()
+        const before = api.find('GET', '/sites/site_1/overview').length
+        await openMenu(container)
+        await press(menuItem('Slovak visitors'))
+        await settled()
+        expect(chip(container)).toBeTruthy()
+        expect(api.find('GET', '/sites/site_1/overview').length).toBe(before + 1)
+      } finally {
+        history.replaceState(null, '', '/')
+      }
+    })
+
+    it('restores a segment named in the address once the saved segments are known', async () => {
+      history.replaceState(null, '', '/?segment=abc')
+      try {
+        const api = fakeApi()
+        api.state.preferences = { segments: [{ id: 'abc', name: 'Slovak', filters: { country: 'SK', planet: 'x' } }] }
+        const { container } = await open(api, undefined, { urlState: true })
+        await waitFor(() => chip(container) !== null)
+        expect(container.querySelectorAll('.analytik-chip').length).toBe(1)
+        expect(location.search).toBe('?site=site_1&segment=abc')
+      } finally {
+        history.replaceState(null, '', '/')
+      }
+    })
+
+    it('renames and deletes segments, and refuses a twenty-first', async () => {
+      history.replaceState(null, '', '/?f.country=SK')
+      try {
+        const api = fakeApi()
+        api.state.preferences = {
+          segments: Array.from({ length: 20 }, (_, n) => ({
+            id: `s${n}`,
+            name: `Segment ${n}`,
+            filters: { city: `C${n}` },
+          })),
+        }
+        const { container } = await open(api, undefined, { urlState: true })
+        await openMenu(container)
+        await press(menuItem('Save the active filters…'))
+        await fill(document.querySelector('.analytik-segment-form input'), 'One too many')
+        await submit(document.querySelector('.analytik-segment-form'))
+        expect(document.querySelector('.analytik-field-error')?.textContent).toContain('up to 20 segments')
+        expect(api.find('PUT', '/preferences')).toHaveLength(0)
+        await key(document.activeElement, 'Escape')
+        await settled()
+
+        await openMenu(container)
+        await press(menuItem('Manage segments…'))
+        const names = () => [...document.querySelectorAll<HTMLInputElement>('.analytik-segment-list input')]
+        expect(names()).toHaveLength(20)
+        const first = names()[0]
+        await actAsync(() => first?.focus())
+        await fill(first, 'Renamed')
+        await actAsync(() => first?.blur())
+        await click(document.querySelector('[aria-label="Delete segment Segment 1"]'))
+        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        const body = api.find('PUT', '/preferences').at(-1)?.body as { segments: { name: string }[] }
+        expect(body.segments).toHaveLength(19)
+        expect(body.segments[0]?.name).toBe('Renamed')
+        expect(body.segments.some((s) => s.name === 'Segment 1')).toBe(false)
+      } finally {
+        history.replaceState(null, '', '/')
+      }
+    })
   })
 
   it('keeps the site and view in the address when asked to', async () => {
@@ -1714,6 +1841,117 @@ describe('update notice', () => {
       api.state.version = version
       expect((await open(api)).container.querySelector('.analytik-update')).toBeNull()
     }
+  })
+})
+
+describe('command palette and shortcuts', () => {
+  const keyDown = (target: Element | null | undefined, name: string, init: KeyboardEventInit = {}) =>
+    actAsync(() => {
+      target?.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true, ...init }))
+    })
+  const title = (container: HTMLElement) => container.querySelector('.analytik-toolbar h1')?.textContent
+  const input = () => document.querySelector<HTMLInputElement>('.analytik-palette input')
+  const optionTexts = () => [...document.querySelectorAll('[role="option"]')].map((o) => o.textContent)
+
+  it('opens with ⌘K, finds a view by typing and runs it, without asking the server for anything', async () => {
+    const { container, api } = await open(fakeApi(), 'overview')
+    const idle = api.requests.length
+    await keyDown(nav(container, 'Overview'), 'k', { metaKey: true })
+    await waitFor(input)
+    await type(input(), 'rev')
+    expect(optionTexts()).toContain('Go to Revenueg r')
+    // Opening the palette and searching it came from memory.
+    expect(api.requests.length).toBe(idle)
+    await keyDown(input(), 'Enter')
+    await settled()
+    expect(title(container)).toBe('Revenue')
+    expect(input()).toBeNull()
+    expect(api.requests.length).toBeGreaterThan(idle)
+  })
+
+  it('offers values already on screen as filters, and ranges, sites and segments', async () => {
+    const api = fakeApi()
+    api.state.preferences = { segments: [{ id: 's1', name: 'Mobile', filters: { device: 'Mobile' } }] }
+    const { container } = await open(api, 'overview')
+    await keyDown(nav(container, 'Overview'), 'k', { ctrlKey: true })
+    await waitFor(input)
+    const before = api.requests.length
+    await type(input(), 'organic')
+    expect(optionTexts()).toEqual(['Filter: channel is Organic Search'])
+    await type(input(), '')
+    expect(optionTexts().join('|')).not.toContain('Filter: channel')
+    await type(input(), 'seg')
+    expect(optionTexts()).toEqual(['Segment: Mobile'])
+    await type(input(), 'other')
+    expect(optionTexts()).toEqual(['Switch to Other'])
+    await type(input(), '30')
+    expect(optionTexts()).toEqual(['Range: Past 30 days'])
+    expect(api.requests.length).toBe(before)
+    await type(input(), 'organic')
+    await keyDown(input(), 'Enter')
+    await settled()
+    expect(container.querySelector('[aria-label="Remove filter channel is Organic Search"]')).toBeTruthy()
+  })
+
+  it('closes with Escape and gives the focus back', async () => {
+    const { container } = await open(fakeApi(), 'overview')
+    const button = nav(container, 'Pages')
+    await actAsync(() => button?.focus())
+    await keyDown(button, 'k', { metaKey: true })
+    await waitFor(input)
+    await key(input(), 'Escape')
+    await settled()
+    expect(input()).toBeNull()
+    expect(document.activeElement).toBe(button)
+  })
+
+  it('goes to a view with g then a letter, steps the range, refreshes and lists the shortcuts with ?', async () => {
+    const { container, api } = await open(fakeApi(), 'overview')
+    const start = nav(container, 'Overview')
+    await keyDown(start ?? null, 'g')
+    expect(container.querySelector('.analytik-chord-hint')?.textContent).toContain('g')
+    await keyDown(start ?? null, 'e')
+    await settled()
+    expect(title(container)).toBe('Events')
+    expect(container.querySelector('.analytik-chord-hint')).toBeNull()
+
+    const before = api.find('GET', '/sites/site_1/events')
+    await keyDown(nav(container, 'Events'), '[')
+    await settled()
+    const after = api.find('GET', '/sites/site_1/events')
+    expect((after.at(-1)?.params.to ?? '') < (before.at(-1)?.params.to ?? '')).toBe(true)
+    await keyDown(nav(container, 'Events'), 'r')
+    await settled()
+    expect(api.find('GET', '/sites/site_1/events').length).toBeGreaterThan(after.length)
+
+    await keyDown(nav(container, 'Events'), '?')
+    await waitFor(() => document.querySelector('.analytik-shortcuts'))
+    expect(document.querySelector('.analytik-shortcuts')?.textContent).toContain('Go to Overview')
+    // A dialog is open: the keys belong to it.
+    await keyDown(document.querySelector('.analytik-shortcuts'), 'g')
+    await keyDown(document.querySelector('.analytik-shortcuts'), 'o')
+    expect(title(container)).toBe('Events')
+  })
+
+  it('ignores keys typed into a field, held with a modifier, or when switched off', async () => {
+    const { container } = await open(fakeApi(), 'events')
+    const field = document.createElement('input')
+    container.querySelector('.analytik-main')?.append(field)
+    await keyDown(field, 'g')
+    await keyDown(field, 'o')
+    expect(title(container)).toBe('Events')
+    await keyDown(nav(container, 'Events'), 'g', { altKey: true })
+    await keyDown(nav(container, 'Events'), 'o')
+    expect(title(container)).toBe('Events')
+    // A key pressed outside the dashboard, on the host page, is not its business.
+    await keyDown(document.body, 'g')
+    await keyDown(document.body, 'o')
+    expect(title(container)).toBe('Events')
+
+    const off = await open(fakeApi(), 'overview', { shortcuts: false })
+    await keyDown(nav(off.container, 'Overview') ?? null, 'k', { metaKey: true })
+    await settled()
+    expect(input()).toBeNull()
   })
 })
 

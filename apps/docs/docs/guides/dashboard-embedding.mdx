@@ -67,6 +67,35 @@ A text you leave out shows in English. The translations were written with machin
 
 The component includes a login form. It signs in with `POST /auth/login` and keeps the session cookie, so the dashboard and the API should share an origin, or the API must send CORS headers that allow credentials for your dashboard's origin.
 
+## Exploring the data
+
+The **Compare** control in the toolbar draws the period just before the range (or the same dates a year earlier) as a lighter dashed line and shows each breakdown row's change. The comparison comes back in the same requests as the main numbers, so there is no extra request, but each of those reads the data twice while it is on, so it is off by default and kept only for the session (and in the address with `urlState`).
+
+**Segments** in the filter bar save the active filters under a name, apply them in one click (every block loads once) and rename or delete them. Up to 20 are kept, with the other dashboard settings, so they follow the admin to every browser and cost no extra request; with `syncPreferences={false}` they stay in the browser. With `urlState` a segment's id stands in for its filters in the address.
+
+### Shortcuts and the command palette
+
+Press <kbd>⌘ K</kbd> (<kbd>Ctrl K</kbd> elsewhere) to open a palette: type to go to a view, set a range, switch site, turn Live or the comparison on or off, apply a segment, or add a filter from a value a block on screen already shows. It makes no requests of its own, and its code is loaded the first time you open it.
+
+| Keys                                | Does                     |
+| ----------------------------------- | ------------------------ |
+| <kbd>⌘ K</kbd> or <kbd>Ctrl K</kbd> | Open the command palette |
+| <kbd>g</kbd> then <kbd>o</kbd>      | Go to Overview           |
+| <kbd>g</kbd> then <kbd>c</kbd>      | Go to Acquisition        |
+| <kbd>g</kbd> then <kbd>p</kbd>      | Go to Pages              |
+| <kbd>g</kbd> then <kbd>e</kbd>      | Go to Events             |
+| <kbd>g</kbd> then <kbd>f</kbd>      | Go to Funnels            |
+| <kbd>g</kbd> then <kbd>r</kbd>      | Go to Revenue            |
+| <kbd>g</kbd> then <kbd>s</kbd>      | Go to Sessions           |
+| <kbd>g</kbd> then <kbd>l</kbd>      | Go to Live               |
+| <kbd>g</kbd> then <kbd>t</kbd>      | Go to Settings           |
+| <kbd>g</kbd> then <kbd>a</kbd>      | Go to All sites          |
+| <kbd>[</kbd> and <kbd>]</kbd>       | Previous and next period |
+| <kbd>r</kbd>                        | Refresh                  |
+| <kbd>?</kbd>                        | List the shortcuts       |
+
+The shortcuts listen on the dashboard, not on the page, so they never reach the host's own keys: they act while focus is inside the dashboard (or anywhere on the page when `urlState` says the dashboard owns it). They are ignored while you type in a field, with <kbd>Ctrl</kbd>, <kbd>Alt</kbd> or <kbd>⌘</kbd> held, and while a dialog or menu is open. Pass `shortcuts={false}` to turn them off, the palette included.
+
 ## Your own authentication
 
 If your app already knows who the admin is, replace the login with a custom `admin.verify` on the server and a `fetcher` on the client:
@@ -272,6 +301,8 @@ Pass `urlState` and the dashboard keeps the open place in the address, for examp
 | `range`         | A preset: `today`, `24h`, `7d`, `30d`, `90d` or `12m`    | It is `7d`                        |
 | `from`, `to`    | A custom range as `YYYY-MM-DD` dates, both days included | The range is a preset             |
 | `interval`      | `hour`, `day`, `week` or `month`                         | It is the usual one for the range |
+| `compare`       | `previous` or `year`                                     | There is no comparison            |
+| `segment`       | The id of a saved segment, which stands for its filters  | No segment                        |
 | `f.<dimension>` | A filter, such as `f.country=SK`                         | The filter is off                 |
 
 Unknown values are ignored. Reading and writing the address costs no request: each block loads once for the restored state.

@@ -7,6 +7,7 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
+  Line,
   ResponsiveContainer,
   Tooltip,
   type TooltipContentProps,
@@ -21,6 +22,8 @@ export interface PlotRow {
   ts: number
   value: number
   secondary?: number
+  /** The same bucket in the comparison period. */
+  previous?: number
 }
 
 export interface AreaPlotProps {
@@ -85,11 +88,12 @@ export function AreaPlot({
 }: AreaPlotProps) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
-  const max = niceMax(Math.max(...rows.map((r) => r.value)))
+  const max = niceMax(Math.max(...rows.map((r) => Math.max(r.value, r.previous ?? 0))))
   const secondMax = niceMax(Math.max(...rows.map((r) => r.secondary ?? 0)))
   const series: Record<string, [string, (v: number) => string]> = {
     value: [label, formatValue],
     ...(secondary ? { secondary: [secondary.label, secondary.formatValue] as [string, (v: number) => string] } : {}),
+    previous: [t('{label} (comparison)', { label }), formatValue],
   }
 
   return (
@@ -149,6 +153,22 @@ export function AreaPlot({
             animationEasing="ease-out"
           />
         )}
+        {!hidden.primary && rows.some((r) => r.previous !== undefined) && (
+          <Line
+            yAxisId="left"
+            type="monotone"
+            dataKey="previous"
+            stroke={PRIMARY}
+            strokeOpacity={0.45}
+            strokeWidth={2}
+            strokeDasharray="5 4"
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--analytik-surface)', fill: PRIMARY }}
+            isAnimationActive={animate}
+            animationDuration={900}
+            animationEasing="ease-out"
+          />
+        )}
         {!hidden.primary && kind === 'bars' && (
           <Bar
             yAxisId="left"
@@ -193,7 +213,7 @@ export interface PlotSeries {
 }
 
 export interface MultiPlotProps {
-  /** One row per bucket: `ts` and a value per series key. */
+  /** One row per bucket: `ts`, a value per series key and, with a comparison, one per `key:previous`. */
   rows: ({ ts: number } & Record<string, number>)[]
   series: PlotSeries[]
   formatTime: (ts: number) => string
@@ -226,6 +246,20 @@ function MultiTooltip({
             <strong>{s.formatValue(values.get(s.key) ?? 0)}</strong>
           </span>
         ))}
+      {series
+        .filter((s) => values.has(`${s.key}:previous`))
+        .map((s) => (
+          <span
+            key={`${s.key}:previous`}
+            className="analytik-chart-tip-row"
+            data-series="custom"
+            data-comparison=""
+            style={{ '--analytik-tip-colour': s.colour } as CSSProperties}
+          >
+            <span>{t('{label} (comparison)', { label: s.label })}</span>
+            <strong>{s.formatValue(values.get(`${s.key}:previous`) ?? 0)}</strong>
+          </span>
+        ))}
     </div>
   )
 }
@@ -239,7 +273,14 @@ export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlot
   const animate = !useReducedMotionConfig()
   const scales = [...new Set(series.map((s) => s.scale))]
   const top = (scale: string) =>
-    niceMax(Math.max(0, ...series.filter((s) => s.scale === scale).flatMap((s) => rows.map((r) => r[s.key] ?? 0))))
+    niceMax(
+      Math.max(
+        0,
+        ...series
+          .filter((s) => s.scale === scale)
+          .flatMap((s) => rows.flatMap((r) => [r[s.key] ?? 0, r[`${s.key}:previous`] ?? 0])),
+      ),
+    )
   const ordered = [...series].sort((a, b) => Number(b.kind === 'bars') - Number(a.kind === 'bars'))
   const bars = series.filter((s) => s.kind === 'bars').length
 
@@ -284,6 +325,25 @@ export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlot
           animationDuration={220}
           animationEasing="ease-out"
         />
+        {series
+          .filter((s) => rows.some((r) => `${s.key}:previous` in r))
+          .map((s) => (
+            <Line
+              key={`${s.key}:previous`}
+              yAxisId={s.scale}
+              type="monotone"
+              dataKey={`${s.key}:previous`}
+              stroke={s.colour}
+              strokeOpacity={0.45}
+              strokeWidth={2}
+              strokeDasharray="5 4"
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--analytik-surface)', fill: s.colour }}
+              isAnimationActive={animate}
+              animationDuration={900}
+              animationEasing="ease-out"
+            />
+          ))}
         {ordered.map((s) =>
           s.kind === 'bars' ? (
             <Bar

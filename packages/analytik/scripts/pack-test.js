@@ -13,7 +13,7 @@ try {
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', dir], packageDir))
   const files = packed.files.map((file) => file.path).sort()
   const allowed =
-    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|templates\/(cloudflare|vercel)\/[\w./-]+|README\.md|CHANGELOG\.md|LICENSE|package\.json)$/
+    /^(dist\/[\w/-]+\.(js|js\.map|d\.ts)|dist\/(analytik\.js|dashboard\.css)|templates\/(cloudflare|vercel)\/[\w./-]+|README\.md|CHANGELOG\.md|THIRD_PARTY_NOTICES\.md|LICENSE|package\.json)$/
   const unexpected = files.filter((file) => !allowed.test(file))
   if (unexpected.length > 0) throw new Error(`Unexpected files in the tarball: ${unexpected.join(', ')}`)
   console.log(`tarball: ${packed.filename}, ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB`)

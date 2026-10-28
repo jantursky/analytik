@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type CSSProperties, lazy, type ReactNode, Suspense, useState } from 'react'
 
+import { formatChange } from './format'
+import { Icon } from './icons'
 import { t } from './i18n'
 import { EASE } from './ui/motion'
 
@@ -12,6 +14,8 @@ const MultiPlot = lazy(() => import('./chart-plot').then((m) => ({ default: m.Mu
 export interface ChartPoint {
   ts: number
   value: number
+  /** The value of the same bucket in the comparison period, drawn as a lighter dashed line. */
+  previous?: number
 }
 
 export interface AreaChartSecondary {
@@ -138,6 +142,8 @@ export interface ChartSeries {
   label: string
   /** One value per time. */
   values: number[]
+  /** The same, a period earlier, drawn as a lighter dashed line; missing buckets are left out. */
+  previous?: (number | undefined)[]
   kind: 'area' | 'line' | 'bars'
   /** CSS colour, also used by the legend and the tooltip. */
   colour: string
@@ -166,7 +172,16 @@ export function MultiChart({ times, series, formatTime, height = 200 }: MultiCha
   if (!times.length || !series.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
 
   const shown = series.filter((s) => !hidden.includes(s.key))
-  const rows = times.map((ts, i) => ({ ts, ...Object.fromEntries(shown.map((s) => [s.key, s.values[i] ?? 0])) }))
+  const rows = times.map((ts, i) => ({
+    ts,
+    ...Object.fromEntries(shown.map((s) => [s.key, s.values[i] ?? 0])),
+    ...Object.fromEntries(
+      shown.flatMap((s) => {
+        const before = s.previous?.[i]
+        return before === undefined ? [] : [[`${s.key}:previous`, before]]
+      }),
+    ),
+  }))
   const label = series.map((s) => s.label).join(', ')
   const legend = series.length > 1 && (
     <div className="analytik-legend" role="group" aria-label={t('Series')}>
@@ -242,6 +257,8 @@ export interface BarListRow {
   key: string
   label?: ReactNode
   value: number
+  /** The row's value in the comparison period: shows the change beside the value. */
+  previous?: number
 }
 
 export interface BarListProps {
@@ -255,6 +272,22 @@ export interface BarListProps {
   limit?: number
   /** Revenue rows get the revenue colour. */
   metric?: string
+}
+
+/** The change of a row against the comparison period; without a number to compare against it says so, never 0% or ∞. */
+function RowChange({ value, previous }: { value: number; previous: number }) {
+  if (previous === 0) {
+    return value === 0 ? null : <span className="analytik-bar-change">{t('No data')}</span>
+  }
+  const change = (value - previous) / previous
+  const trend = change === 0 ? 'flat' : change > 0 ? 'up' : 'down'
+  return (
+    <span className="analytik-bar-change analytik-delta" data-trend={trend}>
+      {trend !== 'flat' && <Icon name={change > 0 ? 'up' : 'down'} />}
+      <span className="analytik-sr-only">{t('Change from previous period:')} </span>
+      {formatChange(change)}
+    </span>
+  )
 }
 
 /** Ranked rows with a proportional meter under each; rows fade in and meters grow to their length. */
@@ -275,7 +308,10 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 aria-hidden="true"
               />
               <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
-              <span className="analytik-bar-value">{formatValue(row.value)}</span>
+              <span className="analytik-bar-figures">
+                <span className="analytik-bar-value">{formatValue(row.value)}</span>
+                {row.previous !== undefined && <RowChange value={row.value} previous={row.previous} />}
+              </span>
             </>
           )
           return (

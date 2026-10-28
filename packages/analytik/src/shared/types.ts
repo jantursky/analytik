@@ -120,7 +120,11 @@ export interface Query {
   interval?: Interval
   tz?: string
   filters?: Filters
+  /** Also return the same numbers for the period just before (`previous`) or a year earlier (`year`). */
+  compare?: Comparison
 }
+
+export type Comparison = 'previous' | 'year'
 
 export interface Delta {
   value: number
@@ -170,6 +174,8 @@ export interface TimeseriesPoint {
   /** Paying customers (first payments) over visitors, 0 to 1. */
   conversionRate: number
   revenuePerVisitor: number
+  /** The bucket at the same position in the comparison period, when `compare` was asked for. */
+  previous?: Omit<TimeseriesPoint, 'previous'>
 }
 
 export interface BreakdownRow {
@@ -180,6 +186,8 @@ export interface BreakdownRow {
   revenue: number
   orders: number
   conversionRate: number
+  /** The row's numbers in the comparison period (all 0 when it had none), when `compare` was asked for. */
+  previous?: Omit<BreakdownRow, 'key' | 'previous'>
 }
 
 export interface Realtime {

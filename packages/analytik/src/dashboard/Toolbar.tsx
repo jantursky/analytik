@@ -1,10 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 
-import type { Filters, Interval } from '../shared/types'
+import type { Comparison, Filters, Interval } from '../shared/types'
 import { Icon } from './icons'
 import { msg, t } from './i18n'
 import { type DateRange, intervalsFor, shiftRange } from './range'
+import { SegmentMenu, useSegments } from './segments'
 import { DateRangePicker } from './ui/date-picker'
 import { Select } from './ui/select'
 
@@ -56,11 +57,38 @@ export function IntervalPicker({ range, onChange }: { range: DateRange; onChange
   )
 }
 
+const COMPARE_OPTIONS: { value: Comparison | ''; label: string }[] = [
+  { value: '', label: msg('No comparison') },
+  { value: 'previous', label: msg('Previous period') },
+  { value: 'year', label: msg('Same period last year') },
+]
+
+/** Whether to load the period before, or the same dates a year earlier, beside the range. Off by default: it costs a second read. */
+export function ComparePicker({
+  compare,
+  onChange,
+}: {
+  compare: Comparison | undefined
+  onChange: (compare: Comparison | undefined) => void
+}) {
+  return (
+    <Select
+      label={t('Compare')}
+      hideLabel
+      className="analytik-pill analytik-compare"
+      value={compare ?? ''}
+      options={COMPARE_OPTIONS.map(({ value, label }) => ({ value, label: t(label) }))}
+      onChange={(value) => onChange(value || undefined)}
+    />
+  )
+}
+
 export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (filters: Filters) => void }) {
   const entries = Object.entries(filters).filter((entry): entry is [string, string] => entry[1] != null)
+  const { segments } = useSegments()
   return (
     <AnimatePresence initial={false}>
-      {entries.length > 0 && (
+      {(entries.length > 0 || segments.length > 0) && (
         <motion.div
           className="analytik-filters"
           role="group"
@@ -92,6 +120,7 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
               {t('Clear all')}
             </button>
           )}
+          <SegmentMenu filters={filters} onApply={onChange} />
         </motion.div>
       )}
     </AnimatePresence>

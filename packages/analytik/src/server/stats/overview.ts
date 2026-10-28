@@ -2,7 +2,16 @@ import { MINUTE, bucketStarts } from '../../shared/time'
 import type { Overview, SiteSummary, TimeseriesPoint } from '../../shared/types'
 import type { Context } from '../context'
 import type { SiteRecord } from '../sites'
-import { type Fragment, type StatsQuery, delta, filterSql, hasFilters, ratio, sessionWhere } from './query'
+import {
+  type Fragment,
+  type StatsQuery,
+  comparisonWindow,
+  delta,
+  filterSql,
+  hasFilters,
+  ratio,
+  sessionWhere,
+} from './query'
 
 const ONLINE_WINDOW = 5 * MINUTE
 
@@ -133,14 +142,17 @@ export async function siteSummaries(
   }))
 }
 
-/** Headline numbers for the range, each compared with the range of the same length just before it. */
+/**
+ * Headline numbers for the range, each compared with the range of the same length just before it, or with the same
+ * dates a year earlier when `compare` is `year`.
+ */
 export async function overview(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<Overview> {
-  const previousFrom = query.from - (query.to - query.from)
+  const { from: previousFrom, to: previousTo } = comparisonWindow(query, query.compare ?? 'previous')
   const [current, previous, money, previousMoney, visitorsOnline, other] = await Promise.all([
     totals(ctx, sessionWhere(site.id, query)),
-    totals(ctx, sessionWhere(site.id, query, previousFrom, query.from)),
+    totals(ctx, sessionWhere(site.id, query, previousFrom, previousTo)),
     revenue(ctx, paymentsFrom(site, query)),
-    revenue(ctx, paymentsFrom(site, query, previousFrom, query.from)),
+    revenue(ctx, paymentsFrom(site, query, previousFrom, previousTo)),
     online(ctx, site.id),
     otherCurrencies(ctx, site, query),
   ])
@@ -190,6 +202,19 @@ interface TrafficRow {
  * shows (bounce rate, visit duration, conversion rate, revenue per visitor) worked out per bucket the same way.
  */
 export async function timeseries(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<TimeseriesPoint[]> {
+  const { compare, ...own } = query
+  const points = await series(ctx, site, own)
+  if (!compare) return points
+  // The same query over the comparison window, matched bucket by bucket by position, so a leap day or a clock
+  // change can't pull the line out of step. The window is as long as the range, so it has the same interval.
+  const earlier = await series(ctx, site, { ...own, ...comparisonWindow(own, compare) })
+  return points.map((point, index) => {
+    const before = earlier[index]
+    return before ? { ...point, previous: before } : point
+  })
+}
+
+async function series(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<TimeseriesPoint[]> {
   const buckets = bucketTable(query)
   const filters = filterSql(query.filters)
   const money = paymentsFrom(site, query)

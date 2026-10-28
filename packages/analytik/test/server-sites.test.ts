@@ -259,6 +259,25 @@ describe('dashboard preferences', () => {
     await store.close()
   })
 
+  it('checks the saved filter segments: shape, count and size', async () => {
+    const put = (json: unknown) => server.admin('/preferences', { method: 'PUT', json })
+    const segment = (n: number) => ({ id: `s${n}`, name: `Segment ${n}`, filters: { country: 'SK', channel: 'Email' } })
+    const ok = { segments: [segment(1)] }
+    expect((await put(ok)).status).toBe(200)
+    expect(await server.adminJson('/preferences')).toEqual(ok)
+    const twenty = { segments: Array.from({ length: 20 }, (_, n) => segment(n)) }
+    expect((await put(twenty)).status).toBe(200)
+    expect((await put({ segments: [...twenty.segments, segment(20)] })).status).toBe(400)
+    expect((await put({ segments: 'all' })).status).toBe(400)
+    expect((await put({ segments: [{ id: 's', name: '', filters: {} }] })).status).toBe(400)
+    expect((await put({ segments: [{ id: 's', name: 'x'.repeat(61), filters: {} }] })).status).toBe(400)
+    expect((await put({ segments: [{ id: 's', name: 'ok', filters: { country: ['SK'] } }] })).status).toBe(400)
+    expect((await put({ segments: [{ id: 's', name: 'ok' }] })).status).toBe(400)
+    // The whole document is capped by the request size limit.
+    expect((await put({ segments: [], note: 'x'.repeat(70_000) })).status).toBe(413)
+    await put({})
+  })
+
   it('is admin only and takes a JSON object', async () => {
     expect((await server.request('/preferences')).status).toBe(401)
     expect((await server.admin('/preferences', { method: 'PUT', json: [1, 2] })).status).toBe(400)

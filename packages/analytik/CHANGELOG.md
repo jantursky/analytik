@@ -6,8 +6,21 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.8.0]
+
 ### Added
 
+- A command palette (⌘K or Ctrl+K) and keyboard shortcuts (`g` then a letter for a view, `[` and `]` for the range, `r`
+  to refresh, `?` for the list). The palette goes to views, ranges, sites, segments and comparisons and adds a filter from
+  values already on screen, without any request; it loads on first use. The shortcuts listen on the dashboard only, skip
+  fields, modifiers and open dialogs, and a `shortcuts={false}` prop turns them off.
+- Saved filter segments: a Segments menu in the filter bar saves the active filters under a name, applies them with one
+  click and renames or deletes them. Up to 20 are kept with the other dashboard settings (no new request or endpoint),
+  `PUT /preferences` checks their shape, and `?segment=<id>` links to one.
+- A Compare control in the toolbar: the chart draws the previous period (or the same dates a year earlier) as a lighter
+  dashed line and breakdown rows show their change, or "No data" when the earlier period had none. The HTTP API takes
+  `compare=previous|year` on `overview`, `timeseries` and `breakdown` and answers in the same response, with a `previous`
+  value on each point and row. It is off by default because it reads the data twice.
 - Settings has a Changelog section under the site's settings, behind a dashed line. It lists the release notes of every
   version (the running one is marked) and loads them only when opened, so it adds no request until you open it. `?tab=changelog` opens it.
 - With `urlState` (on in the standalone dashboard) the address now also keeps the Settings section (`tab`), the date range

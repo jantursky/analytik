@@ -232,13 +232,25 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     },
     'POST /sites/:id/rotate-key': () => ({ apiKey: 'ak_live_123' }),
     'GET /sites/:id/overview': () => overview,
-    'GET /sites/:id/timeseries': () => timeseries,
-    'GET /sites/:id/breakdown': ({ params }) =>
-      params.dimension === 'page'
-        ? [row('/', 900), row('/pricing', 300, 4990)]
-        : params.dimension === 'channel'
-          ? [row('Organic Search', 700, 9900), row('Direct', 500)]
-          : [row(`${params.dimension}-a`, 10)],
+    'GET /sites/:id/timeseries': ({ params }) =>
+      params.compare
+        ? timeseries.map((point, i) => ({
+            ...point,
+            previous: { ...point, visitors: [50, 0, 0, 0][i] ?? 0, revenue: 0, sessions: 0, pageviews: 0, orders: 0 },
+          }))
+        : timeseries,
+    'GET /sites/:id/breakdown': ({ params }) => {
+      const rows =
+        params.dimension === 'page'
+          ? [row('/', 900), row('/pricing', 300, 4990)]
+          : params.dimension === 'channel'
+            ? [row('Organic Search', 700, 9900), row('Direct', 500)]
+            : [row(`${params.dimension}-a`, 10)]
+      // With a comparison: the first row had half the visitors, the second none at all.
+      return params.compare
+        ? rows.map((r, i) => ({ ...r, previous: { ...r, visitors: i === 0 ? r.visitors / 2 : 0, key: undefined } }))
+        : rows
+    },
     'GET /sites/:id/realtime': () => realtime,
     'GET /sites/:id/sessions': ({ params }) =>
       Number(params.offset ?? 0) > 0

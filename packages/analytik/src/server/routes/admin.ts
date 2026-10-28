@@ -2,7 +2,7 @@ import type { Context as HonoContext, Hono, MiddlewareHandler } from 'hono'
 
 import { timingSafeEqual } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, parseDate } from '../../shared/time'
-import type { EventType, Interval } from '../../shared/types'
+import type { Comparison, EventType, Interval } from '../../shared/types'
 import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
@@ -28,7 +28,15 @@ import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
 import { purgeBefore } from '../stats/purge'
-import { DIMENSIONS, type FilterValues, type StatsQuery, defaultRange, isDimension, pageLimit } from '../stats/query'
+import {
+  COMPARISONS,
+  DIMENSIONS,
+  type FilterValues,
+  type StatsQuery,
+  defaultRange,
+  isDimension,
+  pageLimit,
+} from '../stats/query'
 import type { ExportTable, PageOptions } from '../types'
 
 const BODY_LIMIT = 64 * 1024
@@ -75,12 +83,14 @@ export function statsQuery(url: URL, site: SiteRecord, now: number): StatsQuery 
     const values = params.getAll(dimension).map((value) => value.slice(0, 500))
     if (values.length > 0) filters[dimension] = values
   }
+  const compare = params.get('compare')
   return {
     from,
     to,
     interval: clampInterval(from, to, interval && INTERVALS.includes(interval) ? interval : undefined),
     tz,
     filters,
+    ...(compare && COMPARISONS.includes(compare as Comparison) && { compare: compare as Comparison }),
   }
 }
 

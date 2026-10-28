@@ -16,6 +16,16 @@ describe('dashboard address', () => {
     expect(write({ site: 's1', view: 'overview', range: presetRange('7d', now), filters: {} })).toBe('/dash?site=s1')
   })
 
+  it('keeps the comparison and lets a saved segment stand for its filters', () => {
+    const range = presetRange('7d', now)
+    const url = new URL(write({ site: 's1', range, compare: 'year', segment: 'abc', filters: { country: 'SK' } }), base)
+    expect(url.search).toBe('?site=s1&compare=year&segment=abc')
+    expect(readAddress(url.search, vocabulary, now)).toMatchObject({ compare: 'year', segment: 'abc', filters: {} })
+    expect(readAddress('?compare=never', vocabulary, now).compare).toBeUndefined()
+    // Without a segment the filters are written out as before.
+    expect(write({ site: 's1', range, filters: { country: 'SK' } })).toBe('/dash?site=s1&f.country=SK')
+  })
+
   it('round-trips the site, view, tab, preset range, interval and filters', () => {
     const range = { ...presetRange('30d', now), interval: 'week' as const }
     const url = new URL(

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { BreakdownRow, Dimension } from '../../shared/types'
 import { BarList, type BarListRow } from '../charts'
@@ -81,7 +81,7 @@ function rowLabel(dimension: Dimension, key: string): BarListRow['label'] {
 
 /** A card with one tab per dimension; clicking a row filters the dashboard by it. */
 export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 10 }: BreakdownCardProps) {
-  const { client, site, query, addFilter } = useDashboard()
+  const { client, site, query, addFilter, known } = useDashboard()
   const [dimension, setDimension] = useState(dimensions[0] ?? 'page')
   const [expanded, setExpanded] = useState(false)
   // The rows carry their dimension: while another tab loads, the previous tab's rows stay until they cross-fade.
@@ -91,6 +91,15 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
   const format = metric === 'revenue' ? (v: number) => formatMoney(v, site.currency) : formatNumber
   const shown = rows.data
   const data = (shown?.list ?? []).filter((r: BreakdownRow) => metric !== 'revenue' || r.revenue)
+  // The palette offers these values as filters without asking the server again.
+  const loaded = shown?.list
+  useEffect(() => {
+    if (known && shown && loaded)
+      known.set(
+        shown.dimension,
+        loaded.map((r) => r.key),
+      )
+  }, [known, shown, loaded])
   const heading = <span className="analytik-col-head">{metric === 'revenue' ? t('Revenue') : t('Visitors')}</span>
   const list = (
     <Status loading={!shown} error={rows.error}>
@@ -109,7 +118,12 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
                   ? t('{dimension} by revenue', { dimension: t(DIMENSION_LABELS[shown.dimension]) })
                   : t('{dimension} by visitors', { dimension: t(DIMENSION_LABELS[shown.dimension]) })
               }
-              rows={data.map((r) => ({ key: r.key, label: rowLabel(shown.dimension, r.key), value: r[metric] }))}
+              rows={data.map((r) => ({
+                key: r.key,
+                label: rowLabel(shown.dimension, r.key),
+                value: r[metric],
+                ...(r.previous && { previous: r.previous[metric] }),
+              }))}
               formatValue={format}
               onSelect={(key) => addFilter(shown.dimension, key)}
               limit={expanded ? EXPANDED_LIMIT : limit}

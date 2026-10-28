@@ -2,15 +2,15 @@ import { Icon, type IconName } from './icons'
 import { msg, t } from './i18n'
 import { parseTheme, usePreferences } from './preferences'
 
-const NEXT = { system: 'light', light: 'dark', dark: 'system' } as const
-const ICON: Record<keyof typeof NEXT, IconName> = { system: 'desktop', light: 'sun', dark: 'moon' }
+export const NEXT_THEME = { system: 'light', light: 'dark', dark: 'system' } as const
+const ICON: Record<keyof typeof NEXT_THEME, IconName> = { system: 'desktop', light: 'sun', dark: 'moon' }
 const LABEL = { system: msg('Same as the page'), light: msg('Light'), dark: msg('Dark') }
 
 /** One button that cycles the theme: same as the page, light, dark. It writes the same setting as Settings, Appearance. */
 export function ThemeToggle() {
   const { values, update } = usePreferences()
   const current = parseTheme(values.theme) ?? 'system'
-  const next = NEXT[current]
+  const next = NEXT_THEME[current]
   return (
     <button
       type="button"

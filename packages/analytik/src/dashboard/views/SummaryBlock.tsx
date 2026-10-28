@@ -25,6 +25,7 @@ import {
   statLabel,
   type SummaryConfig,
 } from './metrics'
+import { ComparisonNote } from './ComparisonNote'
 import { useOverview } from './useOverview'
 
 /** Lists labels the way a sentence would: "Visitors, Revenue and Bounce rate". */
@@ -76,6 +77,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
         key,
         label: t(METRICS[key].label),
         values: points.map((p) => p[key]),
+        previous: points.map((p) => p.previous?.[key]),
         kind: METRICS[key].kind === 'area' && key !== firstArea ? 'line' : METRICS[key].kind,
         colour: seriesColour(index),
         scale: METRICS[key].unit,
@@ -217,6 +219,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       )}
       <Status loading={series.loading && !series.data} error={series.error}>
         {chart}
+        <ComparisonNote points={points} />
       </Status>
     </motion.section>
   )

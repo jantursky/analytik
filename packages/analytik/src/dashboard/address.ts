@@ -1,5 +1,5 @@
 import { DIMENSIONS } from '../shared/dimensions'
-import type { Filters, Interval } from '../shared/types'
+import type { Comparison, Filters, Interval } from '../shared/types'
 import { customRange, type DateRange, intervalFor, presetRange, RANGE_PRESETS, toDateInput } from './range'
 
 const INTERVALS: readonly Interval[] = ['hour', 'day', 'week', 'month']
@@ -14,7 +14,10 @@ export interface AddressState {
   view?: string
   tab?: string
   range?: DateRange
+  compare?: Comparison
   filters: Filters
+  /** A saved segment's id, standing for its filters. */
+  segment?: string
 }
 
 /** What an address may name; anything else is ignored. */
@@ -62,7 +65,12 @@ export function readAddress(search: string, vocabulary: AddressVocabulary, now =
     view: view && vocabulary.views.includes(view) ? view : undefined,
     tab: tab && vocabulary.tabs.includes(tab) ? tab : undefined,
     range: readRange(params, now),
+    compare:
+      params.get('compare') === 'previous' || params.get('compare') === 'year'
+        ? (params.get('compare') as Comparison)
+        : undefined,
     filters,
+    segment: params.get('segment') ?? undefined,
   }
 }
 
@@ -71,7 +79,8 @@ export function writeAddress(url: URL, state: AddressState): URL {
   const next = new URL(url)
   const params = next.searchParams
   for (const key of [...params.keys()]) if (key.startsWith(FILTER)) params.delete(key)
-  for (const key of ['range', 'from', 'to', 'interval']) params.delete(key)
+  params.delete('segment')
+  for (const key of ['range', 'from', 'to', 'interval', 'compare']) params.delete(key)
   const set = (key: string, value: string | undefined, fallback?: string): void => {
     if (value && value !== fallback) params.set(key, value)
     else params.delete(key)
@@ -90,7 +99,12 @@ export function writeAddress(url: URL, state: AddressState): URL {
       range.preset === 'custom' ? intervalFor(range.from, range.to) : presetRange(range.preset, range.to).interval
     if (range.interval !== usual) params.set('interval', range.interval)
   }
-  for (const [dimension, value] of Object.entries(state.filters))
-    if (value != null) params.set(FILTER + dimension, value)
+  if (state.compare) params.set('compare', state.compare)
+  // A saved segment stands for its filters, so a linked address stays short.
+  if (state.segment) params.set('segment', state.segment)
+  else {
+    for (const [dimension, value] of Object.entries(state.filters))
+      if (value != null) params.set(FILTER + dimension, value)
+  }
   return next
 }
