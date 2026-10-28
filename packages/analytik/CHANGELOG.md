@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.8.1]
+
+### Fixed
+
+- The 1.8.0 release build failed its lint and coverage checks, so 1.8.0 never reached npm. 1.8.1 has the same
+  features and is the first version published with them.
+
 ## [1.8.0]
 
 ### Added
