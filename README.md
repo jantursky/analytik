@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/banner.svg" alt="analytik: simple, private, fast web analytics" width="420">
+  <img src=".github/assets/banner.svg" alt="Analytik: simple, private, fast web analytics" width="420">
 </p>
 
 <p align="center">

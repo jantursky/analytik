@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.7.0]
+
+### Changed
+
+- The Add a website dialog is shorter: the domain (with a `https://` prefix) and an optional name come first, and
+  timezone, currency and data retention sit in an Options row that opens and closes with an animation. A new site starts with the timezone, currency
+  and retention of the newest site, and the name defaults to one made from the domain.
+
 ## [1.6.0]
 
 ### Changed

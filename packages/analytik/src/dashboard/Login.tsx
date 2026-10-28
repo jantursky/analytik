@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { type ReactNode, type SubmitEvent, useId, useState } from 'react'
 
 import type { Site } from '../shared/types'
@@ -113,38 +114,57 @@ export function DomainField({
       }
       error={problem ? { id: errorId, text: problem } : null}
     >
-      <input
-        className="analytik-input"
-        value={value}
-        placeholder="example.com"
-        inputMode="url"
-        autoComplete="off"
-        spellCheck={false}
-        aria-invalid={problem ? true : undefined}
-        aria-describedby={problem ? errorId : undefined}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        required
-      />
+      <span className="analytik-input-group">
+        <span className="analytik-input-lead" aria-hidden="true">
+          <Icon name="globe" />
+          https://
+        </span>
+        <input
+          className="analytik-input"
+          value={value}
+          placeholder="example.com"
+          inputMode="url"
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={problem ? true : undefined}
+          aria-describedby={problem ? errorId : undefined}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          required
+        />
+      </span>
     </Field>
   )
 }
 
+/** A name for a site from its domain: `www.example.com` is "Example", `docs.example.com` is "Docs". */
+const nameFromDomain = (domain: string): string => {
+  const label = domain.split('.').find((part) => part !== 'www') ?? ''
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 function SiteForm({
   client,
+  sites = [],
   onCreated,
   children,
 }: {
   client: ApiClient
+  /** The sites that exist; the newest one gives the timezone, currency and retention a new site starts with. */
+  sites?: Site[]
   onCreated: (site: Site) => void
   /** The heading above the fields, if any. */
   children?: ReactNode
 }) {
+  const last = sites.reduce<Site | undefined>(
+    (newest, s) => (!newest || s.createdAt > newest.createdAt ? s : newest),
+    undefined,
+  )
   const [domain, setDomain] = useState('')
   const [name, setName] = useState('')
-  const [timezone, setTimezone] = useState(localTimeZone)
-  const [currency, setCurrency] = useState('USD')
-  const [retention, setRetention] = useState('')
+  const [timezone, setTimezone] = useState(last?.timezone ?? localTimeZone())
+  const [currency, setCurrency] = useState(last?.currency ?? 'USD')
+  const [retention, setRetention] = useState(last?.retentionDays ? String(last.retentionDays) : '')
   const [touched, setTouched] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -155,7 +175,10 @@ function SiteForm({
       ? 'Use a whole number of days from 1 to 36500, or leave it empty.'
       : null
   const retentionId = useId()
-  const ready = !!name.trim() && !busy && !retentionProblem
+  const optionsId = useId()
+  const [optionsOpen, setOptionsOpen] = useState(false)
+  const suggested = clean ? nameFromDomain(clean) : ''
+  const ready = !!domain.trim() && !busy && !retentionProblem
 
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
@@ -163,7 +186,7 @@ function SiteForm({
     if (!clean) return
     setBusy(true)
     client
-      .createSite({ name: name.trim(), domain: clean, timezone, currency, retentionDays: days })
+      .createSite({ name: name.trim() || suggested || clean, domain: clean, timezone, currency, retentionDays: days })
       .then(onCreated, (e: unknown) => setError(message(e)))
       .finally(() => setBusy(false))
   }
@@ -178,40 +201,74 @@ function SiteForm({
         touched={touched}
         onBlur={() => setTouched(!!domain.trim())}
       />
-      <Field label="Name">
+      <Field label="Name" hint="Optional. Shown in the site list; the domain gives a name if you leave it empty.">
         <input
           className="analytik-input"
           value={name}
-          placeholder="My website"
+          placeholder={suggested || 'My website'}
           onChange={(e) => setName(e.target.value)}
-          required
         />
       </Field>
-      <div className="analytik-row">
-        <TimeZoneSelect label="Timezone" value={timezone} onChange={setTimezone} />
-        <CurrencySelect label="Revenue currency" value={currency} onChange={setCurrency} />
+      <div className="analytik-site-options" data-open={optionsOpen ? '' : undefined}>
+        <button
+          type="button"
+          className="analytik-site-options-toggle"
+          aria-expanded={optionsOpen}
+          aria-controls={optionsId}
+          onClick={() => setOptionsOpen(!optionsOpen)}
+        >
+          <span className="analytik-site-options-title">
+            <Icon name="sliders" />
+            Options
+          </span>
+          <span className="analytik-site-options-summary">
+            {timezone} · {currency} · {days ? `keeps ${days} days` : 'keeps all data'}
+          </span>
+          <Icon name="down" />
+        </button>
+        <motion.div
+          id={optionsId}
+          className="analytik-site-options-panel"
+          initial={false}
+          animate={{ height: optionsOpen ? 'auto' : 0, opacity: optionsOpen ? 1 : 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          inert={!optionsOpen}
+        >
+          <div className="analytik-site-options-body">
+            <div className="analytik-row">
+              <TimeZoneSelect label="Timezone" value={timezone} onChange={setTimezone} />
+              <CurrencySelect label="Revenue currency" value={currency} onChange={setCurrency} />
+            </div>
+            <Field
+              label="Keep data for (days)"
+              hint="Optional. Older visits and events are deleted, payments stay. Empty keeps everything."
+              error={retentionProblem ? { id: retentionId, text: retentionProblem } : null}
+            >
+              <input
+                className="analytik-input"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={36500}
+                step={1}
+                value={retention}
+                placeholder="Keep everything"
+                aria-invalid={retentionProblem ? true : undefined}
+                aria-describedby={retentionProblem ? retentionId : undefined}
+                onChange={(e) => setRetention(e.target.value)}
+              />
+            </Field>
+            <p className="analytik-field-hint">
+              {last
+                ? `Timezone, currency and retention start as on ${last.name}. You can change them later in the site's settings.`
+                : "You can change these later in the site's settings."}
+            </p>
+          </div>
+        </motion.div>
       </div>
-      <Field
-        label="Keep data for (days)"
-        hint="Optional. Older visits and events are deleted, payments stay. Empty keeps everything."
-        error={retentionProblem ? { id: retentionId, text: retentionProblem } : null}
-      >
-        <input
-          className="analytik-input"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={36500}
-          step={1}
-          value={retention}
-          placeholder="Keep everything"
-          aria-invalid={retentionProblem ? true : undefined}
-          aria-describedby={retentionProblem ? retentionId : undefined}
-          onChange={(e) => setRetention(e.target.value)}
-        />
-      </Field>
       {error && <ErrorNote title="Couldn't add the website">{error}</ErrorNote>}
       <button type="submit" className="analytik-button analytik-wide" data-variant="primary" disabled={!ready}>
+        <Icon name="plus" />
         {busy ? 'Adding…' : 'Add website'}
       </button>
     </form>
@@ -240,13 +297,17 @@ export interface AddSiteDialogProps {
   onClose: () => void
   /** Default `true`: render it to open it. Pass `open` instead to keep it mounted, so closing animates. */
   open?: boolean
+  /** The sites that exist, so a new one starts with the timezone, currency and retention of the newest. */
+  sites?: Site[]
 }
 
 /** "Add a website" as a modal dialog (a bottom sheet on phones). */
-export function AddSiteDialog({ client, onCreated, onClose, open = true }: AddSiteDialogProps) {
+export function AddSiteDialog({ client, onCreated, onClose, open = true, sites }: AddSiteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()} title="Add a website">
-      <SiteForm client={client} onCreated={onCreated} />
+      <SiteForm client={client} sites={sites} onCreated={onCreated}>
+        <p className="analytik-login-lede">Enter its domain to get the tracking code.</p>
+      </SiteForm>
     </Dialog>
   )
 }

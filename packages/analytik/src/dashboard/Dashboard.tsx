@@ -421,7 +421,13 @@ export function Dashboard({
               </div>
               {credits && <Credits />}
               {!unauthorized && (
-                <AddSiteDialog client={client} open={adding} onCreated={created} onClose={() => setAdding(false)} />
+                <AddSiteDialog
+                  client={client}
+                  sites={list}
+                  open={adding}
+                  onCreated={created}
+                  onClose={() => setAdding(false)}
+                />
               )}
             </FaviconsContext>
           </LayerContext>

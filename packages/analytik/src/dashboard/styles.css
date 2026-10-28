@@ -4671,3 +4671,101 @@ tr:hover .analytik-row-button {
   overflow: auto;
   white-space: pre-wrap;
 }
+
+/* ---- add a website */
+
+.analytik-input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--analytik-border-strong);
+  border-radius: var(--analytik-radius-input);
+  background: var(--analytik-surface);
+  transition: border-color 150ms;
+}
+
+.analytik-input-group:focus-within {
+  border-color: var(--analytik-focus);
+  box-shadow: 0 0 0 3px var(--analytik-focus-ring, rgb(58 79 216 / 0.18));
+}
+
+.analytik-input-lead {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 0 12px;
+  border-right: 1px solid var(--analytik-border);
+  border-radius: var(--analytik-radius-input) 0 0 var(--analytik-radius-input);
+  background: var(--analytik-bg-subtle);
+  color: var(--analytik-text-muted);
+  font-size: 13px;
+  user-select: none;
+}
+
+.analytik-input-group .analytik-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-radius: 0 var(--analytik-radius-input) var(--analytik-radius-input) 0;
+  box-shadow: none;
+}
+
+.analytik-site-options {
+  border: 1px solid var(--analytik-border);
+  border-radius: var(--analytik-radius-row);
+  background: var(--analytik-bg-subtle);
+}
+
+.analytik-site-options-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.analytik-site-options-title {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.analytik-site-options-summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--analytik-text-muted);
+  font-size: 12px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytik-site-options-toggle > .analytik-icon:last-child {
+  flex: none;
+  color: var(--analytik-text-muted);
+  transition: transform 200ms var(--analytik-ease);
+}
+
+.analytik-site-options[data-open] .analytik-site-options-toggle > .analytik-icon:last-child {
+  transform: rotate(180deg);
+}
+
+.analytik-site-options-panel {
+  overflow: hidden;
+}
+
+.analytik-site-options-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 12px 14px;
+}

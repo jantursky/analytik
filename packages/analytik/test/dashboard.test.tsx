@@ -76,6 +76,16 @@ describe('Dashboard shell', () => {
     expect(selectTrigger(container, 'Site')?.textContent).toBe('EExample')
   })
 
+  it('starts a new site with the retention of the newest site', async () => {
+    const api = fakeApi()
+    api.state.sites[0] = { ...api.state.sites[0]!, retentionDays: 90 }
+    const { container } = await open(api, 'sites')
+    await click(byText(container, 'Add website', 'button'))
+    await settled()
+    expect(byLabel(container, 'Keep data for (days)')?.value).toBe('90')
+    expect(container.querySelector('.analytik-site-options-summary')?.textContent).toBe('UTC · EUR · keeps 90 days')
+  })
+
   it('keeps the site and view in the address when asked to', async () => {
     history.replaceState(null, '', '/?section=pages&site=site_2')
     try {
@@ -676,9 +686,21 @@ describe('Dashboard shell', () => {
     await choose(site(), 'Add website…')
     const submitButton = dialog()?.querySelector<HTMLButtonElement>('button[type="submit"]')
     expect(submitButton?.disabled).toBe(true)
-    expect(comboboxInput(container, 'Timezone')?.value).toBe(
-      timeZoneText(Intl.DateTimeFormat().resolvedOptions().timeZone),
-    )
+    // A new site starts with the timezone and currency of the sites already there.
+    expect(comboboxInput(container, 'Timezone')?.value).toBe(timeZoneText('UTC'))
+    expect(comboboxInput(container, 'Revenue currency')?.value).toContain('EUR')
+    expect(container.querySelector('.analytik-site-options-summary')?.textContent).toBe('UTC · EUR · keeps all data')
+    const toggle = container.querySelector<HTMLButtonElement>('.analytik-site-options-toggle')
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false')
+    await click(toggle)
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true')
+    expect(container.querySelector('.analytik-site-options')?.hasAttribute('data-open')).toBe(true)
+    await click(toggle)
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false')
+    expect(byLabel(container, 'Name')?.getAttribute('placeholder')).toBe('My website')
+    await fill(byLabel(container, 'Domain'), 'www.docs-site.example.org')
+    expect(byLabel(container, 'Name')?.getAttribute('placeholder')).toBe('Docs-site')
+    await fill(byLabel(container, 'Domain'), '')
     await fill(byLabel(container, 'Name'), 'New')
     const domain = byLabel(container, 'Domain')
     await fill(domain, 'localhost:3000')
