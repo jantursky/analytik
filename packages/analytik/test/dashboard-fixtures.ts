@@ -141,7 +141,7 @@ export const realtime: Realtime = {
   online: 3,
   recent: [
     { ts: Date.now() - 5000, type: 'pageview', name: null, path: '/pricing', country: 'DE' },
-    { ts: Date.now() - 90000, type: 'goal', name: 'signup', path: '/', country: null },
+    { ts: Date.now() - 62000, type: 'goal', name: 'signup', path: '/', country: null },
   ],
   locations: [
     visit({ lat: 52.52, lon: 13.4, country: 'DE', city: 'Berlin' }, 'sess_1', '/pricing'),
