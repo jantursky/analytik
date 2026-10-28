@@ -2,12 +2,15 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Filters, Site } from '../shared/types'
+import { type AddressState, readAddress as parseAddress, writeAddress } from './address'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
 import { DashboardProvider, requestKey } from './context'
 import { Credits } from './credits'
 import { useResource } from './data'
+import { loadMessages, type Messages, msg, resolveLanguage, setLanguage, t } from './i18n'
 import { Icon } from './icons'
+import { LanguageSwitch } from './language-switch'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange } from './range'
@@ -26,7 +29,7 @@ import { Overview } from './views/Overview'
 import { Realtime } from './views/Realtime'
 import { Revenue } from './views/Revenue'
 import { Sessions } from './views/Sessions'
-import { Settings } from './views/Settings'
+import { Settings, SETTINGS_SECTIONS, type SettingsSection } from './views/Settings'
 import { SitesOverview } from './views/Sites'
 
 export type DashboardView =
@@ -35,19 +38,19 @@ export type DashboardView =
 type SiteView = Exclude<DashboardView, 'sites'>
 
 const VIEWS: Record<SiteView, { label: string; component: ComponentType; ranged: boolean }> = {
-  overview: { label: 'Overview', component: Overview, ranged: true },
-  sources: { label: 'Acquisition', component: Sources, ranged: true },
-  pages: { label: 'Pages', component: Pages, ranged: true },
-  events: { label: 'Events', component: Events, ranged: true },
-  funnels: { label: 'Funnels', component: Funnels, ranged: true },
-  revenue: { label: 'Revenue', component: Revenue, ranged: true },
-  sessions: { label: 'Sessions', component: Sessions, ranged: true },
-  realtime: { label: 'Live', component: Realtime, ranged: false },
-  settings: { label: 'Settings', component: Settings, ranged: false },
+  overview: { label: msg('Overview'), component: Overview, ranged: true },
+  sources: { label: msg('Acquisition'), component: Sources, ranged: true },
+  pages: { label: msg('Pages'), component: Pages, ranged: true },
+  events: { label: msg('Events'), component: Events, ranged: true },
+  funnels: { label: msg('Funnels'), component: Funnels, ranged: true },
+  revenue: { label: msg('Revenue'), component: Revenue, ranged: true },
+  sessions: { label: msg('Sessions'), component: Sessions, ranged: true },
+  realtime: { label: msg('Live'), component: Realtime, ranged: false },
+  settings: { label: msg('Settings'), component: Settings, ranged: false },
 }
 
 const NAV: { value: DashboardView; label: string }[] = [
-  { value: 'sites', label: 'All sites' },
+  { value: 'sites', label: msg('All sites') },
   ...(Object.keys(VIEWS) as SiteView[]).map((value) => ({ value, label: VIEWS[value].label })),
 ]
 
@@ -81,6 +84,13 @@ export interface DashboardProps {
    * host page's address alone.
    */
   urlState?: boolean
+  /**
+   * The language, `'en'` or `'sk'`. Without it the dashboard follows the Language setting, which by default follows the
+   * browser's language, else English.
+   */
+  locale?: string
+  /** Replaces single strings, or adds a language: `{ sk: { Overview: 'Prehľad' }, en: { Overview: 'Home' } }`. */
+  messages?: Record<string, Messages>
   /** The line under the dashboard saying it is analytik, with links to its source and its author. Default true. */
   credits?: boolean
 }
@@ -93,16 +103,13 @@ const LIVE_MS = 60_000
 const renew = (range: DateRange): DateRange =>
   range.preset === 'custom' ? range : { ...presetRange(range.preset, Date.now()), interval: range.interval }
 
-/** The site and view an address names, `?site=<id>&section=pages`; anything unknown is left out. */
-function readAddress(): { site?: string; view?: DashboardView } {
-  const params = new URLSearchParams(location.search)
-  const section = params.get('section')
-  const id = params.get('site')
-  return {
-    site: id ?? undefined,
-    view: section && (section === 'sites' || section in VIEWS) ? (section as DashboardView) : undefined,
-  }
+const VOCABULARY = {
+  views: ['sites', ...Object.keys(VIEWS)],
+  tabs: SETTINGS_SECTIONS as readonly string[],
 }
+
+/** The state the current address names; anything unknown is left out. */
+const readAddress = (): AddressState => parseAddress(location.search, VOCABULARY)
 
 /** The full dashboard: login, sites overview, site switcher, date range, filters and every view. */
 export function Dashboard({
@@ -115,16 +122,20 @@ export function Dashboard({
   syncPreferences = true,
   credits = true,
   urlState = false,
+  locale,
+  messages,
 }: DashboardProps) {
   const [unauthorized, setUnauthorized] = useState(false)
-  const [chosenId, setChosenId] = useState(() => (urlState ? readAddress().site : undefined) ?? siteId)
-  const [view, setViewState] = useState<DashboardView>(() => (urlState ? readAddress().view : undefined) ?? initialView)
+  const [initial] = useState(() => (urlState ? readAddress() : undefined))
+  const [chosenId, setChosenId] = useState(() => initial?.site ?? siteId)
+  const [view, setViewState] = useState<DashboardView>(
+    () => (initial?.view as DashboardView | undefined) ?? initialView,
+  )
+  const [tab, setTab] = useState<SettingsSection | undefined>(initial?.tab as SettingsSection | undefined)
   const [customizing, setCustomizing] = useState(false)
-  const [range, setRange] = useState(() => presetRange('7d', Date.now()))
-  const [filters, setFilters] = useState<Filters>({})
+  const [range, setRange] = useState(() => initial?.range ?? presetRange('7d', Date.now()))
+  const [filters, setFilters] = useState<Filters>(() => initial?.filters ?? {})
   const [adding, setAdding] = useState(false)
-  // A site just added opens on its tracking code, the next thing to do with it.
-  const [justAdded, setJustAdded] = useState<string | null>(null)
   // Bumped by "Refresh" on a custom range, which has no newer data window to move to; remounts the view.
   const [generation, setGeneration] = useState(0)
   // Popups portal into the root so they inherit its theme variables.
@@ -145,13 +156,32 @@ export function Dashboard({
   // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on.
   const preferences = usePreferencesStore(syncPreferences ? client : undefined, !unauthorized)
   const live = preferences.values.live === true
+
+  // The language comes from the prop, the saved choice or the browser. A catalog is fetched once per language; until
+  // it arrives the dashboard reads in English. Like the format settings, it is set before the children render.
+  const language = resolveLanguage(
+    locale,
+    preferences.values.language,
+    typeof navigator === 'undefined' ? [] : navigator.languages,
+  )
+  const [catalog, setCatalog] = useState<{ language: string; messages: Messages }>({ language: 'en', messages: {} })
+  useEffect(() => {
+    let current = true
+    void loadMessages(language).then((loaded) => {
+      if (current) setCatalog({ language, messages: loaded })
+    })
+    return () => {
+      current = false
+    }
+  }, [language])
+  setLanguage(catalog.language, catalog.messages, messages?.[catalog.language])
   const setLive = (on: boolean): void => preferences.update({ live: on })
 
   // Switching views swaps the content for a short loading state. When the toolbar is stuck, the new view starts at
   // its top instead of wherever the scroll position ends up.
   const main = useRef<HTMLDivElement>(null)
   const setView = (next: DashboardView): void => {
-    if (next !== 'settings') setJustAdded(null)
+    if (next !== 'settings') setTab(undefined)
     const element = main.current
     const toolbar = element?.querySelector('.analytik-toolbar')
     if (element && toolbar && next !== view) {
@@ -188,25 +218,30 @@ export function Dashboard({
   const list = sites.data ?? []
   const site = list.find((s) => s.id === chosenId) ?? list[0]
 
-  // The address follows the site and view: the first write only completes it, later ones are history entries.
-  const addressed = useRef(false)
+  // The address follows the whole state. Moving to another site or view adds a history entry, so Back steps through
+  // places; anything else (Settings section, range, interval, filters) replaces it, so Back skips the clicks.
+  const written = useRef<{ site: string; view: string } | null>(null)
   const siteKey = site?.id
+  const nextUrl =
+    urlState && siteKey ? writeAddress(new URL(location.href), { site: siteKey, view, tab, range, filters }) : null
+  const nextHref = nextUrl?.href
   useEffect(() => {
-    if (!urlState || !siteKey) return
-    const url = new URL(location.href)
-    url.searchParams.set('site', siteKey)
-    if (view === 'overview') url.searchParams.delete('section')
-    else url.searchParams.set('section', view)
-    if (url.href !== location.href) history[addressed.current ? 'pushState' : 'replaceState'](null, '', url)
-    addressed.current = true
-  }, [urlState, siteKey, view])
+    if (!nextUrl || !siteKey) return
+    const place = { site: siteKey, view }
+    const moved = written.current && (written.current.site !== place.site || written.current.view !== place.view)
+    if (nextUrl.href !== location.href) history[moved ? 'pushState' : 'replaceState'](null, '', nextUrl)
+    written.current = place
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nextHref stands for nextUrl, which is rebuilt every render
+  }, [nextHref, siteKey, view])
   useEffect(() => {
     if (!urlState) return
     const back = (): void => {
-      const { site: id, view: next } = readAddress()
-      setChosenId(id)
-      setViewState(next ?? 'overview')
-      setFilters({})
+      const next = readAddress()
+      setChosenId(next.site)
+      setViewState((next.view as DashboardView | undefined) ?? 'overview')
+      setTab(next.tab as SettingsSection | undefined)
+      setRange(next.range ?? presetRange('7d', Date.now()))
+      setFilters(next.filters)
     }
     addEventListener('popstate', back)
     return () => removeEventListener('popstate', back)
@@ -229,7 +264,8 @@ export function Dashboard({
   const created = (next: Site): void => {
     setAdding(false)
     setChosenId(next.id)
-    setJustAdded(next.id)
+    // A site just added opens on its tracking code, the next thing to do with it.
+    setTab('tracking')
     setView('settings')
     sites.reload()
   }
@@ -270,9 +306,9 @@ export function Dashboard({
       >
         <div className="analytik-toolbar">
           <div className="analytik-action-left">
-            <h1 className="analytik-sr-only">{current.label}</h1>
+            <h1 className="analytik-sr-only">{t(current.label)}</h1>
             <Select
-              label="Site"
+              label={t('Site')}
               hideLabel
               className="analytik-pill analytik-switcher"
               leading={<SiteTile site={site} />}
@@ -286,7 +322,7 @@ export function Dashboard({
                 })),
                 {
                   value: NEW_SITE,
-                  label: 'Add website…',
+                  label: t('Add website…'),
                   icon: (
                     <span className="analytik-tile analytik-tile-add" aria-hidden="true">
                       +
@@ -310,13 +346,13 @@ export function Dashboard({
                   onChange={setLive}
                 >
                   <span className="analytik-live-dot" data-idle={liveOn ? undefined : ''} aria-hidden="true" />
-                  Live
+                  {t('Live')}
                 </Switch>
-                <Tooltip label="Refresh">
+                <Tooltip label={t('Refresh')}>
                   <button
                     type="button"
                     className="analytik-pill-icon analytik-pill"
-                    aria-label="Refresh"
+                    aria-label={t('Refresh')}
                     onClick={refresh}
                   >
                     <Icon name="refresh" />
@@ -328,12 +364,14 @@ export function Dashboard({
           <div className="analytik-action-right">
             {view === 'overview' && customizing && (
               <ConfirmButton
-                label="Reset"
+                label={t('Reset')}
                 icon="reset"
                 tone="plain"
-                title="Reset the overview?"
-                description="The overview goes back to the six default blocks, and the summary to its default numbers and chart. This changes it for every admin."
-                confirmLabel="Reset layout"
+                title={t('Reset the overview?')}
+                description={t(
+                  'The overview goes back to the six default blocks, and the summary to its default numbers and chart. This changes it for every admin.',
+                )}
+                confirmLabel={t('Reset layout')}
                 onConfirm={() => preferences.update({ layout: undefined, summary: undefined })}
               />
             )}
@@ -346,7 +384,7 @@ export function Dashboard({
                 onClick={() => setCustomizing(!customizing)}
               >
                 <Icon name={customizing ? 'check' : 'layout'} />
-                {customizing ? 'Done' : 'Customize'}
+                {customizing ? t('Done') : t('Customize')}
               </button>
             )}
           </div>
@@ -354,10 +392,7 @@ export function Dashboard({
         {current.ranged && <FilterBar filters={filters} onChange={setFilters} />}
         <AnimatePresence mode="wait">
           {view === 'settings' ? (
-            <Settings
-              key={`${view}-${site.id}-${generation}`}
-              section={justAdded === site.id ? 'tracking' : undefined}
-            />
+            <Settings key={`${view}-${site.id}-${generation}`} section={tab} onSectionChange={setTab} />
           ) : (
             <View key={`${view}-${site.id}-${generation}`} />
           )}
@@ -375,40 +410,45 @@ export function Dashboard({
               {!unauthorized && site && <UpdateNotice client={client} />}
               {!unauthorized && site && (
                 <header className="analytik-header" ref={header}>
-                  <span className="analytik-brand">
-                    <BrandMark />
-                  </span>
-                  <nav aria-label="Dashboard">
-                    <ul>
-                      {NAV.map(({ value, label }) => (
-                        <li key={value}>
-                          <button
-                            type="button"
-                            className="analytik-nav-item"
-                            aria-current={value === view ? 'page' : undefined}
-                            onClick={() => setView(value)}
-                          >
-                            {value === view && (
-                              <motion.span
-                                className="analytik-nav-pill"
-                                layoutId="analytik-nav-pill"
-                                aria-hidden="true"
-                              />
-                            )}
-                            <span>{label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
-                  <ThemeToggle />
-                  <button
-                    type="button"
-                    className="analytik-button analytik-signout"
-                    onClick={() => void client.logout().finally(() => setUnauthorized(true))}
-                  >
-                    Log out
-                  </button>
+                  <div className="analytik-header-left">
+                    <span className="analytik-brand">
+                      <BrandMark />
+                    </span>
+                    <nav aria-label={t('Dashboard')}>
+                      <ul>
+                        {NAV.map(({ value, label }) => (
+                          <li key={value}>
+                            <button
+                              type="button"
+                              className="analytik-nav-item"
+                              aria-current={value === view ? 'page' : undefined}
+                              onClick={() => setView(value)}
+                            >
+                              {value === view && (
+                                <motion.span
+                                  className="analytik-nav-pill"
+                                  layoutId="analytik-nav-pill"
+                                  aria-hidden="true"
+                                />
+                              )}
+                              <span>{t(label)}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                  </div>
+                  <div className="analytik-header-right">
+                    {locale === undefined && <LanguageSwitch />}
+                    <ThemeToggle />
+                    <button
+                      type="button"
+                      className="analytik-button analytik-signout"
+                      onClick={() => void client.logout().finally(() => setUnauthorized(true))}
+                    >
+                      {t('Log out')}
+                    </button>
+                  </div>
                 </header>
               )}
               {/* Not a <main>: the dashboard is embedded in pages that have their own. */}

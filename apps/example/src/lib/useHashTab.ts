@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 
 export const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'full', label: 'Full page' },
   { id: 'site', label: 'Instrumented site' },
   { id: 'install', label: 'Install' },
   { id: 'privacy', label: 'Privacy' },

@@ -6,6 +6,7 @@ import type { ApiClient } from '../api'
 import { requestKey } from '../context'
 import { useResource } from '../data'
 import { formatMoney, formatMoneyShort, formatNumber } from '../format'
+import { msg, t } from '../i18n'
 import { Icon } from '../icons'
 import { usePreferences } from '../preferences'
 import { Shortened, SiteTile } from '../ui'
@@ -20,12 +21,12 @@ const MINUTE = 60000
 type SortKey = 'added' | 'name' | 'domain' | 'visitors' | 'revenue' | 'orders'
 
 const SORTS: { value: SortKey; label: string; numeric: boolean }[] = [
-  { value: 'added', label: 'Date added', numeric: false },
-  { value: 'name', label: 'Name', numeric: false },
-  { value: 'domain', label: 'Domain', numeric: false },
-  { value: 'visitors', label: 'Visitors', numeric: true },
-  { value: 'revenue', label: 'Revenue', numeric: true },
-  { value: 'orders', label: 'Orders', numeric: true },
+  { value: 'added', label: msg('Date added'), numeric: false },
+  { value: 'name', label: msg('Name'), numeric: false },
+  { value: 'domain', label: msg('Domain'), numeric: false },
+  { value: 'visitors', label: msg('Visitors'), numeric: true },
+  { value: 'revenue', label: msg('Revenue'), numeric: true },
+  { value: 'orders', label: msg('Orders'), numeric: true },
 ]
 
 /** The saved order of the sites overview; anything unknown falls back to the order the sites were added in. */
@@ -92,16 +93,16 @@ function SiteCard({
           {site.paused && (
             <span className="analytik-badge" data-tone="paused">
               <Icon name="pause" />
-              Paused
+              {t('Paused')}
             </span>
           )}
         </span>
         <span className="analytik-site-number">{visitors}</span>
-        <span className="analytik-muted">visitors in the last 24h</span>
+        <span className="analytik-muted">{t('visitors in the last 24h')}</span>
         <span className="analytik-site-foot">
           <span className="analytik-site-online">
             <span className="analytik-live-dot" data-idle={online ? undefined : ''} aria-hidden="true" />
-            {formatNumber(online)} online
+            {t('{count} online', { count: formatNumber(online) })}
           </span>
           {takesPayments && data && (
             <span className="analytik-site-revenue">
@@ -114,22 +115,22 @@ function SiteCard({
                 </Shortened>
               </strong>
               {' · '}
-              {formatNumber(data.orders)} {data.orders === 1 ? 'order' : 'orders'}
+              {t('{count, plural, one {# order} other {# orders}}', { count: data.orders })}
             </span>
           )}
         </span>
       </button>
       {/* Beside the card rather than in it: a button can't hold another button. */}
       <ActionMenu
-        label={`Actions for ${site.name}`}
+        label={t('Actions for {name}', { name: site.name })}
         className="analytik-site-menu"
         actions={[
           {
-            label: site.paused ? 'Resume tracking' : 'Pause tracking',
+            label: site.paused ? t('Resume tracking') : t('Pause tracking'),
             icon: site.paused ? 'play' : 'pause',
             onSelect: () => void togglePaused(client, site).then(onChange, onChange),
           },
-          { label: 'Delete website', icon: 'trash', tone: 'danger', onSelect: () => setDeleting(true) },
+          { label: t('Delete website'), icon: 'trash', tone: 'danger', onSelect: () => setDeleting(true) },
         ]}
       />
       <DeleteSiteDialog client={client} site={site} open={deleting} onOpenChange={setDeleting} onDeleted={onChange} />
@@ -166,22 +167,22 @@ export function SitesOverview({ client, sites, onOpen, onAdd, onChange = () => u
   return (
     <View>
       <div className="analytik-page-head">
-        <h1>All sites</h1>
+        <h1>{t('All sites')}</h1>
         <div className="analytik-action-right">
           {sites.length > 1 && (
             <div className="analytik-sites-sort">
               <Select
-                label="Sort sites by"
+                label={t('Sort sites by')}
                 hideLabel
                 className="analytik-pill"
                 value={by}
-                options={SORTS.map((s) => ({ value: s.value, label: s.label }))}
+                options={SORTS.map((s) => ({ value: s.value, label: t(s.label) }))}
                 onChange={choose}
               />
               <button
                 type="button"
                 className="analytik-pill-icon analytik-pill"
-                aria-label={descending ? 'Descending, switch to ascending' : 'Ascending, switch to descending'}
+                aria-label={descending ? t('Descending, switch to ascending') : t('Ascending, switch to descending')}
                 onClick={() => update({ sitesSort: { by, descending: !descending } })}
               >
                 <Icon name={descending ? 'descending' : 'ascending'} />
@@ -190,11 +191,11 @@ export function SitesOverview({ client, sites, onOpen, onAdd, onChange = () => u
           )}
           <button type="button" className="analytik-button" data-variant="primary" onClick={onAdd}>
             <Icon name="plus" />
-            Add website
+            {t('Add website')}
           </button>
         </div>
       </div>
-      <ul className="analytik-site-grid" aria-label="Sites">
+      <ul className="analytik-site-grid" aria-label={t('Sites')}>
         {sorted.map((site) => (
           <SiteCard
             key={site.id}

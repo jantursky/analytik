@@ -6,6 +6,7 @@ import { requestKey, useDashboard } from '../context'
 import { liveSignature, usePolling, useResource } from '../data'
 import { formatAgo, formatMoney, formatNumber, formatPercent } from '../format'
 import { Icon, type IconName } from '../icons'
+import { msg, t } from '../i18n'
 import { Card, DeltaBadge, StatTile, Status } from '../ui'
 import { AnimatedNumber, EASE, rise } from '../ui/motion'
 import { BreakdownCard } from './Breakdown'
@@ -51,13 +52,13 @@ function KeyNumbersBlock() {
   const tiles = KPI_TILES.map(({ key, icon }) => ({
     key,
     icon,
-    label: METRICS[key].label,
+    label: t(METRICS[key].label),
     format: formatMetric(key, currency),
     exact: exactMetric(key, currency),
     trend: points.map((p) => p[key]),
   }))
   return (
-    <motion.section className="analytik-kpis" aria-label="Key numbers" variants={rise}>
+    <motion.section className="analytik-kpis" aria-label={t('Key numbers')} variants={rise}>
       <Status loading={overview.loading && !data} error={overview.error}>
         {data &&
           tiles.map((tile) => (
@@ -87,22 +88,22 @@ function ChannelTableBlock() {
   )
   const list = rows.data ?? []
   return (
-    <Card title="Channel performance">
+    <Card title={t('Channel performance')}>
       <Status loading={rows.loading && !rows.data} error={rows.error}>
         {list.length ? (
           <div className="analytik-table-wrap">
             <table className="analytik-table analytik-compact">
               <thead>
                 <tr>
-                  <th scope="col">Channel</th>
+                  <th scope="col">{t('Channel')}</th>
                   <th scope="col" className="analytik-num">
-                    Visitors
+                    {t('Visitors')}
                   </th>
                   <th scope="col" className="analytik-num">
-                    Converted
+                    {t('Converted')}
                   </th>
                   <th scope="col" className="analytik-num">
-                    Revenue
+                    {t('Revenue')}
                   </th>
                 </tr>
               </thead>
@@ -111,7 +112,7 @@ function ChannelTableBlock() {
                   <tr key={row.key}>
                     <td>
                       <button type="button" className="analytik-link-row" onClick={() => addFilter('channel', row.key)}>
-                        {row.key || '(none)'}
+                        {row.key || t('(none)')}
                       </button>
                     </td>
                     <td className="analytik-num">{formatNumber(row.visitors)}</td>
@@ -123,7 +124,7 @@ function ChannelTableBlock() {
             </table>
           </div>
         ) : (
-          <p className="analytik-empty">Nothing recorded in this period</p>
+          <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
         )}
       </Status>
     </Card>
@@ -145,11 +146,11 @@ function DeviceSplitBlock() {
   const lengths = list.map((row) => (total ? (row.visitors / total) * CIRCUMFERENCE : 0))
   const starts = lengths.map((_, index) => lengths.slice(0, index).reduce((sum, length) => sum + length, 0))
   return (
-    <Card title="Device split">
+    <Card title={t('Device split')}>
       <Status loading={rows.loading && !rows.data} error={rows.error}>
         {total ? (
           <div className="analytik-donut">
-            <svg viewBox="0 0 100 100" role="img" aria-label="Visitors by device">
+            <svg viewBox="0 0 100 100" role="img" aria-label={t('Visitors by device')}>
               <circle className="analytik-donut-track" cx="50" cy="50" r={RADIUS} />
               {list.map((row, index) => {
                 const length = lengths[index] ?? 0
@@ -172,14 +173,14 @@ function DeviceSplitBlock() {
               {list.map((row, index) => (
                 <li key={row.key}>
                   <span className="analytik-marker" style={{ background: DONUT_COLOURS[index] }} aria-hidden="true" />
-                  {row.key || 'Unknown'}
+                  {row.key || t('Unknown')}
                   <strong>{formatPercent(row.visitors / total)}</strong>
                 </li>
               ))}
             </ul>
           </div>
         ) : (
-          <p className="analytik-empty">Nothing recorded in this period</p>
+          <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
         )}
       </Status>
     </Card>
@@ -195,7 +196,7 @@ function OrderValueBlock() {
   const previous = data?.orders.previous ? data.revenue.previous / data.orders.previous : null
   const change = previous ? (value - previous) / previous : null
   return (
-    <Card title="Average order value">
+    <Card title={t('Average order value')}>
       <Status loading={overview.loading && !data} error={overview.error}>
         {data && (
           <div className="analytik-big-number">
@@ -204,7 +205,7 @@ function OrderValueBlock() {
             </span>
             <strong>{data.orders.value ? formatMoney(Math.round(value), data.currency || site.currency) : '—'}</strong>
             <span className="analytik-muted">
-              from {formatNumber(data.orders.value)} {data.orders.value === 1 ? 'order' : 'orders'}
+              {t('{count, plural, one {from # order} other {from # orders}}', { count: data.orders.value })}
             </span>
             <DeltaBadge change={change} />
           </div>
@@ -224,11 +225,11 @@ function RecentPaymentsBlock() {
   const list = payments.data?.items ?? []
   return (
     <Card
-      title="Recent payments"
+      title={t('Recent payments')}
       actions={
         openView && (
           <button type="button" className="analytik-link" onClick={() => openView('revenue')}>
-            View all
+            {t('View all')}
           </button>
         )
       }
@@ -240,7 +241,7 @@ function RecentPaymentsBlock() {
               <li key={p.id}>
                 <Visitor
                   id={p.customerId ?? p.email ?? p.id}
-                  label={p.name ?? p.email ?? p.customerId ?? <span className="analytik-muted">Anonymous</span>}
+                  label={p.name ?? p.email ?? p.customerId ?? <span className="analytik-muted">{t('Anonymous')}</span>}
                 />
                 <span className="analytik-feed-meta">
                   <strong data-refund={p.kind === 'refund' ? '' : undefined}>
@@ -252,7 +253,7 @@ function RecentPaymentsBlock() {
             ))}
           </ul>
         ) : (
-          <p className="analytik-empty">No payments in this period</p>
+          <p className="analytik-empty">{t('No payments in this period')}</p>
         )}
       </Status>
     </Card>
@@ -270,7 +271,7 @@ function FunnelBlock() {
   const steps = result.data?.steps ?? []
   const top = Math.max(steps[0]?.visitors ?? 0, 1)
   return (
-    <Card title={first ? `Funnel: ${first.name}` : 'Funnel'}>
+    <Card title={first ? t('Funnel: {name}', { name: first.name }) : t('Funnel')}>
       <Status loading={funnels.loading && !funnels.data} error={funnels.error ?? result.error}>
         {first ? (
           <ol className="analytik-funnel-bars">
@@ -291,10 +292,10 @@ function FunnelBlock() {
           </ol>
         ) : (
           <div className="analytik-empty">
-            <p>No funnels yet</p>
+            <p>{t('No funnels yet')}</p>
             {openView && (
               <button type="button" className="analytik-button" onClick={() => openView('funnels')}>
-                Create a funnel
+                {t('Create a funnel')}
               </button>
             )}
           </div>
@@ -325,11 +326,11 @@ function LiveBlock() {
   const data = live.data
   return (
     <Card
-      title="Live now"
+      title={t('Live now')}
       actions={
         openView && (
           <button type="button" className="analytik-link" onClick={() => openView('realtime')}>
-            Open map
+            {t('Open map')}
           </button>
         )
       }
@@ -342,7 +343,7 @@ function LiveBlock() {
               <strong className="analytik-stat-value">
                 <AnimatedNumber value={data.online} format={formatNumber} />
               </strong>
-              {data.online === 1 ? ' visitor' : ' visitors'} right now
+              {` ${t('{count, plural, one {visitor right now} other {visitors right now}}', { count: data.online })}`}
             </p>
             <ul className="analytik-feed-list">
               {data.recent.slice(0, 5).map((event, index) => {
@@ -367,93 +368,95 @@ function LiveBlock() {
 /** Every block the overview can show. The first six make up the default layout. */
 export const BLOCKS = {
   summary: {
-    name: 'Summary and chart',
-    description: 'The headline numbers over a chart; click a number to plot it.',
+    name: msg('Summary and chart'),
+    description: msg('The headline numbers over a chart; click a number to plot it.'),
     category: 'Traffic',
     wide: true,
     configurable: true,
     render: ({ editing }) => <SummaryBlock editing={editing} />,
   },
   sources: {
-    name: 'Acquisition',
-    description: 'Channels, referrers, campaigns and search terms.',
+    name: msg('Acquisition'),
+    description: msg('Channels, referrers, campaigns and search terms.'),
     category: 'Traffic',
     wide: false,
     render: () => (
-      <BreakdownCard title="Acquisition" dimensions={['channel', 'referrer', 'campaign', 'term']} limit={8} />
+      <BreakdownCard title={t('Acquisition')} dimensions={['channel', 'referrer', 'campaign', 'term']} limit={8} />
     ),
   },
   locations: {
-    name: 'Geography',
-    description: 'Countries, regions and cities.',
+    name: msg('Geography'),
+    description: msg('Countries, regions and cities.'),
     category: 'Audience',
     wide: false,
-    render: () => <BreakdownCard title="Geography" dimensions={['country', 'region', 'city']} limit={8} />,
+    render: () => <BreakdownCard title={t('Geography')} dimensions={['country', 'region', 'city']} limit={8} />,
   },
   pages: {
-    name: 'Pages',
-    description: 'Top pages, where visits start and end, and outbound links.',
+    name: msg('Pages'),
+    description: msg('Top pages, where visits start and end, and outbound links.'),
     category: 'Content',
     wide: false,
-    render: () => <BreakdownCard title="Pages" dimensions={['page', 'entry', 'exit', 'outbound']} limit={8} />,
+    render: () => <BreakdownCard title={t('Pages')} dimensions={['page', 'entry', 'exit', 'outbound']} limit={8} />,
   },
   technology: {
-    name: 'Devices',
-    description: 'Browsers, operating systems and device types.',
+    name: msg('Devices'),
+    description: msg('Browsers, operating systems and device types.'),
     category: 'Audience',
     wide: false,
-    render: () => <BreakdownCard title="Devices" dimensions={['browser', 'os', 'device']} limit={8} />,
+    render: () => <BreakdownCard title={t('Devices')} dimensions={['browser', 'os', 'device']} limit={8} />,
   },
   goals: {
-    name: 'Goals',
-    description: 'Completed goals and custom events.',
+    name: msg('Goals'),
+    description: msg('Completed goals and custom events.'),
     category: 'Content',
     wide: false,
-    render: () => <BreakdownCard title="Goals" dimensions={['goal', 'event']} limit={8} />,
+    render: () => <BreakdownCard title={t('Goals')} dimensions={['goal', 'event']} limit={8} />,
   },
   kpis: {
-    name: 'Key numbers',
-    description: 'Visitors, pageviews, sessions and revenue on tiles, each with its trend.',
+    name: msg('Key numbers'),
+    description: msg('Visitors, pageviews, sessions and revenue on tiles, each with its trend.'),
     category: 'Traffic',
     wide: true,
     render: () => <KeyNumbersBlock />,
   },
   campaigns: {
-    name: 'Campaigns',
-    description: 'UTM campaigns, mediums, content and ref codes.',
+    name: msg('Campaigns'),
+    description: msg('UTM campaigns, mediums, content and ref codes.'),
     category: 'Traffic',
     wide: false,
-    render: () => <BreakdownCard title="Campaigns" dimensions={['campaign', 'medium', 'content', 'ref']} limit={8} />,
+    render: () => (
+      <BreakdownCard title={t('Campaigns')} dimensions={['campaign', 'medium', 'content', 'ref']} limit={8} />
+    ),
   },
   channels: {
-    name: 'Channel performance',
-    description: 'Visitors, conversion and revenue per channel in one table.',
+    name: msg('Channel performance'),
+    description: msg('Visitors, conversion and revenue per channel in one table.'),
     category: 'Revenue',
     wide: false,
     render: () => <ChannelTableBlock />,
   },
   devices: {
-    name: 'Device split',
-    description: 'Desktop, mobile and tablet visitors as a ring.',
+    name: msg('Device split'),
+    description: msg('Desktop, mobile and tablet visitors as a ring.'),
     category: 'Audience',
     wide: false,
     render: () => <DeviceSplitBlock />,
   },
   funnel: {
-    name: 'Funnel',
-    description: 'Your first funnel, step by step, with the drop-off shaded.',
+    name: msg('Funnel'),
+    description: msg('Your first funnel, step by step, with the drop-off shaded.'),
     category: 'Content',
     wide: false,
     render: () => <FunnelBlock />,
   },
   'revenue-sources': {
-    name: 'Revenue by source',
-    description: 'Which channels, sources and campaigns bring paying customers.',
+    name: msg('Revenue by source'),
+    description: msg('Which channels, sources and campaigns bring paying customers.'),
     category: 'Revenue',
     wide: false,
     render: () => (
       <BreakdownCard
-        title="Revenue by source"
+        title={t('Revenue by source')}
         dimensions={['channel', 'source', 'campaign']}
         metric="revenue"
         limit={8}
@@ -461,29 +464,29 @@ export const BLOCKS = {
     ),
   },
   'revenue-countries': {
-    name: 'Revenue by country',
-    description: 'Where paying customers are.',
+    name: msg('Revenue by country'),
+    description: msg('Where paying customers are.'),
     category: 'Revenue',
     wide: false,
-    render: () => <BreakdownCard title="Revenue by country" dimensions={['country']} metric="revenue" limit={8} />,
+    render: () => <BreakdownCard title={t('Revenue by country')} dimensions={['country']} metric="revenue" limit={8} />,
   },
   'order-value': {
-    name: 'Average order value',
-    description: 'Revenue per order, against the previous period.',
+    name: msg('Average order value'),
+    description: msg('Revenue per order, against the previous period.'),
     category: 'Revenue',
     wide: false,
     render: () => <OrderValueBlock />,
   },
   payments: {
-    name: 'Recent payments',
-    description: 'The latest five payments and refunds.',
+    name: msg('Recent payments'),
+    description: msg('The latest five payments and refunds.'),
     category: 'Revenue',
     wide: false,
     render: () => <RecentPaymentsBlock />,
   },
   live: {
-    name: 'Live now',
-    description: 'Visitors on the site right now and what they just did.',
+    name: msg('Live now'),
+    description: msg('Visitors on the site right now and what they just did.'),
     category: 'Live',
     wide: false,
     render: () => <LiveBlock />,

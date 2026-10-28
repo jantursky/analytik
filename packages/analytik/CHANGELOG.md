@@ -6,6 +6,32 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Settings has a Changelog section under the site's settings, behind a dashed line. It lists the release notes of every
+  version (the running one is marked) and loads them only when opened, so it adds no request until you open it. `?tab=changelog` opens it.
+- With `urlState` (on in the standalone dashboard) the address now also keeps the Settings section (`tab`), the date range
+  (`range`, or `from` and `to`), the interval and the active filters (`f.country=SK`). Changing any of those replaces the
+  history entry, so Back steps through sites and views, not every click.
+- The dashboard is translated into eighteen languages: English, Slovak, Czech, German, Spanish, French, Italian, Dutch,
+  Portuguese (Brazil), Polish, Russian, Turkish, Japanese, Chinese (Simplified), Korean, Indonesian, Hindi and
+  Vietnamese. A `locale` prop (`'en'`, `'sk'`, `'cs'`, …), a Language button in the header beside the theme button and
+  Settings → Appearance → Language choose the language, listed alphabetically by their own names; the default follows the browser. Each language is its own lazy file (about 15 kB gzip),
+  so English costs nothing extra. Numbers, month and weekday names, currency names and country names follow the
+  language. A `messages` prop overrides single texts or adds a language, and `LANGUAGES` and `Messages` are exported.
+
+### Changed
+
+- Settings → Formatting has a new default for numbers, **The language's own**; it reads like the old default in
+  English. Chart captions say "1 point" instead of "1 points".
+- Country flags are now the round SVG flags of [Circle Flags](https://github.com/HatScripts/circle-flags) (MIT) instead of
+  emoji, so they look the same on every system, Windows included. They load as one lazy chunk (about 40 kB gzip) the first
+  time a country is shown; a country without a flag shows its code in a neutral circle.
+
+### Fixed
+
+- The standalone page no longer lets you scroll past the end of the dashboard into an empty area on large screens.
+
 ## [1.7.0]
 
 ### Changed

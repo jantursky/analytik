@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { Payment, PaymentKind, PaymentMatch } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
 import { formatDateTime, formatInteger, formatMoney, formatMoneyShort, formatNumber, formatPercent } from '../format'
+import { msg, t } from '../i18n'
 import { Logo } from '../logo'
 import { Card, StatTile, Status } from '../ui'
 import { View } from '../ui/motion'
@@ -17,15 +18,15 @@ const PROVIDERS = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'dodo', label: 'Dodo Payments' },
   { value: 'lemonsqueezy', label: 'Lemon Squeezy' },
-  { value: 'api', label: 'API' },
+  { value: 'api', label: msg('API') },
 ]
 
 const MATCHES: Record<PaymentMatch, string> = {
-  metadata: 'Checkout metadata',
-  return_page: 'Return page',
-  customer: 'Known customer',
-  email: 'Email',
-  timing: 'Timing',
+  metadata: msg('Checkout metadata'),
+  return_page: msg('Return page'),
+  customer: msg('Known customer'),
+  email: msg('Email'),
+  timing: msg('Timing'),
 }
 
 export function Revenue() {
@@ -36,23 +37,23 @@ export function Revenue() {
   const money = (v: number): string => formatMoney(v, data?.currency ?? site.currency)
   const short = (v: number): string => formatMoneyShort(v, data?.currency ?? site.currency)
   const columns: Column<Payment>[] = [
-    { key: 'date', label: 'Date', sort: 'time', render: (p) => formatDateTime(p.ts, site.timezone) },
+    { key: 'date', label: t('Date'), sort: 'time', render: (p) => formatDateTime(p.ts, site.timezone) },
     {
       key: 'customer',
-      label: 'Customer',
+      label: t('Customer'),
       sort: 'customer',
       render: (p) => (
         <Visitor
           id={p.customerId ?? p.email ?? p.id}
           copy={
             p.customerId || p.email
-              ? { text: p.customerId ?? p.email ?? '', label: p.customerId ? 'Copy customer id' : 'Copy email' }
+              ? { text: p.customerId ?? p.email ?? '', label: p.customerId ? t('Copy customer id') : t('Copy email') }
               : undefined
           }
           filter={p.visitorId ?? undefined}
           label={
             <>
-              {p.name ?? p.email ?? p.customerId ?? <span className="analytik-muted">Anonymous</span>}
+              {p.name ?? p.email ?? p.customerId ?? <span className="analytik-muted">{t('Anonymous')}</span>}
               {p.name && p.email && <span className="analytik-sub">{p.email}</span>}
             </>
           }
@@ -61,7 +62,7 @@ export function Revenue() {
     },
     {
       key: 'amount',
-      label: 'Amount',
+      label: t('Amount'),
       sort: 'amount',
       numeric: true,
       render: (p) => (
@@ -69,16 +70,16 @@ export function Revenue() {
           <strong>{formatMoney(p.amount, p.currency)}</strong>
           {p.kind === 'refund' && (
             <span className="analytik-badge" data-trend="down">
-              refund
+              {t('refund')}
             </span>
           )}
-          {p.renewal && <span className="analytik-badge">renewal</span>}
+          {p.renewal && <span className="analytik-badge">{t('renewal')}</span>}
         </>
       ),
     },
     {
       key: 'provider',
-      label: 'Provider',
+      label: t('Provider'),
       sort: 'provider',
       render: (p) => {
         const label = PROVIDERS.find((known) => known.value === p.provider)?.label ?? p.provider
@@ -92,15 +93,15 @@ export function Revenue() {
     },
     {
       key: 'attribution',
-      label: 'Attributed by',
+      label: t('Attributed by'),
       sort: 'attribution',
       render: (p) =>
         p.matchedBy ? (
           <span className="analytik-badge" data-trend="up">
-            {MATCHES[p.matchedBy]}
+            {t(MATCHES[p.matchedBy])}
           </span>
         ) : (
-          <span className="analytik-muted">Unattributed</span>
+          <span className="analytik-muted">{t('Unattributed')}</span>
         ),
     },
   ]
@@ -110,26 +111,26 @@ export function Revenue() {
       <Status loading={overview.loading && !data} error={overview.error}>
         {data && (
           <div className="analytik-stats">
-            <StatTile label="Revenue" delta={data.revenue} format={short} exact={money} />
-            <StatTile label="Orders" delta={data.orders} format={formatNumber} exact={formatInteger} />
-            <StatTile label="Conversion rate" delta={data.conversionRate} format={formatPercent} />
-            <StatTile label="Revenue per visitor" delta={data.revenuePerVisitor} format={short} exact={money} />
+            <StatTile label={t('Revenue')} delta={data.revenue} format={short} exact={money} />
+            <StatTile label={t('Orders')} delta={data.orders} format={formatNumber} exact={formatInteger} />
+            <StatTile label={t('Conversion rate')} delta={data.conversionRate} format={formatPercent} />
+            <StatTile label={t('Revenue per visitor')} delta={data.revenuePerVisitor} format={short} exact={money} />
           </div>
         )}
       </Status>
-      <Card title="Revenue">
+      <Card title={t('Revenue')}>
         <Status loading={series.loading && !series.data} error={series.error}>
           <TrafficChart points={series.data ?? []} metric="revenue" />
         </Status>
       </Card>
       <BreakdownCard
-        title="Revenue by"
+        title={t('Revenue by')}
         dimensions={['channel', 'source', 'campaign', 'page', 'country']}
         metric="revenue"
         limit={20}
       />
       <DataTable
-        title="Payments"
+        title={t('Payments')}
         columns={columns}
         basis={requestKey('payments', site.id)}
         load={({ filters, ...request }) =>
@@ -143,32 +144,36 @@ export function Revenue() {
           })
         }
         rowKey={(p) => p.id}
-        searchLabel="Search customers, emails, order ids"
-        empty="No payments in this period"
+        searchLabel={t('Search customers, emails, order ids')}
+        empty={t('No payments in this period')}
         filters={[
           {
             key: 'kind',
-            label: 'Kind',
+            label: t('Kind'),
             options: [
-              { value: '', label: 'Payments and refunds' },
-              { value: 'payment', label: 'Payments' },
-              { value: 'refund', label: 'Refunds' },
+              { value: '', label: t('Payments and refunds') },
+              { value: 'payment', label: t('Payments') },
+              { value: 'refund', label: t('Refunds') },
             ],
           },
-          { key: 'provider', label: 'Provider', options: [{ value: '', label: 'All providers' }, ...PROVIDERS] },
+          {
+            key: 'provider',
+            label: t('Provider'),
+            options: [{ value: '', label: t('All providers') }, ...PROVIDERS.map((p) => ({ ...p, label: t(p.label) }))],
+          },
           {
             key: 'attributed',
-            label: 'Attribution',
+            label: t('Attribution'),
             options: [
-              { value: '', label: 'Any attribution' },
-              { value: 'yes', label: 'Attributed' },
-              { value: 'no', label: 'Unattributed' },
+              { value: '', label: t('Any attribution') },
+              { value: 'yes', label: t('Attributed') },
+              { value: 'no', label: t('Unattributed') },
             ],
           },
-          { key: 'visitor', label: 'Visitor', format: shortId },
+          { key: 'visitor', label: t('Visitor'), format: shortId },
         ]}
         onOpen={(p) => p.sessionId && setSelected(p.sessionId)}
-        openLabel={(p) => `Open the visit behind payment ${p.id}`}
+        openLabel={(p) => t('Open the visit behind payment {id}', { id: p.id })}
       />
       <SessionDialog sessionId={selected} onClose={() => setSelected(null)} />
     </View>

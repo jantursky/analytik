@@ -1,33 +1,13 @@
 import { fromBase64, toBase64Url } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, startOfBucket } from '../../shared/time'
+import { DIMENSIONS } from '../../shared/dimensions'
 import type { Dimension, Filters, Interval, Page, Query } from '../../shared/types'
 import { placeholders } from '../../storage/sql/statements'
 import { AnalytikError, type Context } from '../context'
 import type { SiteRecord } from '../sites'
 import type { PageOptions } from '../types'
 
-export const DIMENSIONS: readonly Dimension[] = [
-  'channel',
-  'source',
-  'referrer',
-  'campaign',
-  'medium',
-  'term',
-  'content',
-  'ref',
-  'page',
-  'entry',
-  'exit',
-  'country',
-  'region',
-  'city',
-  'browser',
-  'os',
-  'device',
-  'event',
-  'outbound',
-  'goal',
-]
+export { DIMENSIONS }
 
 /** Dimensions stored on the session row, and their column. */
 export const SESSION_COLUMNS: Partial<Record<Dimension, string>> = {

@@ -6,3 +6,4 @@ bun.lock
 apps/docs/docs/_generated/
 test-results/
 playwright-report/
+packages/analytik/src/dashboard/flags-data.ts

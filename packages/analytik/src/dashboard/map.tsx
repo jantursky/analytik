@@ -3,6 +3,7 @@ import { type KeyboardEvent, type MouseEvent, type PointerEvent, useRef, useStat
 
 import type { RealtimeVisit } from '../shared/types'
 import { countryName, formatNumber } from './format'
+import { t } from './i18n'
 
 /**
  * Land on a 3° grid from 84°N to 60°S, one bit per cell, rows of 120 cells from 180°W eastwards, base64.
@@ -67,7 +68,7 @@ export function groupPlaces<T extends Located>(locations: readonly T[]): (MapPla
   for (const l of locations) {
     const known = !!l.country || l.lat !== 0 || l.lon !== 0
     const key = known ? `${l.lat},${l.lon}` : 'unknown'
-    const label = [l.city, l.country && countryName(l.country)].filter(Boolean).join(', ') || 'Unknown location'
+    const label = [l.city, l.country && countryName(l.country)].filter(Boolean).join(', ') || t('Unknown location')
     const place = places.get(key) ?? { key, lon: l.lon, lat: l.lat, label, count: 0, known, visits: [] }
     place.count++
     place.visits.push(l)
@@ -76,7 +77,7 @@ export function groupPlaces<T extends Located>(locations: readonly T[]): (MapPla
   return [...places.values()].sort((a, b) => b.count - a.count)
 }
 
-const visitorCount = (count: number): string => `${formatNumber(count)} ${count === 1 ? 'visitor' : 'visitors'}`
+const visitorCount = (count: number): string => t('{count, plural, one {# visitor} other {# visitors}}', { count })
 
 export interface WorldMapProps {
   locations: readonly Located[]
@@ -166,8 +167,10 @@ export function WorldMap({ locations, globe = false, selected, onSelect }: World
     .map(([x, y]) => `M${x.toFixed(1)} ${y.toFixed(1)}h0`)
     .join('')
   const label = places.length
-    ? `Visitor locations: ${places.map((p) => `${p.label} (${formatNumber(p.count)})`).join(', ')}`
-    : 'Map with no visitor locations'
+    ? t('Visitor locations: {places}', {
+        places: places.map((p) => `${p.label} (${formatNumber(p.count)})`).join(', '),
+      })
+    : t('Map with no visitor locations')
   const tipPlace = placed.find((p) => p.key === hovered)
   const tipPoint = tipPlace && project([tipPlace.lon, tipPlace.lat], center)
   const tipPage = tipPlace?.visits.find((v) => v.page)?.page
@@ -178,7 +181,7 @@ export function WorldMap({ locations, globe = false, selected, onSelect }: World
         className="analytik-map"
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role={onSelect ? 'group' : 'img'}
-        aria-label={globe ? `${label}. Drag, or use the arrow keys, to turn the globe.` : label}
+        aria-label={globe ? t('{label}. Drag, or use the arrow keys, to turn the globe.', { label }) : label}
         data-globe={globe ? '' : undefined}
         tabIndex={globe ? 0 : undefined}
         {...(globe ? turn.handlers : {})}
@@ -209,7 +212,9 @@ export function WorldMap({ locations, globe = false, selected, onSelect }: World
                 data-selected={selected === p.key ? '' : undefined}
                 role={pick && 'button'}
                 tabIndex={pick && 0}
-                aria-label={pick && `${p.label}: ${visitorCount(p.count)}. Show details.`}
+                aria-label={
+                  pick && t('{place}: {visitors}. Show details.', { place: p.label, visitors: visitorCount(p.count) })
+                }
                 aria-pressed={pick && selected === p.key}
                 onPointerEnter={() => setHovered(p.key)}
                 onPointerLeave={() => setHovered(undefined)}
@@ -269,7 +274,7 @@ export function WorldMap({ locations, globe = false, selected, onSelect }: World
                 </>
               )}
             </span>
-            {onSelect && <span className="analytik-map-tip-hint">Click for details</span>}
+            {onSelect && <span className="analytik-map-tip-hint">{t('Click for details')}</span>}
           </motion.div>
         )}
       </AnimatePresence>

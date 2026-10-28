@@ -1,12 +1,11 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
 
 import { Icon } from '../icons'
+import { languageTag, t } from '../i18n'
 import { toDateInput } from '../range'
 
 /** A local calendar day as `YYYY-MM-DD`; these sort and compare correctly as strings. */
 export type IsoDay = string
-
-const LOCALE = 'en-US'
 
 const toDate = (day: IsoDay): Date => {
   const [y = 1970, m = 1, d = 1] = day.split('-').map(Number)
@@ -33,10 +32,34 @@ export function monthGrid(day: IsoDay): IsoDay[][] {
   return Array.from({ length: 6 }, (_, week) => Array.from({ length: 7 }, (_, d) => addDays(start, week * 7 + d)))
 }
 
-const monthTitle = new Intl.DateTimeFormat(LOCALE, { month: 'long', year: 'numeric' })
-const dayName = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
-const WEEKDAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+// Built for the chosen language the first time it is needed, and again if the language changes.
+interface Names {
+  tag: string
+  monthTitle: Intl.DateTimeFormat
+  dayName: Intl.DateTimeFormat
+  /** Monday first: two-letter headings and the full names for `abbr`. */
+  weekdays: { short: string; long: string }[]
+}
+let names: Names | undefined
+
+function namesFor(tag: string): Names {
+  if (names?.tag === tag) return names
+  const short = new Intl.DateTimeFormat(tag, { weekday: 'short' })
+  const long = new Intl.DateTimeFormat(tag, { weekday: 'long' })
+  // 2024-01-01 was a Monday.
+  const weekdays = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(2024, 0, 1 + i)
+    const abbreviation = short.format(date).slice(0, 2)
+    return { short: abbreviation.charAt(0).toLocaleUpperCase(tag) + abbreviation.slice(1), long: long.format(date) }
+  })
+  names = {
+    tag,
+    monthTitle: new Intl.DateTimeFormat(tag, { month: 'long', year: 'numeric' }),
+    dayName: new Intl.DateTimeFormat(tag, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+    weekdays,
+  }
+  return names
+}
 
 export interface CalendarProps {
   /** Any day of the month shown. */
@@ -94,6 +117,7 @@ export function Calendar({ month, onMonthChange, start, end, onSelect, today }: 
     move(next)
   }
 
+  const { monthTitle, dayName, weekdays } = namesFor(languageTag())
   const title = monthTitle.format(toDate(first))
   const nextMonth = addMonths(first, 1)
   return (
@@ -102,7 +126,7 @@ export function Calendar({ month, onMonthChange, start, end, onSelect, today }: 
         <button
           type="button"
           className="analytik-pill-icon"
-          aria-label="Previous month"
+          aria-label={t('Previous month')}
           onClick={() => onMonthChange(addMonths(first, -1))}
         >
           <Icon name="prev" />
@@ -113,7 +137,7 @@ export function Calendar({ month, onMonthChange, start, end, onSelect, today }: 
         <button
           type="button"
           className="analytik-pill-icon"
-          aria-label="Next month"
+          aria-label={t('Next month')}
           disabled={nextMonth > today}
           onClick={() => onMonthChange(nextMonth)}
         >
@@ -123,9 +147,9 @@ export function Calendar({ month, onMonthChange, start, end, onSelect, today }: 
       <table role="grid" aria-label={title} ref={grid} onKeyDown={onKeyDown} onMouseLeave={() => setHover(null)}>
         <thead>
           <tr>
-            {WEEKDAYS.map((name, i) => (
-              <th key={name} scope="col" abbr={WEEKDAY_NAMES[i]}>
-                {name}
+            {weekdays.map(({ short, long }) => (
+              <th key={long} scope="col" abbr={long}>
+                {short}
               </th>
             ))}
           </tr>

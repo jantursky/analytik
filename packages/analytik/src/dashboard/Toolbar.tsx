@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 import type { Filters, Interval } from '../shared/types'
 import { Icon } from './icons'
+import { msg, t } from './i18n'
 import { type DateRange, intervalsFor, shiftRange } from './range'
 import { DateRangePicker } from './ui/date-picker'
 import { Select } from './ui/select'
@@ -17,14 +18,14 @@ export function RangePicker({ range, onChange }: { range: DateRange; onChange: (
   }
   return (
     <div className="analytik-range">
-      <button type="button" className="analytik-pill-icon" aria-label="Previous period" onClick={() => step(-1)}>
+      <button type="button" className="analytik-pill-icon" aria-label={t('Previous period')} onClick={() => step(-1)}>
         <Icon name="prev" />
       </button>
       <DateRangePicker range={range} onChange={onChange} />
       <button
         type="button"
         className="analytik-pill-icon"
-        aria-label="Next period"
+        aria-label={t('Next period')}
         disabled={!shiftRange(range, 1, openedAt)}
         onClick={() => step(1)}
       >
@@ -34,17 +35,22 @@ export function RangePicker({ range, onChange }: { range: DateRange; onChange: (
   )
 }
 
-const INTERVAL_LABELS: Record<Interval, string> = { hour: 'By hour', day: 'By day', week: 'By week', month: 'By month' }
+const INTERVAL_LABELS: Record<Interval, string> = {
+  hour: msg('By hour'),
+  day: msg('By day'),
+  week: msg('By week'),
+  month: msg('By month'),
+}
 
 /** Bucket size of the chart, limited to the ones that suit the range. */
 export function IntervalPicker({ range, onChange }: { range: DateRange; onChange: (range: DateRange) => void }) {
   return (
     <Select
-      label="Interval"
+      label={t('Interval')}
       hideLabel
       className="analytik-pill"
       value={range.interval}
-      options={intervalsFor(range.from, range.to).map((value) => ({ value, label: INTERVAL_LABELS[value] }))}
+      options={intervalsFor(range.from, range.to).map((value) => ({ value, label: t(INTERVAL_LABELS[value]) }))}
       onChange={(interval) => onChange({ ...range, interval })}
     />
   )
@@ -58,7 +64,7 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
         <motion.div
           className="analytik-filters"
           role="group"
-          aria-label="Active filters"
+          aria-label={t('Active filters')}
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
@@ -70,20 +76,20 @@ export function FilterBar({ filters, onChange }: { filters: Filters; onChange: (
                 layout
                 type="button"
                 className="analytik-chip"
-                aria-label={`Remove filter ${dimension} is ${value}`}
+                aria-label={t('Remove filter {dimension} is {value}', { dimension, value })}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 onClick={() => onChange(Object.fromEntries(entries.filter(([d]) => d !== dimension)))}
               >
-                <span className="analytik-muted">{dimension}</span> {value || '(none)'}{' '}
+                <span className="analytik-muted">{dimension}</span> {value || t('(none)')}{' '}
                 <span aria-hidden="true">×</span>
               </motion.button>
             ))}
           </AnimatePresence>
           {entries.length > 1 && (
             <button type="button" className="analytik-link" onClick={() => onChange({})}>
-              Clear all
+              {t('Clear all')}
             </button>
           )}
         </motion.div>

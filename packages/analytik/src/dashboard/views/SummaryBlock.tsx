@@ -5,6 +5,7 @@ import { MultiChart } from '../charts'
 import { useDashboard } from '../context'
 import { formatBucket, formatNumber } from '../format'
 import { Icon } from '../icons'
+import { t } from '../i18n'
 import { usePreferences } from '../preferences'
 import { Shortened, StatTile, Status } from '../ui'
 import { AnimatedNumber, rise } from '../ui/motion'
@@ -28,8 +29,10 @@ import { useOverview } from './useOverview'
 
 /** Lists labels the way a sentence would: "Visitors, Revenue and Bounce rate". */
 const listOf = (keys: MetricKey[]): string => {
-  const labels = keys.map((key) => METRICS[key].label)
-  return labels.length > 1 ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1) ?? ''}` : (labels[0] ?? '')
+  const labels = keys.map((key) => t(METRICS[key].label))
+  return labels.length > 1
+    ? t('{list} and {last}', { list: labels.slice(0, -1).join(', '), last: labels.at(-1) ?? '' })
+    : (labels[0] ?? '')
 }
 
 /**
@@ -71,7 +74,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       times={points.map((p) => p.ts)}
       series={plotted.map((key, index) => ({
         key,
-        label: METRICS[key].label,
+        label: t(METRICS[key].label),
         values: points.map((p) => p[key]),
         kind: METRICS[key].kind === 'area' && key !== firstArea ? 'line' : METRICS[key].kind,
         colour: seriesColour(index),
@@ -87,7 +90,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
   return (
     <motion.section
       className="analytik-card analytik-overview"
-      aria-label="Summary"
+      aria-label={t('Summary')}
       variants={rise}
       data-editing={editing ? '' : undefined}
     >
@@ -98,7 +101,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
               editing ? (
                 <div key={key} className="analytik-stat analytik-stat-edit">
                   <Select
-                    label={`Number ${index + 1}`}
+                    label={t('Number {number}', { number: index + 1 })}
                     hideLabel
                     className="analytik-pill"
                     value={key}
@@ -120,7 +123,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
                   <button
                     type="button"
                     className="analytik-pill-icon"
-                    aria-label={`Remove ${statLabel(key)}`}
+                    aria-label={t('Remove {name}', { name: statLabel(key) })}
                     disabled={config.stats.length === 1}
                     onClick={() => save({ stats: config.stats.filter((_, i) => i !== index) })}
                   >
@@ -131,21 +134,21 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
                 <div key={key} className="analytik-stat">
                   <span className="analytik-stat-label">
                     <span className="analytik-live-dot" data-idle={data.online ? undefined : ''} aria-hidden="true" />
-                    Live now
+                    {t('Live now')}
                   </span>
                   <span className="analytik-stat-value">
                     <AnimatedNumber value={data.online} format={formatNumber} />
                   </span>
                   {openView && (
                     <button type="button" className="analytik-link" onClick={() => openView('realtime')}>
-                      Open live map
+                      {t('Open live map')}
                     </button>
                   )}
                 </div>
               ) : (
                 <StatTile
                   key={key}
-                  label={METRICS[key].label}
+                  label={t(METRICS[key].label)}
                   delta={data[key]}
                   format={formatMetric(key, currency)}
                   exact={exactMetric(key, currency)}
@@ -163,7 +166,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
                 onClick={() => save({ stats: [...config.stats, unused[0] ?? 'visitors'] })}
               >
                 <Icon name="plus" />
-                Add a number
+                {t('Add a number')}
               </button>
             )}
           </div>
@@ -172,7 +175,8 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       {editing && (
         <fieldset className="analytik-chart-edit">
           <legend className="analytik-field-label">
-            Chart <span className="analytik-field-hint">up to {MAX_SERIES}, shown together</span>
+            {t('Chart')}{' '}
+            <span className="analytik-field-hint">{t('up to {count}, shown together', { count: MAX_SERIES })}</span>
           </legend>
           {METRIC_KEYS.map((key) => {
             const on = config.chart.includes(key)
@@ -192,7 +196,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
                     aria-hidden="true"
                   />
                 )}
-                {METRICS[key].label}
+                {t(METRICS[key].label)}
               </button>
             )
           })}
@@ -200,12 +204,14 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       )}
       {focus && (
         <div className="analytik-chart-focus">
-          <strong>{listOf(focus)} over time</strong>
+          <strong>{t('{metrics} over time', { metrics: listOf(focus) })}</strong>
           <span className="analytik-field-hint">
-            {focus.length < MAX_SERIES ? 'Click more numbers to compare them.' : `Up to ${MAX_SERIES} at once.`}
+            {focus.length < MAX_SERIES
+              ? t('Click more numbers to compare them.')
+              : t('Up to {count} at once.', { count: MAX_SERIES })}
           </span>
           <button type="button" className="analytik-link" onClick={() => setPicked(null)}>
-            Back to {listOf(config.chart).toLowerCase()}
+            {t('Back to {metrics}', { metrics: listOf(config.chart).toLowerCase() })}
           </button>
         </div>
       )}

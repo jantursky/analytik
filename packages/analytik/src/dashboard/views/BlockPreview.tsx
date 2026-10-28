@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 
-import { flagEmoji } from '../format'
+import { Flag } from '../flags'
 import { Icon } from '../icons'
+import { msg, t } from '../i18n'
 import type { BlockId } from './blocks'
 
 // Made-up numbers for the picker: each block drawn small, the way it looks with data, so a block can be chosen by
 // what it shows. Nothing here is fetched.
 
-type Row = [label: string, value: string, share: number]
+type Row = [label: string, value: string, share: number, country?: string]
 
 const ROWS: Partial<Record<BlockId, Row[]>> = {
   sources: [
@@ -17,10 +18,10 @@ const ROWS: Partial<Record<BlockId, Row[]>> = {
     ['Email', '642', 0.13],
   ],
   locations: [
-    [`${flagEmoji('US')} United States`, '3,921', 1],
-    [`${flagEmoji('DE')} Germany`, '1,610', 0.41],
-    [`${flagEmoji('GB')} United Kingdom`, '1,102', 0.28],
-    [`${flagEmoji('FR')} France`, '804', 0.2],
+    ['United States', '3,921', 1, 'US'],
+    ['Germany', '1,610', 0.41, 'DE'],
+    ['United Kingdom', '1,102', 0.28, 'GB'],
+    ['France', '804', 0.2, 'FR'],
   ],
   pages: [
     ['/pricing', '2,940', 1],
@@ -53,10 +54,10 @@ const ROWS: Partial<Record<BlockId, Row[]>> = {
     ['Referral', '€290', 0.2],
   ],
   'revenue-countries': [
-    [`${flagEmoji('US')} United States`, '€1,980', 1],
-    [`${flagEmoji('DE')} Germany`, '€740', 0.37],
-    [`${flagEmoji('GB')} United Kingdom`, '€420', 0.21],
-    [`${flagEmoji('FR')} France`, '€210', 0.11],
+    ['United States', '€1,980', 1, 'US'],
+    ['Germany', '€740', 0.37, 'DE'],
+    ['United Kingdom', '€420', 0.21, 'GB'],
+    ['France', '€210', 0.11, 'FR'],
   ],
 }
 
@@ -64,12 +65,27 @@ const AREA = 'M0 40 C14 30 22 34 34 26 S56 12 70 18 S94 8 120 4 L120 48 L0 48 Z'
 const LINE = 'M0 40 C14 30 22 34 34 26 S56 12 70 18 S94 8 120 4'
 const SPARK = 'M0 14 C8 10 14 12 20 8 S32 4 40 6'
 
+/** Puts a node where a translated sentence has its `{name}` placeholder, so markup can sit inside one key. */
+export function withNode(text: string, name: string, node: ReactNode): ReactNode {
+  const [before = '', ...after] = text.split(`{${name}}`)
+  return (
+    <>
+      {before}
+      {after.length > 0 && node}
+      {after.join(`{${name}}`)}
+    </>
+  )
+}
+
 function Bars({ rows, money }: { rows: Row[]; money?: boolean }) {
   return (
     <ul className="analytik-preview-bars" data-metric={money ? 'revenue' : undefined}>
-      {rows.map(([label, value, share]) => (
+      {rows.map(([label, value, share, country]) => (
         <li key={label}>
-          <span>{label}</span>
+          <span>
+            {country && <Flag code={country} />}
+            {label}
+          </span>
           <strong>{value}</strong>
           <i style={{ width: `${share * 100}%` }} />
         </li>
@@ -89,7 +105,7 @@ function Spark() {
 function Figure({ label, value, change }: { label: string; value: string; change: string }) {
   return (
     <span className="analytik-preview-number">
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <strong>{value}</strong>
       <em data-trend={change.startsWith('-') ? 'down' : 'up'}>{change}</em>
     </span>
@@ -100,9 +116,9 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
   summary: () => (
     <>
       <span className="analytik-preview-row">
-        <Figure label="Visitors" value="12.4k" change="+8%" />
-        <Figure label="Revenue" value="€3,210" change="+12%" />
-        <Figure label="Conversion" value="2.4%" change="-0.3%" />
+        <Figure label={msg('Visitors')} value="12.4k" change="+8%" />
+        <Figure label={msg('Revenue')} value="€3,210" change="+12%" />
+        <Figure label={msg('Conversion')} value="2.4%" change="-0.3%" />
       </span>
       <svg viewBox="0 0 120 48" preserveAspectRatio="none" className="analytik-preview-chart">
         {[10, 18, 8, 24, 14, 30].map((height, i) => (
@@ -116,10 +132,10 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
   kpis: () => (
     <span className="analytik-preview-tiles">
       {[
-        ['Visitors', '12.4k', '+8%'],
-        ['Pageviews', '38.1k', '+5%'],
-        ['Sessions', '15.9k', '+7%'],
-        ['Revenue', '€3.2k', '+12%'],
+        [msg('Visitors'), '12.4k', '+8%'],
+        [msg('Pageviews'), '38.1k', '+5%'],
+        [msg('Sessions'), '15.9k', '+7%'],
+        [msg('Revenue'), '€3.2k', '+12%'],
       ].map(([label = '', value = '', change = '']) => (
         <span key={label} className="analytik-preview-tile">
           <Figure label={label} value={value} change={change} />
@@ -132,10 +148,10 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
     <table className="analytik-preview-table">
       <thead>
         <tr>
-          <th>Channel</th>
-          <th>Visitors</th>
-          <th>Conv.</th>
-          <th>Revenue</th>
+          <th>{t('Channel')}</th>
+          <th>{t('Visitors')}</th>
+          <th>{t('Conv.')}</th>
+          <th>{t('Revenue')}</th>
         </tr>
       </thead>
       <tbody>
@@ -164,13 +180,13 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
       </svg>
       <span className="analytik-preview-legend">
         <span data-series="a">
-          Desktop <strong>61%</strong>
+          {t('Desktop')} <strong>61%</strong>
         </span>
         <span data-series="b">
-          Mobile <strong>35%</strong>
+          {t('Mobile')} <strong>35%</strong>
         </span>
         <span>
-          Tablet <strong>4%</strong>
+          {t('Tablet')} <strong>4%</strong>
         </span>
       </span>
     </span>
@@ -201,25 +217,25 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
         <Icon name="coin" />
       </span>
       <strong>€42.80</strong>
-      <span>from 75 orders</span>
+      <span>{t('{count, plural, one {from # order} other {from # orders}}', { count: 75 })}</span>
       <em data-trend="up">+6%</em>
     </span>
   ),
   payments: () => (
     <ul className="analytik-preview-feed">
       {[
-        ['Anna Kováč', '€99.00', '2m ago'],
-        ['Lukas Meyer', '€29.00', '1h ago'],
-        ['cus_8fK2', '€49.00', '3h ago'],
-        ['Refund', '-€29.00', '5h ago'],
+        ['Anna Kováč', '€99.00', msg('2m ago')],
+        ['Lukas Meyer', '€29.00', msg('1h ago')],
+        ['cus_8fK2', '€49.00', msg('3h ago')],
+        [msg('Refund'), '-€29.00', msg('5h ago')],
       ].map(([who = '', amount = '', ago]) => (
         <li key={who}>
           <span className="analytik-preview-avatar" aria-hidden="true">
             {who.charAt(0)}
           </span>
-          <span>{who}</span>
+          <span>{t(who)}</span>
           <strong data-refund={amount.startsWith('-') ? '' : undefined}>{amount}</strong>
-          <em>{ago}</em>
+          <em>{t(ago ?? '')}</em>
         </li>
       ))}
     </ul>
@@ -228,19 +244,17 @@ const PREVIEWS: Partial<Record<BlockId, () => ReactNode>> = {
     <>
       <span className="analytik-preview-live">
         <span className="analytik-live-dot" aria-hidden="true" />
-        <strong>7</strong> visitors right now
+        <strong>7</strong> {t('{count, plural, one {visitor right now} other {visitors right now}}', { count: 7 })}
       </span>
       <ul className="analytik-preview-feed">
         {[
-          ['Germany', '/pricing', '12s'],
-          ['United States', '/docs', '40s'],
-          ['France', '/', '1m'],
+          ['Germany', '/pricing', msg('12s ago')],
+          ['United States', '/docs', msg('40s ago')],
+          ['France', '/', msg('1m ago')],
         ].map(([country = '', page, ago]) => (
           <li key={country}>
-            <span>
-              Visitor from {country} visited <b>{page}</b>
-            </span>
-            <em>{ago} ago</em>
+            <span>{withNode(t('Visitor from {country} visited {page}', { country }), 'page', <b>{page}</b>)}</span>
+            <em>{t(ago ?? '')}</em>
           </li>
         ))}
       </ul>

@@ -102,6 +102,7 @@ export function App() {
       <main
         key={shown}
         className="main"
+        data-wide={shown === 'full' ? '' : undefined}
         data-state={shown === tab ? 'open' : 'closed'}
         onAnimationEnd={(event) => {
           if (event.target === event.currentTarget && shown !== tab) setShown(tab)
@@ -126,6 +127,8 @@ export function App() {
             </ExampleFrame>
           </>
         )}
+
+        {shown === 'full' && <DashboardExample />}
 
         {shown === 'site' && (
           <>

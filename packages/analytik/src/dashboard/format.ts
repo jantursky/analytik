@@ -1,11 +1,10 @@
 import type { Interval } from '../shared/types'
-
-const LOCALE = 'en-US'
+import { currentLanguage, languageTag, t } from './i18n'
 
 /** How numbers, money, dates and times are written; chosen in Settings → Formatting and kept in the preferences. */
 export interface FormatSettings {
-  /** Digit grouping and decimal mark: 1,234.5 · 1.234,5 · 1 234,5 · 1'234.5. */
-  numbers: 'comma' | 'dot' | 'space' | 'apostrophe'
+  /** Digit grouping and decimal mark: the language's own, or 1,234.5 · 1.234,5 · 1 234,5 · 1'234.5. */
+  numbers: 'auto' | 'comma' | 'dot' | 'space' | 'apostrophe'
   /** $1,234.50 or USD 1,234.50. */
   currency: 'symbol' | 'code'
   /** Cents on every amount, or only when an amount has them. */
@@ -16,7 +15,7 @@ export interface FormatSettings {
 }
 
 export const DEFAULT_FORMAT: FormatSettings = {
-  numbers: 'comma',
+  numbers: 'auto',
   currency: 'symbol',
   cents: 'always',
   date: 'us',
@@ -24,7 +23,7 @@ export const DEFAULT_FORMAT: FormatSettings = {
 }
 
 const CHOICES: { [K in keyof FormatSettings]: readonly FormatSettings[K][] } = {
-  numbers: ['comma', 'dot', 'space', 'apostrophe'],
+  numbers: ['auto', 'comma', 'dot', 'space', 'apostrophe'],
   currency: ['symbol', 'code'],
   cents: ['always', 'auto'],
   date: ['us', 'gb', 'dmy', 'mdy', 'iso'],
@@ -45,8 +44,8 @@ export function parseFormatSettings(value: unknown): FormatSettings {
   }
 }
 
-// Number styles borrow a locale's separators; the words around them stay English.
-const NUMBER_LOCALES: Record<FormatSettings['numbers'], string> = {
+// Number styles borrow a locale's separators; `auto` uses the chosen language's own.
+const NUMBER_LOCALES: Record<Exclude<FormatSettings['numbers'], 'auto'>, string> = {
   comma: 'en-US',
   dot: 'de-DE',
   space: 'fr-FR',
@@ -59,6 +58,7 @@ interface NumberFormatter {
 
 interface Formatters {
   settings: FormatSettings
+  language: string
   /** A number format in the chosen style. */
   numbers: (options: Intl.NumberFormatOptions) => NumberFormatter
   integer: NumberFormatter
@@ -67,7 +67,7 @@ interface Formatters {
 }
 
 function formattersFor(settings: FormatSettings): Formatters {
-  const locale = NUMBER_LOCALES[settings.numbers]
+  const locale = settings.numbers === 'auto' ? languageTag() : NUMBER_LOCALES[settings.numbers]
   // Swiss grouping is a plain apostrophe in some ICU versions and a typographic one in others; always write the plain one.
   const numbers = (options: Intl.NumberFormatOptions): NumberFormatter => {
     const format = new Intl.NumberFormat(locale, options)
@@ -77,6 +77,7 @@ function formattersFor(settings: FormatSettings): Formatters {
   }
   return {
     settings,
+    language: currentLanguage(),
     numbers,
     integer: numbers({ maximumFractionDigits: 0 }),
     compact: numbers({ notation: 'compact', maximumFractionDigits: 1 }),
@@ -99,11 +100,17 @@ export function setFormatSettings(settings: FormatSettings): void {
 
 export const formatSettings = (): FormatSettings => current.settings
 
+/** The formatters in force; they follow the language, so a language change builds them again. */
+function formatters(): Formatters {
+  if (current.language !== currentLanguage()) current = formattersFor(current.settings)
+  return current
+}
+
 function moneyFormat(currency: string, compact = false): NumberFormatter {
   const key = `${currency}${compact ? ':compact' : ''}`
-  let format = current.money.get(key)
+  let format = formatters().money.get(key)
   if (!format) {
-    format = current.numbers({
+    format = formatters().numbers({
       style: 'currency',
       currency,
       currencyDisplay: current.settings.currency,
@@ -111,7 +118,7 @@ function moneyFormat(currency: string, compact = false): NumberFormatter {
         ? { notation: 'compact', maximumFractionDigits: 1 }
         : current.settings.cents === 'auto' && { trailingZeroDisplay: 'stripIfInteger' }),
     })
-    current.money.set(key, format)
+    formatters().money.set(key, format)
   }
   return format
 }
@@ -122,18 +129,18 @@ const minorUnits = (currency: string): number =>
 
 /** Exact below 10,000, compact above (12.3K). */
 export function formatNumber(value: number): string {
-  return Math.abs(value) < 10000 ? current.integer.format(value) : current.compact.format(value)
+  return Math.abs(value) < 10000 ? formatters().integer.format(value) : formatters().compact.format(value)
 }
 
 /** Every digit, for tooltips next to a compact number: 101,098. */
-export const formatInteger = (value: number): string => current.integer.format(value)
+export const formatInteger = (value: number): string => formatters().integer.format(value)
 
 /** Formats an amount in minor units (cents) in `currency`. */
 export function formatMoney(minor: number, currency: string): string {
   try {
     return moneyFormat(currency).format(minor / minorUnits(currency))
   } catch {
-    return `${current.integer.format(minor / 100)} ${currency}`
+    return `${formatters().integer.format(minor / 100)} ${currency}`
   }
 }
 
@@ -153,7 +160,7 @@ export function formatMoneyShort(minor: number, currency: string): string {
 /** A ratio (0.123) as a percentage (12.3%). */
 export function formatPercent(ratio: number): string {
   const digits = Math.abs(ratio) < 0.1 && ratio !== 0 ? 1 : 0
-  return current
+  return formatters()
     .numbers({
       style: 'percent',
       minimumFractionDigits: digits,
@@ -164,15 +171,15 @@ export function formatPercent(ratio: number): string {
 
 export function formatDuration(ms: number): string {
   const seconds = Math.round(ms / 1000)
-  if (seconds < 60) return `${seconds}s`
+  if (seconds < 60) return t('{seconds}s', { seconds })
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ${seconds % 60}s`
-  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`
+  if (minutes < 60) return t('{minutes}m {seconds}s', { minutes, seconds: seconds % 60 })
+  return t('{hours}h {minutes}m', { hours: Math.floor(minutes / 60), minutes: String(minutes % 60).padStart(2, '0') })
 }
 
 /** Relative change (0.12) as a signed percentage; `null` (no previous value) as "new". */
 export function formatChange(change: number | null): string {
-  if (change == null) return 'new'
+  if (change == null) return t('new')
   const percent = Math.round(change * 100)
   return `${percent > 0 ? '+' : ''}${percent}%`
 }
@@ -181,7 +188,7 @@ interface DayParts {
   year: string
   month: string
   day: string
-  /** Short English month name. */
+  /** Short month name in the chosen language. */
   name: string
 }
 
@@ -195,7 +202,7 @@ function dayParts(ts: number, timeZone?: string): DayParts {
     year: parts.year ?? '',
     month: parts.month ?? '',
     day: parts.day ?? '',
-    name: new Intl.DateTimeFormat('en-US', { timeZone, month: 'short' }).format(ts),
+    name: new Intl.DateTimeFormat(languageTag(), { timeZone, month: 'short' }).format(ts),
   }
 }
 
@@ -234,7 +241,7 @@ function formatMonth(ts: number, timeZone?: string): string {
 
 /** A time of day in the chosen clock: 3:05 PM or 15:05. */
 export function formatTime(ts: number, timeZone?: string): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(languageTag(), {
     timeZone,
     hour: current.settings.time === '12h' ? 'numeric' : '2-digit',
     minute: '2-digit',
@@ -258,7 +265,7 @@ export function formatDayRange(first: number, last: number): string {
   const [from, to] = [Math.min(first, last), Math.max(first, last)]
   const style = current.settings.date
   if (style === 'us' || style === 'gb') {
-    const locale = style === 'us' ? 'en-US' : 'en-GB'
+    const locale = currentLanguage() !== 'en' ? languageTag() : style === 'us' ? 'en-US' : 'en-GB'
     return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }).formatRange(from, to)
   }
   const a = formatDate(from)
@@ -268,26 +275,21 @@ export function formatDayRange(first: number, last: number): string {
 
 export function formatAgo(ts: number, now: number): string {
   const seconds = Math.max(0, Math.round((now - ts) / 1000))
-  if (seconds < 60) return `${seconds}s ago`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  return `${Math.floor(seconds / 3600)}h ago`
+  if (seconds < 60) return t('{n}s ago', { n: seconds })
+  if (seconds < 3600) return t('{n}m ago', { n: Math.floor(seconds / 60) })
+  return t('{n}h ago', { n: Math.floor(seconds / 3600) })
 }
 
-let regions: Intl.DisplayNames | undefined
+let regions: { tag: string; names: Intl.DisplayNames } | undefined
 
-/** The English name of an ISO 3166 country code ("DE" → "Germany"); the code itself when unknown. */
+/** The name of an ISO 3166 country code in the chosen language ("DE" → "Germany"); the code itself when unknown. */
 export function countryName(code: string): string {
   if (!/^[A-Z]{2}$/.test(code)) return code
   try {
-    regions ??= new Intl.DisplayNames(LOCALE, { type: 'region' })
-    return regions.of(code) ?? code
+    const tag = languageTag()
+    if (regions?.tag !== tag) regions = { tag, names: new Intl.DisplayNames(tag, { type: 'region' }) }
+    return regions.names.of(code) ?? code
   } catch {
     return code
   }
-}
-
-/** The flag emoji of an ISO 3166 country code, from its two regional indicator symbols. */
-export function flagEmoji(code: string): string {
-  if (!/^[A-Z]{2}$/.test(code)) return ''
-  return String.fromCodePoint(0x1f1a5 + code.charCodeAt(0), 0x1f1a5 + code.charCodeAt(1))
 }

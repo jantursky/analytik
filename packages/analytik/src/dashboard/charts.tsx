@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type CSSProperties, lazy, type ReactNode, Suspense, useState } from 'react'
 
+import { t } from './i18n'
 import { EASE } from './ui/motion'
 
 // Recharts is a big dependency: it loads with the first chart, not with the dashboard.
@@ -58,12 +59,12 @@ export function AreaChart({
   colour,
 }: AreaChartProps) {
   const [hidden, setHidden] = useState({ primary: false, secondary: false })
-  if (!points.length) return <p className="analytik-empty">Nothing recorded in this period</p>
+  if (!points.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
 
   const peak = points.reduce((best, p) => (p.value > best.value ? p : best))
   const rows = points.map((p, i) => ({ ...p, ...(secondary ? { secondary: secondary.values[i] ?? 0 } : {}) }))
   const legend = secondary && (
-    <div className="analytik-legend" role="group" aria-label="Series">
+    <div className="analytik-legend" role="group" aria-label={t('Series')}>
       {(['primary', 'secondary'] as const).map((key) => (
         <button
           key={key}
@@ -102,12 +103,17 @@ export function AreaChart({
         </Suspense>
       </div>
       <figcaption className="analytik-sr-only">
-        {`${label}, ${points.length} points, peak ${formatValue(peak.value)} at ${formatTime(peak.ts)}`}
+        {t('{label}, {count, plural, one {# point} other {# points}}, peak {peak} at {time}', {
+          label,
+          count: points.length,
+          peak: formatValue(peak.value),
+          time: formatTime(peak.ts),
+        })}
       </figcaption>
       <table className="analytik-sr-only">
         <thead>
           <tr>
-            <th scope="col">Time</th>
+            <th scope="col">{t('Time')}</th>
             <th scope="col">{label}</th>
             {secondary && <th scope="col">{secondary.label}</th>}
           </tr>
@@ -157,13 +163,13 @@ export interface MultiChartProps {
  */
 export function MultiChart({ times, series, formatTime, height = 200 }: MultiChartProps) {
   const [hidden, setHidden] = useState<string[]>([])
-  if (!times.length || !series.length) return <p className="analytik-empty">Nothing recorded in this period</p>
+  if (!times.length || !series.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
 
   const shown = series.filter((s) => !hidden.includes(s.key))
   const rows = times.map((ts, i) => ({ ts, ...Object.fromEntries(shown.map((s) => [s.key, s.values[i] ?? 0])) }))
   const label = series.map((s) => s.label).join(', ')
   const legend = series.length > 1 && (
-    <div className="analytik-legend" role="group" aria-label="Series">
+    <div className="analytik-legend" role="group" aria-label={t('Series')}>
       {series.map((s) => (
         <button
           key={s.key}
@@ -194,18 +200,22 @@ export function MultiChart({ times, series, formatTime, height = 200 }: MultiCha
         </Suspense>
       </div>
       <figcaption className="analytik-sr-only">
-        {`${label}, ${times.length} points. `}
+        {t('{label}, {count, plural, one {# point} other {# points}}.', { label, count: times.length })}{' '}
         {series
           .map((s) => {
             const peak = s.values.reduce((best, v, i) => (v > (s.values[best] ?? 0) ? i : best), 0)
-            return `${s.label} peaks at ${s.formatValue(s.values[peak] ?? 0)} on ${formatTime(times[peak] ?? 0)}.`
+            return t('{label} peaks at {peak} on {time}.', {
+              label: s.label,
+              peak: s.formatValue(s.values[peak] ?? 0),
+              time: formatTime(times[peak] ?? 0),
+            })
           })
           .join(' ')}
       </figcaption>
       <table className="analytik-sr-only">
         <thead>
           <tr>
-            <th scope="col">Time</th>
+            <th scope="col">{t('Time')}</th>
             {series.map((s) => (
               <th key={s.key} scope="col">
                 {s.label}
@@ -249,7 +259,7 @@ export interface BarListProps {
 
 /** Ranked rows with a proportional meter under each; rows fade in and meters grow to their length. */
 export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric }: BarListProps) {
-  if (!rows.length) return <p className="analytik-empty">Nothing recorded in this period</p>
+  if (!rows.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
   const max = Math.max(...rows.map((r) => r.value), 1)
   return (
     <ul className="analytik-bars" aria-label={label} data-metric={metric}>
@@ -264,7 +274,7 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 transition={{ duration: 0.6, ease: EASE, delay: Math.min(index, 10) * 0.03 }}
                 aria-hidden="true"
               />
-              <span className="analytik-bar-label">{row.label ?? (row.key || '(none)')}</span>
+              <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
               <span className="analytik-bar-value">{formatValue(row.value)}</span>
             </>
           )
@@ -280,7 +290,7 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
               {onSelect ? (
                 <button type="button" className="analytik-bar" onClick={() => onSelect(row.key)}>
                   {content}
-                  <span className="analytik-sr-only">, filter by this</span>
+                  <span className="analytik-sr-only">{t(', filter by this')}</span>
                 </button>
               ) : (
                 <div className="analytik-bar">{content}</div>

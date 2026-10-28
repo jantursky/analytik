@@ -173,3 +173,5 @@ See [CONTRIBUTING.md](https://github.com/jantursky/analytik/blob/main/CONTRIBUTI
 ## License
 
 [MIT](LICENSE)
+
+Country flags are from [Circle Flags](https://github.com/HatScripts/circle-flags) by HatScripts (MIT), see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

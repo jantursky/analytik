@@ -170,6 +170,17 @@ pre,
   padding: var(--space-6) var(--space-4) var(--space-16);
 }
 
+.main[data-wide] {
+  max-width: none;
+  padding: 0;
+}
+
+.main[data-wide] .dashboard-host {
+  min-height: calc(100vh - var(--header-height, 0px));
+  min-height: calc(100dvh - var(--header-height, 0px));
+  border-radius: 0;
+}
+
 .lede {
   max-width: 68ch;
   color: var(--text-muted);

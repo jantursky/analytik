@@ -1,3 +1,5 @@
+import { t } from './i18n'
+
 const REPOSITORY = 'https://github.com/jantursky/analytik'
 const AUTHOR = 'https://jantursky.com'
 
@@ -19,10 +21,10 @@ export function Credits() {
       <span className="analytik-credits-links">
         <a className="analytik-credits-link" href={REPOSITORY} target="_blank" rel="noopener">
           <GitHubMark />
-          <span>Star on GitHub</span>
+          <span>{t('Star on GitHub')}</span>
         </a>
         <span className="analytik-credits-author">
-          Made by{' '}
+          {t('Made by')}{' '}
           <a className="analytik-credits-link" href={AUTHOR} target="_blank" rel="noopener">
             <span>Jan Tursky</span>
           </a>

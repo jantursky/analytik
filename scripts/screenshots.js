@@ -4,7 +4,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-/* global document */
+/* global document, window */
 import { chromium } from 'playwright'
 import sharp from 'sharp'
 
@@ -58,6 +58,9 @@ try {
       await page.evaluate(() => document.fonts.ready)
       // Long enough for the view switch and the charts to finish animating.
       await page.waitForTimeout(3000)
+      // Clicking a tab can scroll the demo page; the clip below is in page coordinates, so start from the top.
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await page.waitForTimeout(300)
       const box = await page.locator('.analytik').first().boundingBox()
       if (!box) throw new Error(`no dashboard on ${view.name}`)
       const png = await page.screenshot({

@@ -7,6 +7,7 @@ import { Icon } from '../icons'
 import { EASE, View } from '../ui/motion'
 import { BLOCK_IDS, BLOCKS, type BlockId } from './blocks'
 import { BlockPicker } from './BlockPicker'
+import { t } from '../i18n'
 
 export { useOverview } from './useOverview'
 
@@ -77,14 +78,14 @@ function BlockControls({
   count: number
   onChange: (change: BlockChange) => void
 }) {
-  const name = BLOCKS[item.id].name
+  const name = t(BLOCKS[item.id].name)
   return (
-    <div className="analytik-block-bar" role="group" aria-label={`${name} layout`}>
+    <div className="analytik-block-bar" role="group" aria-label={t('{name} layout', { name })}>
       <span className="analytik-block-name">{name}</span>
       <button
         type="button"
         className="analytik-pill-icon"
-        aria-label={`Move ${name} earlier`}
+        aria-label={t('Move {name} earlier', { name })}
         disabled={index === 0}
         onClick={() => onChange({ move: -1 })}
       >
@@ -93,7 +94,7 @@ function BlockControls({
       <button
         type="button"
         className="analytik-pill-icon"
-        aria-label={`Move ${name} later`}
+        aria-label={t('Move {name} later', { name })}
         disabled={index === count - 1}
         onClick={() => onChange({ move: 1 })}
       >
@@ -105,12 +106,12 @@ function BlockControls({
         aria-pressed={item.wide}
         onClick={() => onChange({ wide: !item.wide })}
       >
-        {item.wide ? 'Full width' : 'Half width'}
+        {item.wide ? t('Full width') : t('Half width')}
       </button>
       <button
         type="button"
         className="analytik-pill-icon"
-        aria-label={`Remove ${name}`}
+        aria-label={t('Remove {name}', { name })}
         onClick={() => onChange({ remove: true })}
       >
         <Icon name="trash" />
@@ -161,7 +162,7 @@ export function Overview({ customizing }: OverviewProps = {}) {
     <View>
       <div className="analytik-board" data-editing={editing ? '' : undefined}>
         {layout.map((item, index) => {
-          const name = BLOCKS[item.id].name
+          const name = t(BLOCKS[item.id].name)
           return (
             <motion.div
               key={item.id}
@@ -185,9 +186,16 @@ export function Overview({ customizing }: OverviewProps = {}) {
                         type="button"
                         className="analytik-insert"
                         data-side={side}
-                        aria-label={`Add a block ${side} ${name}`}
+                        aria-label={
+                          side === 'before'
+                            ? t('Add a block before {name}', { name })
+                            : t('Add a block after {name}', { name })
+                        }
                         onClick={() =>
-                          setInsertion({ index: side === 'before' ? index : index + 1, label: `${side} ${name}` })
+                          setInsertion({
+                            index: side === 'before' ? index : index + 1,
+                            label: side === 'before' ? t('before {name}', { name }) : t('after {name}', { name }),
+                          })
                         }
                       >
                         <Icon name="plus" />
@@ -213,14 +221,16 @@ export function Overview({ customizing }: OverviewProps = {}) {
                 type="button"
                 className="analytik-add-tile"
                 disabled={full}
-                onClick={() => setInsertion({ index: layout.length, label: 'at the end' })}
+                onClick={() => setInsertion({ index: layout.length, label: t('at the end') })}
               >
                 <span className="analytik-add-icon" aria-hidden="true">
                   <Icon name="plus" />
                 </span>
-                <strong>{full ? 'Every block is on the overview' : 'Add a block'}</strong>
+                <strong>{full ? t('Every block is on the overview') : t('Add a block')}</strong>
                 <span className="analytik-muted">
-                  {full ? 'Remove one to add it somewhere else.' : 'Charts, tables and numbers from the catalogue.'}
+                  {full
+                    ? t('Remove one to add it somewhere else.')
+                    : t('Charts, tables and numbers from the catalogue.')}
                 </span>
               </button>
             </motion.div>

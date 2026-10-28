@@ -5,33 +5,35 @@ import type { BreakdownRow, Dimension } from '../../shared/types'
 import { BarList, type BarListRow } from '../charts'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
-import { countryName, flagEmoji, formatMoney, formatNumber } from '../format'
+import { Flag } from '../flags'
+import { countryName, formatMoney, formatNumber } from '../format'
 import { Icon } from '../icons'
+import { msg, t } from '../i18n'
 import { hasLogo, Logo } from '../logo'
 import { Card, Status } from '../ui'
 import { Tabs } from '../ui/tabs'
 
 export const DIMENSION_LABELS: Record<Dimension, string> = {
-  channel: 'Channel',
-  source: 'Source',
-  referrer: 'Referrer',
-  campaign: 'Campaign',
-  medium: 'Medium',
-  term: 'Term',
-  content: 'Content',
-  ref: 'Ref code',
-  page: 'Page',
-  entry: 'Entry page',
-  exit: 'Exit page',
-  country: 'Country',
-  region: 'Region',
-  city: 'City',
-  browser: 'Browser',
-  os: 'OS',
-  device: 'Device',
-  event: 'Event',
-  outbound: 'Outbound link',
-  goal: 'Goal',
+  channel: msg('Channel'),
+  source: msg('Source'),
+  referrer: msg('Referrer'),
+  campaign: msg('Campaign'),
+  medium: msg('Medium'),
+  term: msg('Term'),
+  content: msg('Content'),
+  ref: msg('Ref code'),
+  page: msg('Page'),
+  entry: msg('Entry page'),
+  exit: msg('Exit page'),
+  country: msg('Country'),
+  region: msg('Region'),
+  city: msg('City'),
+  browser: msg('Browser'),
+  os: msg('OS'),
+  device: msg('Device'),
+  event: msg('Event'),
+  outbound: msg('Outbound link'),
+  goal: msg('Goal'),
 }
 
 export type BreakdownMetric = 'visitors' | 'revenue'
@@ -55,7 +57,7 @@ function rowLabel(dimension: Dimension, key: string): BarListRow['label'] {
     return (
       <>
         <span className="analytik-bar-icon" aria-hidden="true">
-          {flagEmoji(key)}
+          <Flag code={key} />
         </span>
         {countryName(key)}
       </>
@@ -89,7 +91,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
   const format = metric === 'revenue' ? (v: number) => formatMoney(v, site.currency) : formatNumber
   const shown = rows.data
   const data = (shown?.list ?? []).filter((r: BreakdownRow) => metric !== 'revenue' || r.revenue)
-  const heading = <span className="analytik-col-head">{metric === 'revenue' ? 'Revenue' : 'Visitors'}</span>
+  const heading = <span className="analytik-col-head">{metric === 'revenue' ? t('Revenue') : t('Visitors')}</span>
   const list = (
     <Status loading={!shown} error={rows.error}>
       <AnimatePresence mode="wait" initial={false}>
@@ -102,7 +104,11 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
             transition={{ duration: 0.16, ease: 'easeOut' }}
           >
             <BarList
-              label={`${DIMENSION_LABELS[shown.dimension]} by ${metric}`}
+              label={
+                metric === 'revenue'
+                  ? t('{dimension} by revenue', { dimension: t(DIMENSION_LABELS[shown.dimension]) })
+                  : t('{dimension} by visitors', { dimension: t(DIMENSION_LABELS[shown.dimension]) })
+              }
               rows={data.map((r) => ({ key: r.key, label: rowLabel(shown.dimension, r.key), value: r[metric] }))}
               formatValue={format}
               onSelect={(key) => addFilter(shown.dimension, key)}
@@ -116,7 +122,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
                 aria-expanded={expanded}
                 onClick={() => setExpanded(!expanded)}
               >
-                {expanded ? 'Fewer' : 'Details'}
+                {expanded ? t('Fewer') : t('Details')}
               </button>
             )}
           </motion.div>
@@ -129,7 +135,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
       {dimensions.length > 1 ? (
         <Tabs
           label={title}
-          tabs={dimensions.map((d) => ({ value: d, label: DIMENSION_LABELS[d] }))}
+          tabs={dimensions.map((d) => ({ value: d, label: t(DIMENSION_LABELS[d]) }))}
           value={dimension}
           onChange={setDimension}
           extra={heading}
@@ -139,7 +145,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
       ) : (
         <>
           <div className="analytik-tabs-row">
-            <h3>{DIMENSION_LABELS[dimension]}</h3>
+            <h3>{t(DIMENSION_LABELS[dimension])}</h3>
             {heading}
           </div>
           {list}

@@ -2,6 +2,7 @@ import { Combobox as BaseCombobox } from '@base-ui/react/combobox'
 import { type ReactNode, useId } from 'react'
 
 import { Icon } from '../icons'
+import { t } from '../i18n'
 import { useLayer } from './layer'
 
 export interface ComboboxChoice {
@@ -48,14 +49,17 @@ export function Combobox({ label, value, options, onChange, placeholder, hint, d
       >
         <BaseCombobox.InputGroup className="analytik-combobox">
           <BaseCombobox.Input id={id} className="analytik-input" placeholder={placeholder} />
-          <BaseCombobox.Trigger className="analytik-combobox-trigger" aria-label={`Show ${label.toLowerCase()} list`}>
+          <BaseCombobox.Trigger
+            className="analytik-combobox-trigger"
+            aria-label={t('Show {label} list', { label: label.toLowerCase() })}
+          >
             <Icon name="down" />
           </BaseCombobox.Trigger>
         </BaseCombobox.InputGroup>
         <BaseCombobox.Portal container={layer.container} className={layer.className}>
           <BaseCombobox.Positioner className="analytik-positioner" sideOffset={6} align="start">
             <BaseCombobox.Popup className="analytik-popup analytik-menu analytik-combobox-popup">
-              <BaseCombobox.Empty className="analytik-menu-empty">No matches</BaseCombobox.Empty>
+              <BaseCombobox.Empty className="analytik-menu-empty">{t('No matches')}</BaseCombobox.Empty>
               <BaseCombobox.List>
                 {(option: string) => (
                   <BaseCombobox.Item key={option} value={option} className="analytik-menu-item">

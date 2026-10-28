@@ -1,4 +1,5 @@
 import type { Interval } from '../shared/types'
+import { msg } from './i18n'
 
 export type RangePreset = 'today' | '24h' | '7d' | '30d' | '90d' | '12m' | 'custom'
 
@@ -12,13 +13,13 @@ export interface DateRange {
 }
 
 const PRESET_LABELS: Record<RangePreset, string> = {
-  today: 'Today',
-  '24h': 'Past 24 hours',
-  '7d': 'Past 7 days',
-  '30d': 'Past 30 days',
-  '90d': 'Past 90 days',
-  '12m': 'Past 12 months',
-  custom: 'Custom',
+  today: msg('Today'),
+  '24h': msg('Past 24 hours'),
+  '7d': msg('Past 7 days'),
+  '30d': msg('Past 30 days'),
+  '90d': msg('Past 90 days'),
+  '12m': msg('Past 12 months'),
+  custom: msg('Custom'),
 }
 
 export const RANGE_PRESETS: { value: RangePreset; label: string }[] = (

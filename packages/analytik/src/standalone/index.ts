@@ -56,7 +56,7 @@ export function withDashboard<A extends unknown[]>(
 <title>${escapeAttribute(title)}</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/_analytik/${css}.css">
-<style>html,body{height:100%;margin:0}#root>.analytik{min-height:100vh;min-height:100dvh}</style>
+<style>body{margin:0}#root>.analytik{min-height:100vh;min-height:100dvh;overflow-x:clip}</style>
 </head>
 <body>
 <div id="root" data-api="${escapeAttribute(api)}"></div>

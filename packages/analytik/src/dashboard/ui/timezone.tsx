@@ -1,3 +1,4 @@
+import { languageTag, t } from '../i18n'
 import { Combobox } from './combobox'
 
 export interface TimeZoneInfo {
@@ -27,7 +28,7 @@ export function timeZones(): string[] {
 }
 
 const part = (zone: string, now: Date, timeZoneName: 'longOffset' | 'long'): string =>
-  new Intl.DateTimeFormat('en', { timeZone: zone, timeZoneName })
+  new Intl.DateTimeFormat(timeZoneName === 'long' ? languageTag() : 'en', { timeZone: zone, timeZoneName })
     .formatToParts(now)
     .find((p) => p.type === 'timeZoneName')?.value ?? ''
 
@@ -43,7 +44,12 @@ export function describeTimeZone(zone: string, now = new Date()): TimeZoneInfo {
       offset: match && minutes ? `UTC${match[1]}${match[2]}:${match[3]}` : 'UTC',
       minutes,
       name: name.startsWith('GMT') ? zone : name,
-      time: new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(now),
+      time: new Intl.DateTimeFormat(languageTag(), {
+        timeZone: zone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      }).format(now),
     }
   } catch {
     return { zone, offset: '', minutes: 0, name: zone, time: '' }
@@ -79,13 +85,15 @@ export function TimeZoneSelect({
       options={options}
       onChange={onChange}
       hint={hint}
-      placeholder="Search a city or UTC offset"
+      placeholder={t('Search a city or UTC offset')}
       describe={(zone) => {
         const info = describeTimeZone(zone, now)
         return {
           // Typing matches the city, the region, the raw zone or the offset.
           label: `${zoneLabel(zone)} (${info.offset})`,
-          detail: [info.name, `${info.time} now`, zone === local ? 'your time zone' : ''].filter(Boolean).join(' · '),
+          detail: [info.name, t('{time} now', { time: info.time }), zone === local ? t('your time zone') : '']
+            .filter(Boolean)
+            .join(' · '),
           leading: (
             <span className="analytik-zone-tile" aria-hidden="true">
               <strong>{info.time}</strong>

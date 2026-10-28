@@ -1,10 +1,17 @@
 import { useState } from 'react'
 
+import { msg, t } from '../i18n'
 import { Dialog } from '../ui/dialog'
 import { BLOCK_IDS, BLOCKS, type BlockCategory, type BlockId } from './blocks'
-import { BlockPreview } from './BlockPreview'
+import { BlockPreview, withNode } from './BlockPreview'
 
-const CATEGORIES: readonly BlockCategory[] = ['Traffic', 'Content', 'Audience', 'Revenue', 'Live']
+const CATEGORIES: readonly BlockCategory[] = [
+  msg('Traffic'),
+  msg('Content'),
+  msg('Audience'),
+  msg('Revenue'),
+  msg('Live'),
+]
 
 export interface BlockPickerProps {
   open: boolean
@@ -46,25 +53,23 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
     <Dialog
       open={open}
       onOpenChange={(next) => !next && close()}
-      title="Add a block"
+      title={t('Add a block')}
       size="large"
       footer={
         <>
           <p className="analytik-muted">
-            {picks.length === 1 && picks[0] ? (
-              <>
-                <strong>{BLOCKS[picks[0]].name}</strong> goes {place}.
-              </>
-            ) : picks.length ? (
-              <>
-                <strong>{picks.length} blocks</strong> go {place}.
-              </>
-            ) : (
-              `Pick one or more blocks to add ${place}.`
-            )}
+            {picks.length === 1 && picks[0]
+              ? withNode(t('{block} goes {place}.', { place }), 'block', <strong>{t(BLOCKS[picks[0]].name)}</strong>)
+              : picks.length
+                ? withNode(
+                    t('{blocks} go {place}.', { place }),
+                    'blocks',
+                    <strong>{t('{count, plural, one {# block} other {# blocks}}', { count: picks.length })}</strong>,
+                  )
+                : t('Pick one or more blocks to add {place}.', { place })}
           </p>
           <button type="button" className="analytik-button" onClick={close}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button
             type="button"
@@ -73,13 +78,15 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
             disabled={!picks.length}
             onClick={add}
           >
-            {picks.length > 1 ? `Add ${picks.length} blocks` : 'Add block'}
+            {picks.length > 1
+              ? t('{count, plural, one {Add # block} other {Add # blocks}}', { count: picks.length })
+              : t('Add block')}
           </button>
         </>
       }
     >
       <div className="analytik-picker">
-        <nav className="analytik-picker-nav" aria-label="Block categories">
+        <nav className="analytik-picker-nav" aria-label={t('Block categories')}>
           {(['All', ...CATEGORIES] as const).map((c) => (
             <button
               key={c}
@@ -88,12 +95,12 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
               aria-pressed={category === c}
               onClick={() => setCategory(c)}
             >
-              {c === 'All' ? 'All blocks' : c}
+              {c === 'All' ? t('All blocks') : t(c)}
               <span className="analytik-muted">{count(c)}</span>
             </button>
           ))}
         </nav>
-        <div className="analytik-picker-grid" role="group" aria-label="Blocks">
+        <div className="analytik-picker-grid" role="group" aria-label={t('Blocks')}>
           {shown.map((id) => {
             const block = BLOCKS[id]
             const added = used.has(id)
@@ -108,13 +115,13 @@ export function BlockPicker({ open, place, used, onPick, onClose }: BlockPickerP
                 onClick={() => !added && toggle(id)}
               >
                 <span className="analytik-picker-head">
-                  <strong>{block.name}</strong>
+                  <strong>{t(block.name)}</strong>
                   <span className="analytik-badge" data-category={block.category}>
-                    {added ? 'On the overview' : block.category}
+                    {added ? t('On the overview') : t(block.category)}
                   </span>
                 </span>
                 <BlockPreview id={id} />
-                <span className="analytik-muted">{block.description}</span>
+                <span className="analytik-muted">{t(block.description)}</span>
               </button>
             )
           })}

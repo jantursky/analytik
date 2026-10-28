@@ -6,6 +6,7 @@ import type { SessionDetail } from '../api'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatDateTime, formatDuration, formatMoney, formatNumber } from '../format'
+import { msg, t } from '../i18n'
 import { Card, Status } from '../ui'
 import { Dialog } from '../ui/dialog'
 import { View } from '../ui/motion'
@@ -23,7 +24,7 @@ function TimelineBody({ sessionId }: { sessionId: string }) {
       {session && (
         <>
           <div className="analytik-session-head">
-            <Visitor id={session.visitorId} copy={{ text: session.visitorId, label: 'Copy visitor id' }} />
+            <Visitor id={session.visitorId} copy={{ text: session.visitorId, label: t('Copy visitor id') }} />
             <Place country={session.country} city={session.city} />
             <Device device={session.device} browser={session.browser} />
           </div>
@@ -51,10 +52,10 @@ function TimelineBody({ sessionId }: { sessionId: string }) {
 export function SessionTimeline({ sessionId, onClose }: { sessionId: string; onClose: () => void }) {
   return (
     <Card
-      title="Visitor timeline"
+      title={t('Visitor timeline')}
       actions={
         <button type="button" className="analytik-button" onClick={onClose}>
-          Close
+          {t('Close')}
         </button>
       }
     >
@@ -69,13 +70,13 @@ export function SessionDialog({ sessionId, onClose }: { sessionId: string | null
   const [shown, setShown] = useState(sessionId)
   if (sessionId && sessionId !== shown) setShown(sessionId)
   return (
-    <Dialog open={!!sessionId} onOpenChange={(open) => !open && onClose()} title="Visitor timeline" size="wide">
+    <Dialog open={!!sessionId} onOpenChange={(open) => !open && onClose()} title={t('Visitor timeline')} size="wide">
       {shown && <TimelineBody sessionId={shown} />}
     </Dialog>
   )
 }
 
-const DEVICES = ['Desktop', 'Mobile', 'Tablet'] as const
+const DEVICES = [msg('Desktop'), msg('Mobile'), msg('Tablet')] as const
 
 /** Ids shown in filter chips by their last six characters, like the visitor cells. */
 export const shortId = (id: string): string => id.slice(-6)
@@ -88,12 +89,17 @@ export function Sessions() {
     client.breakdown(site.id, 'browser', query),
   )
   const columns: Column<SessionSummary>[] = [
-    { key: 'visitor', label: 'Visitor', render: (s) => <VisitorCell id={s.visitorId} /> },
-    { key: 'started', label: 'Started', sort: 'time', render: (s) => formatDateTime(s.startedAt, site.timezone) },
-    { key: 'location', label: 'Location', sort: 'country', render: (s) => <Place country={s.country} city={s.city} /> },
+    { key: 'visitor', label: t('Visitor'), render: (s) => <VisitorCell id={s.visitorId} /> },
+    { key: 'started', label: t('Started'), sort: 'time', render: (s) => formatDateTime(s.startedAt, site.timezone) },
+    {
+      key: 'location',
+      label: t('Location'),
+      sort: 'country',
+      render: (s) => <Place country={s.country} city={s.city} />,
+    },
     {
       key: 'source',
-      label: 'Source',
+      label: t('Source'),
       sort: 'source',
       render: (s) => (
         <span>
@@ -102,25 +108,25 @@ export function Sessions() {
         </span>
       ),
     },
-    { key: 'device', label: 'Device', render: (s) => <DeviceType device={s.device} /> },
-    { key: 'browser', label: 'Browser', render: (s) => <Browser browser={s.browser} os={s.os} /> },
+    { key: 'device', label: t('Device'), render: (s) => <DeviceType device={s.device} /> },
+    { key: 'browser', label: t('Browser'), render: (s) => <Browser browser={s.browser} os={s.os} /> },
     {
       key: 'path',
-      label: 'Entry → Exit',
+      label: t('Entry → Exit'),
       sort: 'entry',
       render: (s) => <PathFlow entry={s.entryPage} exit={s.exitPage} />,
     },
-    { key: 'pages', label: 'Pages', sort: 'pageviews', numeric: true, render: (s) => formatNumber(s.pageviews) },
+    { key: 'pages', label: t('Pages'), sort: 'pageviews', numeric: true, render: (s) => formatNumber(s.pageviews) },
     {
       key: 'duration',
-      label: 'Duration',
+      label: t('Duration'),
       sort: 'duration',
       numeric: true,
       render: (s) => formatDuration(s.durationMs),
     },
     {
       key: 'revenue',
-      label: 'Revenue',
+      label: t('Revenue'),
       sort: 'revenue',
       numeric: true,
       render: (s) => (s.revenue ? formatMoney(s.revenue, site.currency) : '—'),
@@ -129,38 +135,43 @@ export function Sessions() {
   return (
     <View>
       <DataTable
-        title="Sessions"
+        title={t('Sessions')}
         columns={columns}
         basis={requestKey('sessions', site.id, query.filters)}
         load={({ filters: { visitor, ...filters }, ...request }) =>
           client.sessions(site.id, { ...query, ...request, visitor, filters: { ...query.filters, ...filters } })
         }
         rowKey={(s) => s.id}
-        searchLabel="Search pages, sources, places, browsers"
-        empty="No sessions in this period"
+        searchLabel={t('Search pages, sources, places, browsers')}
+        empty={t('No sessions in this period')}
         filters={[
           {
             key: 'channel',
-            label: 'Channel',
-            options: [{ value: '', label: 'All channels' }, ...CHANNELS.map((c) => ({ value: c, label: c }))],
+            label: t('Channel'),
+            options: [{ value: '', label: t('All channels') }, ...CHANNELS.map((c) => ({ value: c, label: t(c) }))],
           },
           {
             key: 'device',
-            label: 'Device',
-            options: [{ value: '', label: 'All devices' }, ...DEVICES.map((d) => ({ value: d, label: d }))],
+            label: t('Device'),
+            options: [{ value: '', label: t('All devices') }, ...DEVICES.map((d) => ({ value: d, label: t(d) }))],
           },
           {
             key: 'browser',
-            label: 'Browser',
+            label: t('Browser'),
             options: [
-              { value: '', label: 'All browsers' },
+              { value: '', label: t('All browsers') },
               ...(browsers.data ?? []).map((b) => ({ value: b.key, label: b.key })),
             ],
           },
-          { key: 'visitor', label: 'Visitor', format: shortId },
+          { key: 'visitor', label: t('Visitor'), format: shortId },
         ]}
         onOpen={(s) => setSelected(s.id)}
-        openLabel={(s) => `Open the visit of ${s.visitorId.slice(-6)} at ${formatDateTime(s.startedAt, site.timezone)}`}
+        openLabel={(s) =>
+          t('Open the visit of {visitor} at {time}', {
+            visitor: s.visitorId.slice(-6),
+            time: formatDateTime(s.startedAt, site.timezone),
+          })
+        }
       />
       <SessionDialog sessionId={selected} onClose={() => setSelected(null)} />
     </View>

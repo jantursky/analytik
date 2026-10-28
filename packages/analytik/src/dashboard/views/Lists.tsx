@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { View } from '../ui/motion'
 import { BreakdownCard } from './Breakdown'
 
@@ -5,7 +6,7 @@ export function Sources() {
   return (
     <View>
       <BreakdownCard
-        title="Traffic sources"
+        title={t('Traffic sources')}
         dimensions={['channel', 'source', 'referrer', 'campaign', 'medium', 'term', 'content', 'ref']}
         limit={50}
       />
@@ -16,7 +17,7 @@ export function Sources() {
 export function Pages() {
   return (
     <View>
-      <BreakdownCard title="Pages" dimensions={['page', 'entry', 'exit']} limit={50} />
+      <BreakdownCard title={t('Pages')} dimensions={['page', 'entry', 'exit']} limit={50} />
     </View>
   )
 }

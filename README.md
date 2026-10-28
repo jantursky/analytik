@@ -182,3 +182,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Security notes are in [SECURITY.md](SECU
 ## License
 
 [MIT](LICENSE)
+
+Country flags are from [Circle Flags](https://github.com/HatScripts/circle-flags) by HatScripts (MIT), see [THIRD_PARTY_NOTICES.md](packages/analytik/THIRD_PARTY_NOTICES.md).

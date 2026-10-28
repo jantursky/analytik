@@ -5,6 +5,7 @@ import type { Realtime as RealtimeData, RealtimeVisit } from '../../shared/types
 import { requestKey, useDashboard } from '../context'
 import { liveSignature, usePolling, useResource } from '../data'
 import { countryName, formatAgo, formatNumber } from '../format'
+import { t } from '../i18n'
 import { Icon } from '../icons'
 import { groupPlaces, type MapPlace, WorldMap } from '../map'
 import { SiteTile, Status } from '../ui'
@@ -24,15 +25,15 @@ type RecentEvent = RealtimeData['recent'][number]
 
 /** One feed line: who, what they did and on what. */
 export function describeEvent(event: RecentEvent): { who: string; action: string; target: string } {
-  const who = event.country ? `Visitor from ${countryName(event.country)}` : 'A visitor'
+  const who = event.country ? t('Visitor from {country}', { country: countryName(event.country) }) : t('A visitor')
   const target = (event.type === 'revenue' ? event.path : (event.name ?? event.path)) ?? ''
   const action = {
-    pageview: 'visited',
-    goal: 'completed',
-    revenue: 'paid on',
-    outbound: 'left for',
-    ping: 'is reading',
-    identify: 'signed in on',
+    pageview: t('visited'),
+    goal: t('completed'),
+    revenue: t('paid on'),
+    outbound: t('left for'),
+    ping: t('is reading'),
+    identify: t('signed in on'),
   }[event.type]
   return { who, action, target }
 }
@@ -126,7 +127,7 @@ function PlaceCard({
     <motion.div
       className="analytik-float analytik-place-card"
       role="region"
-      aria-label={`Visitors in ${place.label}`}
+      aria-label={t('Visitors in {place}', { place: place.label })}
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 12, transition: { duration: 0.15 } }}
@@ -137,10 +138,10 @@ function PlaceCard({
         <div>
           <h3>{place.label}</h3>
           <p className="analytik-muted">
-            {formatNumber(place.count)} {place.count === 1 ? 'visitor' : 'visitors'} right now
+            {t('{count, plural, one {# visitor} other {# visitors}} right now', { count: place.count })}
           </p>
         </div>
-        <IconButton label="Close details" onClick={onClose}>
+        <IconButton label={t('Close details')} onClick={onClose}>
           <Icon name="close" />
         </IconButton>
       </div>
@@ -151,14 +152,14 @@ function PlaceCard({
               type="button"
               className="analytik-place-visit"
               onClick={() => onOpen(visit)}
-              aria-label={`Open the visit of ${visit.visitorId.slice(-6)}`}
+              aria-label={t('Open the visit of {visitor}', { visitor: visit.visitorId.slice(-6) })}
             >
               <Visitor id={visit.visitorId} />
               <span className="analytik-place-page analytik-mono">{visit.page ?? '—'}</span>
               <span className="analytik-place-meta">
                 <span>{visit.source}</span>
                 <Browser browser={visit.browser} />
-                <span className="analytik-muted">arrived {formatAgo(visit.startedAt, now)}</span>
+                <span className="analytik-muted">{t('arrived {time}', { time: formatAgo(visit.startedAt, now) })}</span>
               </span>
             </button>
           </li>
@@ -215,7 +216,7 @@ export function Realtime() {
     <View>
       <Status loading={live.loading && !data} error={live.error}>
         {data && (
-          <section className="analytik-realtime" aria-label="Real-time visitors" ref={setRoot}>
+          <section className="analytik-realtime" aria-label={t('Real-time visitors')} ref={setRoot}>
             <LayerContext value={root}>
               <WorldMap
                 locations={data.locations}
@@ -240,22 +241,22 @@ export function Realtime() {
                   <SiteTile site={site} />
                   <div>
                     <h2>{site.name}</h2>
-                    <p className="analytik-eyebrow">Real-time</p>
+                    <p className="analytik-eyebrow">{t('Real-time')}</p>
                   </div>
                   <div className="analytik-icon-row">
-                    <IconButton label="Sound on new visits" pressed={sound} onClick={toggleSound}>
+                    <IconButton label={t('Sound on new visits')} pressed={sound} onClick={toggleSound}>
                       <Icon name={sound ? 'sound' : 'muted'} />
                     </IconButton>
-                    <IconButton label="Globe view" pressed={globe} onClick={() => setGlobe(!globe)}>
+                    <IconButton label={t('Globe view')} pressed={globe} onClick={() => setGlobe(!globe)}>
                       <Icon name={globe ? 'globe' : 'flat'} />
                     </IconButton>
                     {document.fullscreenEnabled && (
-                      <IconButton label="Full screen" onClick={toggleFullscreen}>
+                      <IconButton label={t('Full screen')} onClick={toggleFullscreen}>
                         <Icon name="expand" />
                       </IconButton>
                     )}
                     {openView && (
-                      <IconButton label="Close real-time view" onClick={() => openView('overview')}>
+                      <IconButton label={t('Close real-time view')} onClick={() => openView('overview')}>
                         <Icon name="close" />
                       </IconButton>
                     )}
@@ -265,12 +266,15 @@ export function Realtime() {
                   <span className="analytik-live-dot" aria-hidden="true" />
                   <strong className="analytik-stat-value">
                     <AnimatedNumber value={data.online} format={formatNumber} />
-                  </strong>
-                  {data.online === 1 ? ' visitor' : ' visitors'} on {site.domain}
+                  </strong>{' '}
+                  {t('{count, plural, one {visitor} other {visitors}} on {domain}', {
+                    count: data.online,
+                    domain: site.domain,
+                  })}
                 </p>
               </div>
               <div className="analytik-float analytik-feed">
-                <h3 className="analytik-eyebrow">Recent activity</h3>
+                <h3 className="analytik-eyebrow">{t('Recent activity')}</h3>
                 {data.recent.length ? (
                   <ol className="analytik-timeline" aria-live="polite">
                     <AnimatePresence initial={false} mode="popLayout">
@@ -296,7 +300,7 @@ export function Realtime() {
                     </AnimatePresence>
                   </ol>
                 ) : (
-                  <p className="analytik-empty">Nobody here right now</p>
+                  <p className="analytik-empty">{t('Nobody here right now')}</p>
                 )}
               </div>
             </LayerContext>

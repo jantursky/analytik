@@ -1,6 +1,7 @@
 'use client'
 
 export { Dashboard, type DashboardProps, type DashboardView } from './Dashboard'
+export { LANGUAGES, type Messages } from './i18n'
 export { DashboardProvider, type DashboardProviderProps, type DashboardState, useDashboard } from './context'
 export {
   RequestError,

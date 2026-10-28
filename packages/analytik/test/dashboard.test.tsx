@@ -104,6 +104,64 @@ describe('Dashboard shell', () => {
     }
   })
 
+  it('restores the range, interval and filters from the address and loads each block once', async () => {
+    history.replaceState(null, '', '/?section=pages&site=site_2&range=30d&interval=week&f.country=SK&keep=1')
+    try {
+      const { container, api } = await open(fakeApi(), undefined, { urlState: true })
+      expect(byText(container, 'Past 30 days', 'button')).toBeTruthy()
+      expect(container.querySelector('[aria-label="Remove filter country is SK"]')).toBeTruthy()
+      const seen = api.requests.filter((r) => r.method === 'GET').map((r) => `${r.path}?${JSON.stringify(r.params)}`)
+      expect(new Set(seen).size).toBe(seen.length)
+      expect(new URLSearchParams(location.search).get('keep')).toBe('1')
+      expect(location.search).toContain('range=30d&interval=week&f.country=SK')
+    } finally {
+      history.replaceState(null, '', '/')
+    }
+  })
+
+  it('keeps the Settings section in the address and replaces the entry instead of adding one', async () => {
+    history.replaceState(null, '', '/?section=settings&site=site_2&tab=privacy')
+    try {
+      const { container } = await open(fakeApi(), undefined, { urlState: true })
+      expect(container.querySelector('.analytik-settings-nav [aria-current="page"]')?.textContent).toBe('Privacy')
+      const entries = history.length
+      await section(container, 'Appearance')
+      expect(location.search).toBe('?section=settings&site=site_2&tab=appearance')
+      expect(history.length).toBe(entries)
+    } finally {
+      history.replaceState(null, '', '/')
+    }
+  })
+
+  it('writes a filter into the address without a history entry', async () => {
+    history.replaceState(null, '', '/?section=pages&site=site_2&f.country=SK')
+    try {
+      const { container } = await open(fakeApi(), undefined, { urlState: true })
+      const entries = history.length
+      await click(container.querySelector('[aria-label="Remove filter country is SK"]'))
+      await settled()
+      expect(location.search).toBe('?section=pages&site=site_2')
+      expect(history.length).toBe(entries)
+    } finally {
+      history.replaceState(null, '', '/')
+    }
+  })
+
+  it('speaks the chosen language, with custom messages winning and English as the fallback', async () => {
+    try {
+      const { container } = await render(
+        <Dashboard api="/api" fetcher={fakeApi().fetcher} locale="sk" messages={{ sk: { Pages: 'Podstránky' } }} />,
+      )
+      await waitFor(() => nav(container, 'Prehľad') !== undefined)
+      expect(nav(container, 'Podstránky')).toBeTruthy()
+      expect(nav(container, 'Nastavenia')).toBeTruthy()
+      expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Prehľad')
+    } finally {
+      const { setLanguage } = await import('../src/dashboard/i18n')
+      setLanguage('en', {})
+    }
+  })
+
   it('leaves the address alone unless asked', async () => {
     const { container } = await open()
     await click(nav(container, 'Pages'))
@@ -384,7 +442,8 @@ describe('Dashboard shell', () => {
           params.dimension === 'country' ? [row('DE', 5), row('', 1)] : params.dimension === 'page' ? many : [],
       }),
     )
-    expect(texts(container, '.analytik-bar-label')).toContain('🇩🇪Germany')
+    expect(texts(container, '.analytik-bar-label')).toContain('Germany')
+    await waitFor(() => !!container.querySelector('.analytik-bar-icon svg.analytik-flag'))
     expect(texts(container, '.analytik-bar-label')).toContain('(none)')
     const pages = byText(container, 'Pages', 'h2')?.closest('section')
     expect(pages?.querySelectorAll('.analytik-bar')).toHaveLength(8)
@@ -1671,6 +1730,55 @@ describe('formatting and credits', () => {
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBeNull()
   })
 
+  it('saves the chosen language and goes back to the browser language', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Appearance')
+    await choose(selectTrigger(container, 'Language'), 'Slovenčina')
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'sk' })
+  })
+
+  it('lists the release notes in a Changelog section set apart from the site settings', async () => {
+    const { container } = await open(fakeApi(), 'settings')
+    const item = [...container.querySelectorAll('.analytik-settings-nav li')].find((li) =>
+      li.textContent.includes('Changelog'),
+    )
+    expect(item?.getAttribute('data-tone')).toBe('meta')
+    await section(container, 'Changelog')
+    await waitFor(() => container.querySelector('.analytik-changelog') !== null)
+    expect(container.querySelector('.analytik-changelog h3')?.textContent).toBeTruthy()
+  })
+
+  it('switches the language from the header, beside the theme button, unless the locale is fixed', async () => {
+    try {
+      const { container, api } = await open(fakeApi(), 'overview')
+      const trigger = container.querySelector<HTMLElement>('.analytik-header .analytik-language-switch')
+      expect(trigger?.getAttribute('aria-label')).toBe('Language')
+      expect(trigger?.textContent).toBe('en')
+      expect(trigger?.nextElementSibling?.classList.contains('analytik-theme-toggle')).toBe(true)
+      await click(trigger)
+      await settled()
+      const items = [...document.querySelectorAll('[role="menuitemradio"]')].map((i) => i.textContent)
+      // "Browser language" first, then every language by its own name, alphabetically.
+      const languages = items.slice(1)
+      expect(items[0]).toBe('Browser language')
+      expect(languages).toEqual([...languages].sort(new Intl.Collator('en').compare))
+      expect(languages).toHaveLength(18)
+      expect(languages.slice(0, 5)).toEqual(['Bahasa Indonesia', 'Čeština', 'Deutsch', 'English', 'Español'])
+      await press([...document.querySelectorAll('[role="menuitemradio"]')].find((i) => i.textContent === 'Deutsch'))
+      await waitFor(() => trigger?.textContent === 'de')
+      await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+      expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'de' })
+      const fixed = await render(<Dashboard api="/api" fetcher={fakeApi().fetcher} locale="en" />)
+      await settled()
+      expect(fixed.container.querySelector('.analytik-language-switch')).toBeNull()
+    } finally {
+      const { setLanguage } = await import('../src/dashboard/i18n')
+      setLanguage('en', {})
+      localStorage.clear()
+    }
+  })
+
   it('saves number and date formats and shows each option written its way', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     await section(container, 'Formatting')
@@ -1679,7 +1787,14 @@ describe('formatting and credits', () => {
     const descriptions = [...document.querySelectorAll('[role="option"] .analytik-menu-description')].map((d) =>
       d.textContent.replace(/\s/g, ' '),
     )
-    expect(descriptions).toEqual(['1,234,567 · 5.3%', '1.234.567 · 5,3 %', '1 234 567 · 5,3 %', "1'234'567 · 5.3%"])
+    // The first follows the language, English here, so it reads like the comma style.
+    expect(descriptions).toEqual([
+      '1,234,567 · 5.3%',
+      '1,234,567 · 5.3%',
+      '1.234.567 · 5,3 %',
+      '1 234 567 · 5,3 %',
+      "1'234'567 · 5.3%",
+    ])
     await key(document.activeElement ?? document.body, 'Escape')
     await settled()
     await choose(selectTrigger(container, 'Numbers'), 'Dot groups, comma decimals')
@@ -1705,7 +1820,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(9)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(10)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

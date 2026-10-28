@@ -4,7 +4,6 @@ import { niceMax } from '../src/dashboard/scale'
 import { DEFAULT_SUMMARY, formatMetric, METRIC_KEYS, parseSummary, statLabel } from '../src/dashboard/views/metrics'
 import {
   countryName,
-  flagEmoji,
   formatAgo,
   formatBucket,
   formatChange,
@@ -187,12 +186,10 @@ describe('range', () => {
 })
 
 describe('places and the map', () => {
-  it('names countries and draws their flags', () => {
+  it('names countries', () => {
     expect(countryName('DE')).toBe('Germany')
     expect(countryName('XX')).toBe('XX')
     expect(countryName('unknown')).toBe('unknown')
-    expect(flagEmoji('SK')).toBe('🇸🇰')
-    expect(flagEmoji('')).toBe('')
   })
 
   it('groups locations and projects them flat or on a globe', () => {

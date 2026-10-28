@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 
 import { formatDayRange } from '../format'
 import { Icon } from '../icons'
+import { t } from '../i18n'
 import { customRange, type DateRange, presetRange, RANGE_PRESETS, type RangePreset, toDateInput } from '../range'
 import { Calendar, type IsoDay } from './calendar'
 import { Popover } from './popover'
@@ -13,7 +14,7 @@ const dayStart = (day: IsoDay): number => new Date(`${day}T00:00:00`).getTime()
 
 /** What the range trigger says: the preset's name, or the days a custom range covers. */
 export function rangeLabel(range: DateRange): string {
-  if (range.preset !== 'custom') return RANGE_PRESETS.find((p) => p.value === range.preset)?.label ?? range.preset
+  if (range.preset !== 'custom') return t(RANGE_PRESETS.find((p) => p.value === range.preset)?.label ?? range.preset)
   return formatDayRange(range.from, range.to - 1)
 }
 
@@ -49,13 +50,13 @@ export function DateRangePicker({ range, onChange }: { range: DateRange; onChang
     setOpen(false)
   }
   const { start, end } = draft
-  const summary = start ? formatDayRange(dayStart(start), dayStart(end ?? start)) : 'Pick the first day'
+  const summary = start ? formatDayRange(dayStart(start), dayStart(end ?? start)) : t('Pick the first day')
 
   return (
     <Popover
       open={open}
       onOpenChange={toggle}
-      label="Choose a date range"
+      label={t('Choose a date range')}
       className="analytik-range-popup"
       trigger={
         <button type="button" className="analytik-range-trigger">
@@ -64,7 +65,7 @@ export function DateRangePicker({ range, onChange }: { range: DateRange; onChang
         </button>
       }
     >
-      <ul className="analytik-presets" aria-label="Presets">
+      <ul className="analytik-presets" aria-label={t('Presets')}>
         {PRESETS.map((preset) => (
           <li key={preset.value}>
             <button
@@ -73,7 +74,7 @@ export function DateRangePicker({ range, onChange }: { range: DateRange; onChang
               aria-pressed={range.preset === preset.value}
               onClick={() => apply(presetRange(preset.value, Date.now()))}
             >
-              {preset.label}
+              {t(preset.label)}
             </button>
           </li>
         ))}
@@ -91,7 +92,7 @@ export function DateRangePicker({ range, onChange }: { range: DateRange; onChang
             disabled={!start}
             onClick={() => apply(start ? customRange(start, end ?? start) : null)}
           >
-            Apply
+            {t('Apply')}
           </button>
         </div>
       </div>
@@ -138,7 +139,7 @@ export function DatePicker({ label, value, onChange }: DatePickerProps) {
             aria-labelledby={`${labelId} ${valueId}`}
           >
             <Icon name="calendar" />
-            <span id={valueId}>{value ? formatDayRange(dayStart(value), dayStart(value)) : 'Pick a date'}</span>
+            <span id={valueId}>{value ? formatDayRange(dayStart(value), dayStart(value)) : t('Pick a date')}</span>
           </button>
         }
       >

@@ -6,6 +6,7 @@ import type { Delta, Site } from '../shared/types'
 import { BrandMark } from './brand'
 import { Sparkline } from './charts'
 import { formatChange } from './format'
+import { t } from './i18n'
 import { Icon, type IconName } from './icons'
 import { Dialog } from './ui/dialog'
 import { AnimatedNumber, EASE, rise } from './ui/motion'
@@ -154,7 +155,7 @@ export function DeltaBadge({ change, invert = false }: { change: number | null; 
   return (
     <span className="analytik-delta" data-trend={trend}>
       {trend !== 'flat' && <Icon name={(change ?? 0) > 0 ? 'up' : 'down'} />}
-      <span className="analytik-sr-only">Change from previous period: </span>
+      <span className="analytik-sr-only">{t('Change from previous period:')} </span>
       {formatChange(change)}
     </span>
   )
@@ -171,7 +172,7 @@ export function Shortened({ shown, exact, children }: { shown: string; exact: st
       <span className="analytik-shortened">
         {children}
         <Icon name="info" />
-        <span className="analytik-sr-only">(exactly {exact})</span>
+        <span className="analytik-sr-only">{t('(exactly {exact})', { exact })}</span>
       </span>
     </Tooltip>
   )
@@ -227,7 +228,7 @@ const sentence = (text: string): string => {
  * An error: an alert icon in a tinted badge, a short title and the message as a sentence. Announced to screen
  * readers, and eases in when it appears.
  */
-export function ErrorNote({ title = 'Something went wrong', children }: { title?: string; children: string }) {
+export function ErrorNote({ title = t('Something went wrong'), children }: { title?: string; children: string }) {
   return (
     <div className="analytik-error" role="alert">
       <span className="analytik-error-icon">
@@ -249,7 +250,7 @@ export function Status({ loading, error, children }: { loading: boolean; error?:
   if (loading) {
     return (
       <p className="analytik-loading" role="status">
-        Loading…
+        {t('Loading…')}
       </p>
     )
   }
@@ -355,12 +356,12 @@ export function Actions({ outcome, children }: { outcome?: Outcome; children: Re
   )
 }
 
-export function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) {
+export function CopyButton({ text, label = t('Copy') }: { text: string; label?: string }) {
   const [outcome, setOutcome] = useState<Outcome>()
   const copy = (): void => {
     navigator.clipboard.writeText(text).then(
-      () => setOutcome({ ok: true, text: 'Copied' }),
-      () => setOutcome({ ok: false, text: 'Copy failed, select the text instead' }),
+      () => setOutcome({ ok: true, text: t('Copied') }),
+      () => setOutcome({ ok: false, text: t('Copy failed, select the text instead') }),
     )
   }
   return (
@@ -418,7 +419,7 @@ export function ConfirmButton({
         <p className="analytik-dialog-text">{description}</p>
         <div className="analytik-actions analytik-card-actions">
           <button type="button" className="analytik-button" onClick={() => setOpen(false)}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button
             type="button"

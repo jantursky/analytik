@@ -1,4 +1,5 @@
 import type { Overview, TimeseriesPoint } from '../../shared/types'
+import { msg, t } from '../i18n'
 import { formatDuration, formatInteger, formatMoney, formatMoneyShort, formatNumber, formatPercent } from '../format'
 
 /** A number the overview can show on a tile and plot over time. */
@@ -16,15 +17,15 @@ export interface Metric {
 }
 
 export const METRICS: Record<MetricKey, Metric> = {
-  visitors: { label: 'Visitors', kind: 'area', unit: 'count' },
-  sessions: { label: 'Sessions', kind: 'area', unit: 'count' },
-  pageviews: { label: 'Pageviews', kind: 'area', unit: 'count' },
-  revenue: { label: 'Revenue', kind: 'bars', unit: 'money' },
-  orders: { label: 'Orders', kind: 'bars', unit: 'count' },
-  conversionRate: { label: 'Conversion rate', kind: 'line', unit: 'percent' },
-  revenuePerVisitor: { label: 'Revenue per visitor', kind: 'line', unit: 'money' },
-  bounceRate: { label: 'Bounce rate', kind: 'line', unit: 'percent', invert: true },
-  avgDurationMs: { label: 'Visit duration', kind: 'bars', unit: 'duration' },
+  visitors: { label: msg('Visitors'), kind: 'area', unit: 'count' },
+  sessions: { label: msg('Sessions'), kind: 'area', unit: 'count' },
+  pageviews: { label: msg('Pageviews'), kind: 'area', unit: 'count' },
+  revenue: { label: msg('Revenue'), kind: 'bars', unit: 'money' },
+  orders: { label: msg('Orders'), kind: 'bars', unit: 'count' },
+  conversionRate: { label: msg('Conversion rate'), kind: 'line', unit: 'percent' },
+  revenuePerVisitor: { label: msg('Revenue per visitor'), kind: 'line', unit: 'money' },
+  bounceRate: { label: msg('Bounce rate'), kind: 'line', unit: 'percent', invert: true },
+  avgDurationMs: { label: msg('Visit duration'), kind: 'bars', unit: 'duration' },
 }
 
 export const METRIC_KEYS = Object.keys(METRICS) as MetricKey[]
@@ -34,7 +35,7 @@ export type StatKey = MetricKey | 'online'
 
 export const STAT_KEYS: readonly StatKey[] = [...METRIC_KEYS, 'online']
 
-export const statLabel = (key: StatKey): string => (key === 'online' ? 'Live now' : METRICS[key].label)
+export const statLabel = (key: StatKey): string => (key === 'online' ? t('Live now') : t(METRICS[key].label))
 
 /** How a metric reads on a tile and the chart axis: money and counts compact from 10,000 up. */
 export function formatMetric(key: MetricKey, currency: string): (value: number) => string {

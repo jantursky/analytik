@@ -2,6 +2,7 @@ import { isNewer } from '../shared/semver'
 import type { ApiClient } from './api'
 import { useResource } from './data'
 import { Icon } from './icons'
+import { t } from './i18n'
 import { usePreferences } from './preferences'
 
 const RELEASES = 'https://github.com/jantursky/analytik/releases/tag'
@@ -21,18 +22,19 @@ export function UpdateNotice({ client }: { client: ApiClient }) {
     <div className="analytik-update" role="status">
       <span className="analytik-update-dot" aria-hidden="true" />
       <p>
-        <strong>Analytik {latest} is available.</strong> You are running {version.data.current}.
+        <strong>{t('Analytik {latest} is available.', { latest })}</strong>{' '}
+        {t('You are running {current}.', { current: version.data.current })}
       </p>
       <a className="analytik-link" href={`${RELEASES}/${latest}`} target="_blank" rel="noopener">
-        What&apos;s new
+        {t("What's new")}
       </a>
       <a className="analytik-link" href={GUIDE} target="_blank" rel="noopener">
-        How to update
+        {t('How to update')}
       </a>
       <button
         type="button"
         className="analytik-pill-icon"
-        aria-label={`Dismiss the update notice for ${latest}`}
+        aria-label={t('Dismiss the update notice for {latest}', { latest })}
         onClick={() => update({ updateDismissed: latest })}
       >
         <Icon name="close" />

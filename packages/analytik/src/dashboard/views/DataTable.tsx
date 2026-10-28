@@ -5,6 +5,7 @@ import type { Paging } from '../api'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatNumber } from '../format'
+import { t } from '../i18n'
 import { Icon } from '../icons'
 import type { DateRange } from '../range'
 import { Card, Status } from '../ui'
@@ -150,7 +151,7 @@ export function DataTable<T>({
       title={title}
       actions={
         data && (
-          <span className="analytik-count" aria-label={`${formatNumber(total)} in total`}>
+          <span className="analytik-count" aria-label={t('{count} in total', { count: formatNumber(total) })}>
             {formatNumber(total)}
           </span>
         )
@@ -188,7 +189,7 @@ export function DataTable<T>({
                 <button
                   type="button"
                   className="analytik-chip-remove"
-                  aria-label={`Remove the ${filter.label.toLowerCase()} filter`}
+                  aria-label={t('Remove the {filter} filter', { filter: filter.label.toLowerCase() })}
                   onClick={() => setFilter(filter.key, '')}
                 >
                   <Icon name="close" />
@@ -200,7 +201,7 @@ export function DataTable<T>({
         <DateRangePicker range={shownRange} onChange={setOwnRange} />
         {narrowed && (
           <button type="button" className="analytik-link" onClick={clear}>
-            Clear
+            {t('Clear')}
           </button>
         )}
       </div>
@@ -238,7 +239,7 @@ export function DataTable<T>({
                     })}
                     {onOpen && (
                       <th scope="col" className="analytik-open-cell">
-                        <span className="analytik-sr-only">Open</span>
+                        <span className="analytik-sr-only">{t('Open')}</span>
                       </th>
                     )}
                   </tr>
@@ -256,7 +257,7 @@ export function DataTable<T>({
                           <button
                             type="button"
                             className="analytik-row-button"
-                            aria-label={openLabel?.(row) ?? 'Open'}
+                            aria-label={openLabel?.(row) ?? t('Open')}
                             onClick={(event) => {
                               event.stopPropagation()
                               onOpen(row)
@@ -273,32 +274,36 @@ export function DataTable<T>({
             </div>
           ) : (
             <div className="analytik-empty">
-              <p>{narrowed ? 'Nothing matches these filters' : empty}</p>
+              <p>{narrowed ? t('Nothing matches these filters') : empty}</p>
               {narrowed && (
                 <button type="button" className="analytik-button" onClick={clear}>
-                  Clear filters
+                  {t('Clear filters')}
                 </button>
               )}
             </div>
           )}
           {total > 0 && (
-            <nav className="analytik-pager" aria-label={`${title} pages`}>
+            <nav className="analytik-pager" aria-label={t('{title} pages', { title })}>
               <span className="analytik-muted">
-                {formatNumber(first)}–{formatNumber(Math.min(total, first + pageSize - 1))} of {formatNumber(total)}
+                {t('{from}–{to} of {total}', {
+                  from: formatNumber(first),
+                  to: formatNumber(Math.min(total, first + pageSize - 1)),
+                  total: formatNumber(total),
+                })}
               </span>
               <Select
-                label="Rows per page"
+                label={t('Rows per page')}
                 hideLabel
                 className="analytik-pill"
                 value={String(pageSize)}
-                options={PAGE_SIZES.map((size) => ({ value: String(size), label: `${size} per page` }))}
+                options={PAGE_SIZES.map((size) => ({ value: String(size), label: t('{size} per page', { size }) }))}
                 onChange={(size) => setPageSize(Number(size))}
               />
               <span className="analytik-pages">
                 <button
                   type="button"
                   className="analytik-pill-icon"
-                  aria-label="Previous page"
+                  aria-label={t('Previous page')}
                   disabled={page === 0}
                   onClick={() => goTo(page - 1)}
                 >
@@ -315,7 +320,7 @@ export function DataTable<T>({
                       type="button"
                       className="analytik-page"
                       aria-current={number === page ? 'page' : undefined}
-                      aria-label={`Page ${number + 1}`}
+                      aria-label={t('Page {number}', { number: number + 1 })}
                       onClick={() => goTo(number)}
                     >
                       {number + 1}
@@ -325,7 +330,7 @@ export function DataTable<T>({
                 <button
                   type="button"
                   className="analytik-pill-icon"
-                  aria-label="Next page"
+                  aria-label={t('Next page')}
                   disabled={page >= pages - 1}
                   onClick={() => goTo(page + 1)}
                 >

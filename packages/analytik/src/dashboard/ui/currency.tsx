@@ -1,3 +1,4 @@
+import { languageTag } from '../i18n'
 import { Combobox } from './combobox'
 
 export interface Currency {
@@ -9,25 +10,28 @@ export interface Currency {
 // The most used currencies lead the list; the rest follow by code.
 const FIRST = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CZK', 'PLN', 'SEK']
 
-let all: Map<string, Currency> | undefined
+// Built for the chosen language the first time it is needed, and again if the language changes.
+let all: { tag: string; list: Map<string, Currency> } | undefined
 
-/** Every ISO 4217 currency the browser knows, with its English name and its narrow symbol. */
+/** Every ISO 4217 currency the browser knows, with its name in the chosen language and its narrow symbol. */
 export function currencies(): Map<string, Currency> {
-  if (all) return all
+  const tag = languageTag()
+  if (all?.tag === tag) return all.list
   let codes: string[] = []
   try {
     codes = Intl.supportedValuesOf('currency')
   } catch {
     // Older engines: offer the common ones only.
   }
-  const names = new Intl.DisplayNames(['en'], { type: 'currency' })
+  const names = new Intl.DisplayNames([tag], { type: 'currency' })
   const symbol = (code: string): string =>
-    new Intl.NumberFormat('en', { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
+    new Intl.NumberFormat(tag, { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
       .formatToParts(0)
       .find((part) => part.type === 'currency')?.value ?? code
   const ordered = [...new Set([...FIRST, ...codes.sort()])]
-  all = new Map(ordered.map((code) => [code, { code, name: names.of(code) ?? code, symbol: symbol(code) }]))
-  return all
+  const list = new Map(ordered.map((code) => [code, { code, name: names.of(code) ?? code, symbol: symbol(code) }]))
+  all = { tag, list }
+  return list
 }
 
 /** A searchable currency list: code, name and symbol, matched on code or name. */

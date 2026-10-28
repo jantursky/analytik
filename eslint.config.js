@@ -15,6 +15,8 @@ export default defineConfig(
       '**/templates/**',
       'apps/docs/.blume/**',
       'apps/docs/docs/_generated/**',
+      // Generated from the Circle Flags set by scripts/build-flags.mjs.
+      '**/dashboard/flags-data.ts',
       '**/test-results/**',
       '**/playwright-report/**',
     ],

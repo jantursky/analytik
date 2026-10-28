@@ -42,7 +42,28 @@ Settings → Appearance sets the dashboard to light or dark. The default, **Same
 
 ## Formatting
 
-Settings → Formatting sets how the whole dashboard writes numbers, money, dates and times: digit grouping (`1,234.5`, `1.234,5`, `1 234,5` or `1'234.5`), the currency as a symbol or a code, cents always or only when there are some, five date styles (`Oct 27, 2026`, `27 Oct 2026`, `27.10.2026`, `10/27/2026`, `2026-10-27`) and a 12- or 24-hour clock. Each option in the lists shows an example written its way. The choice is saved with the other dashboard settings, for every admin.
+Settings → Formatting sets how the whole dashboard writes numbers, money, dates and times: digit grouping (the language's own, `1,234.5`, `1.234,5`, `1 234,5` or `1'234.5`), the currency as a symbol or a code, cents always or only when there are some, five date styles (`Oct 27, 2026`, `27 Oct 2026`, `27.10.2026`, `10/27/2026`, `2026-10-27`) and a 12- or 24-hour clock. Each option in the lists shows an example written its way. The choice is saved with the other dashboard settings, for every admin.
+
+## Language
+
+The dashboard ships in eighteen languages: English (`en`), Slovak (`sk`), Czech (`cs`), German (`de`), Spanish (`es`), French (`fr`), Italian (`it`), Dutch (`nl`), Portuguese (`pt`, Brazilian), Polish (`pl`), Russian (`ru`), Turkish (`tr`), Japanese (`ja`), Chinese (`zh`, Simplified), Korean (`ko`), Indonesian (`id`), Hindi (`hi`) and Vietnamese (`vi`). The list in the header and in Settings is sorted alphabetically by each language's own name. Right-to-left languages such as Arabic are not supported yet. The Language button in the header, beside the theme button, and Settings → Appearance → Language pick one, saved for every admin; **Browser language**, the default, follows the browser and falls back to English. The `locale` prop of `<Dashboard>` (`locale="sk"`) overrides it and hides the header button. Numbers, month names, weekday names, currency names and country names follow the language through `Intl`, and the digit grouping follows it too unless Settings → Formatting fixes one.
+
+A language's texts load as their own small file (about 15 kB gzip each) the first time that language is used, so English costs nothing extra. Until it arrives the dashboard reads in English.
+
+Change a text, or add a language, with the `messages` prop. Keys are the English texts and values their translation; `{name}` marks a value that is filled in, and a count is written as `{count, plural, one {# visitor} other {# visitors}}`.
+
+```tsx
+<Dashboard
+  api="/api"
+  locale="de"
+  messages={{
+    de: { Overview: 'Übersicht', Visitors: 'Besucher' },
+    en: { Funnels: 'Journeys' }, // rename a label in English
+  }}
+/>
+```
+
+A text you leave out shows in English. The translations were written with machine help and are open to corrections: send them as a pull request to the file in `src/dashboard/locales/`. `bun run extract:messages` in the package lists every text the dashboard translates, and `analytik/dashboard` exports `LANGUAGES` and the `Messages` type.
 
 The component includes a login form. It signs in with `POST /auth/login` and keeps the session cookie, so the dashboard and the API should share an origin, or the API must send CORS headers that allow credentials for your dashboard's origin.
 
@@ -241,4 +262,16 @@ The dashboard component does not read the token itself. To build a public page, 
 
 ## Keeping the place in the address
 
-Pass `urlState` and the dashboard keeps the open site and view in the address, for example `?site=abc123&section=pages`. A refresh, a bookmark or a shared link opens the same place, and the browser's Back button steps through the views. The standalone dashboard served by `withDashboard` does this by default. An embedded dashboard leaves the host page's address alone unless you ask.
+Pass `urlState` and the dashboard keeps the open place in the address, for example `?site=abc123&section=pages&range=30d&f.country=SK`. A refresh, a bookmark or a shared link opens the same place. The browser's Back button steps through sites and views; changing a Settings section, the range, the interval or a filter replaces the current entry, so Back does not walk through every click. The standalone dashboard served by `withDashboard` does this by default. An embedded dashboard leaves the host page's address alone unless you ask, and keeps the host's own parameters when you do.
+
+| Parameter       | Holds                                                    | Left out when                     |
+| --------------- | -------------------------------------------------------- | --------------------------------- |
+| `site`          | The open site's id                                       | Never                             |
+| `section`       | The view, such as `pages` or `settings`                  | It is `overview`                  |
+| `tab`           | The Settings section, such as `privacy`                  | The view is not Settings          |
+| `range`         | A preset: `today`, `24h`, `7d`, `30d`, `90d` or `12m`    | It is `7d`                        |
+| `from`, `to`    | A custom range as `YYYY-MM-DD` dates, both days included | The range is a preset             |
+| `interval`      | `hour`, `day`, `week` or `month`                         | It is the usual one for the range |
+| `f.<dimension>` | A filter, such as `f.country=SK`                         | The filter is off                 |
+
+Unknown values are ignored. Reading and writing the address costs no request: each block loads once for the restored state.

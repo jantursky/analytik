@@ -6,6 +6,7 @@ import { cleanDomain, domainProblem } from '../../shared/url'
 import type { ExportFormat } from '../api'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
+import { msg, t } from '../i18n'
 import { DomainField } from '../Login'
 import { Logo } from '../logo'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
@@ -18,6 +19,7 @@ import { Select } from '../ui/select'
 import { Switch } from '../ui/switch'
 import { TimeZoneSelect } from '../ui/timezone'
 import { Icon, type IconName } from '../icons'
+import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { IntegrationPrompt } from './IntegrationPrompt'
@@ -40,14 +42,14 @@ function useSiteForm<K extends keyof SiteDraft>(
     const patch = {} as Pick<SiteDraft, K>
     for (const key of fields) patch[key] = draft[key]
     if (prepare && !prepare(patch)) return
-    run(client.updateSite(site.id, patch).then(onSiteChange), 'Settings saved')
+    run(client.updateSite(site.id, patch).then(onSiteChange), t('Settings saved'))
   }
   return { draft, set, submit, outcome }
 }
 
 const SaveButton = () => (
   <button type="submit" className="analytik-button" data-variant="primary">
-    Save
+    {t('Save')}
   </button>
 )
 
@@ -62,10 +64,13 @@ export function SiteSettings() {
     return true
   })
   return (
-    <Card title="Site" description="How the site is named, where its events come from and how its reports are dated.">
+    <Card
+      title={t('Site')}
+      description={t('How the site is named, where its events come from and how its reports are dated.')}
+    >
       <form className="analytik-form" onSubmit={submit}>
         <div className="analytik-row">
-          <Field label="Name">
+          <Field label={t('Name')}>
             <input
               className="analytik-input"
               value={draft.name}
@@ -76,21 +81,21 @@ export function SiteSettings() {
           <DomainField
             value={draft.domain}
             onChange={(domain) => set('domain', domain)}
-            hint="Events are accepted from this domain and its subdomains only."
+            hint={t('Events are accepted from this domain and its subdomains only.')}
             touched={touched}
             onBlur={() => setTouched(true)}
           />
         </div>
         <div className="analytik-row">
           <TimeZoneSelect
-            label="Timezone"
-            hint="Days and hours in reports start in this zone."
+            label={t('Timezone')}
+            hint={t('Days and hours in reports start in this zone.')}
             value={draft.timezone}
             onChange={(timezone) => set('timezone', timezone)}
           />
           <CurrencySelect
-            label="Currency"
-            hint="Revenue is reported in this currency."
+            label={t('Currency')}
+            hint={t('Revenue is reported in this currency.')}
             value={draft.currency}
             onChange={(currency) => set('currency', currency)}
           />
@@ -118,10 +123,13 @@ export function PrivacySettings() {
     },
   )
   return (
-    <Card title="Privacy and data collection" description="What the tracker may store, and which visits are counted.">
+    <Card
+      title={t('Privacy and data collection')}
+      description={t('What the tracker may store, and which visits are counted.')}
+    >
       <form className="analytik-form" onSubmit={submit}>
         <fieldset className="analytik-choices">
-          <legend className="analytik-field-label">Privacy mode</legend>
+          <legend className="analytik-field-label">{t('Privacy mode')}</legend>
           <div className="analytik-choice-grid">
             {MODE_INFO.map((mode) => (
               <label key={mode.value} className="analytik-choice">
@@ -134,36 +142,40 @@ export function PrivacySettings() {
                 />
                 <span>
                   <span className="analytik-choice-title">
-                    <strong>{mode.label}</strong>
+                    <strong>{t(mode.label)}</strong>
                     <Tooltip
                       rich
                       label={
                         <dl className="analytik-mode-facts">
                           {mode.details.map(({ title, text }) => (
                             <div key={title}>
-                              <dt>{title}</dt>
-                              <dd>{text}</dd>
+                              <dt>{t(title)}</dt>
+                              <dd>{t(text)}</dd>
                             </div>
                           ))}
                         </dl>
                       }
                     >
-                      <button type="button" className="analytik-mode-info" aria-label={`What ${mode.label} mode means`}>
+                      <button
+                        type="button"
+                        className="analytik-mode-info"
+                        aria-label={t('What {mode} mode means', { mode: t(mode.label) })}
+                      >
                         <Icon name="info" />
                       </button>
                     </Tooltip>
                   </span>
                   <span className="analytik-mode-banner" data-need={mode.banner}>
-                    {mode.bannerLabel}
+                    {t(mode.bannerLabel)}
                   </span>
-                  <span className="analytik-field-hint">{mode.hint}</span>
+                  <span className="analytik-field-hint">{t(mode.hint)}</span>
                 </span>
               </label>
             ))}
           </div>
         </fieldset>
         <div className="analytik-row">
-          <Field label="Keep data for (days)" hint="Empty keeps everything.">
+          <Field label={t('Keep data for (days)')} hint={t('Empty keeps everything.')}>
             <input
               className="analytik-input"
               type="number"
@@ -173,8 +185,8 @@ export function PrivacySettings() {
             />
           </Field>
           <Field
-            label="Ignored IP addresses"
-            hint="One per line. Matching requests are dropped before anything is stored."
+            label={t('Ignored IP addresses')}
+            hint={t('One per line. Matching requests are dropped before anything is stored.')}
           >
             <textarea
               className="analytik-input"
@@ -185,7 +197,7 @@ export function PrivacySettings() {
           </Field>
         </div>
         <Switch checked={draft.allowLocalhost} onChange={(on) => set('allowLocalhost', on)}>
-          Accept events from localhost (for testing; turn off once live)
+          {t('Accept events from localhost (for testing; turn off once live)')}
         </Switch>
         <Actions outcome={outcome}>
           <SaveButton />
@@ -202,26 +214,27 @@ type UpdateChoice = '60' | '240' | '0'
 const UPDATE_CHOICES: { value: UpdateChoice; label: string; description: string }[] = [
   {
     value: '240',
-    label: 'Every 4 minutes',
-    description: 'Readers stay in the live view; about a quarter of the requests of every minute.',
+    label: msg('Every 4 minutes'),
+    description: msg('Readers stay in the live view; about a quarter of the requests of every minute.'),
   },
   {
     value: '60',
-    label: 'Every minute',
-    description: 'The most exact time on page if a browser closes without saying so; the most requests.',
+    label: msg('Every minute'),
+    description: msg('The most exact time on page if a browser closes without saying so; the most requests.'),
   },
   {
     value: '0',
-    label: 'Only when leaving',
-    description: 'The fewest requests; readers drop out of the live view after five quiet minutes.',
+    label: msg('Only when leaving'),
+    description: msg('The fewest requests; readers drop out of the live view after five quiet minutes.'),
   },
 ]
 
-const MODE_OPTIONS = MODE_INFO.map(({ value, label, hint, bannerLabel }) => ({
-  value,
-  label,
-  description: `${hint} ${bannerLabel}.`,
-}))
+const modeOptions = () =>
+  MODE_INFO.map(({ value, label, hint, bannerLabel }) => ({
+    value,
+    label: t(label),
+    description: `${t(hint)} ${t(bannerLabel)}.`,
+  }))
 
 export function SnippetGenerator() {
   const { site, apiUrl } = useDashboard()
@@ -242,27 +255,32 @@ export function SnippetGenerator() {
   })
 
   return (
-    <Card title="Tracking snippet" description="Paste it into the head of every page.">
+    <Card title={t('Tracking snippet')} description={t('Paste it into the head of every page.')}>
       <div className="analytik-row">
-        <Select label="Mode" value={mode} options={MODE_OPTIONS} onChange={setMode} />
-        <Field label="Keep query parameters" hint="Comma-separated, besides utm_*, ref and source.">
+        <Select label={t('Mode')} value={mode} options={modeOptions()} onChange={setMode} />
+        <Field label={t('Keep query parameters')} hint={t('Comma-separated, besides utm_*, ref and source.')}>
           <input className="analytik-input" value={keepQuery} onChange={(e) => setKeepQuery(e.target.value)} />
         </Field>
-        <Select label="Activity updates" value={updates} options={UPDATE_CHOICES} onChange={setUpdates} />
+        <Select
+          label={t('Activity updates')}
+          value={updates}
+          options={UPDATE_CHOICES.map((c) => ({ ...c, label: t(c.label), description: t(c.description) }))}
+          onChange={setUpdates}
+        />
       </div>
       <div className="analytik-switches">
         <Switch checked={requireInteraction} onChange={setRequireInteraction}>
-          Wait for an interaction or 3 seconds on screen before counting (filters bots)
+          {t('Wait for an interaction or 3 seconds on screen before counting (filters bots)')}
         </Switch>
         <Switch checked={autoOutbound} onChange={setAutoOutbound}>
-          Track clicks on outbound links
+          {t('Track clicks on outbound links')}
         </Switch>
       </div>
-      <pre className="analytik-code" aria-label="Snippet">
+      <pre className="analytik-code" aria-label={t('Snippet')}>
         <code>{snippet}</code>
       </pre>
       <Actions>
-        <CopyButton text={snippet} label="Copy snippet" />
+        <CopyButton text={snippet} label={t('Copy snippet')} />
       </Actions>
     </Card>
   )
@@ -272,31 +290,31 @@ const CAMPAIGN_FIELDS: { key: keyof CampaignParams; label: string; param: string
   [
     {
       key: 'source',
-      label: 'Source (required)',
+      label: msg('Source (required)'),
       param: 'utm_source',
-      meaning: 'Where the click comes from',
+      meaning: msg('Where the click comes from'),
       example: 'newsletter',
     },
-    { key: 'medium', label: 'Medium', param: 'utm_medium', meaning: 'The kind of channel', example: 'email' },
+    { key: 'medium', label: msg('Medium'), param: 'utm_medium', meaning: msg('The kind of channel'), example: 'email' },
     {
       key: 'campaign',
-      label: 'Campaign',
+      label: msg('Campaign'),
       param: 'utm_campaign',
-      meaning: 'The promotion it belongs to',
+      meaning: msg('The promotion it belongs to'),
       example: 'spring_sale',
     },
     {
       key: 'term',
-      label: 'Term',
+      label: msg('Term'),
       param: 'utm_term',
-      meaning: 'A paid keyword, shown as Keyword',
+      meaning: msg('A paid keyword, shown as Keyword'),
       example: 'web analytics',
     },
     {
       key: 'content',
-      label: 'Content',
+      label: msg('Content'),
       param: 'utm_content',
-      meaning: 'Which link or ad variant',
+      meaning: msg('Which link or ad variant'),
       example: 'header_button',
     },
   ]
@@ -304,7 +322,7 @@ const CAMPAIGN_FIELDS: { key: keyof CampaignParams; label: string; param: string
 /** The link with its campaign parameters highlighted. */
 function CampaignUrl({ url }: { url: string }) {
   return (
-    <code className="analytik-url" aria-label="Campaign link">
+    <code className="analytik-url" aria-label={t('Campaign link')}>
       {url.split(/(?=[?&#])/).map((part, index) => (
         <span key={index} className={/^[?&]utm_/.test(part) ? 'analytik-url-param' : undefined}>
           {part}
@@ -327,10 +345,10 @@ export function CampaignLinkBuilder() {
 
   return (
     <Card
-      title="Campaign link builder"
-      description="Tag the links you share, so visits through them are credited to the right campaign."
+      title={t('Campaign link builder')}
+      description={t('Tag the links you share, so visits through them are credited to the right campaign.')}
     >
-      <Field label="Page URL">
+      <Field label={t('Page URL')}>
         <input
           className="analytik-input"
           type="url"
@@ -341,7 +359,7 @@ export function CampaignLinkBuilder() {
       </Field>
       <div className="analytik-row analytik-row-wrap">
         {CAMPAIGN_FIELDS.map(({ key, label, example }) => (
-          <Field key={key} label={label}>
+          <Field key={key} label={t(label)}>
             <input
               className="analytik-input"
               value={params[key]}
@@ -351,9 +369,9 @@ export function CampaignLinkBuilder() {
           </Field>
         ))}
       </div>
-      <section className="analytik-preview" aria-label="Preview">
-        <h3 className="analytik-eyebrow">Preview</h3>
-        {url ? <CampaignUrl url={url} /> : <p className="analytik-muted">Enter a full page URL and a source.</p>}
+      <section className="analytik-preview" aria-label={t('Preview')}>
+        <h3 className="analytik-eyebrow">{t('Preview')}</h3>
+        {url ? <CampaignUrl url={url} /> : <p className="analytik-muted">{t('Enter a full page URL and a source.')}</p>}
         <dl className="analytik-params">
           {CAMPAIGN_FIELDS.map(({ key, param, meaning }) => (
             <div key={key} data-set={params[key].trim() ? '' : undefined}>
@@ -361,18 +379,19 @@ export function CampaignLinkBuilder() {
                 <code>{param}</code>
               </dt>
               <dd>{params[key].trim() || '—'}</dd>
-              <dd className="analytik-field-hint">{meaning}</dd>
+              <dd className="analytik-field-hint">{t(meaning)}</dd>
             </div>
           ))}
         </dl>
         <p className="analytik-field-hint">
-          Visitors who open this link are counted under Sources, in the Source, Medium, Campaign, Keyword and Content
-          tabs.
+          {t(
+            'Visitors who open this link are counted under Sources, in the Source, Medium, Campaign, Keyword and Content tabs.',
+          )}
         </p>
       </section>
       {url && (
         <Actions>
-          <CopyButton text={url} label="Copy link" />
+          <CopyButton text={url} label={t('Copy link')} />
         </Actions>
       )}
     </Card>
@@ -381,36 +400,41 @@ export function CampaignLinkBuilder() {
 
 function ApiKey() {
   const { client, site } = useDashboard()
+  const [before, after] = t('For server-side goals and payments ({code}).', { code: '\u0001' }).split('\u0001')
   const [key, setKey] = useState<string>()
   const [outcome, run] = useOutcome()
   return (
     <Card
-      title="API key"
+      title={t('API key')}
       description={
         <>
-          For server-side goals and payments (<code>Authorization: Bearer …</code>).
+          {before}
+          <code>Authorization: Bearer …</code>
+          {after}
         </>
       }
     >
       {key && (
         <>
-          <pre className="analytik-code" aria-label="New API key">
+          <pre className="analytik-code" aria-label={t('New API key')}>
             <code>{key}</code>
           </pre>
-          <p className="analytik-muted">Store it now: it is shown only once.</p>
+          <p className="analytik-muted">{t('Store it now: it is shown only once.')}</p>
         </>
       )}
       <Actions outcome={outcome}>
-        {key && <CopyButton text={key} label="Copy key" />}
+        {key && <CopyButton text={key} label={t('Copy key')} />}
         <ConfirmButton
-          label="Rotate key"
-          title="Rotate the API key?"
-          description="A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them."
-          confirmLabel="Rotate key"
+          label={t('Rotate key')}
+          title={t('Rotate the API key?')}
+          description={t(
+            'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.',
+          )}
+          confirmLabel={t('Rotate key')}
           onConfirm={() =>
             run(
               client.rotateKey(site.id).then((r) => setKey(r.apiKey)),
-              'New key created',
+              t('New key created'),
             )
           }
         />
@@ -438,7 +462,7 @@ function Webhook({ provider, label }: { provider: PaymentProvider; label: string
         setSecret('')
         onSiteChange(updated)
       }),
-      `${label} secret saved`,
+      t('{provider} secret saved', { provider: label }),
     )
   }
   return (
@@ -451,29 +475,29 @@ function Webhook({ provider, label }: { provider: PaymentProvider; label: string
           {label}
         </h3>
         <span className="analytik-badge" data-trend={connected ? 'up' : 'flat'}>
-          {connected ? 'Secret saved' : 'Not set up'}
+          {connected ? t('Secret saved') : t('Not set up')}
         </span>
       </div>
       <div className="analytik-row">
-        <Field label="Endpoint URL">
+        <Field label={t('Endpoint URL')}>
           <input className="analytik-input analytik-mono" value={url} readOnly />
         </Field>
-        <Field label="Signing secret">
+        <Field label={t('Signing secret')}>
           <input
             className="analytik-input"
             type="password"
             autoComplete="off"
             value={secret}
-            placeholder={connected ? 'Saved; enter a new one to replace it' : undefined}
+            placeholder={connected ? t('Saved; enter a new one to replace it') : undefined}
             onChange={(e) => setSecret(e.target.value)}
             required
           />
         </Field>
       </div>
       <Actions outcome={outcome}>
-        <CopyButton text={url} label="Copy URL" />
+        <CopyButton text={url} label={t('Copy URL')} />
         <button type="submit" className="analytik-button">
-          Save secret
+          {t('Save secret')}
         </button>
       </Actions>
     </form>
@@ -483,8 +507,10 @@ function Webhook({ provider, label }: { provider: PaymentProvider; label: string
 function PaymentWebhooks() {
   return (
     <Card
-      title="Payment webhooks"
-      description="Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them."
+      title={t('Payment webhooks')}
+      description={t(
+        'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.',
+      )}
     >
       {PROVIDERS.map((p) => (
         <Webhook key={p.value} provider={p.value} label={p.label} />
@@ -498,18 +524,21 @@ function DataExport() {
   const [outcome, run] = useOutcome()
   const formats: ExportFormat[] = ['json', 'csv']
   return (
-    <Card title="Export and maintenance" description="Download everything stored for this site, or re-run attribution.">
+    <Card
+      title={t('Export and maintenance')}
+      description={t('Download everything stored for this site, or re-run attribution.')}
+    >
       <Actions outcome={outcome}>
         <button
           type="button"
           className="analytik-button"
-          onClick={() => run(client.rematch(site.id), 'Payment attribution re-run')}
+          onClick={() => run(client.rematch(site.id), t('Payment attribution re-run'))}
         >
-          Re-run payment attribution
+          {t('Re-run payment attribution')}
         </button>
         {formats.map((format) => (
           <a key={format} className="analytik-button" href={client.exportUrl(site.id, format)} download>
-            Export {format.toUpperCase()}
+            {t('Export {format}', { format: format.toUpperCase() })}
           </a>
         ))}
       </Actions>
@@ -523,20 +552,24 @@ function DataDeletion() {
   const [outcome, run] = useOutcome()
   return (
     <Card
-      title="Delete old data"
-      description="Removes the visits recorded before a day. Older payments stay for revenue, without customer details."
+      title={t('Delete old data')}
+      description={t(
+        'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.',
+      )}
     >
       <div className="analytik-row">
-        <DatePicker label="Delete data before" value={before} onChange={setBefore} />
+        <DatePicker label={t('Delete data before')} value={before} onChange={setBefore} />
       </div>
       <Actions outcome={outcome}>
         <ConfirmButton
-          label="Delete"
-          title={`Delete everything before ${before}?`}
+          label={t('Delete')}
+          title={t('Delete everything before {date}?', { date: before })}
           disabled={!before}
-          description="Events and sessions from before that day are removed for good, and older payments lose their customer details. This cannot be undone."
-          confirmLabel="Delete data"
-          onConfirm={() => run(client.purge(site.id, new Date(`${before}T00:00:00`).getTime()), 'Data deleted')}
+          description={t(
+            'Events and sessions from before that day are removed for good, and older payments lose their customer details. This cannot be undone.',
+          )}
+          confirmLabel={t('Delete data')}
+          onConfirm={() => run(client.purge(site.id, new Date(`${before}T00:00:00`).getTime()), t('Data deleted'))}
         />
       </Actions>
     </Card>
@@ -549,13 +582,13 @@ interface Section {
   icon: IconName
   content: ComponentType
   /** Set apart from the site's own settings, e.g. the test data tools. */
-  tone?: 'debug'
+  tone?: 'debug' | 'meta'
 }
 
 const SECTIONS: readonly [Section, ...Section[]] = [
   {
     value: 'general',
-    label: 'General',
+    label: msg('General'),
     icon: 'sliders',
     content: () => (
       <>
@@ -564,10 +597,10 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
-  { value: 'privacy', label: 'Privacy', icon: 'shield', content: PrivacySettings },
+  { value: 'privacy', label: msg('Privacy'), icon: 'shield', content: PrivacySettings },
   {
     value: 'tracking',
-    label: 'Tracking code',
+    label: msg('Tracking code'),
     icon: 'code',
     content: () => (
       <>
@@ -576,10 +609,10 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
-  { value: 'campaigns', label: 'Campaign links', icon: 'link', content: CampaignLinkBuilder },
+  { value: 'campaigns', label: msg('Campaign links'), icon: 'link', content: CampaignLinkBuilder },
   {
     value: 'payments',
-    label: 'Payments and API',
+    label: msg('Payments and API'),
     icon: 'card',
     content: () => (
       <>
@@ -590,7 +623,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
   },
   {
     value: 'data',
-    label: 'Data',
+    label: msg('Data'),
     icon: 'database',
     content: () => (
       <>
@@ -599,30 +632,51 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
-  { value: 'appearance', label: 'Appearance', icon: 'theme', content: ThemeSettings },
-  { value: 'formatting', label: 'Formatting', icon: 'format', content: FormatSettings },
-  { value: 'debug', label: 'Debug', icon: 'bug', content: DebugSettings, tone: 'debug' },
+  { value: 'appearance', label: msg('Appearance'), icon: 'theme', content: ThemeSettings },
+  { value: 'formatting', label: msg('Formatting'), icon: 'format', content: FormatSettings },
+  { value: 'changelog', label: msg('Changelog'), icon: 'clock', content: Changelog, tone: 'meta' },
+  { value: 'debug', label: msg('Debug'), icon: 'bug', content: DebugSettings, tone: 'debug' },
 ]
 
+/** Every Settings section, in order; an address may name any of them. */
+export const SETTINGS_SECTIONS = SECTIONS.map((s) => s.value)
+
 export type SettingsSection =
-  'general' | 'privacy' | 'tracking' | 'campaigns' | 'payments' | 'data' | 'appearance' | 'formatting' | 'debug'
+  | 'general'
+  | 'privacy'
+  | 'tracking'
+  | 'campaigns'
+  | 'payments'
+  | 'data'
+  | 'appearance'
+  | 'formatting'
+  | 'changelog'
+  | 'debug'
 
 /**
  * Site settings in sections: a list on the left (a scrolling row on phones) and the chosen section's cards. `section`
  * picks the one shown first, e.g. the tracking code right after a site was added.
  */
-export function Settings({ section: initial }: { section?: SettingsSection } = {}) {
+export function Settings({
+  section: chosen,
+  onSectionChange,
+}: { section?: SettingsSection; onSectionChange?: (section: SettingsSection) => void } = {}) {
   const { client } = useDashboard()
   // The debug tools write made-up data, so the section only shows on a server that opted in with `debug: true`.
   const debug = useResource('debug', () => client.debug().catch(() => ({ enabled: false })))
   const sections = SECTIONS.filter((s) => s.value !== 'debug' || debug.data?.enabled)
-  const [section, setSection] = useState<string>(initial ?? SECTIONS[0].value)
+  const [own, setOwn] = useState<string>(chosen ?? SECTIONS[0].value)
+  const section = onSectionChange ? (chosen ?? SECTIONS[0].value) : own
+  const setSection = (value: SettingsSection): void => {
+    setOwn(value)
+    onSectionChange?.(value)
+  }
   const current = sections.find((s) => s.value === section) ?? SECTIONS[0]
   const Content = current.content
   return (
     <View>
       <div className="analytik-settings">
-        <nav className="analytik-settings-nav" aria-label="Settings">
+        <nav className="analytik-settings-nav" aria-label={t('Settings')}>
           <ul>
             {sections.map(({ value, label, icon, tone }) => (
               <li key={value} data-tone={tone}>
@@ -630,14 +684,14 @@ export function Settings({ section: initial }: { section?: SettingsSection } = {
                   type="button"
                   className="analytik-nav-item"
                   aria-current={value === section ? 'page' : undefined}
-                  onClick={() => setSection(value)}
+                  onClick={() => setSection(value as SettingsSection)}
                 >
                   {value === section && (
                     <motion.span className="analytik-nav-pill" layoutId="analytik-settings-pill" aria-hidden="true" />
                   )}
                   <span className="analytik-settings-label">
                     <Icon name={icon} />
-                    {label}
+                    {t(label)}
                   </span>
                 </button>
               </li>

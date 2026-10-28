@@ -1,12 +1,27 @@
-import { type SubmitEvent, useState } from 'react'
+import { type ReactNode, type SubmitEvent, useState } from 'react'
 
 import type { Site } from '../../shared/types'
 import type { ApiClient } from '../api'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
+import { t } from '../i18n'
 import { Icon } from '../icons'
 import { Actions, Card, ErrorNote, useOutcome } from '../ui'
 import { Dialog } from '../ui/dialog'
+
+const MARK = '\u0000'
+
+/** Fills the one marker of a translated sentence with bold text, wherever the language puts it. */
+const rich = (text: string, bold: string): ReactNode => {
+  const [before = '', after = ''] = text.split(MARK)
+  return (
+    <>
+      {before}
+      <strong>{bold}</strong>
+      {after}
+    </>
+  )
+}
 
 /**
  * Asks for the admin password before deleting a site and everything recorded for it. When admins sign in through
@@ -62,15 +77,20 @@ export function DeleteSiteDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={change} title={`Delete ${site.name}?`}>
+    <Dialog open={open} onOpenChange={change} title={t('Delete {name}?', { name: site.name })}>
       <form className="analytik-form" onSubmit={submit}>
         <p className="analytik-dialog-text">
-          Everything recorded for <strong>{site.domain}</strong> is removed for good: visitors, visits, events, payments
-          and funnels. The tracking snippet on the site stops working. This cannot be undone.
+          {rich(
+            t(
+              'Everything recorded for {domain} is removed for good: visitors, visits, events, payments and funnels. The tracking snippet on the site stops working. This cannot be undone.',
+              { domain: MARK },
+            ),
+            site.domain,
+          )}
         </p>
         <label className="analytik-field">
           <span className="analytik-field-label">
-            Type <strong>{site.domain}</strong> to confirm
+            {rich(t('Type {domain} to confirm', { domain: MARK }), site.domain)}
           </span>
           <input
             className="analytik-input"
@@ -86,7 +106,7 @@ export function DeleteSiteDialog({
         </label>
         {withPassword && (
           <label className="analytik-field">
-            <span className="analytik-field-label">Admin password</span>
+            <span className="analytik-field-label">{t('Admin password')}</span>
             <input
               className="analytik-input"
               type="password"
@@ -97,10 +117,10 @@ export function DeleteSiteDialog({
             />
           </label>
         )}
-        {error && <ErrorNote title="Couldn't delete the website">{error}</ErrorNote>}
+        {error && <ErrorNote title={t("Couldn't delete the website")}>{error}</ErrorNote>}
         <div className="analytik-actions analytik-card-actions">
           <button type="button" className="analytik-button" onClick={() => change(false)}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button
             type="submit"
@@ -110,7 +130,7 @@ export function DeleteSiteDialog({
             aria-busy={busy || undefined}
           >
             <Icon name="trash" />
-            {busy ? 'Deleting…' : 'Delete website'}
+            {busy ? t('Deleting…') : t('Delete website')}
           </button>
         </div>
       </form>
@@ -130,12 +150,14 @@ export function SiteLifecycle() {
   return (
     <>
       <Card
-        title="Tracking"
-        description="Pausing drops new visits, events and goals until you resume. Payments are still recorded, and nothing stored so far changes."
+        title={t('Tracking')}
+        description={t(
+          'Pausing drops new visits, events and goals until you resume. Payments are still recorded, and nothing stored so far changes.',
+        )}
       >
         <p className="analytik-tracking-state" data-paused={site.paused ? '' : undefined}>
           <span className="analytik-live-dot" data-idle={site.paused ? '' : undefined} aria-hidden="true" />
-          {site.paused ? 'Tracking is paused' : 'Tracking is on'}
+          {site.paused ? t('Tracking is paused') : t('Tracking is on')}
         </p>
         <Actions outcome={outcome}>
           <button
@@ -143,22 +165,27 @@ export function SiteLifecycle() {
             className="analytik-button"
             data-variant={site.paused ? 'primary' : 'warning'}
             onClick={() =>
-              run(togglePaused(client, site).then(onSiteChange), site.paused ? 'Tracking resumed' : 'Tracking paused')
+              run(
+                togglePaused(client, site).then(onSiteChange),
+                site.paused ? t('Tracking resumed') : t('Tracking paused'),
+              )
             }
           >
             <Icon name={site.paused ? 'play' : 'pause'} />
-            {site.paused ? 'Resume tracking' : 'Pause tracking'}
+            {site.paused ? t('Resume tracking') : t('Pause tracking')}
           </button>
         </Actions>
       </Card>
       <Card
-        title="Delete this website"
-        description="Removes the site with everything recorded for it. You'll be asked to type its domain and the admin password."
+        title={t('Delete this website')}
+        description={t(
+          "Removes the site with everything recorded for it. You'll be asked to type its domain and the admin password.",
+        )}
       >
         <Actions>
           <button type="button" className="analytik-button" data-variant="danger" onClick={() => setDeleting(true)}>
             <Icon name="trash" />
-            Delete website
+            {t('Delete website')}
           </button>
         </Actions>
         <DeleteSiteDialog

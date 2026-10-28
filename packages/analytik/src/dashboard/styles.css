@@ -193,11 +193,29 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 8px 20px;
   /* The same left and right edge as .analytik-main: its gutter, inside its 1240px column. */
   padding: 10px max(24px, calc((100% - 1240px) / 2 + 24px)) 0;
   border-bottom: 1px solid var(--analytik-border);
   background: var(--analytik-surface);
+}
+
+.analytik-header-left,
+.analytik-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The tabs take the room the actions leave and scroll sideways, so the actions never drop to a row of their own. */
+.analytik-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.analytik-header-right {
+  flex: none;
 }
 
 .analytik-brand {
@@ -434,6 +452,20 @@
 
 .analytik-header .analytik-theme-toggle {
   margin-left: 8px;
+}
+
+/* The globe and the language code, in a pill as tall as the theme button. */
+.analytik-pill-icon.analytik-language-switch {
+  grid-auto-flow: column;
+  gap: 4px;
+  width: auto;
+  padding: 0 8px;
+}
+
+.analytik-language-code {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .analytik-range {
@@ -1539,6 +1571,26 @@ button.analytik-bar:hover {
   white-space: nowrap;
 }
 
+.analytik-flag {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  vertical-align: -3px;
+}
+
+/* A country with no flag, or while the flags load: its code in a neutral circle. */
+.analytik-flag[data-fallback] {
+  display: inline-grid;
+  place-items: center;
+  background: var(--analytik-border);
+  color: var(--analytik-text-muted);
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .analytik-bar-icon {
   display: inline-grid;
   place-items: center;
@@ -1947,8 +1999,8 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   color: var(--analytik-primary);
 }
 
-/* The debug tools sit apart from the site's settings, in green. */
-.analytik-settings-nav li[data-tone='debug'] {
+/* The changelog and the debug tools sit apart from the site's settings, behind a dashed line. */
+.analytik-settings-nav li:is([data-tone='debug'], [data-tone='meta']) {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px dashed var(--analytik-border);
@@ -1972,6 +2024,33 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 
 .analytik-icon[data-icon='more'] {
   stroke-width: 2.6;
+}
+
+.analytik-changelog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.analytik-changelog ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--analytik-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.analytik-changelog code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--analytik-bg-subtle);
+  color: var(--analytik-text);
+  font-size: 12px;
 }
 
 .analytik-settings-body {
@@ -4378,6 +4457,20 @@ tr:hover .analytik-row-button {
     padding: 8px 16px 0;
   }
 
+  /* Brand and actions share the first row, the tabs get the whole second row. */
+  .analytik-header-left {
+    display: contents;
+  }
+
+  .analytik-brand {
+    order: 1;
+  }
+
+  .analytik-header-right {
+    order: 2;
+    margin-left: auto;
+  }
+
   .analytik-header nav {
     order: 3;
     flex-basis: 100%;
@@ -4479,7 +4572,7 @@ tr:hover .analytik-row-button {
     flex-direction: row;
   }
 
-  .analytik-settings-nav li[data-tone='debug'] {
+  .analytik-settings-nav li:is([data-tone='debug'], [data-tone='meta']) {
     margin: 0 0 0 8px;
     padding: 0 0 0 8px;
     border-top: 0;

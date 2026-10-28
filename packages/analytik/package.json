@@ -88,6 +88,7 @@
     "templates",
     "README.md",
     "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
     "LICENSE"
   ],
   "sideEffects": [
@@ -123,7 +124,9 @@
     "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./dashboard/styles.css",
     "prepublishOnly": "bun run typecheck && bun run test && bun run test:browser && bun run build && bun run lint:package && bun run test:pack",
     "test:pack": "node scripts/pack-test.js",
-    "size": "size-limit"
+    "size": "size-limit",
+    "build:flags": "node scripts/build-flags.mjs",
+    "extract:messages": "node scripts/extract-messages.mjs"
   },
   "peerDependencies": {
     "@base-ui/react": "^1.9.0",
@@ -175,6 +178,7 @@
     "@vitejs/plugin-react": "^6",
     "@vitest/browser-playwright": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
+    "circle-flags": "^2.8.3",
     "happy-dom": "^21.0.4",
     "hono": "^4.13.14",
     "motion": "^14.6.0",

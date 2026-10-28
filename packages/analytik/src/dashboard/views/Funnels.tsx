@@ -5,6 +5,7 @@ import type { Funnel, FunnelResult, FunnelStep } from '../../shared/types'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatNumber, formatPercent } from '../format'
+import { msg, t } from '../i18n'
 import { Card, ConfirmButton, ErrorNote, Field, Status } from '../ui'
 import { EASE, View } from '../ui/motion'
 import { Select, type SelectOption } from '../ui/select'
@@ -17,7 +18,7 @@ function FunnelSteps({ funnel }: { funnel: Funnel }) {
   const first = result.data?.steps[0]?.visitors ?? 0
   return (
     <Status loading={result.loading} error={result.error}>
-      <ol className="analytik-funnel" aria-label={`${funnel.name} steps`}>
+      <ol className="analytik-funnel" aria-label={t('{name} steps', { name: funnel.name })}>
         {result.data?.steps.map((step, i) => {
           const share = first ? step.visitors / first : 0
           return (
@@ -35,7 +36,10 @@ function FunnelSteps({ funnel }: { funnel: Funnel }) {
               <span className="analytik-bar-value">
                 {formatNumber(step.visitors)} · {formatPercent(share)}
                 {step.dropOff != null && i > 0 && (
-                  <span className="analytik-muted"> · {formatPercent(step.dropOff)} dropped</span>
+                  <span className="analytik-muted">
+                    {' '}
+                    · {t('{percent} dropped', { percent: formatPercent(step.dropOff) })}
+                  </span>
                 )}
               </span>
             </li>
@@ -49,8 +53,8 @@ function FunnelSteps({ funnel }: { funnel: Funnel }) {
 const emptyStep = (): FunnelStep => ({ type: 'page', match: '' })
 
 const STEP_TYPES: SelectOption<FunnelStep['type']>[] = [
-  { value: 'page', label: 'Page' },
-  { value: 'goal', label: 'Goal' },
+  { value: 'page', label: msg('Page') },
+  { value: 'goal', label: msg('Goal') },
 ]
 
 function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
@@ -65,7 +69,7 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
     event.preventDefault()
     const valid = steps.filter((s) => s.match.trim())
     if (valid.length < 2) {
-      setError('A funnel needs at least two steps.')
+      setError(t('A funnel needs at least two steps.'))
       return
     }
     client.createFunnel(site.id, { name: name.trim(), steps: valid }).then(
@@ -81,19 +85,19 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
 
   return (
     <form className="analytik-form" onSubmit={submit}>
-      <Field label="Funnel name">
+      <Field label={t('Funnel name')}>
         <input className="analytik-input" value={name} onChange={(e) => setName(e.target.value)} required />
       </Field>
       {steps.map((step, i) => (
         <fieldset key={i} className="analytik-row">
-          <legend className="analytik-sr-only">Step {i + 1}</legend>
+          <legend className="analytik-sr-only">{t('Step {number}', { number: i + 1 })}</legend>
           <Select
-            label={`Step ${i + 1}`}
+            label={t('Step {number}', { number: i + 1 })}
             value={step.type}
-            options={STEP_TYPES}
+            options={STEP_TYPES.map((o) => ({ ...o, label: t(o.label) }))}
             onChange={(type) => update(i, { type })}
           />
-          <Field label={step.type === 'page' ? 'Path (trailing * matches a prefix)' : 'Goal name'}>
+          <Field label={step.type === 'page' ? t('Path (trailing * matches a prefix)') : t('Goal name')}>
             <input
               className="analytik-input"
               value={step.match}
@@ -106,9 +110,9 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
               type="button"
               className="analytik-button"
               onClick={() => setSteps(steps.filter((_, j) => j !== i))}
-              aria-label={`Remove step ${i + 1}`}
+              aria-label={t('Remove step {number}', { number: i + 1 })}
             >
-              Remove
+              {t('Remove')}
             </button>
           )}
         </fieldset>
@@ -116,10 +120,10 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
       {error && <ErrorNote>{error}</ErrorNote>}
       <div className="analytik-actions">
         <button type="button" className="analytik-button" onClick={() => setSteps([...steps, emptyStep()])}>
-          Add step
+          {t('Add step')}
         </button>
         <button type="submit" className="analytik-button" data-variant="primary">
-          Create funnel
+          {t('Create funnel')}
         </button>
       </div>
     </form>
@@ -143,7 +147,7 @@ export function Funnels() {
               <div className="analytik-actions">
                 {list.length > 1 && (
                   <Select
-                    label="Funnel"
+                    label={t('Funnel')}
                     hideLabel
                     className="analytik-pill"
                     value={selected.id}
@@ -152,10 +156,10 @@ export function Funnels() {
                   />
                 )}
                 <ConfirmButton
-                  label="Delete"
-                  title={`Delete the funnel “${selected.name}”?`}
-                  description="The funnel definition is removed. The visits and events it counted stay."
-                  confirmLabel="Delete funnel"
+                  label={t('Delete')}
+                  title={t('Delete the funnel “{name}”?', { name: selected.name })}
+                  description={t('The funnel definition is removed. The visits and events it counted stay.')}
+                  confirmLabel={t('Delete funnel')}
                   onConfirm={() => void client.deleteFunnel(site.id, selected.id).then(funnels.reload)}
                 />
               </div>
@@ -164,10 +168,10 @@ export function Funnels() {
             <FunnelSteps funnel={selected} />
           </Card>
         ) : (
-          <p className="analytik-empty">No funnels yet. Create one to see where visitors drop off.</p>
+          <p className="analytik-empty">{t('No funnels yet. Create one to see where visitors drop off.')}</p>
         )}
       </Status>
-      <Card title="New funnel">
+      <Card title={t('New funnel')}>
         <FunnelForm
           onCreated={(funnel) => {
             setSelectedId(funnel.id)

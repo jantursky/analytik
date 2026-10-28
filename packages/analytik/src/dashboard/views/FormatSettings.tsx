@@ -14,6 +14,7 @@ import {
   parseFormatSettings,
   setFormatSettings,
 } from '../format'
+import { LANGUAGES, msg, t } from '../i18n'
 import { parseTheme, usePreferences } from '../preferences'
 import { Card } from '../ui'
 import { Select } from '../ui/select'
@@ -21,6 +22,18 @@ import { Select } from '../ui/select'
 // Shown in each option and under each select, written the way the option would write them.
 const AMOUNT = 123456789
 const NUMBER = 1234567
+
+/** Text with a `\u0001` marker, shown with `strong` in the marker's place. */
+function emphasized(text: string, strong: string) {
+  const [head, tail] = text.split('\u0001')
+  return (
+    <>
+      {head}
+      <strong>{strong}</strong>
+      {tail}
+    </>
+  )
+}
 
 /** Runs `write` with `settings` in effect, then puts the current ones back. */
 function sample(settings: Settings, write: () => string): string {
@@ -40,43 +53,44 @@ interface Choice<K extends keyof Settings> {
 
 const CHOICES: { [K in keyof Settings]: { label: string; options: Choice<K>[] } } = {
   numbers: {
-    label: 'Numbers',
+    label: msg('Numbers'),
     options: [
-      { value: 'comma', label: 'Comma groups, dot decimals' },
-      { value: 'dot', label: 'Dot groups, comma decimals' },
-      { value: 'space', label: 'Space groups, comma decimals' },
-      { value: 'apostrophe', label: 'Apostrophe groups, dot decimals' },
+      { value: 'auto', label: msg("The language's own") },
+      { value: 'comma', label: msg('Comma groups, dot decimals') },
+      { value: 'dot', label: msg('Dot groups, comma decimals') },
+      { value: 'space', label: msg('Space groups, comma decimals') },
+      { value: 'apostrophe', label: msg('Apostrophe groups, dot decimals') },
     ],
   },
   currency: {
-    label: 'Currency',
+    label: msg('Currency'),
     options: [
-      { value: 'symbol', label: 'Symbol' },
-      { value: 'code', label: 'Code' },
+      { value: 'symbol', label: msg('Symbol') },
+      { value: 'code', label: msg('Code') },
     ],
   },
   cents: {
-    label: 'Cents',
+    label: msg('Cents'),
     options: [
-      { value: 'always', label: 'Always' },
-      { value: 'auto', label: 'Only when there are some' },
+      { value: 'always', label: msg('Always') },
+      { value: 'auto', label: msg('Only when there are some') },
     ],
   },
   date: {
-    label: 'Dates',
+    label: msg('Dates'),
     options: [
-      { value: 'us', label: 'Month first, in words' },
-      { value: 'gb', label: 'Day first, in words' },
-      { value: 'dmy', label: 'Day, month, year' },
-      { value: 'mdy', label: 'Month, day, year' },
-      { value: 'iso', label: 'ISO 8601' },
+      { value: 'us', label: msg('Month first, in words') },
+      { value: 'gb', label: msg('Day first, in words') },
+      { value: 'dmy', label: msg('Day, month, year') },
+      { value: 'mdy', label: msg('Month, day, year') },
+      { value: 'iso', label: msg('ISO 8601') },
     ],
   },
   time: {
-    label: 'Time',
+    label: msg('Time'),
     options: [
-      { value: '12h', label: '12-hour clock' },
-      { value: '24h', label: '24-hour clock' },
+      { value: '12h', label: msg('12-hour clock') },
+      { value: '24h', label: msg('24-hour clock') },
     ],
   },
 }
@@ -104,17 +118,17 @@ export function FormatSettings() {
     return (
       <div className="analytik-format-field">
         <Select
-          label={label}
+          label={t(label)}
           value={settings[key]}
           options={options.map((option) => ({
             value: option.value,
-            label: option.label,
+            label: t(option.label),
             description: example(option.value),
           }))}
           onChange={(value) => update({ format: { ...settings, [key]: value } })}
         />
         <span className="analytik-field-hint">
-          Looks like <strong>{example(settings[key])}</strong>
+          {emphasized(t('Looks like {example}', { example: '\u0001' }), example(settings[key]))}
         </span>
       </div>
     )
@@ -123,8 +137,8 @@ export function FormatSettings() {
   return (
     <>
       <Card
-        title="Numbers and money"
-        description="How counts, rates and amounts are written in every view. Saved for every admin."
+        title={t('Numbers and money')}
+        description={t('How counts, rates and amounts are written in every view. Saved for every admin.')}
       >
         <div className="analytik-format-grid">
           {field('numbers')}
@@ -132,28 +146,31 @@ export function FormatSettings() {
           {field('cents')}
         </div>
       </Card>
-      <Card title="Dates and times" description="Chart labels, the date range and the time of each visit and payment.">
+      <Card
+        title={t('Dates and times')}
+        description={t('Chart labels, the date range and the time of each visit and payment.')}
+      >
         <div className="analytik-format-grid">
           {field('date')}
           {field('time')}
         </div>
       </Card>
-      <Card title="Preview" description="A payment as the dashboard will show it.">
+      <Card title={t('Preview')} description={t('A payment as the dashboard will show it.')}>
         <div className="analytik-format-preview">
           <span>
-            <small>Payment</small>
+            <small>{t('Payment')}</small>
             {formatMoney(AMOUNT, site.currency)}
           </span>
           <span>
-            <small>Date and time</small>
+            <small>{t('Date and time')}</small>
             {formatDateTime(now, site.timezone)}
           </span>
           <span>
-            <small>Visitors</small>
+            <small>{t('Visitors')}</small>
             {formatNumber(NUMBER)}
           </span>
           <span>
-            <small>Conversion rate</small>
+            <small>{t('Conversion rate')}</small>
             {formatPercent(0.0525)}
           </span>
         </div>
@@ -163,22 +180,44 @@ export function FormatSettings() {
 }
 
 const THEMES = [
-  { value: 'system', label: 'Same as the page', description: 'Follows the page it sits on, or the system' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: msg('Same as the page'), description: msg('Follows the page it sits on, or the system') },
+  { value: 'light', label: msg('Light') },
+  { value: 'dark', label: msg('Dark') },
 ]
 
-/** Light or dark for the whole dashboard; saved with the other settings. */
+/** Light or dark for the whole dashboard, and the language; saved with the other settings. */
 export function ThemeSettings() {
   const { values, update } = usePreferences()
+  const language = LANGUAGES.some((l) => l.value === values.language) ? (values.language as string) : ''
   return (
-    <Card title="Theme" description="Light or dark for the whole dashboard. Saved for every admin.">
-      <Select
-        label="Theme"
-        value={parseTheme(values.theme) ?? 'system'}
-        options={THEMES}
-        onChange={(value) => update({ theme: value === 'system' ? undefined : value })}
-      />
-    </Card>
+    <>
+      <Card title={t('Theme')} description={t('Light or dark for the whole dashboard. Saved for every admin.')}>
+        <Select
+          label={t('Theme')}
+          value={parseTheme(values.theme) ?? 'system'}
+          options={THEMES.map((o) => ({
+            ...o,
+            label: t(o.label),
+            description: o.description && t(o.description),
+          }))}
+          onChange={(value) => update({ theme: value === 'system' ? undefined : value })}
+        />
+      </Card>
+      <Card title={t('Language')} description={t('The language of the dashboard. Saved for every admin.')}>
+        <div className="analytik-format-field">
+          <Select
+            label={t('Language')}
+            value={language}
+            options={[{ value: '', label: t('Browser language') }, ...LANGUAGES]}
+            onChange={(value) => update({ language: value || undefined })}
+          />
+          <span className="analytik-field-hint">
+            {t(
+              'The dashboard follows your browser language unless you pick one. A `locale` prop on the embedded dashboard takes priority.',
+            )}
+          </span>
+        </div>
+      </Card>
+    </>
   )
 }

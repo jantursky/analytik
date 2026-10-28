@@ -2,6 +2,7 @@ import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import type { ReactNode } from 'react'
 
 import { Icon } from '../icons'
+import { t } from '../i18n'
 import { useLayer } from './layer'
 
 export interface DialogProps {
@@ -26,7 +27,7 @@ export function Dialog({ open, onOpenChange, title, children, size, footer }: Di
         <BaseDialog.Popup className="analytik-dialog" data-size={size}>
           <div className="analytik-dialog-head">
             <BaseDialog.Title className="analytik-dialog-title">{title}</BaseDialog.Title>
-            <BaseDialog.Close className="analytik-icon-button" aria-label="Close">
+            <BaseDialog.Close className="analytik-icon-button" aria-label={t('Close')}>
               <Icon name="close" />
             </BaseDialog.Close>
           </div>

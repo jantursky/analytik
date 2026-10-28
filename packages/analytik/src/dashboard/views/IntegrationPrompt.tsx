@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useDashboard } from '../context'
+import { t } from '../i18n'
 import { Actions, Card, CopyButton } from '../ui'
 import { Select } from '../ui/select'
 import type { SiteTarget } from '../site-prompt'
@@ -34,27 +35,29 @@ export function IntegrationPrompt() {
   })
   return (
     <Card
-      title="Site integration prompt"
-      description="Let your coding assistant add the tracker to your site, in the right file for your framework."
+      title={t('Site integration prompt')}
+      description={t('Let your coding assistant add the tracker to your site, in the right file for your framework.')}
     >
       {options && prompt !== undefined ? (
         <>
           <Select
-            label="Framework or platform"
+            label={t('Framework or platform')}
             value={target}
             options={options.map(({ id, label }) => ({ value: id, label }))}
             onChange={setTarget}
           />
-          <pre className="analytik-code analytik-prompt-preview" tabIndex={0} aria-label="Prompt">
+          <pre className="analytik-code analytik-prompt-preview" tabIndex={0} aria-label={t('Prompt')}>
             <code>{prompt}</code>
           </pre>
           <Actions>
-            <span className="analytik-field-hint">{prompt.length.toLocaleString('en')} characters</span>
-            <CopyButton text={prompt} label="Copy prompt" />
+            <span className="analytik-field-hint">
+              {t('{count, plural, one {# character} other {# characters}}', { count: prompt.length })}
+            </span>
+            <CopyButton text={prompt} label={t('Copy prompt')} />
           </Actions>
         </>
       ) : (
-        <p className="analytik-muted">Loading…</p>
+        <p className="analytik-muted">{t('Loading…')}</p>
       )}
     </Card>
   )

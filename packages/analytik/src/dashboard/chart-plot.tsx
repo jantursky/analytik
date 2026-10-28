@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 
+import { t } from './i18n'
 import { niceMax } from './scale'
 
 export interface PlotRow {
@@ -93,7 +94,11 @@ export function AreaPlot({
 
   return (
     <ResponsiveContainer width="100%" height={height} initialDimension={{ width: INITIAL_WIDTH, height }}>
-      <ComposedChart data={rows} margin={{ top: 12, right: 4, bottom: 0, left: 0 }} aria-label={`${label} chart`}>
+      <ComposedChart
+        data={rows}
+        margin={{ top: 12, right: 4, bottom: 0, left: 0 }}
+        aria-label={t('{label} chart', { label })}
+      >
         <defs>
           <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={PRIMARY} stopOpacity={0.38} />
@@ -240,7 +245,11 @@ export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlot
 
   return (
     <ResponsiveContainer width="100%" height={height} initialDimension={{ width: INITIAL_WIDTH, height }}>
-      <ComposedChart data={rows} margin={{ top: 12, right: 4, bottom: 0, left: 0 }} aria-label={`${label} chart`}>
+      <ComposedChart
+        data={rows}
+        margin={{ top: 12, right: 4, bottom: 0, left: 0 }}
+        aria-label={t('{label} chart', { label })}
+      >
         <defs>
           {series.map((s, i) => (
             <linearGradient key={s.key} id={`${id}-${i}`} x1="0" y1="0" x2="0" y2="1">

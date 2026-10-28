@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type MouseEvent, type ReactNode, useEffect, useState } from 'react'
 
-import { countryName, flagEmoji } from '../format'
+import { Flag } from '../flags'
+import { countryName } from '../format'
 import { Icon, type IconName } from '../icons'
+import { t } from '../i18n'
 import { hasLogo, Logo } from '../logo'
 import { useTableFilter } from './DataTable'
 
@@ -30,7 +32,7 @@ export function CopyId({ text, label }: { text: string; label: string }) {
       type="button"
       className="analytik-cell-action"
       data-done={copied ? '' : undefined}
-      aria-label={copied ? 'Copied' : label}
+      aria-label={copied ? t('Copied') : label}
       title={label}
       onClick={own(() => void navigator.clipboard.writeText(text).then(() => setCopied(true)))}
     >
@@ -90,7 +92,7 @@ export function Visitor({ id, label, copy, filter }: VisitorProps) {
       {(copy ?? filter) && (
         <span className="analytik-cell-actions">
           {copy && <CopyId text={copy.text} label={copy.label} />}
-          {filter && <FilterBy name="visitor" value={filter} label="Show only this visitor" />}
+          {filter && <FilterBy name="visitor" value={filter} label={t('Show only this visitor')} />}
         </span>
       )}
     </span>
@@ -99,15 +101,15 @@ export function Visitor({ id, label, copy, filter }: VisitorProps) {
 
 /** The visitor id cell of a list: copy the full id, or narrow the list to this visitor. */
 export const VisitorCell = ({ id }: { id: string }) => (
-  <Visitor id={id} copy={{ text: id, label: 'Copy visitor id' }} filter={id} />
+  <Visitor id={id} copy={{ text: id, label: t('Copy visitor id') }} filter={id} />
 )
 
 /** The country's flag and name, with the city when known. */
 export function Place({ country, city }: { country: string | null; city?: string | null }) {
-  if (!country) return <span className="analytik-muted">Unknown</span>
+  if (!country) return <span className="analytik-muted">{t('Unknown')}</span>
   return (
     <span className="analytik-place">
-      <span aria-hidden="true">{flagEmoji(country)}</span>
+      <Flag code={country} />
       <span>
         {countryName(country)}
         {city && <span className="analytik-sub">{city}</span>}
@@ -124,7 +126,7 @@ export function Device({ device, browser }: { device: string | null; browser: st
     <span className="analytik-tech">
       {browser && hasLogo(browser) ? <Logo name={browser} /> : <span className="analytik-logo" aria-hidden="true" />}
       <span>
-        {device ?? 'Unknown'}
+        {device ?? t('Unknown')}
         {browser && <span className="analytik-muted"> · {browser}</span>}
       </span>
     </span>
@@ -137,7 +139,7 @@ export function DeviceType({ device }: { device: string | null }) {
   return (
     <span className="analytik-tech">
       {icon ? <Icon name={icon} /> : <span className="analytik-logo" aria-hidden="true" />}
-      <span>{device ?? 'Unknown'}</span>
+      <span>{device ?? t('Unknown')}</span>
     </span>
   )
 }
@@ -148,7 +150,7 @@ export function Browser({ browser, os }: { browser: string | null; os?: string |
     <span className="analytik-tech">
       {browser && hasLogo(browser) ? <Logo name={browser} /> : <span className="analytik-logo" aria-hidden="true" />}
       <span>
-        {browser ?? 'Unknown'}
+        {browser ?? t('Unknown')}
         {os && <span className="analytik-sub">{os}</span>}
       </span>
     </span>
@@ -164,7 +166,7 @@ export function PathFlow({ entry, exit }: { entry: string | null; exit: string |
       {exit && exit !== entry && (
         <>
           <Icon name="arrow" />
-          <span className="analytik-sr-only">to</span>
+          <span className="analytik-sr-only">{t('to')}</span>
           <span>{exit}</span>
         </>
       )}

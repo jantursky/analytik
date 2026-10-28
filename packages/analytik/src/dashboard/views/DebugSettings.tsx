@@ -4,6 +4,7 @@ import { mixVisits, TEST_SITE_MIX } from '../../shared/test-sites'
 import type { TestDataInput, TestDataResult } from '../../shared/types'
 import { useDashboard } from '../context'
 import { formatInteger, formatNumber } from '../format'
+import { msg, t } from '../i18n'
 import { Actions, Card, ConfirmButton, Field, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
 import { Select } from '../ui/select'
@@ -25,38 +26,38 @@ interface Amounts {
 const PRESETS: { value: string; label: string; hint: string; amounts: Amounts }[] = [
   {
     value: 'small',
-    label: 'Small',
-    hint: 'A month of a quiet site.',
+    label: msg('Small'),
+    hint: msg('A month of a quiet site.'),
     amounts: { sites: 1, days: 30, visitorsPerDay: 200, priceScale: 1 },
   },
   {
     value: 'busy',
-    label: 'Busy',
-    hint: 'A quarter at 3,000 visits a day.',
+    label: msg('Busy'),
+    hint: msg('A quarter at 3,000 visits a day.'),
     amounts: { sites: 1, days: 90, visitorsPerDay: 3000, priceScale: 1 },
   },
   {
     value: 'many',
-    label: 'Many sites',
-    hint: 'Twelve sites with a month each, for the sites overview.',
+    label: msg('Many sites'),
+    hint: msg('Twelve sites with a month each, for the sites overview.'),
     amounts: { sites: 12, days: 30, visitorsPerDay: 400, priceScale: 1 },
   },
   {
     value: 'mix',
-    label: 'Realistic mix',
-    hint: 'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.',
+    label: msg('Realistic mix'),
+    hint: msg('Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.'),
     amounts: { sites: TEST_SITE_MIX.length, days: 60, visitorsPerDay: 400, priceScale: 1, mix: true },
   },
   {
     value: 'money',
-    label: 'Big money',
-    hint: 'Prices 10,000 times higher: revenue in the millions.',
+    label: msg('Big money'),
+    hint: msg('Prices 10,000 times higher: revenue in the millions.'),
     amounts: { sites: 1, days: 90, visitorsPerDay: 1000, priceScale: 10_000 },
   },
   {
     value: 'stress',
-    label: 'Stress test',
-    hint: 'Two years at 1,300 visits a day: close to a million visits.',
+    label: msg('Stress test'),
+    hint: msg('Two years at 1,300 visits a day: close to a million visits.'),
     amounts: { sites: 1, days: 730, visitorsPerDay: 1300, priceScale: 1 },
   },
 ]
@@ -65,29 +66,59 @@ const CUSTOM = 'custom'
 
 type Target = 'new' | 'current'
 
-const seconds = (ms: number): string => `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`
+const seconds = (ms: number): string => t('{n} s', { n: (ms / 1000).toFixed(ms < 10_000 ? 1 : 0) })
 
 function summary(result: TestDataResult): string {
   const { visitors, sessions, events, payments } = result.counts
-  const where = result.sites.length === 1 ? (result.sites[0]?.name ?? '') : `${result.sites.length} sites`
-  if (sessions === 0) return `Made ${where === result.sites[0]?.name ? where : where.replace('sites', 'empty sites')}`
-  return `Added ${formatInteger(sessions)} visits from ${formatInteger(visitors)} visitors, ${formatInteger(events)} events and ${formatInteger(payments)} payments to ${where} in ${seconds(result.durationMs)}`
+  const count = result.sites.length
+  if (sessions === 0) {
+    return count === 1
+      ? t('Made {name}', { name: result.sites[0]?.name ?? '' })
+      : t('Made {count} empty sites', { count: formatInteger(count) })
+  }
+  const params = {
+    sessions: formatInteger(sessions),
+    visitors: formatInteger(visitors),
+    events: formatInteger(events),
+    payments: formatInteger(payments),
+    time: seconds(result.durationMs),
+  }
+  return count === 1
+    ? t(
+        'Added {sessions} visits from {visitors} visitors, {events} events and {payments} payments to {where} in {time}',
+        {
+          ...params,
+          where: result.sites[0]?.name ?? '',
+        },
+      )
+    : t(
+        'Added {sessions} visits from {visitors} visitors, {events} events and {payments} payments to {where} in {time}',
+        {
+          ...params,
+          where: t('{count} sites', { count: formatInteger(count) }),
+        },
+      )
 }
 
 /** What a run would write, before it starts. */
 function estimate(visits: number, sites: number, mixed: boolean): string {
-  const slow = visits > 200_000 ? ' A run this big takes a minute or more; keep this tab open.' : ''
+  const slow = visits > 200_000 ? ` ${t('A run this big takes a minute or more; keep this tab open.')}` : ''
   if (mixed) {
     const kinds = TEST_SITE_MIX.slice(0, sites).map(
       (profile) => profile.name.charAt(0).toLowerCase() + profile.name.slice(1),
     )
-    const more = sites > TEST_SITE_MIX.length ? ', then the same kinds again' : ''
-    return `${sites === 1 ? 'One site' : `${formatInteger(sites)} different sites`} (${kinds.join(', ')}${more}): about ${formatNumber(visits)} visits.${slow}`
+    const more = sites > TEST_SITE_MIX.length ? t(', then the same kinds again') : ''
+    const what = sites === 1 ? t('One site') : t('{count} different sites', { count: formatInteger(sites) })
+    return `${t('{what} ({kinds}{more}): about {visits} visits.', { what, kinds: kinds.join(', '), more, visits: formatNumber(visits) })}${slow}`
   }
   if (visits === 0) {
-    return `${sites === 1 ? 'An empty site' : `${formatInteger(sites)} empty sites`} with no visits yet, to see the dashboard before any data arrives.`
+    return sites === 1
+      ? t('An empty site with no visits yet, to see the dashboard before any data arrives.')
+      : t('{count} empty sites with no visits yet, to see the dashboard before any data arrives.', {
+          count: formatInteger(sites),
+        })
   }
-  return `About ${formatNumber(visits)} visits and ${formatNumber(Math.round(visits * EVENTS_PER_VISIT))} events.${slow}`
+  return `${t('About {visits} visits and {events} events.', { visits: formatNumber(visits), events: formatNumber(Math.round(visits * EVENTS_PER_VISIT)) })}${slow}`
 }
 
 /** A whole number from an input, or NaN while it's empty or not one. */
@@ -151,17 +182,20 @@ function TestDataGenerator() {
   const visits = mixed ? mixVisits(sites, days) : sites * days * visitorsPerDay
   const problem =
     target === 'new' && !(sites >= 1 && sites <= 20)
-      ? 'Make 1 to 20 sites.'
+      ? t('Make 1 to 20 sites.')
       : !(days >= 0 && days <= 730)
-        ? 'Days go from 0 to 730.'
+        ? t('Days go from 0 to 730.')
         : !(visitorsPerDay >= 0 && visitorsPerDay <= 100_000)
-          ? 'Visits per day go from 0 to 100,000.'
+          ? t('Visits per day go from 0 to 100,000.')
           : !(priceScale > 0 && priceScale <= 100_000)
-            ? 'The price multiplier goes up to 100,000.'
+            ? t('The price multiplier goes up to 100,000.')
             : visits > MAX_VISITS
-              ? `That's ${formatNumber(visits)} visits; one run writes at most ${formatNumber(MAX_VISITS)}.`
+              ? t("That's {visits} visits; one run writes at most {max}.", {
+                  visits: formatNumber(visits),
+                  max: formatNumber(MAX_VISITS),
+                })
               : visits === 0 && target === 'current'
-                ? 'Zero visits leave this site as it is; pick new test sites for empty ones.'
+                ? t('Zero visits leave this site as it is; pick new test sites for empty ones.')
                 : null
 
   const generate = (): void => {
@@ -183,11 +217,13 @@ function TestDataGenerator() {
 
   return (
     <Card
-      title="Test data"
-      description="Fills the database with made-up visits, goals and payments, to try the dashboard with many sites, long histories and large numbers. Each run adds to what is there."
+      title={t('Test data')}
+      description={t(
+        'Fills the database with made-up visits, goals and payments, to try the dashboard with many sites, long histories and large numbers. Each run adds to what is there.',
+      )}
     >
       <fieldset className="analytik-choices">
-        <legend className="analytik-field-label">Preset</legend>
+        <legend className="analytik-field-label">{t('Preset')}</legend>
         <div className="analytik-choice-grid">
           {PRESETS.map((p) => (
             <label key={p.value} className="analytik-choice">
@@ -199,8 +235,8 @@ function TestDataGenerator() {
                 onChange={() => choose(p.value)}
               />
               <span>
-                <strong>{p.label}</strong>
-                <span className="analytik-field-hint">{p.hint}</span>
+                <strong>{t(p.label)}</strong>
+                <span className="analytik-field-hint">{t(p.hint)}</span>
               </span>
             </label>
           ))}
@@ -208,28 +244,28 @@ function TestDataGenerator() {
       </fieldset>
       <div className="analytik-row">
         <Select
-          label="Write into"
+          label={t('Write into')}
           value={target}
           options={[
-            { value: 'new', label: 'New test sites' },
-            { value: 'current', label: `This site (${site.name})` },
+            { value: 'new', label: t('New test sites') },
+            { value: 'current', label: t('This site ({name})', { name: site.name }) },
           ]}
           onChange={setTarget}
         />
         {target === 'new' && (
           <Select
-            label="Traffic"
+            label={t('Traffic')}
             value={mixed ? 'mix' : 'same'}
             options={[
               {
                 value: 'same',
-                label: 'Same on every site',
-                description: 'Every site gets the visits and prices below.',
+                label: t('Same on every site'),
+                description: t('Every site gets the visits and prices below.'),
               },
               {
                 value: 'mix',
-                label: 'Realistic mix',
-                description: 'Each site differs: empty, quiet, average, busy, just launched, paused.',
+                label: t('Realistic mix'),
+                description: t('Each site differs: empty, quiet, average, busy, just launched, paused.'),
               },
             ]}
             onChange={(value) => {
@@ -240,8 +276,8 @@ function TestDataGenerator() {
         )}
         {target === 'new' && (
           <Field
-            label="Sites"
-            hint={mixed ? '1 to 20; each takes the next kind of site.' : '1 to 20, named Test site …'}
+            label={t('Sites')}
+            hint={mixed ? t('1 to 20; each takes the next kind of site.') : t('1 to 20, named Test site …')}
           >
             <input
               className="analytik-input"
@@ -254,7 +290,7 @@ function TestDataGenerator() {
             />
           </Field>
         )}
-        <Field label="Days of history" hint="Ending now, up to 730; 0 for an empty site.">
+        <Field label={t('Days of history')} hint={t('Ending now, up to 730; 0 for an empty site.')}>
           <input
             className="analytik-input"
             type="number"
@@ -266,7 +302,7 @@ function TestDataGenerator() {
           />
         </Field>
         {!mixed && (
-          <Field label="Visits per day" hint="Per site, weekends quieter; 0 for an empty site.">
+          <Field label={t('Visits per day')} hint={t('Per site, weekends quieter; 0 for an empty site.')}>
             <input
               className="analytik-input"
               type="number"
@@ -279,7 +315,7 @@ function TestDataGenerator() {
           </Field>
         )}
         {!mixed && (
-          <Field label="Price multiplier" hint="Plans cost 9, 29 and 99 times this.">
+          <Field label={t('Price multiplier')} hint={t('Plans cost 9, 29 and 99 times this.')}>
             <input
               className="analytik-input"
               type="number"
@@ -291,7 +327,7 @@ function TestDataGenerator() {
             />
           </Field>
         )}
-        {target === 'new' && <CurrencySelect label="Currency" value={currency} onChange={setCurrency} />}
+        {target === 'new' && <CurrencySelect label={t('Currency')} value={currency} onChange={setCurrency} />}
       </div>
       <p className="analytik-debug-estimate" role="status" data-problem={problem ? '' : undefined}>
         {problem ?? estimate(visits, sites, mixed)}
@@ -305,7 +341,7 @@ function TestDataGenerator() {
           aria-busy={busy || undefined}
           onClick={generate}
         >
-          {busy ? 'Generating…' : 'Generate'}
+          {busy ? t('Generating…') : t('Generate')}
         </button>
       </Actions>
     </Card>
@@ -317,19 +353,22 @@ function TestSiteCleanup() {
   const [outcome, run] = useOutcome()
   return (
     <Card
-      title="Remove test data"
-      description="Deletes every site the generator made, with all of its data. Sites you added yourself stay, including data generated into them."
+      title={t('Remove test data')}
+      description={t(
+        'Deletes every site the generator made, with all of its data. Sites you added yourself stay, including data generated into them.',
+      )}
     >
       <Actions outcome={outcome}>
         <ConfirmButton
-          label="Delete test sites"
-          title="Delete all test sites?"
-          description="Every site the generator made, with its visits, events and payments, is removed for good."
-          confirmLabel="Delete test sites"
+          label={t('Delete test sites')}
+          title={t('Delete all test sites?')}
+          description={t('Every site the generator made, with its visits, events and payments, is removed for good.')}
+          confirmLabel={t('Delete test sites')}
           onConfirm={() =>
             run(
               client.deleteTestSites().finally(() => onSiteChange(site)),
-              ({ deleted }) => (deleted === 1 ? 'Deleted 1 test site' : `Deleted ${formatInteger(deleted)} test sites`),
+              ({ deleted }) =>
+                t('{count, plural, one {Deleted # test site} other {Deleted # test sites}}', { count: deleted }),
             )
           }
         />

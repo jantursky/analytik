@@ -6,6 +6,7 @@ import { cleanDomain, domainProblem } from '../shared/url'
 import type { ApiClient } from './api'
 import { BrandMark } from './brand'
 import { Icon } from './icons'
+import { t } from './i18n'
 import { ThemeToggle } from './theme-toggle'
 import { ErrorNote, Field } from './ui'
 import { CurrencySelect } from './ui/currency'
@@ -47,10 +48,10 @@ export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () 
     <form className="analytik-card analytik-login" onSubmit={submit}>
       <CardHead />
       <div>
-        <h1>Sign in to Analytik</h1>
-        <p className="analytik-login-lede">Enter the admin password to open your dashboard.</p>
+        <h1>{t('Sign in to Analytik')}</h1>
+        <p className="analytik-login-lede">{t('Enter the admin password to open your dashboard.')}</p>
       </div>
-      <Field label="Admin password">
+      <Field label={t('Admin password')}>
         <span className="analytik-password">
           <input
             className="analytik-input"
@@ -65,7 +66,7 @@ export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () 
           <button
             type="button"
             className="analytik-pill-icon analytik-password-toggle"
-            aria-label={shown ? 'Hide password' : 'Show password'}
+            aria-label={shown ? t('Hide password') : t('Show password')}
             aria-pressed={shown}
             onClick={() => setShown(!shown)}
           >
@@ -73,9 +74,9 @@ export function LoginForm({ client, onLogin }: { client: ApiClient; onLogin: () 
           </button>
         </span>
       </Field>
-      {error && <ErrorNote title="Couldn't sign in">{error}</ErrorNote>}
+      {error && <ErrorNote title={t("Couldn't sign in")}>{error}</ErrorNote>}
       <button type="submit" className="analytik-button analytik-wide" data-variant="primary" disabled={busy}>
-        {busy ? 'Checking…' : 'Sign in'}
+        {busy ? t('Checking…') : t('Sign in')}
       </button>
     </form>
   )
@@ -100,13 +101,17 @@ export function DomainField({
   const problem = touched ? domainProblem(value) : null
   const clean = cleanDomain(value)
   const differs = clean && clean !== value.trim().toLowerCase()
+  // The sentence is one key; the domain is set in bold where the placeholder falls.
+  const tracked = t('Tracked as {domain}.', { domain: '\u0000' }).split('\u0000')
   return (
     <Field
-      label="Domain"
+      label={t('Domain')}
       hint={
         differs ? (
           <>
-            Tracked as <strong>{clean}</strong>. {hint}
+            {tracked[0]}
+            <strong>{clean}</strong>
+            {tracked[1]} {hint}
           </>
         ) : (
           hint
@@ -172,7 +177,7 @@ function SiteForm({
   const days = retention.trim() ? Number(retention) : null
   const retentionProblem =
     days !== null && (!Number.isInteger(days) || days < 1 || days > 36500)
-      ? 'Use a whole number of days from 1 to 36500, or leave it empty.'
+      ? t('Use a whole number of days from 1 to 36500, or leave it empty.')
       : null
   const retentionId = useId()
   const optionsId = useId()
@@ -197,15 +202,18 @@ function SiteForm({
       <DomainField
         value={domain}
         onChange={setDomain}
-        hint="Subdomains (app.example.com) are tracked under the same site."
+        hint={t('Subdomains (app.example.com) are tracked under the same site.')}
         touched={touched}
         onBlur={() => setTouched(!!domain.trim())}
       />
-      <Field label="Name" hint="Optional. Shown in the site list; the domain gives a name if you leave it empty.">
+      <Field
+        label={t('Name')}
+        hint={t('Optional. Shown in the site list; the domain gives a name if you leave it empty.')}
+      >
         <input
           className="analytik-input"
           value={name}
-          placeholder={suggested || 'My website'}
+          placeholder={suggested || t('My website')}
           onChange={(e) => setName(e.target.value)}
         />
       </Field>
@@ -219,10 +227,11 @@ function SiteForm({
         >
           <span className="analytik-site-options-title">
             <Icon name="sliders" />
-            Options
+            {t('Options')}
           </span>
           <span className="analytik-site-options-summary">
-            {timezone} · {currency} · {days ? `keeps ${days} days` : 'keeps all data'}
+            {timezone} · {currency} ·{' '}
+            {days ? t('{days, plural, one {keeps # day} other {keeps # days}}', { days }) : t('keeps all data')}
           </span>
           <Icon name="down" />
         </button>
@@ -236,12 +245,12 @@ function SiteForm({
         >
           <div className="analytik-site-options-body">
             <div className="analytik-row">
-              <TimeZoneSelect label="Timezone" value={timezone} onChange={setTimezone} />
-              <CurrencySelect label="Revenue currency" value={currency} onChange={setCurrency} />
+              <TimeZoneSelect label={t('Timezone')} value={timezone} onChange={setTimezone} />
+              <CurrencySelect label={t('Revenue currency')} value={currency} onChange={setCurrency} />
             </div>
             <Field
-              label="Keep data for (days)"
-              hint="Optional. Older visits and events are deleted, payments stay. Empty keeps everything."
+              label={t('Keep data for (days)')}
+              hint={t('Optional. Older visits and events are deleted, payments stay. Empty keeps everything.')}
               error={retentionProblem ? { id: retentionId, text: retentionProblem } : null}
             >
               <input
@@ -252,7 +261,7 @@ function SiteForm({
                 max={36500}
                 step={1}
                 value={retention}
-                placeholder="Keep everything"
+                placeholder={t('Keep everything')}
                 aria-invalid={retentionProblem ? true : undefined}
                 aria-describedby={retentionProblem ? retentionId : undefined}
                 onChange={(e) => setRetention(e.target.value)}
@@ -260,16 +269,21 @@ function SiteForm({
             </Field>
             <p className="analytik-field-hint">
               {last
-                ? `Timezone, currency and retention start as on ${last.name}. You can change them later in the site's settings.`
-                : "You can change these later in the site's settings."}
+                ? t(
+                    "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.",
+                    {
+                      name: last.name,
+                    },
+                  )
+                : t("You can change these later in the site's settings.")}
             </p>
           </div>
         </motion.div>
       </div>
-      {error && <ErrorNote title="Couldn't add the website">{error}</ErrorNote>}
+      {error && <ErrorNote title={t("Couldn't add the website")}>{error}</ErrorNote>}
       <button type="submit" className="analytik-button analytik-wide" data-variant="primary" disabled={!ready}>
         <Icon name="plus" />
-        {busy ? 'Adding…' : 'Add website'}
+        {busy ? t('Adding…') : t('Add website')}
       </button>
     </form>
   )
@@ -282,8 +296,8 @@ export function CreateSiteForm({ client, onCreated }: { client: ApiClient; onCre
       <SiteForm client={client} onCreated={onCreated}>
         <CardHead />
         <div>
-          <h1>Add your first website</h1>
-          <p className="analytik-login-lede">Enter its domain to get the tracking code.</p>
+          <h1>{t('Add your first website')}</h1>
+          <p className="analytik-login-lede">{t('Enter its domain to get the tracking code.')}</p>
         </div>
       </SiteForm>
     </div>
@@ -304,9 +318,9 @@ export interface AddSiteDialogProps {
 /** "Add a website" as a modal dialog (a bottom sheet on phones). */
 export function AddSiteDialog({ client, onCreated, onClose, open = true, sites }: AddSiteDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()} title="Add a website">
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()} title={t('Add a website')}>
       <SiteForm client={client} sites={sites} onCreated={onCreated}>
-        <p className="analytik-login-lede">Enter its domain to get the tracking code.</p>
+        <p className="analytik-login-lede">{t('Enter its domain to get the tracking code.')}</p>
       </SiteForm>
     </Dialog>
   )
