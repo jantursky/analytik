@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { AreaChart, BarList, Sparkline } from '../src/dashboard/charts'
+import { AreaChart, BarList, MultiChart, Sparkline } from '../src/dashboard/charts'
 import { DeltaBadge } from '../src/dashboard/ui'
 import { waitFor } from './dashboard-helpers'
 import { actAsync, click, key, render, settled } from './react-render'
@@ -70,6 +70,34 @@ describe('AreaChart', () => {
   it('handles no data', async () => {
     const none = await render(<AreaChart points={[]} {...props} />)
     expect(none.container.textContent).toBe('Nothing recorded in this period')
+  })
+})
+
+describe('MultiChart comparison', () => {
+  it('shows the earlier value in the tooltip, marked as the comparison', async () => {
+    const series = [
+      {
+        key: 'visitors',
+        label: 'Visitors',
+        values: [10, 40, 20, 30],
+        previous: [5, 20, undefined, 10],
+        kind: 'area' as const,
+        colour: 'red',
+        scale: 'count',
+        formatValue: (v: number) => `${v} v`,
+      },
+    ]
+    const { container } = await render(
+      <MultiChart times={[0, 1, 2, 3]} series={series} formatTime={(ts) => `day ${ts}`} height={200} />,
+    )
+    const surface = await waitFor(() => container.querySelector('.recharts-surface'))
+    await actAsync(() => surface.dispatchEvent(new FocusEvent('focus')))
+    await key(surface, 'ArrowRight')
+    await key(surface, 'ArrowRight')
+    const tip = await waitFor(() => container.querySelector('.analytik-chart-tip'))
+    const rows = [...tip.querySelectorAll('.analytik-chart-tip-row')].map((r) => r.textContent)
+    expect(rows).toHaveLength(2)
+    expect(rows[1]).toMatch(/comparison/)
   })
 })
 

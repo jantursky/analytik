@@ -8,7 +8,7 @@ import {
   formatDuration,
   formatNumber,
 } from '../src/dashboard/format'
-import { loadMessages, msg, resolveLanguage, setLanguage, t } from '../src/dashboard/i18n'
+import { LANGUAGES, loadMessages, msg, resolveLanguage, setLanguage, t } from '../src/dashboard/i18n'
 
 afterEach(() => setLanguage('en', {}))
 
@@ -57,6 +57,12 @@ describe('translations', () => {
   it('loads a catalog on demand and gives English an empty one', async () => {
     expect(await loadMessages('en')).toEqual({})
     expect(typeof (await loadMessages('sk'))).toBe('object')
+  })
+
+  it('has a catalog for every language it offers', async () => {
+    for (const { value } of LANGUAGES) {
+      if (value !== 'en') expect(Object.keys(await loadMessages(value)).length).toBeGreaterThan(0)
+    }
   })
 })
 

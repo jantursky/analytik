@@ -17,6 +17,8 @@ export default defineConfig(
       'apps/docs/docs/_generated/**',
       // Generated from the Circle Flags set by scripts/build-flags.mjs.
       '**/dashboard/flags-data.ts',
+      // Types for a plain script, outside every tsconfig.
+      '**/scripts/*.d.mts',
       '**/test-results/**',
       '**/playwright-report/**',
     ],
@@ -52,7 +54,7 @@ export default defineConfig(
   },
 
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs}'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.node } },
   },
