@@ -26,6 +26,18 @@ function detectManager(dir: string): Manager {
   return 'npm'
 }
 
+/** Cloudflare's limit on the uncompressed Worker bundle, the same on the Free and Paid plans. */
+const WORKER_LIMIT_KIB = 64 * 1024
+
+/** Reads the sizes wrangler prints after an upload: `Total Upload: 2751.46 KiB / gzip: 797.36 KiB`. */
+export function workerSize(output: string): string | null {
+  const match = /Total Upload:\s*([\d.]+)\s*KiB\s*\/\s*gzip:\s*([\d.]+)\s*KiB/i.exec(output)
+  if (!match) return null
+  const total = Number(match[1])
+  const percent = (total / WORKER_LIMIT_KIB) * 100
+  return `Worker size ${(total / 1024).toFixed(1)} MiB of ${WORKER_LIMIT_KIB / 1024} MiB (${percent < 1 ? '<1' : Math.round(percent)}%), ${Math.round(Number(match[2]))} KiB gzip`
+}
+
 const installed = (dir: string): string | null => {
   try {
     return (
@@ -59,9 +71,13 @@ export function upgradeProject(options: UpgradeOptions, io: CreateIo): { from: s
   if (!options.deploy) return { from, to }
   if (existsSync(join(dir, 'wrangler.jsonc')) || existsSync(join(dir, 'wrangler.toml'))) {
     io.log('\nDeploying the Worker')
-    if (io.run('npx', ['--no-install', 'wrangler', 'deploy'], { cwd: dir }).status !== 0) {
+    const deployed = io.run('npx', ['--no-install', 'wrangler', 'deploy'], { cwd: dir, capture: true })
+    if (deployed.output) io.log(deployed.output.trim())
+    if (deployed.status !== 0) {
       throw new Error('Deploying failed. Run `npx wrangler deploy` yourself once the problem is fixed.')
     }
+    const size = workerSize(deployed.output)
+    if (size) io.log(`\n${size}`)
   } else if (existsSync(join(dir, 'vercel.json'))) {
     io.log('\nDeploy it with `npx vercel --prod`, or push to the repository the Vercel project is connected to.')
   } else {

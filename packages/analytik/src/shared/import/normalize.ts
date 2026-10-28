@@ -56,7 +56,7 @@ export function normalizeOs(raw: string | null | undefined): string | null {
   if (lower === 'ios' || lower === 'iphone os') return 'iOS'
   if (lower === 'ipados') return 'iPadOS'
   if (lower.startsWith('android')) return 'Android'
-  if (/^(mac ?os|macos|os x)/.test(lower)) return 'Mac OS'
+  if (/^(mac ?os|macos|macintosh|os x)/.test(lower) || lower === 'mac') return 'Mac OS'
   if (lower === 'chrome os' || lower === 'chromeos' || lower === 'chromium os') return 'Chrome OS'
   if (/^(linux|ubuntu|debian|fedora|arch|gnu\/linux)/.test(lower)) return 'Linux'
   return value.slice(0, 50)

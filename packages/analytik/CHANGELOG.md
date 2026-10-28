@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.10.0]
+
+### Added
+
+- Data import from **Matomo**, **GoatCounter**, **Google Analytics 4** (BigQuery export) and **PostHog**, next to Umami and Simple Analytics; platform logos in the import dialog and sample files in Debug.
+- `analytik upgrade` prints the Worker size next to Cloudflare's limit; new projects get an `upgrade` script.
+
 ## [1.9.2]
 
 ### Fixed

@@ -768,6 +768,18 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Sleep de CSV van de export van ruwe gegevens hierheen, met pagina’s en gebeurtenissen samen.',
   'Drop the export files here': 'Sleep de exportbestanden hierheen',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Sleep de JSON van de BigQuery-export van de gebeurtenistabellen hierheen.',
+  'The JSON from the BigQuery export of the events tables.':
+    'De JSON van de BigQuery-export van de gebeurtenistabellen.',
+  'Drop the JSON from the events API or a batch export.':
+    'Sleep de JSON van de gebeurtenissen-API of een batchexport hierheen.',
+  'The JSON from the events API or a batch export.': 'De JSON van de gebeurtenissen-API of een batchexport.',
+  'Drop the CSV from Settings, Export.': 'Sleep de CSV uit Instellingen, Exporteren hierheen.',
+  'The CSV from Settings, Export.': 'De CSV uit Instellingen, Exporteren.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Sleep de JSON van Live.getLastVisitsDetails (format=json) hierheen.',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'De JSON van Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Sleep de website_event-export hierheen, en de exports van session en event_data als je ze hebt (CSV of JSON).',
   'Import from another tool': 'Importeren uit een andere tool',

@@ -72,7 +72,7 @@ The dashboard tells you when a newer release is out: a bar above the header says
 
 How to update depends on how you deployed:
 
-- **Created with `npx analytik create`:** from the project folder, run `npx analytik upgrade`. It installs the newest `analytik` with the package manager the project uses and, for a Cloudflare project, deploys it. `--no-deploy` only updates the package. On Vercel it installs and tells you to deploy with `npx vercel --prod` or by pushing.
+- **Created with `npx analytik create`:** from the project folder, run `npx analytik upgrade` (or `npm run upgrade`; new projects have that script, and for an older one add `"upgrade": "analytik upgrade"` to its `package.json` scripts, using `yarn run upgrade` with Yarn). It installs the newest `analytik` with the package manager the project uses and, for a Cloudflare project, deploys it and prints the Worker's size next to Cloudflare's limit. `--no-deploy` only updates the package. On Vercel it installs and tells you to deploy with `npx vercel --prod` or by pushing.
 - **Created with a deploy button:** the template ships a Dependabot config, so GitHub opens a pull request when a new release is out. Merge it and the connected host (Workers Builds, Vercel) redeploys. Without Dependabot, raise the `analytik` version in `package.json` and push.
 - **Your own project:** `bun add analytik@latest` (or the same with npm, pnpm or yarn) and deploy the way you always do.
 

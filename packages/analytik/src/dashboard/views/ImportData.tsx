@@ -10,8 +10,12 @@ import { Actions, Card, ConfirmButton, ErrorNote, Field, useOutcome } from '../u
 import { Select } from '../ui/select'
 
 export const SOURCES: { value: ImportSource; label: string }[] = [
-  { value: 'umami', label: 'Umami' },
+  { value: 'goatcounter', label: 'GoatCounter' },
+  { value: 'ga4', label: 'Google Analytics 4' },
+  { value: 'matomo', label: 'Matomo' },
+  { value: 'posthog', label: 'PostHog' },
   { value: 'simple-analytics', label: 'Simple Analytics' },
+  { value: 'umami', label: 'Umami' },
 ]
 
 const sourceLabel = (source: ImportSource): string => SOURCES.find((s) => s.value === source)?.label ?? source
@@ -246,7 +250,15 @@ export function ImportData({ onImported }: { onImported: () => void }) {
   const hint =
     source === 'umami'
       ? t('The website_event export, plus the session and event_data exports if you have them.')
-      : t('The CSV from the raw data export, with pages and events together.')
+      : source === 'matomo'
+        ? t('The JSON from Live.getLastVisitsDetails (format=json).')
+        : source === 'goatcounter'
+          ? t('The CSV from Settings, Export.')
+          : source === 'ga4'
+            ? t('The JSON from the BigQuery export of the events tables.')
+            : source === 'posthog'
+              ? t('The JSON from the events API or a batch export.')
+              : t('The CSV from the raw data export, with pages and events together.')
 
   return (
     <Card
@@ -271,7 +283,7 @@ export function ImportData({ onImported }: { onImported: () => void }) {
               key={`${source}-${files.length}`}
               className="analytik-input"
               type="file"
-              accept=".csv,.json,text/csv,application/json"
+              accept=".csv,.json,.jsonl,.ndjson,text/csv,application/json"
               multiple
               disabled={stage.name === 'reading'}
               onChange={(event) => void choose(event)}

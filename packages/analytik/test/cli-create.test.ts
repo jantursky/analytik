@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { type CreateIo, createProject, workerName } from '../src/create'
-import { upgradeProject } from '../src/create/upgrade'
+import { upgradeProject, workerSize } from '../src/create/upgrade'
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url))
 const temp = (name: string) => join(mkdtempSync(join(tmpdir(), 'analytik-create-')), name)
@@ -144,7 +144,8 @@ describe('upgrading a project', () => {
         mkdirSync(join(options.cwd, 'node_modules/analytik'), { recursive: true })
         writeFileSync(join(options.cwd, 'node_modules/analytik/package.json'), JSON.stringify({ version }))
       }
-      return { status: args.includes('fail') ? 1 : 0, output: '' }
+      const output = args.includes('deploy') ? 'Total Upload: 2751.46 KiB / gzip: 797.36 KiB\nDeployed analytik' : ''
+      return { status: args.includes('fail') ? 1 : 0, output }
     }
     return { io: { ...io, run }, calls, logs }
   }
@@ -153,12 +154,20 @@ describe('upgrading a project', () => {
     const dir = temp('stats')
     createProject({ dir, version: '1.1.0', deploy: false }, fakeIo().io)
     writeFileSync(join(dir, 'bun.lock'), '')
-    const { io, calls } = installer('1.2.0')
+    const { io, calls, logs } = installer('1.2.0')
     expect(upgradeProject({ dir, deploy: true }, io)).toEqual({ from: null, to: '1.2.0' })
     expect(calls).toEqual([
       { command: 'bun', args: ['add', 'analytik@latest'] },
       { command: 'npx', args: ['--no-install', 'wrangler', 'deploy'] },
     ])
+    expect(logs.join('\n')).toContain('Worker size 2.7 MiB of 64 MiB (4%), 797 KiB gzip')
+  })
+
+  it('reads the Worker size from wrangler and says nothing when it is not printed', () => {
+    expect(workerSize('Total Upload: 100.00 KiB / gzip: 30.2 KiB')).toBe(
+      'Worker size 0.1 MiB of 64 MiB (<1%), 30 KiB gzip',
+    )
+    expect(workerSize('Deployed analytik')).toBeNull()
   })
 
   it('picks pnpm, yarn or npm by lockfile, and can skip the deploy', () => {

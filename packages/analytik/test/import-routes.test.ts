@@ -91,7 +91,7 @@ describe.each(storageKinds())('import routes on %s', (kind) => {
   })
 
   it.each([
-    [{ source: 'matomo', visits: [visit('a')] }, 'source must be'],
+    [{ source: 'plausible', visits: [visit('a')] }, 'source must be'],
     [{ source: 'umami', visits: [] }, 'visits must be a list'],
     [{ source: 'umami', visits: [{ ...visit('a'), id: '' }] }, 'visits[0].id is required'],
     [{ source: 'umami', visits: [{ ...visit('a'), events: [] }] }, 'visits[0].events must be a list'],
@@ -130,7 +130,7 @@ describe.each(storageKinds())('import routes on %s', (kind) => {
       { imported: 'simple-analytics', lat: null },
       { imported: 'umami', lat: null },
     ])
-    expect((await server.admin(`/sites/${site.id}/imports/matomo`, { method: 'DELETE' })).status).toBe(404)
+    expect((await server.admin(`/sites/${site.id}/imports/plausible`, { method: 'DELETE' })).status).toBe(404)
     await server.admin(`/sites/${site.id}/imports/umami`, { method: 'DELETE' })
     expect((await server.adminJson<ImportSummary[]>(`/sites/${site.id}/imports`)).map((item) => item.source)).toEqual([
       'simple-analytics',

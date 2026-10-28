@@ -2,6 +2,9 @@
   "name": "analytik-vercel",
   "private": true,
   "type": "module",
+  "scripts": {
+    "upgrade": "analytik upgrade"
+  },
   "dependencies": {
     "analytik": "^1.1.0",
     "hono": "^4.13.0",

@@ -370,8 +370,187 @@ function simpleAnalytics(visits: SampleVisit[]): SampleFile[] {
   ]
 }
 
+const MATOMO_OS: Record<string, string> = { macOS: 'Mac' }
+const MATOMO_DEVICE: Record<Profile['device'], string> = { desktop: 'Desktop', mobile: 'Smartphone', tablet: 'Tablet' }
+
+function matomo(visits: SampleVisit[]): SampleFile[] {
+  const rows = visits.map((visit) => {
+    const { profile, referrer, campaign } = visit
+    const first = visit.hits[0]?.ts ?? 0
+    const last = visit.hits.at(-1)?.ts ?? first
+    return {
+      idVisit: String(visit.id + 1),
+      visitorId: `v${visit.id}`.padEnd(16, '0'),
+      firstActionTimestamp: Math.floor(first / 1000),
+      lastActionTimestamp: Math.floor(last / 1000),
+      visitDuration: Math.floor((last - first) / 1000),
+      referrerType: campaign ? 'campaign' : referrer ? 'website' : 'direct',
+      referrerName: referrer?.domain ?? '',
+      referrerUrl: referrer ? `https://${referrer.domain}${referrer.path}` : '',
+      campaignSource: campaign?.source ?? '',
+      campaignMedium: campaign?.medium ?? '',
+      campaignName: campaign?.campaign ?? '',
+      countryCode: profile.country.toLowerCase(),
+      region: profile.region,
+      city: profile.city,
+      browserName: profile.browser,
+      operatingSystem: MATOMO_OS[profile.os] ?? profile.os,
+      deviceType: MATOMO_DEVICE[profile.device],
+      actionDetails: visit.hits.map((hit) =>
+        hit.goal
+          ? {
+              type: 'event',
+              url: `https://example.com${hit.path}`,
+              timestamp: Math.floor(hit.ts / 1000),
+              eventCategory: 'conversion',
+              eventAction: hit.goal,
+              eventName: hit.goal,
+            }
+          : { type: 'action', url: `https://example.com${hit.path}`, timestamp: Math.floor(hit.ts / 1000) },
+      ),
+    }
+  })
+  return [{ name: 'matomo-visits.json', content: `${JSON.stringify(rows, null, 2)}\n` }]
+}
+
+const GOATCOUNTER_SYSTEM: Record<string, string> = { macOS: 'Mac OS X', iOS: 'iOS' }
+
+function goatcounter(visits: SampleVisit[]): SampleFile[] {
+  const rows: (string | number | boolean | null)[][] = []
+  for (const visit of visits) {
+    const { profile, referrer, campaign } = visit
+    visit.hits.forEach((hit, index) => {
+      const entry = index === 0
+      rows.push([
+        hit.path,
+        '',
+        hit.goal !== null,
+        profile.agent,
+        `${profile.browser} 141`,
+        `${GOATCOUNTER_SYSTEM[profile.os] ?? profile.os} 10`,
+        `g${visit.id}`,
+        0,
+        entry ? (campaign?.source ?? referrer?.domain ?? null) : null,
+        entry ? (campaign ? 'c' : referrer ? 'h' : null) : null,
+        `${profile.screen[0]},${profile.screen[1]},1`,
+        profile.region,
+        entry,
+        new Date(hit.ts).toISOString(),
+      ])
+    })
+  }
+  return [
+    {
+      name: 'goatcounter-export.csv',
+      content: csv(
+        [
+          '2Path',
+          'Title',
+          'Event',
+          'User-Agent',
+          'Browser',
+          'System',
+          'Session',
+          'Bot',
+          'Referrer',
+          'Referrer scheme',
+          'Screen size',
+          'Location',
+          'FirstVisit',
+          'Date',
+        ],
+        rows,
+      ),
+    },
+  ]
+}
+
+const GA4_DEVICE: Record<Profile['device'], string> = { desktop: 'desktop', mobile: 'mobile', tablet: 'tablet' }
+
+const ga4Param = (key: string, value: string | number) => ({
+  key,
+  value: typeof value === 'number' ? { int_value: String(value) } : { string_value: value },
+})
+
+/** One JSON object per line, the way BigQuery exports a table. */
+function ga4(visits: SampleVisit[]): SampleFile[] {
+  const lines: string[] = []
+  for (const visit of visits) {
+    const { profile, referrer, campaign } = visit
+    visit.hits.forEach((hit, index) => {
+      lines.push(
+        JSON.stringify({
+          event_date: new Date(hit.ts).toISOString().slice(0, 10).replaceAll('-', ''),
+          event_timestamp: String(hit.ts * 1000),
+          event_name: hit.goal ?? 'page_view',
+          event_params: [
+            ga4Param('ga_session_id', Math.floor((visit.hits[0]?.ts ?? 0) / 1000)),
+            ga4Param('page_location', `https://example.com${hit.path}`),
+            ...(index === 0 && referrer
+              ? [ga4Param('page_referrer', `https://${referrer.domain}${referrer.path}`)]
+              : []),
+            ...(index === 0 && campaign
+              ? [
+                  ga4Param('source', campaign.source),
+                  ga4Param('medium', campaign.medium),
+                  ga4Param('campaign', campaign.campaign),
+                ]
+              : []),
+            ga4Param('engagement_time_msec', 4000),
+          ],
+          user_pseudo_id: `u${visit.id}.1700000000`,
+          device: {
+            category: GA4_DEVICE[profile.device],
+            operating_system: profile.os,
+            web_info: { browser: profile.browser },
+          },
+          geo: {
+            country: new Intl.DisplayNames('en', { type: 'region' }).of(profile.country),
+            region: profile.region,
+            city: profile.city,
+          },
+        }),
+      )
+    })
+  }
+  return [{ name: 'ga4-events.jsonl', content: `${lines.join('\n')}\n` }]
+}
+
+function posthog(visits: SampleVisit[]): SampleFile[] {
+  const rows = visits.flatMap((visit) => {
+    const { profile, referrer, campaign } = visit
+    return visit.hits.map((hit, index) => ({
+      uuid: `ph${visit.id}-${index}`,
+      event: hit.goal ?? '$pageview',
+      distinct_id: `d${visit.id}`,
+      timestamp: new Date(hit.ts).toISOString(),
+      properties: {
+        $session_id: `ps${visit.id}`,
+        $current_url: `https://example.com${hit.path}`,
+        $pathname: hit.path,
+        $host: 'example.com',
+        $browser: profile.browser,
+        $os: profile.os,
+        $device_type: profile.device === 'desktop' ? 'Desktop' : profile.device === 'mobile' ? 'Mobile' : 'Tablet',
+        $geoip_country_code: profile.country,
+        $geoip_subdivision_1_name: profile.region,
+        $geoip_city_name: profile.city,
+        $referrer: index === 0 && referrer ? `https://${referrer.domain}${referrer.path}` : '$direct',
+        ...(index === 0 && campaign
+          ? { utm_source: campaign.source, utm_medium: campaign.medium, utm_campaign: campaign.campaign }
+          : {}),
+      },
+    }))
+  })
+  return [{ name: 'posthog-events.json', content: `${JSON.stringify(rows, null, 2)}\n` }]
+}
+
 /** Made-up export files in the format a platform writes, to try the importer without a real export. */
 export function sampleExport(source: ImportSource, options: SampleOptions): SampleFile[] {
   const visits = makeVisits(options)
-  return source === 'umami' ? umami(visits) : simpleAnalytics(visits)
+  if (source === 'umami') return umami(visits)
+  if (source === 'matomo') return matomo(visits)
+  if (source === 'ga4') return ga4(visits)
+  if (source === 'posthog') return posthog(visits)
+  return source === 'goatcounter' ? goatcounter(visits) : simpleAnalytics(visits)
 }

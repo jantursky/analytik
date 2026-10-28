@@ -45,7 +45,7 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
 - **Two more modes when you need them.** `enriched` adds a per-tab id after the visitor consents. `persistent` uses first-party cookies like most analytics tools do, and should be treated as needing consent in the EU.
 - **Revenue.** A payments API with refunds, optional Stripe, Dodo and Lemon Squeezy webhook adapters, and attribution to the visit that brought the buyer.
 - **Goals, funnels, campaigns, realtime**, JSON and CSV export, retention, share links (read-only, set through the API).
-- **Bring your history.** Import the visits and events of Umami or Simple Analytics from Settings or with `analytik import`. A repeated import adds nothing, and an import can be removed without touching what Analytik tracked.
+- **Bring your history.** Import the visits and events of Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 or PostHog from Settings or with `analytik import`. A repeated import adds nothing, and an import can be removed without touching what Analytik tracked.
 - **One server, three databases.** It runs on D1, Postgres and SQLite, and the tests run every case against each of them.
 
 ## Install

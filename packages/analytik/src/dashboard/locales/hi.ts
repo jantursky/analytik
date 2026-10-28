@@ -764,6 +764,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'रॉ डेटा एक्सपोर्ट की CSV यहाँ छोड़ें, जिसमें पेज और इवेंट साथ हों।',
   'Drop the export files here': 'एक्सपोर्ट फ़ाइलें यहाँ छोड़ें',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'इवेंट टेबल के BigQuery एक्सपोर्ट का JSON यहाँ छोड़ें।',
+  'The JSON from the BigQuery export of the events tables.': 'इवेंट टेबल के BigQuery एक्सपोर्ट का JSON।',
+  'Drop the JSON from the events API or a batch export.': 'इवेंट API या बैच एक्सपोर्ट का JSON यहाँ छोड़ें।',
+  'The JSON from the events API or a batch export.': 'इवेंट API या बैच एक्सपोर्ट का JSON।',
+  'Drop the CSV from Settings, Export.': 'सेटिंग्स, एक्सपोर्ट से मिली CSV यहाँ छोड़ें।',
+  'The CSV from Settings, Export.': 'सेटिंग्स, एक्सपोर्ट से मिली CSV।',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Live.getLastVisitsDetails (format=json) का JSON यहाँ छोड़ें।',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'Live.getLastVisitsDetails (format=json) का JSON।',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'website_event एक्सपोर्ट यहाँ छोड़ें, और अगर हों तो session व event_data के एक्सपोर्ट भी (CSV या JSON)।',
   'Import from another tool': 'किसी दूसरे टूल से इंपोर्ट करें',

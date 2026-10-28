@@ -1,4 +1,8 @@
-import { type SourceRow, missingColumns } from './row'
+import { GA4_REQUIRED, mapGa4 } from './ga4'
+import { GOATCOUNTER_REQUIRED, mapGoatCounter, unversioned } from './goatcounter'
+import { MATOMO_REQUIRED, mapMatomo } from './matomo'
+import { POSTHOG_REQUIRED, mapPostHog } from './posthog'
+import { type SourceRow, missingColumns, rowsOf } from './row'
 import { SIMPLE_ANALYTICS_REQUIRED, mapSimpleAnalytics } from './simple-analytics'
 import type { ImportSource, ImportVisit } from './types'
 import { UMAMI_REQUIRED, type UmamiRow, type UmamiTable, detectUmamiTable, mapUmami } from './umami'
@@ -69,9 +73,54 @@ function prepareSimpleAnalytics(files: readonly ReadFile[]): PreparedImport {
   return { visits: mapped.visits, skipped: mapped.skipped.map((item) => ({ file: 'export', ...item })) }
 }
 
+function prepareMatomo(files: readonly ReadFile[]): PreparedImport {
+  const rows = files.flatMap((file) => Object.values(file.parts).flat())
+  if (!rows.length) throw new ImportFileError('no visits found in the Matomo file')
+  const missing = MATOMO_REQUIRED.filter((name) => !rows.some((row) => name in row))
+  if (missing.length) {
+    throw new ImportFileError(
+      `the Matomo file lacks the field ${missing.join(', ')}; export it with method=Live.getLastVisitsDetails&format=json`,
+    )
+  }
+  const mapped = mapMatomo(rows)
+  return { visits: mapped.visits, skipped: mapped.skipped.map((item) => ({ file: 'export', ...item })) }
+}
+
+function prepareGoatCounter(files: readonly ReadFile[]): PreparedImport {
+  const rows = files.flatMap((file) => Object.values(file.parts).flat())
+  if (!rows.length) throw new ImportFileError('no hits found in the GoatCounter file')
+  const missing = missingColumns(Object.keys(unversioned(rows[0] ?? {})), GOATCOUNTER_REQUIRED)
+  if (missing.length) throw new ImportFileError(`the GoatCounter file lacks the column ${missing.join(', ')}`)
+  const mapped = mapGoatCounter(rows)
+  return { visits: mapped.visits, skipped: mapped.skipped.map((item) => ({ file: 'export', ...item })) }
+}
+
+function prepareJsonEvents(
+  files: readonly ReadFile[],
+  label: string,
+  required: readonly string[],
+  map: (rows: ReturnType<typeof rowsOf>) => { visits: ImportVisit[]; skipped: { row: number; reason: string }[] },
+  hint: string,
+): PreparedImport {
+  const rows = rowsOf(files)
+  if (!rows.length) throw new ImportFileError(`no events found in the ${label} file`)
+  const missing = required.filter((name) => !rows.some((row) => name in row))
+  if (missing.length) throw new ImportFileError(`the ${label} file lacks the field ${missing.join(', ')}; ${hint}`)
+  const mapped = map(rows)
+  return { visits: mapped.visits, skipped: mapped.skipped.map((item) => ({ file: 'export', ...item })) }
+}
+
 /** Reads and maps the files of one source. Throws `ImportFileError` before anything is stored. */
 export function prepareImport(source: ImportSource, files: readonly ReadFile[]): PreparedImport {
-  return source === 'umami' ? prepareUmami(files) : prepareSimpleAnalytics(files)
+  if (source === 'umami') return prepareUmami(files)
+  if (source === 'matomo') return prepareMatomo(files)
+  if (source === 'ga4') {
+    return prepareJsonEvents(files, 'GA4', GA4_REQUIRED, mapGa4, 'export the events_* table from BigQuery as JSON')
+  }
+  if (source === 'posthog') {
+    return prepareJsonEvents(files, 'PostHog', POSTHOG_REQUIRED, mapPostHog, 'export events with their properties')
+  }
+  return source === 'goatcounter' ? prepareGoatCounter(files) : prepareSimpleAnalytics(files)
 }
 
 /** A request's worth of visits; matches what the server accepts in one call. */

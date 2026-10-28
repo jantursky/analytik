@@ -205,8 +205,12 @@ describe('Import from the sites overview', () => {
   it('picks a platform, takes dropped files, previews them and imports into a new site', async () => {
     const { api } = await openDialog()
     expect([...dialog().querySelectorAll('.analytik-source-choice')].map((b) => b.textContent)).toEqual([
-      'Umami',
+      'GoatCounter',
+      'Google Analytics 4',
+      'Matomo',
+      'PostHog',
       'Simple Analytics',
+      'Umami',
     ])
     await press(byText(dialog(), 'Umami', 'button'))
     await drop(umami())
@@ -233,11 +237,21 @@ describe('Import from the sites overview', () => {
     expect(api.find('POST', '/sites').filter((r) => r.path === '/sites')).toHaveLength(0)
   })
 
+  it('takes the JSON from Matomo', async () => {
+    await openDialog()
+    await press(byText(dialog(), 'Matomo', 'button'))
+    expect(dialog().textContent).toContain('Live.getLastVisitsDetails')
+    const json = new File([fixture('matomo-visits.json')], 'visits.json', { type: 'application/json' })
+    await drop([json])
+    await waitFor(() => dialog().querySelector('.analytik-import-stats'))
+    expect(stats(dialog())).toContain('Visits2')
+  })
+
   it('imports into an existing site, goes back and opens the site afterwards', async () => {
     const { api } = await openDialog()
     await press(byText(dialog(), 'Umami', 'button'))
     await press(byText(dialog(), 'Change', 'button'))
-    expect(dialog().querySelectorAll('.analytik-source-choice')).toHaveLength(2)
+    expect(dialog().querySelectorAll('.analytik-source-choice')).toHaveLength(6)
     await press(byText(dialog(), 'Umami', 'button'))
     await drop(umami())
     await choose(selectTrigger(dialog(), 'Import into'), 'Example')

@@ -1,6 +1,6 @@
 ---
 title: Importing data
-description: Bring the history of Umami or Simple Analytics into a site, what each export must contain, and how fields are mapped.
+description: Bring the history of Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 or PostHog into a site, what each export must contain, and how fields are mapped.
 ---
 
 Import adds the past visits, pageviews and custom events from another analytics tool to one of your sites, so the dashboard does not start empty. Imported rows carry the name of their source, are kept apart from what the tracker recorded, and can be removed again without touching tracked data.
@@ -25,6 +25,10 @@ Nothing is stored when a file is not the one the source exports: the dashboard s
 ```sh
 analytik import --from umami --file events.csv --file sessions.csv --file event-data.csv --site SITE_ID --db "$DATABASE_URL"
 analytik import --from simple-analytics --file simple-analytics.csv --site SITE_ID --db sqlite:analytik.db
+analytik import --from matomo --file matomo-visits.json --site SITE_ID --db sqlite:analytik.db
+analytik import --from goatcounter --file goatcounter-export.csv --site SITE_ID --db sqlite:analytik.db
+analytik import --from ga4 --file ga4-events.jsonl --site SITE_ID --db sqlite:analytik.db
+analytik import --from posthog --file posthog-events.json --site SITE_ID --db sqlite:analytik.db
 ```
 
 `--db` takes the same values as `analytik migrate`: `postgres://...`, `sqlite:<path>` or a `.db` file. The command applies pending migrations first, reads and maps every file, and only then writes, so a wrong file stores nothing. It prints how many visits and events were imported, how many were already there, how many were older than the site's retention limit, and the first skipped rows with their reason.
@@ -33,15 +37,17 @@ Cloudflare D1 cannot be reached from the command line. Use the import in Setting
 
 ## Supported sources
 
-| Source           | What it gives                                          | Status       |
-| ---------------- | ------------------------------------------------------ | ------------ |
-| Umami            | Visits, pageviews and custom events with their details | Supported    |
-| Simple Analytics | Raw pageviews and events                               | Supported    |
-| Matomo           | Visits and actions                                     | Planned      |
-| Plausible        | Daily totals only, no visits                           | Not possible |
-| Google Analytics | Raw data only through BigQuery                         | Not possible |
+| Source             | What it gives                                          | Status       |
+| ------------------ | ------------------------------------------------------ | ------------ |
+| Umami              | Visits, pageviews and custom events with their details | Supported    |
+| Simple Analytics   | Raw pageviews and events                               | Supported    |
+| Matomo             | Visits with their page views, events and goals         | Supported    |
+| GoatCounter        | Raw hits and events with their session                 | Supported    |
+| Google Analytics 4 | Raw events, through the BigQuery export                | Supported    |
+| PostHog            | Events with their properties                           | Supported    |
+| Plausible          | Daily totals only, no visits                           | Not possible |
 
-Plausible's export is a set of daily totals (visitors and pageviews per page, source and country), so individual visits cannot be rebuilt from it. Google Analytics 4 keeps raw events only in a BigQuery export and offers aggregates through its API. Both would need a separate way to show totals next to visits, so they are not part of import.
+Plausible's dashboard export is a ZIP of aggregated report CSVs (visitors and pageviews per page, source and country, at most 300 rows each), and its Stats API is aggregated too. Raw events exist only in the Enterprise plan's daily Parquet export to S3. Individual visits cannot be rebuilt from either. Google Analytics 4's own reports and API are aggregated; its raw events exist only in the BigQuery export, which is why that is the file Analytik reads. Universal Analytics has no raw export at all.
 
 ## Umami
 
@@ -98,3 +104,80 @@ Simple Analytics keeps no visitor or visit id. Its `session_id` identifies a sin
 Rows with `is_robot` set, and rows without a time or a path, are skipped and listed with their row number.
 
 If you import a second export that overlaps the first, no row is stored twice. Exporting the same date range again is the safest way to continue an import that stopped.
+
+## Matomo
+
+Matomo has no export of raw visits in its interface, but its Reporting API returns them as JSON. Ask for the visits of one site and one date range with `Live.getLastVisitsDetails`, in pages so a large site does not time out:
+
+```sh
+curl "https://matomo.example.com/index.php?module=API&method=Live.getLastVisitsDetails&idSite=1&period=range&date=2025-01-01,2026-03-01&format=json&filter_limit=-1&token_auth=$MATOMO_TOKEN" \
+  -o matomo-visits.json
+```
+
+Use a token with view access to the site. A large range can be split into several files and imported one after the other; no visit is stored twice. The file is a list of visits; each one has an `actionDetails` list with its page views, events and goals.
+
+| Matomo                                                                                   | Analytik                                                                |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `idVisit`                                                                                | the visit                                                               |
+| `visitorId`                                                                              | the visitor                                                             |
+| `visitDuration`                                                                          | the visit length; 0 is left unknown                                     |
+| `actionDetails` of type `action`                                                         | a pageview on the path of its `url`                                     |
+| `actionDetails` of type `event`                                                          | a goal named `eventAction`, with category, name and value as properties |
+| `actionDetails` of type `goal`                                                           | a goal named `goalName`                                                 |
+| `referrerUrl`, `referrerName` (not for direct visits)                                    | the referrer of the visit                                               |
+| `campaignSource`, `campaignMedium`, `campaignName`, `campaignKeyword`, `campaignContent` | the campaign fields of the visit                                        |
+| `browserName`, `operatingSystem`, `deviceType`, `countryCode`, `region`, `city`          | the same fields, written the way the tracker writes them                |
+
+Downloads, outlinks and site searches are skipped and listed with the visit's position in the file, as are visits without any page view, event or goal.
+
+## GoatCounter
+
+In GoatCounter open **Settings**, then **Export**, and download the CSV. It holds every hit, with events marked in the `Event` column. You can pick the file in the dashboard or pass it to `analytik import`.
+
+GoatCounter keeps a `Session` per person but no visit id, so a visit ends after 30 minutes without hits, and the session is also the visitor. It records no hostname, visit length or city.
+
+| GoatCounter                            | Analytik                                                   |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `Date`                                 | event time; the first one starts the visit                 |
+| `Path`                                 | a pageview on that path                                    |
+| `Event` true                           | a goal named after the path                                |
+| `Referrer` and `Referrer scheme`       | the referrer; a campaign (`c`) becomes the campaign source |
+| `Browser`, `System` (versions dropped) | browser and operating system                               |
+| `Screen size`                          | device: under 768 px mobile, under 1024 px tablet          |
+| `Location`                             | country and region                                         |
+
+Hits from robots (`Bot` above 0) and rows without a date or a path are skipped and listed with their row number.
+
+## Google Analytics 4
+
+GA4 gives raw events only through its BigQuery export, so the property must have been linked to BigQuery; the export holds data from the day it was linked, not before. Export the `events_*` tables as JSON (newline-delimited) from BigQuery, for example with `bq extract --destination_format=NEWLINE_DELIMITED_JSON` to Cloud Storage, and download the files. Pick several files together or one at a time.
+
+A visit is a `user_pseudo_id` with a `ga_session_id`, and the user is the visitor. Fields the export nests are read from where GA4 puts them.
+
+| GA4                                                                     | Analytik                                                                           |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `event_timestamp` (microseconds)                                        | event time                                                                         |
+| `page_view`                                                             | a pageview on the path of `page_location`                                          |
+| any other event                                                         | a goal with that name                                                              |
+| `page_referrer`, `source`, `medium`, `campaign` (event params)          | the referrer and campaign of the visit; `collected_traffic_source` is the fallback |
+| `engagement_time_msec` (event param)                                    | summed into the visit length                                                       |
+| `device.category`, `device.operating_system`, `device.web_info.browser` | device, system and browser                                                         |
+| `geo.country`, `geo.region`, `geo.city`                                 | the place                                                                          |
+
+`session_start`, `first_visit`, `user_engagement` and `scroll` are left out because a page view already says it. Events without a `page_location` are skipped and listed with their row number. The export's `traffic_source` describes the user's first visit, not the session, so it is not used.
+
+## PostHog
+
+Export events with their properties as JSON: the events API (`/api/projects/PROJECT_ID/events/`, saved page by page), or a batch export to S3, BigQuery or another destination. Properties may be an object or a JSON string; both work, and so does the API's `{ "results": [...] }` wrapper.
+
+A visit is a `$session_id`; events without one are split by `distinct_id` after 30 minutes of silence, and the distinct id is the visitor.
+
+| PostHog                                                | Analytik                                                 |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| `timestamp`                                            | event time; the first one starts the visit               |
+| `$pageview`                                            | a pageview on `$pathname` or `$current_url`              |
+| an event you named yourself                            | a goal with that name                                    |
+| `$referrer`, `utm_*`                                   | the referrer and campaign of the visit                   |
+| `$browser`, `$os`, `$device_type`, `$geoip_*`, `$host` | the same fields, written the way the tracker writes them |
+
+PostHog's own `$` events (autocapture, page leave, identify, feature flags) are left out. Events with no page are skipped and listed.

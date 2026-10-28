@@ -766,6 +766,18 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Ham veri dışa aktarımının CSV dosyasını, sayfalar ve olaylar birlikte olacak şekilde bırakın.',
   'Drop the export files here': 'Dışa aktarım dosyalarını buraya bırakın',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    "Olay tablolarının BigQuery dışa aktarımındaki JSON'u buraya bırakın.",
+  'The JSON from the BigQuery export of the events tables.': 'Olay tablolarının BigQuery dışa aktarımındaki JSON.',
+  'Drop the JSON from the events API or a batch export.':
+    "Olay API'sinden veya toplu dışa aktarımdan JSON'u buraya bırakın.",
+  'The JSON from the events API or a batch export.': "Olay API'sinden veya toplu dışa aktarımdan JSON.",
+  'Drop the CSV from Settings, Export.': "Ayarlar, Dışa aktar bölümündeki CSV'yi buraya bırakın.",
+  'The CSV from Settings, Export.': 'Ayarlar, Dışa aktar bölümündeki CSV.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    "Live.getLastVisitsDetails (format=json) çıktısındaki JSON'u buraya bırakın.",
+  'The JSON from Live.getLastVisitsDetails (format=json).':
+    'Live.getLastVisitsDetails (format=json) çıktısındaki JSON.',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'website_event dışa aktarımını ve varsa session ile event_data dışa aktarımlarını bırakın (CSV veya JSON).',
   'Import from another tool': 'Başka bir araçtan içe aktar',

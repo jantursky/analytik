@@ -22,34 +22,76 @@ const HINTS: Record<ImportSource, () => string> = {
   umami: () =>
     t('Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).'),
   'simple-analytics': () => t('Drop the CSV from the raw data export, with pages and events together.'),
+  matomo: () => t('Drop the JSON from Live.getLastVisitsDetails (format=json).'),
+  goatcounter: () => t('Drop the CSV from Settings, Export.'),
+  ga4: () => t('Drop the JSON from the BigQuery export of the events tables.'),
+  posthog: () => t('Drop the JSON from the events API or a batch export.'),
 }
 
-/** A tile with the platform's initial in its colour; a mark of our own, not the platform's logo. */
+/**
+ * The platforms' own marks (from the Simple Icons set; GoatCounter's from its site), shown only to tell the sources
+ * apart. Each is drawn in the platform's colour on a white tile.
+ */
+const MARKS: Record<ImportSource, { viewBox: string; d: string[]; stroke?: number }> = {
+  umami: {
+    viewBox: '0 0 24 24',
+    d: [
+      'M2.203 8.611H.857a.845.845 0 0 0-.841.841v.858a13.31 13.31 0 0 0-.016.6c0 6.627 5.373 12 12 12 6.527 0 11.837-5.212 11.996-11.701 0-.025.004-.05.004-.075V9.452a.845.845 0 0 0-.841-.841h-1.346c-1.159-4.329-5.112-7.521-9.805-7.521-4.692 0-8.645 3.192-9.805 7.521Zm18.444 0H3.37c1.127-3.702 4.57-6.399 8.638-6.399 4.069 0 7.512 2.697 8.639 6.399Z',
+    ],
+  },
+  'simple-analytics': {
+    viewBox: '0 0 24 24',
+    d: ['M1.019 13.019h3.849V24h-3.85zm8.943-6.68h3.85V24h-3.85zM19.132 0h3.85v24h-3.85z'],
+  },
+  matomo: {
+    viewBox: '0 0 24 24',
+    d: [
+      'M6.664 15.37a3.336 3.336 0 0 1-3.332 3.332C1.495 18.702 0 17.208 0 15.37s1.495-3.333 3.332-3.333a3.338 3.338 0 0 1 3.332 3.333zm11.565-3.644a3.658 3.658 0 0 1-1.987.591 3.642 3.642 0 0 1-1.872-.529l.008.012a3.728 3.728 0 0 1-1.235-1.19l-2.612-3.693a.17.17 0 0 1-.027-.033A3.312 3.312 0 0 0 7.67 5.298a3.318 3.318 0 0 0-2.848 1.586.146.146 0 0 1-.021.028l-3.428 5.343a3.663 3.663 0 0 1 5.094 1.18.13.13 0 0 1 .015.018l2.756 3.869a3.305 3.305 0 0 0 2.699 1.38 3.31 3.31 0 0 0 2.711-1.379l.009-.013c.073-.103.137-.202.195-.305l1.442-2.255 1.935-3.024zm5.275 1.902l-.014-.028-.044-.066a1.109 1.109 0 0 0-.029-.044l-3.525-5.37c.024.168.052.335.052.51 0 .741-.219 1.457-.634 2.068l-2.803 4.38 1.416 2.179-.002.002a.131.131 0 0 1 .024.028 3.338 3.338 0 0 0 2.723 1.415A3.335 3.335 0 0 0 24 15.37c0-.613-.171-1.216-.496-1.742zm-7.262-1.666a3.336 3.336 0 0 0 3.332-3.333 3.336 3.336 0 0 0-3.332-3.332 3.336 3.336 0 0 0-3.332 3.332 3.338 3.338 0 0 0 3.332 3.333z',
+    ],
+  },
+  goatcounter: {
+    viewBox: '0 0 417 429',
+    d: [
+      'M25.399,235.075l118.517,-135.285c0,0 -124.734,-57.004 -120.995,-58.98c182.412,-96.381 370.769,214.033 370.769,214.033l-24.839,65.501c0,0 -169.954,-0.509 -192.464,-75.727',
+      'M179.11,406.252c-0.044,-36.273 38.389,-117.225 38.389,-117.225',
+    ],
+    stroke: 44.5,
+  },
+  ga4: {
+    viewBox: '0 0 24 24',
+    d: [
+      'M22.84 2.9982v17.9987c.0086 1.6473-1.3197 2.9897-2.967 2.9984a2.9808 2.9808 0 01-.3677-.0208c-1.528-.226-2.6477-1.5558-2.6105-3.1V3.1204c-.0369-1.5458 1.0856-2.8762 2.6157-3.1 1.6361-.1915 3.1178.9796 3.3093 2.6158.014.1201.0208.241.0202.3619zM4.1326 18.0548c-1.6417 0-2.9726 1.331-2.9726 2.9726C1.16 22.6691 2.4909 24 4.1326 24s2.9726-1.3309 2.9726-2.9726-1.331-2.9726-2.9726-2.9726zm7.8728-9.0098c-.0171 0-.0342 0-.0513.0003-1.6495.0904-2.9293 1.474-2.891 3.1256v7.9846c0 2.167.9535 3.4825 2.3505 3.763 1.6118.3266 3.1832-.7152 3.5098-2.327.04-.1974.06-.3983.0593-.5998v-8.9585c.003-1.6474-1.33-2.9852-2.9773-2.9882z',
+    ],
+  },
+  posthog: {
+    viewBox: '0 0 24 24',
+    d: [
+      'M9.854 14.5 5 9.647.854 5.5A.5.5 0 0 0 0 5.854V8.44a.5.5 0 0 0 .146.353L5 13.647l.147.146L9.854 18.5l.146.147v-.049c.065.03.134.049.207.049h2.586a.5.5 0 0 0 .353-.854L9.854 14.5zm0-5-4-4a.487.487 0 0 0-.409-.144.515.515 0 0 0-.356.21.493.493 0 0 0-.089.288V8.44a.5.5 0 0 0 .147.353l9 9a.5.5 0 0 0 .853-.354v-2.585a.5.5 0 0 0-.146-.354l-5-5zm1-4a.5.5 0 0 0-.854.354V8.44a.5.5 0 0 0 .147.353l4 4a.5.5 0 0 0 .853-.354V9.854a.5.5 0 0 0-.146-.354l-4-4zm12.647 11.515a3.863 3.863 0 0 1-2.232-1.1l-4.708-4.707a.5.5 0 0 0-.854.354v6.585a.5.5 0 0 0 .5.5H23.5a.5.5 0 0 0 .5-.5v-.6c0-.276-.225-.497-.499-.532zm-5.394.032a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6zM.854 15.5a.5.5 0 0 0-.854.354v2.293a.5.5 0 0 0 .5.5h2.293c.222 0 .39-.135.462-.309a.493.493 0 0 0-.109-.545L.854 15.501zM5 14.647.854 10.5a.5.5 0 0 0-.854.353v2.586a.5.5 0 0 0 .146.353L4.854 18.5l.146.147h2.793a.5.5 0 0 0 .353-.854L5 14.647z',
+    ],
+  },
+}
+
 function SourceMark({ source }: { source: ImportSource }) {
+  const mark = MARKS[source]
   return (
     <span className="analytik-source-mark" data-source={source} aria-hidden="true">
-      {source === 'umami' ? (
-        <svg viewBox="0 0 32 32" width="28" height="28">
-          <path
-            d="M8 7v10a8 8 0 0 0 16 0V7"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-          />
-        </svg>
-      ) : (
-        <svg viewBox="0 0 32 32" width="28" height="28">
-          <path
-            d="M6 22c3-9 6-9 10-4s7 4 10-8"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      )}
+      <svg viewBox={mark.viewBox} width="26" height="26">
+        {mark.d.map((path) =>
+          mark.stroke ? (
+            <path
+              key={path}
+              d={path}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={mark.stroke}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : (
+            <path key={path} d={path} fill="currentColor" />
+          ),
+        )}
+      </svg>
     </span>
   )
 }
@@ -93,7 +135,7 @@ function DropZone({ hint, busy, onFiles }: { hint: string; busy: boolean; onFile
         hidden
         type="file"
         multiple
-        accept=".csv,.json,text/csv,application/json"
+        accept=".csv,.json,.jsonl,.ndjson,text/csv,application/json"
         aria-label={t('Export files')}
         onChange={(event) => {
           const files = Array.from(event.target.files ?? [])

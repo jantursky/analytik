@@ -1,0 +1,56 @@
+[
+  {
+    "idVisit": "101",
+    "visitorId": "0a1b2c3d4e5f6071",
+    "firstActionTimestamp": 1773133200,
+    "visitDuration": 95,
+    "referrerType": "search",
+    "referrerName": "Google",
+    "referrerUrl": "https://www.google.com/",
+    "campaignSource": "",
+    "countryCode": "sk",
+    "region": "Bratislava",
+    "city": "Bratislava",
+    "browserName": "Chrome",
+    "operatingSystem": "Mac",
+    "deviceType": "Smartphone",
+    "actionDetails": [
+      { "type": "action", "url": "https://example.com/?utm=x", "timestamp": 1773133200 },
+      { "type": "action", "url": "https://example.com/pricing", "timestamp": 1773133260 },
+      {
+        "type": "event",
+        "url": "https://example.com/pricing",
+        "timestamp": 1773133295,
+        "eventCategory": "conversion",
+        "eventAction": "signup",
+        "eventName": "pro",
+        "eventValue": 12
+      },
+      { "type": "download", "url": "https://example.com/file.pdf", "timestamp": 1773133296 }
+    ]
+  },
+  {
+    "idVisit": "102",
+    "visitorId": "ffeeddccbbaa9988",
+    "firstActionTimestamp": 1773219600,
+    "visitDuration": 0,
+    "referrerType": "campaign",
+    "referrerUrl": "",
+    "campaignSource": "newsletter",
+    "campaignMedium": "email",
+    "campaignName": "launch",
+    "countryCode": "de",
+    "browserName": "Firefox",
+    "operatingSystem": "Windows 11",
+    "deviceType": "Desktop",
+    "actionDetails": [
+      { "type": "action", "url": "https://example.com/blog", "timestamp": 1773219600 },
+      { "type": "goal", "goalName": "Newsletter", "url": "https://example.com/blog", "timestamp": 1773219610 }
+    ]
+  },
+  { "idVisit": "103", "visitorId": "1111111111111111", "actionDetails": [] },
+  {
+    "visitorId": "2222222222222222",
+    "actionDetails": [{ "type": "action", "url": "https://example.com/", "timestamp": 1773219700 }]
+  }
+]

@@ -758,6 +758,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     '원시 데이터 내보내기의 CSV(페이지와 이벤트가 함께 있는 것)를 놓아 주세요.',
   'Drop the export files here': '내보낸 파일을 여기에 놓으세요',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    '이벤트 테이블의 BigQuery 내보내기 JSON을 여기에 놓으세요.',
+  'The JSON from the BigQuery export of the events tables.': '이벤트 테이블의 BigQuery 내보내기 JSON.',
+  'Drop the JSON from the events API or a batch export.': '이벤트 API 또는 배치 내보내기의 JSON을 여기에 놓으세요.',
+  'The JSON from the events API or a batch export.': '이벤트 API 또는 배치 내보내기의 JSON.',
+  'Drop the CSV from Settings, Export.': '설정, 내보내기의 CSV를 여기에 놓으세요.',
+  'The CSV from Settings, Export.': '설정, 내보내기의 CSV.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Live.getLastVisitsDetails(format=json)의 JSON을 여기에 놓으세요.',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'Live.getLastVisitsDetails(format=json)의 JSON.',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'website_event 내보내기와, 있다면 session 및 event_data 내보내기도 놓아 주세요(CSV 또는 JSON).',
   'Import from another tool': '다른 도구에서 가져오기',

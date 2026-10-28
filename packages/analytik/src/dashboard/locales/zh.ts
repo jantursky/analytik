@@ -744,6 +744,15 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     '拖入原始数据导出的 CSV（页面和事件在一起）。',
   'Drop the export files here': '把导出文件拖到这里',
+  'Drop the JSON from the BigQuery export of the events tables.': '将事件表的 BigQuery 导出 JSON 拖到这里。',
+  'The JSON from the BigQuery export of the events tables.': '事件表的 BigQuery 导出 JSON。',
+  'Drop the JSON from the events API or a batch export.': '将事件 API 或批量导出的 JSON 拖到这里。',
+  'The JSON from the events API or a batch export.': '事件 API 或批量导出的 JSON。',
+  'Drop the CSV from Settings, Export.': '将设置、导出中的 CSV 拖到这里。',
+  'The CSV from Settings, Export.': '设置、导出中的 CSV。',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    '将 Live.getLastVisitsDetails（format=json）的 JSON 拖到这里。',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'Live.getLastVisitsDetails（format=json）的 JSON。',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     '拖入 website_event 导出文件；如果有，也拖入 session 和 event_data 的导出文件（CSV 或 JSON）。',
   'Import from another tool': '从其他工具导入',

@@ -5234,13 +5234,30 @@ tr:hover .analytik-row-button {
   place-items: center;
   width: 40px;
   height: 40px;
+  border: 1px solid var(--analytik-border);
   border-radius: var(--analytik-radius-input);
-  background: #111;
-  color: #fff;
+  background: #fff;
+  color: #111;
 }
 
 .analytik-source-mark[data-source='simple-analytics'] {
-  background: #ff4f64;
+  color: #ff4f64;
+}
+
+.analytik-source-mark[data-source='matomo'] {
+  color: #3152a5;
+}
+
+.analytik-source-mark[data-source='goatcounter'] {
+  color: #9a15a4;
+}
+
+.analytik-source-mark[data-source='ga4'] {
+  color: #e37400;
+}
+
+.analytik-source-mark[data-source='posthog'] {
+  color: #1d4aff;
 }
 
 .analytik-source-head {

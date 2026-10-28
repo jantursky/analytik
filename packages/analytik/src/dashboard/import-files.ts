@@ -1,4 +1,5 @@
 import { type CsvRecord, createCsvReader } from '../shared/import/csv'
+import { parseJsonParts } from '../shared/import/json'
 import { type PreparedImport, type ReadFile, chunkVisits, prepareImport } from '../shared/import/prepare'
 import { type ImportResult, type ImportSource, addResults, emptyResult } from '../shared/import/types'
 import type { ApiClient } from './api'
@@ -27,11 +28,8 @@ async function readCsv(file: File): Promise<CsvRecord[]> {
 
 /** One chosen file as rows: a CSV, or a JSON list of rows, or a JSON object of lists keyed by table name. */
 export async function readBrowserFile(file: File): Promise<ReadFile> {
-  if (!/\.json$/i.test(file.name)) return { name: file.name, parts: { rows: await readCsv(file) } }
-  const data = JSON.parse(await file.text()) as unknown
-  if (Array.isArray(data)) return { name: file.name, parts: { rows: data as Record<string, unknown>[] } }
-  if (data && typeof data === 'object') return { name: file.name, parts: data as ReadFile['parts'] }
-  throw new Error(`${file.name} is not a list of rows`)
+  if (!/\.(json|jsonl|ndjson)$/i.test(file.name)) return { name: file.name, parts: { rows: await readCsv(file) } }
+  return { name: file.name, parts: parseJsonParts(await file.text(), file.name) }
 }
 
 export interface ChunkRun {

@@ -6,6 +6,7 @@ import { createContext } from '../server/context'
 import { importVisits } from '../server/import/core'
 import { requireSite } from '../server/sites'
 import { type CsvRecord, createCsvReader } from '../shared/import/csv'
+import { parseJsonParts } from '../shared/import/json'
 import { prepareImport } from '../shared/import/prepare'
 import { type ImportResult, type ImportSource, addResults, emptyResult } from '../shared/import/types'
 import type { UmamiRow } from '../shared/import/umami'
@@ -42,11 +43,8 @@ async function readCsv(file: string): Promise<CsvRecord[]> {
 
 /** Rows of one file. A JSON file holds a list of rows, or an object of lists keyed by table name. */
 async function readRows(file: string): Promise<Record<string, UmamiRow[]>> {
-  if (extname(file).toLowerCase() !== '.json') return { rows: await readCsv(file) }
-  const data = JSON.parse(await readFile(file, 'utf8')) as unknown
-  if (Array.isArray(data)) return { rows: data as UmamiRow[] }
-  if (data && typeof data === 'object') return data as Record<string, UmamiRow[]>
-  throw new Error(`${file} is not a list of rows`)
+  if (!['.json', '.jsonl', '.ndjson'].includes(extname(file).toLowerCase())) return { rows: await readCsv(file) }
+  return parseJsonParts(await readFile(file, 'utf8'), file)
 }
 
 /**

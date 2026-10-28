@@ -26,6 +26,13 @@ export class Row {
   }
 }
 
+/** Every row of the files: the lists of each part, leaving out anything else a JSON response carries (such as a `next` link). */
+export function rowsOf(files: readonly { parts: Record<string, unknown> }[]): SourceRow[] {
+  return files.flatMap((file) =>
+    Object.values(file.parts).flatMap((part) => (Array.isArray(part) ? (part as SourceRow[]) : [])),
+  )
+}
+
 /** The names in `required` that no column provides, compared the way `Row` compares them. */
 export function missingColumns(columns: readonly string[], required: readonly string[]): string[] {
   const present = new Set(columns.map(norm))

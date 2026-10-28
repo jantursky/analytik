@@ -1,9 +1,16 @@
 import type { Props } from '../types'
 
 /** Where an import comes from; stored in the `imported` column of the rows it creates. */
-export type ImportSource = 'umami' | 'simple-analytics'
+export type ImportSource = 'umami' | 'simple-analytics' | 'matomo' | 'goatcounter' | 'ga4' | 'posthog'
 
-export const IMPORT_SOURCES: readonly ImportSource[] = ['umami', 'simple-analytics']
+export const IMPORT_SOURCES: readonly ImportSource[] = [
+  'umami',
+  'simple-analytics',
+  'matomo',
+  'goatcounter',
+  'ga4',
+  'posthog',
+]
 
 export function isImportSource(value: unknown): value is ImportSource {
   return IMPORT_SOURCES.includes(value as ImportSource)

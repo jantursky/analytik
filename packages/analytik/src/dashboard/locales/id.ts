@@ -762,6 +762,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Letakkan CSV dari ekspor data mentah, dengan halaman dan peristiwa bersama.',
   'Drop the export files here': 'Letakkan file ekspor di sini',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Letakkan JSON dari ekspor BigQuery tabel peristiwa di sini.',
+  'The JSON from the BigQuery export of the events tables.': 'JSON dari ekspor BigQuery tabel peristiwa.',
+  'Drop the JSON from the events API or a batch export.': 'Letakkan JSON dari API peristiwa atau ekspor batch di sini.',
+  'The JSON from the events API or a batch export.': 'JSON dari API peristiwa atau ekspor batch.',
+  'Drop the CSV from Settings, Export.': 'Letakkan CSV dari Pengaturan, Ekspor di sini.',
+  'The CSV from Settings, Export.': 'CSV dari Pengaturan, Ekspor.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Letakkan JSON dari Live.getLastVisitsDetails (format=json) di sini.',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'JSON dari Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Letakkan ekspor website_event, serta ekspor session dan event_data jika ada (CSV atau JSON).',
   'Import from another tool': 'Impor dari alat lain',

@@ -770,6 +770,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Přetáhněte CSV z exportu surových dat, se stránkami a událostmi dohromady.',
   'Drop the export files here': 'Přetáhněte sem soubory exportu',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Přetáhněte sem JSON z exportu BigQuery tabulek událostí.',
+  'The JSON from the BigQuery export of the events tables.': 'JSON z exportu BigQuery tabulek událostí.',
+  'Drop the JSON from the events API or a batch export.': 'Přetáhněte sem JSON z API událostí nebo dávkového exportu.',
+  'The JSON from the events API or a batch export.': 'JSON z API událostí nebo dávkového exportu.',
+  'Drop the CSV from Settings, Export.': 'Přetáhněte sem CSV z Nastavení, Export.',
+  'The CSV from Settings, Export.': 'CSV z Nastavení, Export.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Přetáhněte sem JSON z Live.getLastVisitsDetails (format=json).',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'JSON z Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Přetáhněte export website_event a také exporty session a event_data, pokud je máte (CSV nebo JSON).',
   'Import from another tool': 'Importovat z jiného nástroje',

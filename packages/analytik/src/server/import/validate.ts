@@ -90,7 +90,8 @@ export function parseImportBody(
   body: Record<string, unknown>,
   now: number,
 ): { source: ImportSource; visits: ImportVisit[] } {
-  if (!isImportSource(body.source)) return fail('source must be umami or simple-analytics')
+  if (!isImportSource(body.source))
+    return fail('source must be umami, simple-analytics, matomo, goatcounter, ga4 or posthog')
   if (!Array.isArray(body.visits) || body.visits.length === 0) return fail('visits must be a list of visits')
   if (body.visits.length > MAX_VISITS) throw new AnalytikError(`send at most ${MAX_VISITS} visits per request`, 413)
   const visits = (body.visits as unknown[]).map((item, index) => visit(item, `visits[${index}]`, now))

@@ -767,6 +767,17 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Largue o CSV da exportação de dados em bruto, com páginas e eventos juntos.',
   'Drop the export files here': 'Largue aqui os ficheiros de exportação',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Solte aqui o JSON da exportação do BigQuery das tabelas de eventos.',
+  'The JSON from the BigQuery export of the events tables.': 'O JSON da exportação do BigQuery das tabelas de eventos.',
+  'Drop the JSON from the events API or a batch export.':
+    'Solte aqui o JSON da API de eventos ou de uma exportação em lote.',
+  'The JSON from the events API or a batch export.': 'O JSON da API de eventos ou de uma exportação em lote.',
+  'Drop the CSV from Settings, Export.': 'Solte aqui o CSV de Configurações, Exportar.',
+  'The CSV from Settings, Export.': 'O CSV de Configurações, Exportar.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Solte aqui o JSON de Live.getLastVisitsDetails (format=json).',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'O JSON de Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Largue a exportação website_event e, se as tiver, as de session e event_data (CSV ou JSON).',
   'Import from another tool': 'Importar de outra ferramenta',

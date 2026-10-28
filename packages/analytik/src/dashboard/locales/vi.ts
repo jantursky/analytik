@@ -765,6 +765,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Thả CSV từ bản xuất dữ liệu thô, gồm cả trang và sự kiện.',
   'Drop the export files here': 'Thả các tệp xuất vào đây',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Thả JSON từ bản xuất BigQuery của các bảng sự kiện vào đây.',
+  'The JSON from the BigQuery export of the events tables.': 'JSON từ bản xuất BigQuery của các bảng sự kiện.',
+  'Drop the JSON from the events API or a batch export.': 'Thả JSON từ API sự kiện hoặc bản xuất theo lô vào đây.',
+  'The JSON from the events API or a batch export.': 'JSON từ API sự kiện hoặc bản xuất theo lô.',
+  'Drop the CSV from Settings, Export.': 'Thả CSV từ Cài đặt, Xuất vào đây.',
+  'The CSV from Settings, Export.': 'CSV từ Cài đặt, Xuất.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Thả JSON từ Live.getLastVisitsDetails (format=json) vào đây.',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'JSON từ Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Thả bản xuất website_event, cùng bản xuất session và event_data nếu có (CSV hoặc JSON).',
   'Import from another tool': 'Nhập từ công cụ khác',

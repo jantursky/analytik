@@ -761,6 +761,17 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     '生データのエクスポートの CSV（ページとイベントが一緒になったもの）をドロップしてください。',
   'Drop the export files here': 'エクスポートしたファイルをここにドロップ',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'イベントテーブルの BigQuery エクスポートの JSON をここにドロップしてください。',
+  'The JSON from the BigQuery export of the events tables.': 'イベントテーブルの BigQuery エクスポートの JSON。',
+  'Drop the JSON from the events API or a batch export.':
+    'イベント API またはバッチエクスポートの JSON をここにドロップしてください。',
+  'The JSON from the events API or a batch export.': 'イベント API またはバッチエクスポートの JSON。',
+  'Drop the CSV from Settings, Export.': '設定のエクスポートで得た CSV をここにドロップしてください。',
+  'The CSV from Settings, Export.': '設定のエクスポートで得た CSV。',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Live.getLastVisitsDetails（format=json）の JSON をここにドロップしてください。',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'Live.getLastVisitsDetails（format=json）の JSON。',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'website_event のエクスポートと、あれば session と event_data のエクスポートもドロップしてください（CSV または JSON）。',
   'Import from another tool': '他のツールからインポート',

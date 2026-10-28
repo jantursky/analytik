@@ -189,7 +189,9 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     })
 
     it('rejects bad arguments with exit code 2', async () => {
-      expect((await cli('import', '--from', 'matomo', '--file', 'x', '--site', 's', '--db', ':memory:')).code).toBe(2)
+      expect((await cli('import', '--from', 'plausible', '--file', 'x', '--site', 's', '--db', ':memory:')).code).toBe(
+        2,
+      )
       expect((await cli('import', '--from', 'umami', '--site', 's', '--db', ':memory:')).stderr).toContain(
         'Missing --file',
       )

@@ -21,7 +21,7 @@ Commands:
   migrate --db <url>                       Create or update the database schema
   migrate --print-sql sqlite|postgres      Print the schema SQL (for wrangler d1 execute --file)
   seed --db <url> [--days 30] [--seed 1]   Fill a database with demo data
-  import --from umami|simple-analytics --file <path>... --site <id> --db <url>
+  import --from umami|simple-analytics|matomo|goatcounter|ga4|posthog --file <path>... --site <id> --db <url>
                                            Add the history of another analytics tool to a site
   doctor [--db <url>] [--url <deployment>] Check the runtime, database and a deployment
 

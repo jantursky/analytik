@@ -351,8 +351,12 @@ function TestDataGenerator() {
 }
 
 const SAMPLE_SOURCES: { value: ImportSource; label: string }[] = [
-  { value: 'umami', label: 'Umami' },
+  { value: 'goatcounter', label: 'GoatCounter' },
+  { value: 'ga4', label: 'Google Analytics 4' },
+  { value: 'matomo', label: 'Matomo' },
+  { value: 'posthog', label: 'PostHog' },
   { value: 'simple-analytics', label: 'Simple Analytics' },
+  { value: 'umami', label: 'Umami' },
 ]
 
 /** Hands the browser a text file to save. */

@@ -1,0 +1,8 @@
+2Path,Title,Event,User-Agent,Browser,System,Session,Bot,Referrer,Referrer scheme,Screen size,Location,FirstVisit,Date
+/,Home,false,Mozilla/5.0,Chrome 141,Mac OS X 10.15,s1,0,news.example.org,h,"1728,1117,2",SK-BL,true,2026-03-10T09:00:00Z
+/pricing,Pricing,false,Mozilla/5.0,Chrome 141,Mac OS X 10.15,s1,0,,,"1728,1117,2",SK-BL,false,2026-03-10T09:01:00Z
+signup,,true,Mozilla/5.0,Chrome 141,Mac OS X 10.15,s1,0,,,"1728,1117,2",SK-BL,false,2026-03-10T09:01:30Z
+/,Home,false,Mozilla/5.0,Chrome 141,Mac OS X 10.15,s1,0,,,"1728,1117,2",SK-BL,false,2026-03-10T10:30:00Z
+/blog,Blog,false,Mozilla/5.0,Safari 18,iOS 18.0,s2,0,newsletter,c,"390,844,3",DE,true,2026-03-11T08:00:00Z
+/,Home,false,Googlebot,,,s3,1,,,,,true,2026-03-11T08:05:00Z
+/,Home,false,Mozilla/5.0,Firefox 132,Linux,s4,0,,,,,true,not a date

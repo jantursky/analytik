@@ -1,0 +1,60 @@
+{
+  "results": [
+    {
+      "uuid": "a1",
+      "event": "$pageview",
+      "distinct_id": "d1",
+      "timestamp": "2026-03-10T09:00:00Z",
+      "properties": {
+        "$session_id": "ps1",
+        "$current_url": "https://example.com/",
+        "$pathname": "/",
+        "$host": "example.com",
+        "$browser": "Chrome",
+        "$os": "Mac OS X",
+        "$device_type": "Desktop",
+        "$geoip_country_code": "SK",
+        "$geoip_city_name": "Bratislava",
+        "$referrer": "https://news.ycombinator.com/",
+        "utm_source": "hn"
+      }
+    },
+    {
+      "uuid": "a2",
+      "event": "$autocapture",
+      "distinct_id": "d1",
+      "timestamp": "2026-03-10T09:00:10Z",
+      "properties": { "$session_id": "ps1" }
+    },
+    {
+      "uuid": "a3",
+      "event": "signed up",
+      "distinct_id": "d1",
+      "timestamp": "2026-03-10T09:01:00Z",
+      "properties": "{\"$session_id\":\"ps1\",\"$current_url\":\"https://example.com/pricing\"}"
+    },
+    {
+      "uuid": "a4",
+      "event": "$pageview",
+      "distinct_id": "d2",
+      "timestamp": "2026-03-11T08:00:00Z",
+      "properties": { "$current_url": "https://example.com/blog?x=1", "$referrer": "$direct", "$device_type": "Mobile" }
+    },
+    {
+      "uuid": "a5",
+      "event": "$pageview",
+      "distinct_id": "d2",
+      "timestamp": "2026-03-11T09:00:00Z",
+      "properties": { "$current_url": "https://example.com/docs" }
+    },
+    {
+      "uuid": "a6",
+      "event": "server event",
+      "distinct_id": "d3",
+      "timestamp": "2026-03-11T08:10:00Z",
+      "properties": {}
+    },
+    { "event": "$pageview", "timestamp": "2026-03-11T08:10:00Z", "properties": {} }
+  ],
+  "next": "https://eu.posthog.com/api/projects/1/events?offset=100"
+}

@@ -772,6 +772,16 @@ export default {
   'Drop the CSV from the raw data export, with pages and events together.':
     'Перетащите CSV из экспорта необработанных данных, со страницами и событиями вместе.',
   'Drop the export files here': 'Перетащите сюда файлы экспорта',
+  'Drop the JSON from the BigQuery export of the events tables.':
+    'Перетащите сюда JSON из экспорта таблиц событий BigQuery.',
+  'The JSON from the BigQuery export of the events tables.': 'JSON из экспорта таблиц событий BigQuery.',
+  'Drop the JSON from the events API or a batch export.': 'Перетащите сюда JSON из API событий или пакетного экспорта.',
+  'The JSON from the events API or a batch export.': 'JSON из API событий или пакетного экспорта.',
+  'Drop the CSV from Settings, Export.': 'Перетащите сюда CSV из Настроек, Экспорт.',
+  'The CSV from Settings, Export.': 'CSV из Настроек, Экспорт.',
+  'Drop the JSON from Live.getLastVisitsDetails (format=json).':
+    'Перетащите сюда JSON из Live.getLastVisitsDetails (format=json).',
+  'The JSON from Live.getLastVisitsDetails (format=json).': 'JSON из Live.getLastVisitsDetails (format=json).',
   'Drop the website_event export, and the session and event_data exports if you have them (CSV or JSON).':
     'Перетащите экспорт website_event, а также экспорты session и event_data, если они есть (CSV или JSON).',
   'Import from another tool': 'Импорт из другого инструмента',
