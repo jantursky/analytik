@@ -21,12 +21,18 @@ async function open(api = fakeApi()) {
 }
 
 /** Puts files in the file input and fires change, as the browser does when someone picks them. */
-async function pick(container: Element, files: File[]) {
+async function pick(
+  container: Element,
+  files: File[],
+  until: () => unknown = () => container.querySelector('.analytik-import-stats'),
+) {
   const input = container.querySelector<HTMLInputElement>('input[type="file"]')
   if (!input) throw new Error('no file input')
   Object.defineProperty(input, 'files', { value: files, configurable: true })
   await actAsync(() => input.dispatchEvent(new Event('change', { bubbles: true })))
-  for (let i = 0; i < 10; i++) await settled()
+  // Reading the files is asynchronous and slower on a busy machine: wait for the preview or the error note.
+  await waitFor(until, 300)
+  await settled()
 }
 
 const umami = () => [
@@ -138,10 +144,14 @@ describe('Import data', () => {
 
   it('names a file that is not the chosen source and does not offer to import', async () => {
     const { container } = await open()
-    await pick(container, [file('sa.csv', fixture('simple-analytics.csv'))])
+    await pick(container, [file('sa.csv', fixture('simple-analytics.csv'))], () =>
+      container.textContent.includes('is not an Umami export'),
+    )
     expect(container.textContent).toContain('The file sa.csv is not an Umami export')
     expect(importButton(container)).toBeUndefined()
-    await pick(container, [file('empty.csv', 'created_at,session_id,url_path\n')])
+    await pick(container, [file('empty.csv', 'created_at,session_id,url_path\n')], () =>
+      container.textContent.includes('No Umami events found'),
+    )
     expect(container.textContent).toContain('No Umami events found')
   })
 
@@ -176,6 +186,8 @@ describe('Import from the sites overview', () => {
     await click(byText(result.container, 'Add website', 'button'))
     await settled()
     await press(byText(document.body, 'Import from another tool', '[role="menuitem"]'))
+    // The dialog is a lazy chunk.
+    await waitFor(() => document.querySelector('[role="dialog"] .analytik-source-choice'), 300)
     return { ...result, api }
   }
 
@@ -186,7 +198,7 @@ describe('Import from the sites overview', () => {
     Object.defineProperty(event, 'dataTransfer', { value: { files } })
     await actAsync(() => zone.dispatchEvent(event))
     // Reading the files is asynchronous: wait for the preview or the error note.
-    await waitFor(() => dialog().querySelector('.analytik-import-stats, [role="alert"], .analytik-error'))
+    await waitFor(() => dialog().querySelector('.analytik-import-stats, [role="alert"]'), 300)
     await settled()
   }
 
