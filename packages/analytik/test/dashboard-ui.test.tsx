@@ -231,7 +231,9 @@ describe('currencies', () => {
     expect(list.length).toBeGreaterThan(100)
     const codes = list.map((c) => c.code)
     expect(codes).toEqual([...codes].sort())
-    expect(codes.slice(0, 3)).toEqual(['AED', 'AFN', 'ALL'])
+    // The runtime decides which codes exist (Bun on Linux also lists retired ones such as ADP), so only the order is fixed.
+    expect(codes.indexOf('AED')).toBeLessThan(codes.indexOf('EUR'))
+    expect(codes.indexOf('EUR')).toBeLessThan(codes.indexOf('USD'))
     expect(currencies().get('EUR')).toEqual({ code: 'EUR', name: 'Euro', symbol: '€' })
     expect(new Set(list.map((c) => c.code)).size).toBe(list.length)
   })

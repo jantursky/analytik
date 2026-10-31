@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.11.1]
+
+### Fixed
+
+- The 1.11.0 release build failed on a currency-order test and never reached npm; 1.11.1 has the same features.
+
 ## [1.11.0]
 
 ### Added
