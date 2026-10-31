@@ -816,4 +816,18 @@ export default {
   'Move {column} right': '{column} sütununu sağa taşı',
   'Reset columns': 'Sütunları sıfırla',
   'Show or hide columns, and change their order': 'Sütunları göster veya gizle ve sıralarını değiştir',
+  'AI answers': 'Yapay zekâ yanıtları',
+  'Bot requests': 'Bot istekleri',
+  Bots: 'Botlar',
+  Category: 'Kategori',
+  Crawlers: 'Tarayıcı botlar',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Tarayıcı botlar izleyiciyi çalıştırmaz; bu yüzden istediklerini sunucunuz bildirir. Bunları POST /api/v1/bots ve sitenin API anahtarıyla gönderin. Botlar yalnızca user agent’a göre ayırt edilir.',
+  'Filter pages, for example /blog/*': 'Sayfaları filtrele, örn. /blog/*',
+  Indexing: 'Dizinleme',
+  'No bot requests in this period': 'Bu dönemde bot isteği yok',
+  'Recent requests': 'Son istekler',
+  Requests: 'İstekler',
+  'Track crawlers': 'Tarayıcı botları izle',
+  Training: 'Eğitim',
 } satisfies Messages

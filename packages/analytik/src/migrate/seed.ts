@@ -108,6 +108,15 @@ const NEXT: Weighted<string> = [
   ['/blog/privacy-first-analytics', 8],
 ]
 
+const DEMO_CRAWLERS: Weighted<[crawler: string, category: string]> = [
+  [['Googlebot', 'indexing'], 30],
+  [['Bingbot', 'indexing'], 12],
+  [['GPTBot', 'training'], 20],
+  [['ClaudeBot', 'training'], 14],
+  [['ChatGPT-User', 'answers'], 16],
+  [['PerplexityBot', 'answers'], 8],
+]
+
 const PLANS = [900, 2900, 9900] as const
 const BATCH = 500
 
@@ -352,6 +361,18 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
       sql: 'INSERT INTO funnels (id, site_id, name, steps, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
       params: [`${funnel.id}-${siteId}`, siteId, funnel.name, JSON.stringify(funnel.steps), first],
     })
+  }
+
+  // Crawler requests, so the Bots view has something to show. Re-seeding replaces them: the table has no natural id.
+  statements.push({ sql: 'DELETE FROM bot_requests WHERE site_id = ?', params: [siteId] })
+  for (let day = 0; day < days; day++) {
+    for (let request = between(4, 12); request > 0; request--) {
+      const [crawler, category] = pick(DEMO_CRAWLERS)
+      statements.push({
+        sql: 'INSERT INTO bot_requests (site_id, ts, crawler, category, path) VALUES (?, ?, ?, ?, ?)',
+        params: [siteId, Math.min(now, first + day * DAY + between(0, DAY - 1)), crawler, category, pick(NEXT)],
+      })
+    }
   }
 
   await flush(true)

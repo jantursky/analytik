@@ -818,4 +818,18 @@ export default {
   'Move {column} right': '{column} naar rechts verplaatsen',
   'Reset columns': 'Kolommen herstellen',
   'Show or hide columns, and change their order': 'Kolommen tonen of verbergen en hun volgorde wijzigen',
+  'AI answers': 'AI-antwoorden',
+  'Bot requests': 'Botverzoeken',
+  Bots: 'Bots',
+  Category: 'Categorie',
+  Crawlers: 'Crawlers',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Crawlers voeren de tracker niet uit, dus je server meldt wat ze opvragen. Stuur ze met POST /api/v1/bots en de API-sleutel van de site. Crawlers worden alleen op user agent onderscheiden.',
+  'Filter pages, for example /blog/*': 'Pagina’s filteren, bijvoorbeeld /blog/*',
+  Indexing: 'Indexering',
+  'No bot requests in this period': 'Geen botverzoeken in deze periode',
+  'Recent requests': 'Recente verzoeken',
+  Requests: 'Verzoeken',
+  'Track crawlers': 'Crawlers volgen',
+  Training: 'Training',
 } satisfies Messages

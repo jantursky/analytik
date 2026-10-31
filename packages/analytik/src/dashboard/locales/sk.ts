@@ -819,4 +819,18 @@ export default {
   'Move {column} right': 'Posunúť {column} doprava',
   'Reset columns': 'Obnoviť stĺpce',
   'Show or hide columns, and change their order': 'Zobraziť alebo skryť stĺpce a zmeniť ich poradie',
+  'AI answers': 'Odpovede AI',
+  'Bot requests': 'Požiadavky botov',
+  Bots: 'Boty',
+  Category: 'Kategória',
+  Crawlers: 'Crawlery',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Crawlery nespúšťajú tracker, preto ich požiadavky hlási váš server. Posielajte ich cez POST /api/v1/bots s API kľúčom stránky. Crawlery sa rozlišujú iba podľa user agenta.',
+  'Filter pages, for example /blog/*': 'Filtrovať stránky, napr. /blog/*',
+  Indexing: 'Indexovanie',
+  'No bot requests in this period': 'V tomto období nie sú žiadne požiadavky botov',
+  'Recent requests': 'Posledné požiadavky',
+  Requests: 'Požiadavky',
+  'Track crawlers': 'Sledovať crawlery',
+  Training: 'Trénovanie',
 } satisfies Messages

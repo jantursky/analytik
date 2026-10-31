@@ -121,3 +121,65 @@ export function parseUserAgent(userAgent: string, screenWidth?: number): ParsedU
     device: deviceOf(userAgent, screenWidth),
   }
 }
+
+export type BotCategory = 'answers' | 'indexing' | 'training'
+
+export const BOT_CATEGORIES: readonly BotCategory[] = ['answers', 'indexing', 'training']
+
+export interface Crawler {
+  name: string
+  category: BotCategory
+}
+
+/**
+ * Known crawlers by a lowercase user agent fragment. First match wins, so a specific agent comes before the
+ * family it belongs to (`Applebot-Extended` before `Applebot`).
+ * `answers` fetch pages to answer a user's question, `indexing` build a search index, `training` collect
+ * content for model training.
+ */
+const CRAWLERS: [fragment: string, name: string, category: BotCategory][] = [
+  ['chatgpt-user', 'ChatGPT-User', 'answers'],
+  ['oai-searchbot', 'OAI-SearchBot', 'answers'],
+  ['perplexity-user', 'Perplexity-User', 'answers'],
+  ['perplexitybot', 'PerplexityBot', 'answers'],
+  ['claude-user', 'Claude-User', 'answers'],
+  ['claude-searchbot', 'Claude-SearchBot', 'answers'],
+  ['duckassistbot', 'DuckAssistBot', 'answers'],
+  ['mistralai-user', 'MistralAI-User', 'answers'],
+  ['meta-externalfetcher', 'Meta-ExternalFetcher', 'answers'],
+  ['gptbot', 'GPTBot', 'training'],
+  ['claudebot', 'ClaudeBot', 'training'],
+  ['anthropic-ai', 'anthropic-ai', 'training'],
+  ['google-extended', 'Google-Extended', 'training'],
+  ['applebot-extended', 'Applebot-Extended', 'training'],
+  ['meta-externalagent', 'Meta-ExternalAgent', 'training'],
+  ['ccbot', 'CCBot', 'training'],
+  ['bytespider', 'Bytespider', 'training'],
+  ['amazonbot', 'Amazonbot', 'training'],
+  ['cohere-ai', 'cohere-ai', 'training'],
+  ['diffbot', 'Diffbot', 'training'],
+  ['omgili', 'Omgilibot', 'training'],
+  ['imagesiftbot', 'ImagesiftBot', 'training'],
+  ['googlebot', 'Googlebot', 'indexing'],
+  ['google-inspectiontool', 'Google-InspectionTool', 'indexing'],
+  ['bingbot', 'Bingbot', 'indexing'],
+  ['applebot', 'Applebot', 'indexing'],
+  ['duckduckbot', 'DuckDuckBot', 'indexing'],
+  ['yandex', 'YandexBot', 'indexing'],
+  ['baiduspider', 'Baiduspider', 'indexing'],
+  ['slurp', 'Yahoo Slurp', 'indexing'],
+  ['ahrefsbot', 'AhrefsBot', 'indexing'],
+  ['semrushbot', 'SemrushBot', 'indexing'],
+  ['mj12bot', 'MJ12bot', 'indexing'],
+]
+
+/**
+ * The crawler behind a user agent, or null for a browser. Bots that are not in the list come back as
+ * `Other bot` in the indexing category.
+ */
+export function classifyCrawler(userAgent: string | null | undefined): Crawler | null {
+  if (!userAgent || !isBot(userAgent)) return null
+  const lower = userAgent.toLowerCase()
+  const known = CRAWLERS.find(([fragment]) => lower.includes(fragment))
+  return known ? { name: known[1], category: known[2] } : { name: 'Other bot', category: 'indexing' }
+}

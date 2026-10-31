@@ -253,6 +253,24 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         ? rows.map((r, i) => ({ ...r, previous: { ...r, visitors: i === 0 ? r.visitors / 2 : 0, key: undefined } }))
         : rows
     },
+    'GET /sites/:id/bots': ({ params }) => ({
+      total: params.crawler ? 3 : 8,
+      hasData: params.empty !== 'yes',
+      series: [
+        { ts: Date.UTC(2026, 0, 1), requests: 5 },
+        { ts: Date.UTC(2026, 0, 2), requests: 3 },
+      ],
+      categories: [
+        { key: 'training', requests: 5 },
+        { key: 'answers', requests: 3 },
+      ],
+      crawlers: [
+        { key: 'GPTBot', category: 'training', requests: 5 },
+        { key: 'ChatGPT-User', category: 'answers', requests: 3 },
+      ],
+      pages: [{ key: '/blog/a', requests: 6 }],
+      recent: [{ ts: Date.UTC(2026, 0, 2, 10), crawler: 'GPTBot', category: 'training', path: '/blog/a' }],
+    }),
     'GET /sites/:id/realtime': () => realtime,
     'GET /sites/:id/sessions': ({ params }) =>
       Number(params.offset ?? 0) > 0

@@ -1,4 +1,7 @@
 /** Shared contract between the server, tracker, client and dashboard. */
+import type { BotCategory } from './ua'
+
+export type { BotCategory }
 
 export type PrivacyMode = 'strict' | 'enriched' | 'persistent'
 export type Interval = 'hour' | 'day' | 'week' | 'month'
@@ -330,4 +333,33 @@ export interface TestDataResult {
 export interface VersionInfo {
   current: string
   latest: string | null
+}
+
+/** Crawler traffic reported by a site's backend; see `bot_requests`. */
+export interface BotRequest {
+  ts: number
+  crawler: string
+  category: BotCategory
+  path: string
+}
+
+export interface BotStats {
+  /** Requests in the range that match the filters. */
+  total: number
+  /** Requests per bucket, every bucket of the range present. */
+  series: { ts: number; requests: number }[]
+  categories: { key: BotCategory; requests: number }[]
+  crawlers: { key: string; category: BotCategory; requests: number }[]
+  pages: { key: string; requests: number }[]
+  /** Newest first. */
+  recent: BotRequest[]
+  /** Whether the site has ever had a bot request, so the dashboard can show setup help instead of empty charts. */
+  hasData: boolean
+}
+
+/** Filters of a bot query. Several values for one field match any of them; a page ending in `*` is a prefix. */
+export interface BotFilters {
+  crawler?: string[]
+  category?: BotCategory[]
+  page?: string[]
 }

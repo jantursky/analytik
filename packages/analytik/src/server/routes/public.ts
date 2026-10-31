@@ -18,6 +18,7 @@ import { hasAdminSession } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { SESSION_WINDOW, cleanProps, ingest, sessionUpdate } from '../ingest'
 import { recordPayment } from '../payments'
+import { recordBots } from '../stats/bots'
 import { hashedKey, strictVisitorId } from '../privacy'
 import { hit } from '../ratelimit'
 import { doNotTrack, geoFromRequest, readText } from '../request'
@@ -25,6 +26,7 @@ import { getSite, siteByApiKey } from '../sites'
 
 const EVENT_LIMIT = 8 * 1024
 const API_LIMIT = 64 * 1024
+const BOTS_LIMIT = 256 * 1024
 const WEBHOOK_LIMIT = 512 * 1024
 const ATTRIBUTION_PER_MINUTE = 60
 
@@ -121,6 +123,14 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     if (!body || typeof body !== 'object') throw new AnalytikError('body must be a JSON object')
     const { payment, duplicate } = await recordPayment(ctx, site, body as PaymentInput, 'api')
     return c.json({ ok: true, duplicate, payment, attributed: payment.sessionId !== null })
+  })
+
+  app.post('/v1/bots', async (c) => {
+    const site = await siteByApiKey(ctx, bearer(c.req.raw))
+    if (!site) throw new AnalytikError('invalid api key', 401)
+    const body = (await readJson(c.req.raw, BOTS_LIMIT)) as { requests?: unknown } | null
+    const result = await recordBots(ctx, site, body?.requests)
+    return c.json({ ok: true, ...result })
   })
 
   app.post('/v1/goals', async (c) => {

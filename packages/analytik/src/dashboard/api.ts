@@ -1,4 +1,6 @@
 import type {
+  BotFilters,
+  BotStats,
   BreakdownRow,
   Dimension,
   EventType,
@@ -129,6 +131,7 @@ export interface ApiClient {
   overview(siteId: string, query: Query): Promise<Overview>
   timeseries(siteId: string, query: Query): Promise<TimeseriesPoint[]>
   breakdown(siteId: string, dimension: Dimension, query: Query): Promise<BreakdownRow[]>
+  bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
   realtime(siteId: string): Promise<Realtime>
   sessions(siteId: string, query: Query & Paging): Promise<Page<SessionSummary>>
   session(siteId: string, sessionId: string): Promise<SessionDetail>
@@ -262,6 +265,13 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     overview: (id, query) => get(`${site(id)}/overview`, queryParams(query)),
     timeseries: (id, query) => get(`${site(id)}/timeseries`, queryParams(query)),
     breakdown: (id, dimension, query) => get(`${site(id)}/breakdown`, queryParams({ ...query, dimension })),
+    bots: (id, query, filters = {}) => {
+      const params = queryParams(query)
+      for (const name of ['crawler', 'category', 'page'] as const) {
+        for (const value of filters[name] ?? []) params.append(name, value)
+      }
+      return get(`${site(id)}/bots`, params)
+    },
     realtime: (id) => get(`${site(id)}/realtime`, undefined, true),
     sessions: (id, query) => get(`${site(id)}/sessions`, queryParams(query)),
     session: (id, sessionId) => get(`${site(id)}/sessions/${encodeURIComponent(sessionId)}`),

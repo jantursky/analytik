@@ -810,4 +810,18 @@ export default {
   'Move {column} right': '{column} を右へ移動',
   'Reset columns': '列をリセット',
   'Show or hide columns, and change their order': '列の表示・非表示と並べ替え',
+  'AI answers': 'AI回答',
+  'Bot requests': 'ボットのリクエスト',
+  Bots: 'ボット',
+  Category: 'カテゴリ',
+  Crawlers: 'クローラー',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'クローラーはトラッカーを実行しないため、リクエストはサーバーから報告します。POST /api/v1/bots とサイトの API キーで送信してください。クローラーは user agent だけで判別されます。',
+  'Filter pages, for example /blog/*': 'ページを絞り込む（例: /blog/*）',
+  Indexing: 'インデックス作成',
+  'No bot requests in this period': 'この期間のボットのリクエストはありません',
+  'Recent requests': '最近のリクエスト',
+  Requests: 'リクエスト',
+  'Track crawlers': 'クローラーを追跡',
+  Training: '学習',
 } satisfies Messages

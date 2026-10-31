@@ -810,4 +810,18 @@ export default {
   'Move {column} right': 'Geser {column} ke kanan',
   'Reset columns': 'Atur ulang kolom',
   'Show or hide columns, and change their order': 'Tampilkan atau sembunyikan kolom dan ubah urutannya',
+  'AI answers': 'Jawaban AI',
+  'Bot requests': 'Permintaan bot',
+  Bots: 'Bot',
+  Category: 'Kategori',
+  Crawlers: 'Crawler',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Crawler tidak menjalankan tracker, jadi server Anda melaporkan apa yang mereka minta. Kirim dengan POST /api/v1/bots dan kunci API situs. Crawler dibedakan hanya dari user agent.',
+  'Filter pages, for example /blog/*': 'Filter halaman, misalnya /blog/*',
+  Indexing: 'Pengindeksan',
+  'No bot requests in this period': 'Tidak ada permintaan bot pada periode ini',
+  'Recent requests': 'Permintaan terbaru',
+  Requests: 'Permintaan',
+  'Track crawlers': 'Lacak crawler',
+  Training: 'Pelatihan',
 } satisfies Messages

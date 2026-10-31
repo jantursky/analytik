@@ -1,0 +1,36 @@
+---
+title: Bot traffic
+description: See which crawlers, AI answer engines and AI training bots request your pages, reported by your own server and kept apart from visitors and revenue.
+---
+
+Crawlers do not run the browser tracker, so Analytik cannot see them on its own. Your server (or edge function) tells it what they request, and the **Bots** view shows the result. Bot requests never change visitor, session, pageview or revenue numbers.
+
+## Report requests
+
+Send the user agent and path of each request to `POST /api/v1/bots` with the site's API key. Up to 500 requests per call; requests from ordinary browsers are skipped.
+
+```bash
+curl -X POST https://analytics.example.com/api/v1/bots \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"requests":[{"userAgent":"Mozilla/5.0 (compatible; GPTBot/1.2)","path":"/blog/post","ts":1767225600000}]}'
+```
+
+`ts` is optional (Unix milliseconds, default now). The answer is `{ ok: true, recorded, skipped }`. In a middleware, check the user agent first and batch several requests per call to keep the overhead low.
+
+## What is stored
+
+Only the crawler name, its category, the path (no query string or fragment) and the time. The IP address and the raw user agent are not stored. Bot requests follow the site's retention setting and are deleted with the site.
+
+## Categories
+
+- **AI answers**: fetch pages to answer a user's question (ChatGPT-User, OAI-SearchBot, PerplexityBot, Claude-User).
+- **Training**: collect content for model training (GPTBot, ClaudeBot, Google-Extended, CCBot, Bytespider).
+- **Indexing**: search engines and SEO tools (Googlebot, Bingbot, Applebot, AhrefsBot). Bots that are not recognised are listed as "Other bot" here.
+
+## Filters
+
+The view filters by several crawlers, categories and pages at once. A page filter ending in `*` matches a prefix, for example `/blog/*`. The same filters are available on `GET /sites/:id/bots` as repeated `crawler`, `category` and `page` parameters, and as `analytik.stats.bots()` in code.
+
+## Limits
+
+Crawlers are told apart by user agent only, which any client can fake. There is no IP verification. Run `analytik upgrade` after updating to create the `bot_requests` table.

@@ -27,6 +27,7 @@ import {
   updateSite,
 } from '../sites'
 import { events, payments, realtime, sessionDetail, sessions } from '../stats/activity'
+import { botFilters, botStats } from '../stats/bots'
 import { breakdown } from '../stats/breakdown'
 import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
@@ -51,7 +52,7 @@ const EVENT_TYPES: readonly EventType[] = ['pageview', 'goal', 'outbound', 'iden
  * Stats a share link may read: aggregates and the session list. Payments and session details carry
  * names and emails, so they stay admin-only, like settings, export and writes.
  */
-const SHAREABLE = /^\/sites\/[^/]+\/(overview|timeseries|breakdown|realtime|sessions|events|funnels(\/[^/]+)?)$/
+const SHAREABLE = /^\/sites\/[^/]+\/(overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
   Variables: { site: SiteRecord }
@@ -212,6 +213,9 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     if (!isDimension(dimension)) throw new AnalytikError(`dimension must be one of ${DIMENSIONS.join(', ')}`)
     return c.json(await breakdown(ctx, c.get('site'), dimension, query(c), limitParam(c, 100)))
   })
+  app.get('/sites/:id/bots', async (c) =>
+    c.json(await botStats(ctx, c.get('site'), query(c), botFilters(new URL(c.req.url).searchParams))),
+  )
   app.get('/sites/:id/realtime', async (c) => c.json(await realtime(ctx, c.get('site'))))
   app.get('/sites/:id/sessions', async (c) => c.json(await sessions(ctx, c.get('site'), query(c), pageParams(c))))
   app.get('/sites/:id/sessions/:sid', async (c) => {

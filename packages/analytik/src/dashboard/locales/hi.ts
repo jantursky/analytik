@@ -812,4 +812,18 @@ export default {
   'Move {column} right': '{column} को दाएँ ले जाएँ',
   'Reset columns': 'कॉलम रीसेट करें',
   'Show or hide columns, and change their order': 'कॉलम दिखाएँ या छिपाएँ और उनका क्रम बदलें',
+  'AI answers': 'AI उत्तर',
+  'Bot requests': 'बॉट अनुरोध',
+  Bots: 'बॉट',
+  Category: 'श्रेणी',
+  Crawlers: 'क्रॉलर',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'क्रॉलर ट्रैकर नहीं चलाते, इसलिए वे क्या माँगते हैं यह आपका सर्वर रिपोर्ट करता है। इन्हें POST /api/v1/bots और साइट की API कुंजी से भेजें। क्रॉलर की पहचान केवल user agent से होती है।',
+  'Filter pages, for example /blog/*': 'पेज फ़िल्टर करें, जैसे /blog/*',
+  Indexing: 'इंडेक्सिंग',
+  'No bot requests in this period': 'इस अवधि में कोई बॉट अनुरोध नहीं',
+  'Recent requests': 'हाल के अनुरोध',
+  Requests: 'अनुरोध',
+  'Track crawlers': 'क्रॉलर ट्रैक करें',
+  Training: 'प्रशिक्षण',
 } satisfies Messages

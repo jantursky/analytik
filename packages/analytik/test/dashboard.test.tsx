@@ -1412,6 +1412,57 @@ describe('Dashboard views', () => {
     expect(container.querySelector('.analytik-card h2')?.textContent).toBe('Checkout')
   })
 
+  it('Bots charts crawler requests and filters by crawler, category and page', async () => {
+    const { container, api } = await open(fakeApi(), 'bots')
+    const bar = (name: string) =>
+      [...container.querySelectorAll('.analytik-bars[aria-label="Requests"] button')].find(
+        (button) => button.querySelector('.analytik-bar-label')?.textContent === name,
+      )
+    expect(texts(container, '.analytik-bars[aria-label="Requests"] .analytik-bar-label')).toEqual([
+      'GPTBot',
+      'ChatGPT-User',
+    ])
+    expect(texts(container, '.analytik-bars[aria-label="Recent requests"] li')[0]).toContain('/blog/a')
+    await click(bar('GPTBot'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/bots').at(-1)?.params.crawler).toBe('GPTBot')
+    expect(byLabel(container, 'Remove GPTBot')).toBeDefined()
+    await click(byText(container, 'Category', '[role="tab"]'))
+    await click(bar('AI answers'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/bots').at(-1)?.params.category).toBe('answers')
+    await click(byText(container, 'Pages', '[role="tab"]'))
+    await click(bar('/blog/a'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/bots').at(-1)?.params.page).toBe('/blog/a')
+    const search = container.querySelector<HTMLInputElement>('input[type="search"]')
+    await fill(search, '/docs/*')
+    await settled()
+    expect(api.find('GET', '/sites/site_1/bots').at(-1)?.params.page).toBe('/docs/*')
+    await key(search, 'Enter')
+    await click(byLabel(container, 'Remove GPTBot'))
+    await click(byLabel(container, 'Remove AI answers'))
+    await settled()
+    expect(api.find('GET', '/sites/site_1/bots').at(-1)?.params.crawler).toBeUndefined()
+  })
+
+  it('Bots explains how to report crawlers until there is data', async () => {
+    const api = fakeApi({
+      'GET /sites/:id/bots': () => ({
+        hasData: false,
+        total: 0,
+        series: [],
+        categories: [],
+        crawlers: [],
+        pages: [],
+        recent: [],
+      }),
+    })
+    const { container } = await open(api, 'bots')
+    expect(container.textContent).toContain('POST /api/v1/bots')
+    expect(container.querySelector('pre')?.textContent).toContain('/api/v1/bots')
+  })
+
   it('Funnels reports failures and an empty list', async () => {
     const api = fakeApi({ 'POST /sites/:id/funnels': () => Response.json({ error: 'Invalid step' }, { status: 400 }) })
     api.state.funnels = []

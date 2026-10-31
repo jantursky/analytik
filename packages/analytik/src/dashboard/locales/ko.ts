@@ -806,4 +806,18 @@ export default {
   'Move {column} right': '{column} 오른쪽으로 이동',
   'Reset columns': '열 초기화',
   'Show or hide columns, and change their order': '열 표시·숨김 및 순서 변경',
+  'AI answers': 'AI 답변',
+  'Bot requests': '봇 요청',
+  Bots: '봇',
+  Category: '카테고리',
+  Crawlers: '크롤러',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    '크롤러는 트래커를 실행하지 않으므로 서버가 요청을 보고해야 합니다. POST /api/v1/bots와 사이트 API 키로 보내세요. 크롤러는 user agent로만 구분됩니다.',
+  'Filter pages, for example /blog/*': '페이지 필터, 예: /blog/*',
+  Indexing: '색인',
+  'No bot requests in this period': '이 기간에 봇 요청이 없습니다',
+  'Recent requests': '최근 요청',
+  Requests: '요청',
+  'Track crawlers': '크롤러 추적',
+  Training: '학습',
 } satisfies Messages

@@ -2,6 +2,8 @@ import type { Hono } from 'hono'
 
 import type { RandomBytes } from '../shared/ids'
 import type {
+  BotFilters,
+  BotStats,
   BreakdownRow,
   Dimension,
   EventRow,
@@ -195,6 +197,8 @@ export interface StatsApi {
    * revenue numbers, with their email, name, customer, visitor and session cleared.
    */
   purge(siteId: string, before: number): Promise<PurgeResult>
+  /** Crawler traffic reported with `POST /v1/bots`, kept apart from visitors and revenue. */
+  bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
 }
 
 export interface Analytik {

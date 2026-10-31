@@ -9,6 +9,7 @@ export async function purgeBefore(ctx: Context, siteId: string, before: number):
   const { storage } = ctx
   const events = await storage.run('DELETE FROM events WHERE site_id = ? AND ts < ?', [siteId, before])
   const sessions = await storage.run('DELETE FROM sessions WHERE site_id = ? AND started_at < ?', [siteId, before])
+  await storage.run('DELETE FROM bot_requests WHERE site_id = ? AND ts < ?', [siteId, before])
   await storage.run('DELETE FROM payment_claims WHERE site_id = ? AND ts < ?', [siteId, before])
   await storage.run(
     `UPDATE payments SET email = NULL, name = NULL, customer_id = NULL, visitor_id = NULL, session_id = NULL

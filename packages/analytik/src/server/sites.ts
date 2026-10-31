@@ -259,7 +259,7 @@ export async function rotateApiKey(ctx: Context, id: string): Promise<string> {
 export async function deleteSite(ctx: Context, id: string): Promise<void> {
   await requireSite(ctx, id)
   await ctx.storage.batch(
-    ['events', 'sessions', 'visitors', 'payments', 'payment_claims', 'funnels']
+    ['events', 'sessions', 'visitors', 'payments', 'payment_claims', 'funnels', 'bot_requests']
       .map((table) => ({ sql: `DELETE FROM ${table} WHERE site_id = ?`, params: [id] }))
       .concat({ sql: 'DELETE FROM sites WHERE id = ?', params: [id] }),
   )

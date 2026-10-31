@@ -791,4 +791,18 @@ export default {
   'Move {column} right': '将 {column} 右移',
   'Reset columns': '重置列',
   'Show or hide columns, and change their order': '显示或隐藏列，并调整其顺序',
+  'AI answers': 'AI 回答',
+  'Bot requests': '机器人请求',
+  Bots: '机器人',
+  Category: '类别',
+  Crawlers: '爬虫',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    '爬虫不会运行跟踪脚本，因此由您的服务器上报它们的请求。请通过 POST /api/v1/bots 和站点 API 密钥发送。爬虫仅根据 user agent 区分。',
+  'Filter pages, for example /blog/*': '筛选页面，例如 /blog/*',
+  Indexing: '索引',
+  'No bot requests in this period': '此期间没有机器人请求',
+  'Recent requests': '最近的请求',
+  Requests: '请求',
+  'Track crawlers': '追踪爬虫',
+  Training: '训练',
 } satisfies Messages

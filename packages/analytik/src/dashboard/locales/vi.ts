@@ -813,4 +813,18 @@ export default {
   'Move {column} right': 'Chuyển {column} sang phải',
   'Reset columns': 'Đặt lại cột',
   'Show or hide columns, and change their order': 'Hiện hoặc ẩn cột và đổi thứ tự của chúng',
+  'AI answers': 'Câu trả lời AI',
+  'Bot requests': 'Yêu cầu của bot',
+  Bots: 'Bot',
+  Category: 'Danh mục',
+  Crawlers: 'Trình thu thập',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Trình thu thập không chạy tracker, nên máy chủ của bạn báo cáo những gì chúng yêu cầu. Gửi chúng bằng POST /api/v1/bots cùng khóa API của trang. Trình thu thập chỉ được phân biệt theo user agent.',
+  'Filter pages, for example /blog/*': 'Lọc trang, ví dụ /blog/*',
+  Indexing: 'Lập chỉ mục',
+  'No bot requests in this period': 'Không có yêu cầu của bot trong giai đoạn này',
+  'Recent requests': 'Yêu cầu gần đây',
+  Requests: 'Yêu cầu',
+  'Track crawlers': 'Theo dõi trình thu thập',
+  Training: 'Huấn luyện',
 } satisfies Messages

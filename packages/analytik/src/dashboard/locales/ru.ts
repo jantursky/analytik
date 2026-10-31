@@ -820,4 +820,18 @@ export default {
   'Move {column} right': 'Переместить {column} вправо',
   'Reset columns': 'Сбросить столбцы',
   'Show or hide columns, and change their order': 'Показать или скрыть столбцы и изменить их порядок',
+  'AI answers': 'Ответы ИИ',
+  'Bot requests': 'Запросы ботов',
+  Bots: 'Боты',
+  Category: 'Категория',
+  Crawlers: 'Краулеры',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Краулеры не запускают трекер, поэтому об их запросах сообщает ваш сервер. Отправляйте их через POST /api/v1/bots с API-ключом сайта. Краулеры определяются только по user agent.',
+  'Filter pages, for example /blog/*': 'Фильтр страниц, например /blog/*',
+  Indexing: 'Индексация',
+  'No bot requests in this period': 'Нет запросов ботов за этот период',
+  'Recent requests': 'Последние запросы',
+  Requests: 'Запросы',
+  'Track crawlers': 'Отслеживать краулеры',
+  Training: 'Обучение',
 } satisfies Messages

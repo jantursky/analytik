@@ -238,7 +238,7 @@ export async function overview(ctx: Context, site: SiteRecord, query: StatsQuery
  * Buckets as an inline VALUES table, clipped to the range. The values are integers computed here,
  * so inlining is safe, and it keeps D1 under its bound-parameter limit for long ranges.
  */
-function bucketTable(query: StatsQuery): { sql: string; starts: number[] } {
+export function bucketTable(query: StatsQuery): { sql: string; starts: number[] } {
   const starts = bucketStarts(query.from, query.to, query.interval, query.tz)
   const rows = starts.map((start, index) => {
     const low = Math.max(start, query.from)

@@ -3,6 +3,7 @@ import { AnalytikError } from '../context'
 import { requireSite } from '../sites'
 import type { StatsApi } from '../types'
 import { events, payments, realtime, sessionDetail, sessions } from './activity'
+import { botStats } from './bots'
 import { breakdown } from './breakdown'
 import { EXPORT_TABLES, exportCsv, exportJson } from './export'
 import { funnelResult, getFunnel } from './funnels'
@@ -51,6 +52,10 @@ export function createStatsApi(ctx: Context, ready: () => Promise<unknown>): Sta
     async payments(siteId, query, options) {
       const site = await load(siteId)
       return payments(ctx, site, toStatsQuery(site, query), options)
+    },
+    async bots(siteId, query, filters = {}) {
+      const site = await load(siteId)
+      return botStats(ctx, site, toStatsQuery(site, query), filters)
     },
     async export(siteId, format, table = 'events') {
       const site = await load(siteId)

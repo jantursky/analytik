@@ -821,4 +821,18 @@ export default {
   'Move {column} right': 'Przesuń {column} w prawo',
   'Reset columns': 'Przywróć kolumny',
   'Show or hide columns, and change their order': 'Pokaż lub ukryj kolumny i zmień ich kolejność',
+  'AI answers': 'Odpowiedzi AI',
+  'Bot requests': 'Żądania botów',
+  Bots: 'Boty',
+  Category: 'Kategoria',
+  Crawlers: 'Roboty indeksujące',
+  'Crawlers do not run the tracker, so your server reports what they request. Send them with POST /api/v1/bots and the site API key. Crawlers are told apart by user agent only.':
+    'Roboty nie uruchamiają trackera, więc ich żądania zgłasza Twój serwer. Wysyłaj je przez POST /api/v1/bots z kluczem API witryny. Roboty rozpoznawane są wyłącznie po user agencie.',
+  'Filter pages, for example /blog/*': 'Filtruj strony, np. /blog/*',
+  Indexing: 'Indeksowanie',
+  'No bot requests in this period': 'Brak żądań botów w tym okresie',
+  'Recent requests': 'Ostatnie żądania',
+  Requests: 'Żądania',
+  'Track crawlers': 'Śledź roboty',
+  Training: 'Trenowanie',
 } satisfies Messages

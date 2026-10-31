@@ -8,6 +8,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- Bots view: which crawlers (AI answers, indexing, training) request which pages, reported by your server with `POST /api/v1/bots`. Run `analytik upgrade` to add the new table.
 - Payment webhook adapters for Paddle, Polar, Razorpay, Creem and Gumroad.
 
 ### Security

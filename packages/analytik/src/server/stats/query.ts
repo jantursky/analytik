@@ -85,7 +85,7 @@ export function prefixMatch(column: string, prefix: string): Fragment {
 }
 
 /** `''` matches unknown (NULL), a trailing `*` matches a prefix, anything else matches exactly. */
-function matchValues(column: string, values: string[]): Fragment {
+export function matchValues(column: string, values: string[]): Fragment {
   const parts: string[] = []
   const params: unknown[] = []
   const exact: string[] = []

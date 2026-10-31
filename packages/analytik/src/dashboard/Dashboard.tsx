@@ -26,6 +26,7 @@ import { Select } from './ui/select'
 import { Switch } from './ui/switch'
 import { Tooltip } from './ui/tooltip'
 import { UpdateNotice } from './update-notice'
+import { Bots } from './views/Bots'
 import { Events } from './views/Events'
 import { Funnels } from './views/Funnels'
 import { Pages, Sources } from './views/Lists'
@@ -42,7 +43,17 @@ const Palette = lazy(() => import('./palette').then((m) => ({ default: m.Palette
 const ShortcutHelp = lazy(() => import('./palette').then((m) => ({ default: m.ShortcutHelp })))
 
 export type DashboardView =
-  'sites' | 'overview' | 'sources' | 'pages' | 'events' | 'funnels' | 'revenue' | 'sessions' | 'realtime' | 'settings'
+  | 'sites'
+  | 'overview'
+  | 'sources'
+  | 'pages'
+  | 'events'
+  | 'bots'
+  | 'funnels'
+  | 'revenue'
+  | 'sessions'
+  | 'realtime'
+  | 'settings'
 
 type SiteView = Exclude<DashboardView, 'sites'>
 
@@ -51,6 +62,7 @@ const VIEWS: Record<SiteView, { label: string; component: ComponentType; ranged:
   sources: { label: msg('Acquisition'), component: Sources, ranged: true },
   pages: { label: msg('Pages'), component: Pages, ranged: true },
   events: { label: msg('Events'), component: Events, ranged: true },
+  bots: { label: msg('Bots'), component: Bots, ranged: true },
   funnels: { label: msg('Funnels'), component: Funnels, ranged: true },
   revenue: { label: msg('Revenue'), component: Revenue, ranged: true },
   sessions: { label: msg('Sessions'), component: Sessions, ranged: true },
