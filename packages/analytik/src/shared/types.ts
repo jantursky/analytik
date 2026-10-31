@@ -42,7 +42,10 @@ export interface Site {
   allowLocalhost: boolean
   /** Tracking is paused: tracker events and server goals are dropped, payments are still recorded. */
   paused: boolean
+  /** Addresses and CIDR ranges whose events are dropped. */
   ignoredIps: string[]
+  /** Events from browsers with an admin session are dropped (same-origin setups only). */
+  ignoreAdmins: boolean
   createdAt: number
   /** Which payment providers have a webhook secret configured. Secrets themselves are never returned. */
   webhooks?: Record<PaymentProvider, boolean>
@@ -158,6 +161,12 @@ export interface SiteSummary {
   orders: number
   currency: string
   online: number
+  /** Visitors per bucket from the start of the range; only when a series was asked for. */
+  traffic?: number[]
+  /** Revenue per bucket (minor units), same buckets as `traffic`. */
+  sales?: number[]
+  /** The window before, of equal length; only when a comparison was asked for. */
+  previous?: { visitors: number; revenue: number; orders: number }
 }
 
 export interface TimeseriesPoint {

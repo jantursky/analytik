@@ -128,3 +128,13 @@ export async function confirmDeletion(
     throw new AnalytikError('wrong password', 403)
   }
 }
+
+/**
+ * Whether the request carries a valid admin session cookie. Browsers send it to the tracker's endpoint only when the
+ * dashboard and the tracker share an origin, so this is how the `ignoreAdmins` switch tells admins apart.
+ */
+export async function hasAdminSession(ctx: Context, c: HonoContext): Promise<boolean> {
+  const { admin } = ctx
+  const cookie = getCookie(c, SESSION_COOKIE)
+  return !!cookie && isPasswordAuth(admin) && (await verifySessionToken(admin.secret, cookie, ctx.now()))
+}

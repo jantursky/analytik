@@ -6,6 +6,7 @@ import type { ApiClient } from './api'
 import type { DashboardView } from './Dashboard'
 import { OwnPreferences } from './preferences'
 import type { DateRange } from './range'
+import { ToastProvider } from './ui/toast'
 
 export interface DashboardState {
   client: ApiClient
@@ -103,7 +104,9 @@ export function DashboardProvider({
   return (
     <MotionConfig reducedMotion="user">
       <DashboardContext value={value}>
-        <OwnPreferences client={client}>{children}</OwnPreferences>
+        <OwnPreferences client={client}>
+          <ToastProvider>{children}</ToastProvider>
+        </OwnPreferences>
       </DashboardContext>
     </MotionConfig>
   )

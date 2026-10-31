@@ -119,6 +119,62 @@ describe('Dashboard shell', () => {
     }
   })
 
+  describe('remembered choices', () => {
+    const DAYS = 86_400_000
+    const spanOf = (call: { params: Record<string, string> } | undefined) =>
+      Math.round((Date.parse(call?.params.to ?? '') - Date.parse(call?.params.from ?? '')) / DAYS)
+    const saved = () => JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}') as Record<string, unknown>
+
+    it('restores the period, the comparison and the breakdown tab from the last visit', async () => {
+      localStorage.setItem(
+        'analytik:preferences',
+        JSON.stringify({ period: '30d', compare: 'previous', tabs: { 'channel,referrer,campaign,term': 'referrer' } }),
+      )
+      const { api } = await open()
+      expect(spanOf(api.find('GET', '/sites/site_1/overview')[0])).toBe(30)
+      expect(api.find('GET', '/sites/site_1/overview')[0]?.params.compare).toBe('previous')
+      await waitFor(() =>
+        api.find('GET', '/sites/site_1/breakdown').find((call) => call.params.dimension === 'referrer'),
+      )
+      expect(api.find('GET', '/sites/site_1/breakdown').some((call) => call.params.dimension === 'channel')).toBe(false)
+    })
+
+    it('remembers a chosen preset and comparison, but not a custom range or filters', async () => {
+      const { container, api } = await open()
+      await choose(selectTrigger(container, 'Compare'), 'Same period last year')
+      await click(container.querySelector('.analytik-range-trigger'))
+      await settled()
+      await press(byText(document.body, 'Past 90 days', '[role="option"], button'))
+      await settled()
+      expect(saved()).toMatchObject({ period: '90d', compare: 'year' })
+      expect(spanOf(api.find('GET', '/sites/site_1/overview').at(-1))).toBe(90)
+
+      await choose(selectTrigger(container, 'Compare'), 'No comparison')
+      expect(saved()).not.toHaveProperty('compare')
+      expect(saved()).not.toHaveProperty('filters')
+    })
+
+    it('lets the address win and leaves the stored choice alone', async () => {
+      localStorage.setItem('analytik:preferences', JSON.stringify({ period: '30d', compare: 'previous' }))
+      history.replaceState(null, '', '/?range=90d')
+      try {
+        const { api } = await open(fakeApi(), undefined, { urlState: true })
+        expect(spanOf(api.find('GET', '/sites/site_1/overview')[0])).toBe(90)
+        expect(api.find('GET', '/sites/site_1/overview')[0]?.params).not.toHaveProperty('compare')
+        expect(saved()).toMatchObject({ period: '30d', compare: 'previous' })
+      } finally {
+        history.replaceState(null, '', '/')
+      }
+    })
+
+    it('ignores stored values the dashboard does not know', async () => {
+      localStorage.setItem('analytik:preferences', JSON.stringify({ period: 'forever', compare: 'sideways', tabs: 5 }))
+      const { api } = await open()
+      expect(spanOf(api.find('GET', '/sites/site_1/overview')[0])).toBe(7)
+      expect(api.find('GET', '/sites/site_1/overview')[0]?.params).not.toHaveProperty('compare')
+    })
+  })
+
   describe('saved filter segments', () => {
     const menuItem = (text: string) =>
       [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === text)
@@ -1005,6 +1061,58 @@ describe('Dashboard shell', () => {
     })
   })
 
+  it('draws a trend and the change on each card, for the period chosen and remembered', async () => {
+    const api = fakeApi({
+      'GET /summary': () => [
+        {
+          siteId: 'site_1',
+          visitors: 150,
+          revenue: 9000,
+          orders: 3,
+          currency: 'EUR',
+          online: 0,
+          traffic: [10, 40, 30, 70],
+          sales: [0, 5000, 0, 4000],
+          previous: { visitors: 100, revenue: 0, orders: 0 },
+        },
+        {
+          siteId: 'site_2',
+          visitors: 5,
+          revenue: 0,
+          orders: 0,
+          currency: 'USD',
+          online: 0,
+          traffic: [0, 0, 2, 3],
+          sales: [0, 0, 0, 0],
+          previous: { visitors: 0, revenue: 0, orders: 0 },
+        },
+      ],
+    })
+    const { container } = await open(api, 'sites')
+    const cards = () => [...container.querySelectorAll('.analytik-site-card')]
+    // One traffic line per card, and a revenue line only for the site that takes payments.
+    expect(cards().map((card) => card.querySelectorAll('.analytik-sparkline').length)).toEqual([2, 1])
+    expect(texts(container, '.analytik-site-number .analytik-delta')).toEqual([
+      'Change from previous period: +50%',
+      'Change from previous period: new',
+    ])
+    const first = api.find('GET', '/summary')[0]?.params
+    expect(first).toMatchObject({ series: 'hour', compare: '1' })
+
+    await choose(selectTrigger(container, 'Period'), 'Last 7 days')
+    await settled()
+    const calls = api.find('GET', '/summary')
+    expect(calls).toHaveLength(2)
+    expect(calls[1]?.params).toMatchObject({ series: 'day', compare: '1' })
+    expect(Date.parse(calls[1]?.params.to ?? '') - Date.parse(calls[1]?.params.from ?? '')).toBe(7 * 86400000)
+    expect(cards()[0]?.textContent).toContain('visitors in the last 7 days')
+    expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toMatchObject({ sitesPeriod: '7d' })
+
+    await click(container.querySelector('.analytik-page-head [aria-label="Refresh"]'))
+    await settled()
+    expect(api.find('GET', '/summary')).toHaveLength(3)
+  })
+
   it('shows a dash and an idle dot when a site card fails to load', async () => {
     const { container } = await open(
       fakeApi({ 'GET /summary': () => Response.json({ error: 'nope' }, { status: 500 }) }),
@@ -1038,6 +1146,49 @@ describe('Dashboard shell', () => {
 })
 
 describe('Dashboard views', () => {
+  describe('table columns', () => {
+    const headings = (container: HTMLElement) => texts(container, '.analytik-table th:not(.analytik-open-cell)')
+    const stored = () => JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}') as { columns?: unknown }
+    const openMenu = async (container: HTMLElement) => {
+      await click(container.querySelector('.analytik-columns-trigger'))
+      await settled()
+    }
+
+    it('hides, shows and moves the columns of Sessions, and remembers the choice', async () => {
+      const { container } = await open(fakeApi(), 'sessions')
+      expect(headings(container).slice(0, 3)).toEqual(['Visitor', 'Started', 'Location'])
+      await openMenu(container)
+      await click(document.querySelector('[aria-label="Move Visitor right"]'))
+      await click(document.querySelector('.analytik-columns-list li:nth-child(5) input'))
+      await settled()
+      expect(headings(container).slice(0, 3)).toEqual(['Started', 'Visitor', 'Location'])
+      expect(headings(container)).not.toContain('Device')
+      expect(stored().columns).toMatchObject({ sessions: { hidden: ['device'] } })
+    })
+
+    it('keeps one column on screen, and puts everything back on reset', async () => {
+      localStorage.setItem(
+        'analytik:preferences',
+        JSON.stringify({
+          columns: {
+            sessions: {
+              order: ['revenue'],
+              hidden: ['visitor', 'started', 'location', 'source', 'device', 'browser', 'path', 'pages', 'duration'],
+            },
+          },
+        }),
+      )
+      const { container } = await open(fakeApi(), 'sessions')
+      expect(headings(container)).toEqual(['Revenue'])
+      await openMenu(container)
+      expect(document.querySelectorAll<HTMLInputElement>('.analytik-columns-list input:disabled')).toHaveLength(1)
+      await click(byText(document.body, 'Reset columns', 'button'))
+      await settled()
+      expect(headings(container).slice(0, 2)).toEqual(['Visitor', 'Started'])
+      expect(stored().columns).toBeUndefined()
+    })
+  })
+
   it('Sources and Pages list every dimension', async () => {
     const { container, api } = await open(fakeApi(), 'sources')
     expect(texts(container, '[role="tab"]')).toEqual([
@@ -1491,11 +1642,45 @@ describe('Settings', () => {
       retentionDays: 365,
       allowLocalhost: true,
       ignoredIps: ['1.2.3.4', '5.6.7.8'],
+      ignoreAdmins: false,
     })
     await fill(byLabel(container, 'Keep data for (days)'), '')
     await submit(container.querySelector('form'))
     await settled()
     expect((api.find('PATCH', '/sites/site_1')[2]?.body as { retentionDays: unknown }).retentionDays).toBeNull()
+  })
+
+  it('adds the current address and offers the ignore links and the admin switch', async () => {
+    const api = fakeApi()
+    const { container } = await open(api, 'settings')
+    await section(container, 'Privacy')
+    await click(byText(container, 'Add my current IP', 'button'))
+    await settled()
+    const list = container.querySelector<HTMLTextAreaElement>('textarea')!
+    expect(list.value).toBe('10.0.0.1\n203.0.113.9')
+    // Once is enough.
+    await click(byText(container, 'Add my current IP', 'button'))
+    await settled()
+    expect(list.value).toBe('10.0.0.1\n203.0.113.9')
+    expect(container.textContent).toContain('?analytik_ignore=false')
+    expect(container.querySelector<HTMLInputElement>('input[readonly]')!.value).toMatch(/\/\?analytik_ignore=true$/)
+    await click(
+      switchFor(container, 'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)'),
+    )
+    await submit(container.querySelector('form'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_1')[0]?.body).toMatchObject({
+      ignoredIps: ['10.0.0.1', '203.0.113.9'],
+      ignoreAdmins: true,
+    })
+  })
+
+  it('says so when the server cannot tell the address', async () => {
+    const { container } = await open(fakeApi({ 'GET /my-ip': () => ({ ip: null }) }), 'settings')
+    await section(container, 'Privacy')
+    await click(byText(container, 'Add my current IP', 'button'))
+    await settled()
+    expect(container.textContent).toContain('The server could not tell your address.')
   })
 
   it('reports a failed save', async () => {
@@ -2054,13 +2239,13 @@ describe('formatting and credits', () => {
     const descriptions = [...document.querySelectorAll('[role="option"] .analytik-menu-description')].map((d) =>
       d.textContent.replace(/\s/g, ' '),
     )
-    // The first follows the language, English here, so it reads like the comma style.
+    // In alphabetical order of what they are called; "The language's own" is English here, so it reads like commas.
     expect(descriptions).toEqual([
-      '1,234,567 · 5.3%',
+      "1'234'567 · 5.3%",
       '1,234,567 · 5.3%',
       '1.234.567 · 5,3 %',
       '1 234 567 · 5,3 %',
-      "1'234'567 · 5.3%",
+      '1,234,567 · 5.3%',
     ])
     await key(document.activeElement ?? document.body, 'Escape')
     await settled()

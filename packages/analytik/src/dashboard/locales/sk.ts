@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'Čísla a peniaze',
   'On the overview': 'Na prehľade',
   'On the visitor’s device': 'Na zariadení návštevníka',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Jedna na riadok. Zodpovedajúce požiadavky sa zahodia skôr, než sa niečo uloží.',
   'One site': 'Jeden web',
   'Only when leaving': 'Len pri odchode',
   'Only when there are some': 'Len ak nejaké sú',
@@ -800,4 +798,25 @@ export default {
     'Importovať {visits, plural, one {# návštevu} few {# návštevy} other {# návštev}} a {events, plural, one {# udalosť} few {# udalosti} other {# udalostí}} z {source} do {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Funguje s adresami http:// aj https://; protokol sa zahodí a ponechá sa len doména.',
+  'Add my current IP': 'Pridať moju aktuálnu IP',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Ignorovať prihlásených správcov (len ak dashboard a tracker bežia na jednom origin)',
+  'Ignore this browser': 'Ignorovať tento prehliadač',
+  'Last 24 hours': 'Posledných 24 hodín',
+  'Last 30 days': 'Posledných 30 dní',
+  'Last 7 days': 'Posledných 7 dní',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Jedna adresa alebo rozsah (203.0.113.0/24) na riadok. Zodpovedajúce požiadavky sa zahodia skôr, než sa niečo uloží. Zdieľaná adresa kancelárie skryje aj ostatných jej návštevníkov.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Otvorte tento odkaz v prehliadači a jeho návštevy sa prestanú počítať, v akejkoľvek sieti. Pamätá si to iba tento prehliadač.',
+  Period: 'Obdobie',
+  'The server could not tell your address.': 'Server nedokázal zistiť vašu adresu.',
+  'To count that browser again, open': 'Ak chcete tento prehliadač opäť počítať, otvorte',
+  'visitors in the last 30 days': 'návštevníkov za posledných 30 dní',
+  'visitors in the last 7 days': 'návštevníkov za posledných 7 dní',
+  Columns: 'Stĺpce',
+  'Move {column} left': 'Posunúť {column} doľava',
+  'Move {column} right': 'Posunúť {column} doprava',
+  'Reset columns': 'Obnoviť stĺpce',
+  'Show or hide columns, and change their order': 'Zobraziť alebo skryť stĺpce a zmeniť ich poradie',
 } satisfies Messages

@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'Số liệu và tiền',
   'On the overview': 'Trong tổng quan',
   'On the visitor’s device': 'Trên thiết bị của khách truy cập',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Mỗi dòng một mục. Các yêu cầu khớp sẽ bị loại bỏ trước khi lưu bất cứ thứ gì.',
   'One site': 'Một trang',
   'Only when leaving': 'Chỉ khi rời đi',
   'Only when there are some': 'Chỉ khi có',
@@ -794,4 +792,25 @@ export default {
     'Nhập {visits, plural, other {# lượt truy cập}} và {events, plural, other {# sự kiện}} từ {source} vào {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Dùng được với địa chỉ http:// và https://; giao thức bị bỏ và chỉ giữ lại tên miền.',
+  'Add my current IP': 'Thêm IP hiện tại của tôi',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Bỏ qua quản trị viên đã đăng nhập (chỉ khi bảng điều khiển và tracker dùng chung origin)',
+  'Ignore this browser': 'Bỏ qua trình duyệt này',
+  'Last 24 hours': '24 giờ qua',
+  'Last 30 days': '30 ngày qua',
+  'Last 7 days': '7 ngày qua',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Mỗi dòng một địa chỉ hoặc dải (203.0.113.0/24). Các yêu cầu khớp bị loại bỏ trước khi lưu bất cứ thứ gì. Địa chỉ văn phòng dùng chung cũng làm ẩn những khách truy cập khác.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Mở liên kết này trong một trình duyệt để ngừng đếm lượt truy cập của nó, trên mọi mạng. Chỉ trình duyệt đó ghi nhớ điều này.',
+  Period: 'Khoảng thời gian',
+  'The server could not tell your address.': 'Máy chủ không xác định được địa chỉ của bạn.',
+  'To count that browser again, open': 'Để đếm lại trình duyệt đó, hãy mở',
+  'visitors in the last 30 days': 'khách truy cập trong 30 ngày qua',
+  'visitors in the last 7 days': 'khách truy cập trong 7 ngày qua',
+  Columns: 'Cột',
+  'Move {column} left': 'Chuyển {column} sang trái',
+  'Move {column} right': 'Chuyển {column} sang phải',
+  'Reset columns': 'Đặt lại cột',
+  'Show or hide columns, and change their order': 'Hiện hoặc ẩn cột và đổi thứ tự của chúng',
 } satisfies Messages

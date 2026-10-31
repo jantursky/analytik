@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'Sayılar ve para',
   'On the overview': 'Genel bakışta',
   'On the visitor’s device': 'Ziyaretçinin cihazında',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Her satıra bir tane. Eşleşen istekler, herhangi bir şey saklanmadan önce atılır.',
   'One site': 'Tek site',
   'Only when leaving': 'Yalnızca ayrılırken',
   'Only when there are some': 'Yalnızca varsa',
@@ -797,4 +795,25 @@ export default {
     '{visits, plural, one {# ziyaret} other {# ziyaret}} ve {events, plural, one {# olay} other {# olay}}, {source} kaynağından {site} sitesine aktarılsın mı?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'http:// ve https:// adresleriyle çalışır; protokol atılır, yalnızca alan adı tutulur.',
+  'Add my current IP': "Mevcut IP'mi ekle",
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Oturum açmış yöneticileri yoksay (yalnızca pano ve izleyici aynı origin üzerindeyse)',
+  'Ignore this browser': 'Bu tarayıcıyı yoksay',
+  'Last 24 hours': 'Son 24 saat',
+  'Last 30 days': 'Son 30 gün',
+  'Last 7 days': 'Son 7 gün',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Satır başına bir adres veya aralık (203.0.113.0/24). Eşleşen istekler hiçbir şey kaydedilmeden önce atılır. Paylaşılan bir ofis adresi diğer ziyaretçileri de gizler.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Bu bağlantıyı bir tarayıcıda açarsanız, o tarayıcının ziyaretleri herhangi bir ağda sayılmaz. Bunu yalnızca o tarayıcı hatırlar.',
+  Period: 'Dönem',
+  'The server could not tell your address.': 'Sunucu adresinizi belirleyemedi.',
+  'To count that browser again, open': 'O tarayıcıyı yeniden saymak için şunu açın',
+  'visitors in the last 30 days': 'son 30 günde ziyaretçi',
+  'visitors in the last 7 days': 'son 7 günde ziyaretçi',
+  Columns: 'Sütunlar',
+  'Move {column} left': '{column} sütununu sola taşı',
+  'Move {column} right': '{column} sütununu sağa taşı',
+  'Reset columns': 'Sütunları sıfırla',
+  'Show or hide columns, and change their order': 'Sütunları göster veya gizle ve sıralarını değiştir',
 } satisfies Messages

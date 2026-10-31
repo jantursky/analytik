@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'संख्याएँ और पैसे',
   'On the overview': 'ओवरव्यू में',
   'On the visitor’s device': 'विज़िटर के डिवाइस पर',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'हर पंक्ति में एक। मेल खाने वाले अनुरोध कुछ भी संग्रहीत होने से पहले छोड़ दिए जाते हैं।',
   'One site': 'एक साइट',
   'Only when leaving': 'केवल छोड़ते समय',
   'Only when there are some': 'केवल जब कुछ हों',
@@ -793,4 +791,25 @@ export default {
     '{source} से {visits, plural, one {# विज़िट} other {# विज़िट}} और {events, plural, one {# इवेंट} other {# इवेंट}} को {site} में इंपोर्ट करें?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'http:// और https:// दोनों पतों के साथ काम करता है; प्रोटोकॉल हटा दिया जाता है और सिर्फ़ डोमेन रखा जाता है।',
+  'Add my current IP': 'मेरा मौजूदा IP जोड़ें',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'साइन इन किए हुए एडमिन को अनदेखा करें (केवल तब जब डैशबोर्ड और ट्रैकर एक ही origin पर हों)',
+  'Ignore this browser': 'इस ब्राउज़र को अनदेखा करें',
+  'Last 24 hours': 'पिछले 24 घंटे',
+  'Last 30 days': 'पिछले 30 दिन',
+  'Last 7 days': 'पिछले 7 दिन',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'प्रति पंक्ति एक पता या रेंज (203.0.113.0/24)। मेल खाने वाले अनुरोध कुछ भी सहेजे जाने से पहले हटा दिए जाते हैं। साझा ऑफ़िस पता उसके अन्य विज़िटरों को भी छिपा देता है।',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'किसी भी नेटवर्क पर इस ब्राउज़र की विज़िट गिनना बंद करने के लिए यह लिंक उस ब्राउज़र में खोलें। यह केवल उसी ब्राउज़र में याद रहता है।',
+  Period: 'अवधि',
+  'The server could not tell your address.': 'सर्वर आपका पता नहीं जान सका।',
+  'To count that browser again, open': 'उस ब्राउज़र को फिर से गिनने के लिए खोलें',
+  'visitors in the last 30 days': 'पिछले 30 दिनों में विज़िटर',
+  'visitors in the last 7 days': 'पिछले 7 दिनों में विज़िटर',
+  Columns: 'कॉलम',
+  'Move {column} left': '{column} को बाएँ ले जाएँ',
+  'Move {column} right': '{column} को दाएँ ले जाएँ',
+  'Reset columns': 'कॉलम रीसेट करें',
+  'Show or hide columns, and change their order': 'कॉलम दिखाएँ या छिपाएँ और उनका क्रम बदलें',
 } satisfies Messages

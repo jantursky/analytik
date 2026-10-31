@@ -1,4 +1,4 @@
-import { type ChangeEvent, useRef, useState } from 'react'
+import { type ChangeEvent, type ReactNode, useRef, useState } from 'react'
 
 import type { PreparedImport } from '../../shared/import/prepare'
 import type { ImportResult, ImportSource, ImportSummary } from '../../shared/import/types'
@@ -6,16 +6,17 @@ import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatDate, formatDateTime, formatNumber } from '../format'
 import { t } from '../i18n'
+import { Logo } from '../logo'
 import { Actions, Card, ConfirmButton, ErrorNote, Field, useOutcome } from '../ui'
 import { Select } from '../ui/select'
 
-export const SOURCES: { value: ImportSource; label: string }[] = [
-  { value: 'goatcounter', label: 'GoatCounter' },
-  { value: 'ga4', label: 'Google Analytics 4' },
-  { value: 'matomo', label: 'Matomo' },
-  { value: 'posthog', label: 'PostHog' },
-  { value: 'simple-analytics', label: 'Simple Analytics' },
-  { value: 'umami', label: 'Umami' },
+export const SOURCES: { value: ImportSource; label: string; icon: ReactNode }[] = [
+  { value: 'goatcounter', label: 'GoatCounter', icon: <Logo name="GoatCounter" /> },
+  { value: 'ga4', label: 'Google Analytics 4', icon: <Logo name="Google Analytics" /> },
+  { value: 'matomo', label: 'Matomo', icon: <Logo name="Matomo" /> },
+  { value: 'posthog', label: 'PostHog', icon: <Logo name="PostHog" /> },
+  { value: 'simple-analytics', label: 'Simple Analytics', icon: <Logo name="Simple Analytics" /> },
+  { value: 'umami', label: 'Umami', icon: <Logo name="Umami" /> },
 ]
 
 const sourceLabel = (source: ImportSource): string => SOURCES.find((s) => s.value === source)?.label ?? source
@@ -273,6 +274,7 @@ export function ImportData({ onImported }: { onImported: () => void }) {
             label={t('Import from')}
             value={source}
             options={SOURCES}
+            leading={SOURCES.find((s) => s.value === source)?.icon}
             onChange={(next) => {
               setSource(next)
               reset()

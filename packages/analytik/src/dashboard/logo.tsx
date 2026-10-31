@@ -54,9 +54,41 @@ const KNOWN = new Set([
   'Stripe',
   'Lemon Squeezy',
   'Dodo Payments',
+  'HTML',
+  'React',
+  'Next.js',
+  'Remix',
+  'Vue',
+  'Nuxt',
+  'Astro',
+  'Svelte',
+  'Angular',
+  'SolidStart',
+  'Qwik',
+  'Gatsby',
+  'Docusaurus',
+  'Hugo',
+  'Jekyll',
+  'Eleventy',
+  'WordPress',
+  'Shopify',
+  'Webflow',
+  'Framer',
+  'Ghost',
+  'Laravel',
+  'Ruby on Rails',
+  'Django',
+  'Flask',
+  'Google Tag Manager',
+  'Umami',
+  'Simple Analytics',
+  'Matomo',
+  'Google Analytics',
+  'PostHog',
+  'GoatCounter',
 ])
 
-/** A small brand mark (browser, operating system, payment provider) in its own colours; decorative. */
+/** A small brand mark (browser, operating system, payment provider, framework, analytics tool) in its own colours; decorative. */
 export function Logo({ name }: { name: string }) {
   const marks = useLogos()
   const mark = marks?.[ALIASES[name] ?? name]

@@ -99,23 +99,44 @@ export async function online(ctx: Context, siteId: string): Promise<number> {
 // Sites per query: D1 binds at most 100 parameters.
 const SUMMARY_CHUNK = 50
 
+export interface SummaryOptions {
+  /** Bucket length in milliseconds: adds `traffic` and `sales` series with one point per bucket from `from`. */
+  bucket?: number
+  /** Adds the previous window of equal length as `previous`. */
+  compare?: boolean
+}
+
 /**
- * Visitors, revenue and orders in `[from, to)` and who is online, for every site in three grouped queries per chunk
- * of sites, rather than an overview per site: the sites overview loads in one request.
+ * Visitors, revenue and orders in `[from, to)` and who is online, for every site in a few grouped queries per chunk
+ * of sites, rather than an overview per site: the sites overview loads in one request. With `bucket` each site also
+ * gets a visitors and a revenue series, and with `compare` the totals of the window before.
  */
 export async function siteSummaries(
   ctx: Context,
   sites: SiteRecord[],
   from: number,
   to: number,
+  options: SummaryOptions = {},
 ): Promise<SiteSummary[]> {
+  const { bucket, compare } = options
+  // Whole numbers from the server, so they go into the SQL as literals (Postgres can't type a bare `$1 / $2`).
+  const size = bucket ? Math.max(1, Math.floor(bucket)) : 0
+  const points = size ? Math.max(1, Math.ceil((to - from) / size)) : 0
+  const fromLiteral = Math.floor(from)
   const visitors = new Map<string, number>()
   const online = new Map<string, number>()
   const money = new Map<string, { revenue: number; orders: number }>()
+  const traffic = new Map<string, number[]>()
+  const sales = new Map<string, number[]>()
+  const series = (map: Map<string, number[]>, siteId: string, index: number, value: number): void => {
+    let list = map.get(siteId)
+    if (!list) map.set(siteId, (list = Array<number>(points).fill(0)))
+    if (index >= 0 && index < points) list[index] = value
+  }
   for (let start = 0; start < sites.length; start += SUMMARY_CHUNK) {
     const ids = sites.slice(start, start + SUMMARY_CHUNK).map((site) => site.id)
     const list = ids.map(() => '?').join(', ')
-    const [traffic, here, paid] = await Promise.all([
+    const [totals, here, paid, byBucket, paidByBucket] = await Promise.all([
       ctx.storage.query<{ site_id: string; n: number | string }>(
         `SELECT site_id, COUNT(DISTINCT visitor_id) AS n FROM sessions
          WHERE site_id IN (${list}) AND started_at >= ? AND started_at < ? GROUP BY site_id`,
@@ -133,19 +154,52 @@ export async function siteSummaries(
          WHERE p.site_id IN (${list}) AND p.ts >= ? AND p.ts < ? GROUP BY p.site_id`,
         [...ids, from, to],
       ),
+      size
+        ? ctx.storage.query<{ site_id: string; b: number | string; n: number | string }>(
+            `SELECT site_id, (started_at - ${fromLiteral}) / ${size} AS b, COUNT(DISTINCT visitor_id) AS n FROM sessions
+             WHERE site_id IN (${list}) AND started_at >= ? AND started_at < ? GROUP BY site_id, b`,
+            [...ids, from, to],
+          )
+        : [],
+      size
+        ? ctx.storage.query<{ site_id: string; b: number | string; revenue: number | string }>(
+            `SELECT p.site_id, (p.ts - ${fromLiteral}) / ${size} AS b, COALESCE(SUM(p.amount), 0) AS revenue
+             FROM payments p JOIN sites x ON x.id = p.site_id AND x.currency = p.currency
+             WHERE p.site_id IN (${list}) AND p.ts >= ? AND p.ts < ? GROUP BY p.site_id, b`,
+            [...ids, from, to],
+          )
+        : [],
     ])
-    for (const row of traffic) visitors.set(row.site_id, Number(row.n))
+    for (const row of totals) visitors.set(row.site_id, Number(row.n))
     for (const row of here) online.set(row.site_id, Number(row.n))
     for (const row of paid) money.set(row.site_id, { revenue: Number(row.revenue), orders: Number(row.orders) })
+    for (const id of ids) {
+      if (size) {
+        series(traffic, id, -1, 0)
+        series(sales, id, -1, 0)
+      }
+    }
+    for (const row of byBucket) series(traffic, row.site_id, Number(row.b), Number(row.n))
+    for (const row of paidByBucket) series(sales, row.site_id, Number(row.b), Number(row.revenue))
   }
-  return sites.map((site) => ({
-    siteId: site.id,
-    visitors: visitors.get(site.id) ?? 0,
-    revenue: money.get(site.id)?.revenue ?? 0,
-    orders: money.get(site.id)?.orders ?? 0,
-    currency: site.currency,
-    online: online.get(site.id) ?? 0,
-  }))
+  const before = compare
+    ? new Map((await siteSummaries(ctx, sites, from - (to - from), from)).map((s) => [s.siteId, s]))
+    : null
+  return sites.map((site) => {
+    const previous = before?.get(site.id)
+    return {
+      siteId: site.id,
+      visitors: visitors.get(site.id) ?? 0,
+      revenue: money.get(site.id)?.revenue ?? 0,
+      orders: money.get(site.id)?.orders ?? 0,
+      currency: site.currency,
+      online: online.get(site.id) ?? 0,
+      ...(size && { traffic: traffic.get(site.id), sales: sales.get(site.id) }),
+      ...(previous && {
+        previous: { visitors: previous.visitors, revenue: previous.revenue, orders: previous.orders },
+      }),
+    }
+  })
 }
 
 /**

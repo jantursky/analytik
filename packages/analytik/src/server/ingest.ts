@@ -1,4 +1,5 @@
 import { classify } from '../shared/channels'
+import { ipMatcher } from '../shared/cidr'
 import { isId, isSiteId, randomId } from '../shared/ids'
 import { DAY, HOUR, MINUTE } from '../shared/time'
 import type { EventType, PrivacyMode, Props } from '../shared/types'
@@ -273,6 +274,21 @@ async function enforceRetention(ctx: Context, site: SiteRecord, now: number): Pr
   await purgeBefore(ctx, site.id, now - site.retentionDays * DAY)
 }
 
+// Parsed lists by their text: an event costs one lookup, not a parse of up to 100 entries.
+const matchers = new Map<string, (ip: string) => boolean>()
+
+function ignoresIp(entries: readonly string[], ip: string): boolean {
+  if (entries.length === 0) return false
+  const key = entries.join(',')
+  let match = matchers.get(key)
+  if (!match) {
+    if (matchers.size >= 200) matchers.clear()
+    match = ipMatcher(entries)
+    matchers.set(key, match)
+  }
+  return match(ip)
+}
+
 /** Validates and stores one tracker event. Shared by `POST /event` and `analytik.ingest()`. */
 export async function ingest(ctx: Context, input: IngestInput): Promise<IngestResult> {
   const payload = parsePayload(input.payload)
@@ -288,9 +304,10 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   ) {
     return { status: 403, error: 'origin not allowed for this site' }
   }
-  if (input.ip && site.ignoredIps.includes(input.ip)) {
+  if (input.ip && ignoresIp(site.ignoredIps, input.ip)) {
     return { status: 202, visitorId: null, sessionId: null, filtered: 'ignored-ip' }
   }
+  if (site.ignoreAdmins && input.admin) return { status: 202, visitorId: null, sessionId: null, filtered: 'admin' }
   if (site.paused) return { status: 202, visitorId: null, sessionId: null, filtered: 'paused' }
 
   const now = ctx.now()

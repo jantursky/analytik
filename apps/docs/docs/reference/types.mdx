@@ -58,7 +58,10 @@ interface Site {
   allowLocalhost: boolean
   /** Tracking is paused: tracker events and server goals are dropped, payments are still recorded. */
   paused: boolean
+  /** Addresses and CIDR ranges (at least /8 for IPv4, /32 for IPv6) whose events are dropped. */
   ignoredIps: string[]
+  /** Events from browsers holding an admin session are dropped; needs dashboard and tracker on one origin. */
+  ignoreAdmins: boolean
   createdAt: number // Unix milliseconds
   /** Which providers have a webhook secret configured. Secrets are never returned. */
   webhooks?: Record<PaymentProvider, boolean>
@@ -183,6 +186,9 @@ interface SiteSummary {
   orders: number
   currency: string
   online: number
+  traffic?: number[] // visitors per bucket, with `series`
+  sales?: number[] // revenue per bucket (minor units), with `series`
+  previous?: { visitors: number; revenue: number; orders: number } // with `compare=1`
 }
 
 interface TimeseriesPoint {

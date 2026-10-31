@@ -351,13 +351,22 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
   )
 }
 
-/** A tiny trend line; decorative, so hidden from assistive technology. */
-export function Sparkline({ values }: { values: number[] }) {
+/** What a point of a sparkline reads as when it is hovered: its time and its value, already formatted. */
+export interface SparkDetail {
+  when: string
+  value: string
+}
+
+/**
+ * A tiny trend line; decorative, so hidden from assistive technology. With `details` (one per value), resting the
+ * pointer on it for a moment shows the time and value of the point under it.
+ */
+export function Sparkline({ values, details }: { values: number[]; details?: SparkDetail[] }) {
   if (values.length < 2) return null
   return (
     <span className="analytik-sparkline" aria-hidden="true">
       <Suspense fallback={null}>
-        <SparkPlot values={values} />
+        <SparkPlot values={values} details={details} />
       </Suspense>
     </span>
   )

@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect, useId, useState } from 'react'
 
+import { parseColumns } from '../../shared/choices'
 import type { Page } from '../../shared/types'
 import type { Paging } from '../api'
 import { requestKey, useDashboard } from '../context'
@@ -8,9 +9,12 @@ import { formatNumber } from '../format'
 import { t } from '../i18n'
 import { Icon } from '../icons'
 import type { DateRange } from '../range'
+import { usePreferences } from '../preferences'
 import { Card, Status } from '../ui'
 import { DateRangePicker } from '../ui/date-picker'
+import { Popover } from '../ui/popover'
 import { Select } from '../ui/select'
+import { type ArrangedColumn, arrangeColumns, columnChoice } from './columns'
 
 export interface Column<T> {
   key: string
@@ -58,6 +62,91 @@ export interface DataTableProps<T> {
   onOpen?: (row: T) => void
   /** Text for the row button's accessible name. */
   openLabel?: (row: T) => string
+  /** Lets the admin hide and reorder the columns; the choice is saved under this name with the other preferences. */
+  columnsId?: string
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/** A button that opens a list of the table's columns: each can be shown or hidden and moved left or right. */
+function ColumnsMenu<T>({
+  arranged,
+  onChange,
+  onReset,
+}: {
+  arranged: ArrangedColumn<T>[]
+  onChange: (next: ArrangedColumn<T>[]) => void
+  onReset: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const shownCount = arranged.filter((item) => item.shown).length
+  const move = (index: number, step: -1 | 1): void => {
+    const next = [...arranged]
+    const [item] = next.splice(index, 1)
+    if (item) next.splice(index + step, 0, item)
+    onChange(next)
+  }
+  const toggle = (index: number): void =>
+    onChange(arranged.map((item, i) => (i === index ? { ...item, shown: !item.shown } : item)))
+  return (
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+      label={t('Show or hide columns, and change their order')}
+      className="analytik-columns-popup"
+      trigger={
+        <button type="button" className="analytik-pill analytik-columns-trigger">
+          <Icon name="layout" />
+          {t('Columns')}
+        </button>
+      }
+    >
+      <ul className="analytik-columns-list">
+        {arranged.map(({ column, shown }, index) => (
+          <li key={column.key}>
+            <label className="analytik-columns-name">
+              <input
+                type="checkbox"
+                checked={shown}
+                disabled={shown && shownCount === 1}
+                onChange={() => toggle(index)}
+              />
+              {column.label}
+            </label>
+            <button
+              type="button"
+              className="analytik-pill-icon"
+              aria-label={t('Move {column} left', { column: column.label })}
+              disabled={index === 0}
+              onClick={() => move(index, -1)}
+            >
+              <Icon name="prev" />
+            </button>
+            <button
+              type="button"
+              className="analytik-pill-icon"
+              aria-label={t('Move {column} right', { column: column.label })}
+              disabled={index === arranged.length - 1}
+              onClick={() => move(index, 1)}
+            >
+              <Icon name="next" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        className="analytik-link analytik-columns-reset"
+        onClick={() => {
+          onReset()
+          setOpen(false)
+        }}
+      >
+        {t('Reset columns')}
+      </button>
+    </Popover>
+  )
 }
 
 const PAGE_SIZES = [10, 25, 50, 100] as const
@@ -96,8 +185,19 @@ export function DataTable<T>({
   empty,
   onOpen,
   openLabel,
+  columnsId,
 }: DataTableProps<T>) {
   const { range } = useDashboard()
+  const { values: preferences, update } = usePreferences()
+  const arranged = arrangeColumns(columns, columnsId ? parseColumns(preferences.columns, columnsId) : undefined)
+  const shownColumns = arranged.filter((item) => item.shown).map((item) => item.column)
+  const arrange = (next: ArrangedColumn<T>[]): void => {
+    if (!columnsId) return
+    const { [columnsId]: _old, ...others } = isRecord(preferences.columns) ? preferences.columns : {}
+    const choice = columnChoice(next, columns)
+    const all = choice ? { ...others, [columnsId]: choice } : others
+    update({ columns: Object.keys(all).length ? all : undefined })
+  }
   const searchId = useId()
   const [typed, setTyped] = useState('')
   const [search, setSearch] = useState('')
@@ -199,6 +299,13 @@ export function DataTable<T>({
           ),
         )}
         <DateRangePicker range={shownRange} onChange={setOwnRange} />
+        {columnsId && (
+          <ColumnsMenu
+            arranged={arranged}
+            onChange={arrange}
+            onReset={() => arrange(arrangeColumns(columns, undefined))}
+          />
+        )}
         {narrowed && (
           <button type="button" className="analytik-link" onClick={clear}>
             {t('Clear')}
@@ -212,7 +319,7 @@ export function DataTable<T>({
               <table className="analytik-table" aria-busy={rows.loading} aria-label={title}>
                 <thead>
                   <tr>
-                    {columns.map((column) => {
+                    {shownColumns.map((column) => {
                       const sorted = column.sort && sort?.key === column.sort ? sort.order : undefined
                       return (
                         <th
@@ -247,7 +354,7 @@ export function DataTable<T>({
                 <tbody>
                   {data.items.map((row) => (
                     <tr key={rowKey(row)} data-open={onOpen ? '' : undefined} onClick={onOpen && (() => onOpen(row))}>
-                      {columns.map((column) => (
+                      {shownColumns.map((column) => (
                         <td key={column.key} className={column.numeric ? 'analytik-num' : undefined}>
                           {column.render(row)}
                         </td>

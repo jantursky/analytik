@@ -269,8 +269,6 @@ export default {
   'Numbers and money': '숫자와 금액',
   'On the overview': '개요에 표시',
   'On the visitor’s device': '방문자의 기기에 저장',
-  'One per line. Matching requests are dropped before anything is stored.':
-    '한 줄에 하나씩 입력합니다. 일치하는 요청은 저장되기 전에 버려집니다.',
   'One site': '사이트 하나',
   'Only when leaving': '떠날 때만',
   'Only when there are some': '있을 때만',
@@ -787,4 +785,25 @@ export default {
     '{source}의 {visits, plural, other {방문 #회}}과 {events, plural, other {이벤트 #개}}를 {site}(으)로 가져올까요?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'http://와 https:// 주소 모두 사용할 수 있습니다. 프로토콜은 제거되고 도메인만 남습니다.',
+  'Add my current IP': '현재 IP 추가',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    '로그인한 관리자 무시(대시보드와 트래커가 같은 origin일 때만)',
+  'Ignore this browser': '이 브라우저 무시',
+  'Last 24 hours': '최근 24시간',
+  'Last 30 days': '최근 30일',
+  'Last 7 days': '최근 7일',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    '한 줄에 주소 또는 범위(203.0.113.0/24) 하나. 일치하는 요청은 아무것도 저장되기 전에 버려집니다. 공유 사무실 주소는 다른 방문자도 함께 숨깁니다.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    '이 링크를 브라우저에서 열면 어떤 네트워크에서든 그 브라우저의 방문이 집계되지 않습니다. 해당 브라우저만 기억합니다.',
+  Period: '기간',
+  'The server could not tell your address.': '서버가 사용자의 주소를 알아내지 못했습니다.',
+  'To count that browser again, open': '그 브라우저를 다시 집계하려면 다음을 여세요',
+  'visitors in the last 30 days': '최근 30일 방문자',
+  'visitors in the last 7 days': '최근 7일 방문자',
+  Columns: '열',
+  'Move {column} left': '{column} 왼쪽으로 이동',
+  'Move {column} right': '{column} 오른쪽으로 이동',
+  'Reset columns': '열 초기화',
+  'Show or hide columns, and change their order': '열 표시·숨김 및 순서 변경',
 } satisfies Messages

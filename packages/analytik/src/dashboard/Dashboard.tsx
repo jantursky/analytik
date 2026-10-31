@@ -13,6 +13,7 @@ import { loadMessages, type Messages, msg, resolveLanguage, setLanguage, t } fro
 import { Icon } from './icons'
 import { LanguageSwitch } from './language-switch'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
+import { savedCompare, savedRange } from './choices'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
 import { type DateRange, presetRange, shiftRange } from './range'
 import { sameFilters } from './segments'
@@ -175,6 +176,28 @@ export function Dashboard({
   // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on.
   const preferences = usePreferencesStore(syncPreferences ? client : undefined, !unauthorized)
   const live = preferences.values.live === true
+  // The period and comparison from the last visit, unless the address names its own or the admin already chose here.
+  // Applied while rendering, like the linked segment below; the saved copy from the database may arrive later.
+  const [choicesSettled, setChoicesSettled] = useState(() => !!(initial?.range ?? initial?.compare))
+  const [mountedAt] = useState(() => Date.now())
+  const savedPeriod = savedRange(preferences.values, mountedAt)
+  const savedComparison = savedCompare(preferences.values)
+  if (!choicesSettled && (savedPeriod || savedComparison)) {
+    setChoicesSettled(true)
+    if (savedPeriod) setRange(savedPeriod)
+    if (savedComparison) setCompare(savedComparison)
+  }
+  // Presets are remembered for next time; a custom range is not.
+  const chooseRange = (next: DateRange): void => {
+    setChoicesSettled(true)
+    setRange(next)
+    if (next.preset !== 'custom') preferences.update({ period: next.preset, interval: next.interval })
+  }
+  const chooseCompare = (next: Comparison | undefined): void => {
+    setChoicesSettled(true)
+    setCompare(next)
+    preferences.update({ compare: next })
+  }
   const segments = parseSegments(preferences.values.segments)
   // Set while rendering, as React allows for a component's own state, rather than in an effect that renders twice.
   const linked = pendingSegment ? segments.find((s) => s.id === pendingSegment) : undefined
@@ -421,9 +444,9 @@ export function Dashboard({
             />
             {current.ranged && (
               <>
-                <RangePicker range={range} onChange={setRange} />
-                <IntervalPicker range={range} onChange={setRange} />
-                <ComparePicker compare={compare} onChange={setCompare} />
+                <RangePicker range={range} onChange={chooseRange} />
+                <IntervalPicker range={range} onChange={chooseRange} />
+                <ComparePicker compare={compare} onChange={chooseCompare} />
                 <Switch
                   className="analytik-pill analytik-live-toggle"
                   checked={liveOn}
@@ -560,7 +583,7 @@ export function Dashboard({
                       sites: list,
                       siteId: site.id,
                       openSite,
-                      setRange,
+                      setRange: chooseRange,
                       live,
                       setLive,
                       cycleTheme: () => {
@@ -570,7 +593,7 @@ export function Dashboard({
                       },
                       refresh,
                       compare,
-                      setCompare,
+                      setCompare: chooseCompare,
                       segments,
                       applySegment: (segment) => changeFilters({ ...segment.filters }),
                       filters,

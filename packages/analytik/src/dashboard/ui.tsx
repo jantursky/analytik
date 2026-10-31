@@ -10,6 +10,7 @@ import { t } from './i18n'
 import { Icon, type IconName } from './icons'
 import { Dialog } from './ui/dialog'
 import { AnimatedNumber, EASE, rise } from './ui/motion'
+import { useToast } from './ui/toast'
 import { Tooltip } from './ui/tooltip'
 
 export function Card({
@@ -356,17 +357,20 @@ export function Actions({ outcome, children }: { outcome?: Outcome; children: Re
   )
 }
 
+/** A button that copies `text` and says so in a toast (beside the button when there is no toast to show it in). */
 export function CopyButton({ text, label = t('Copy') }: { text: string; label?: string }) {
   const [outcome, setOutcome] = useState<Outcome>()
+  const toast = useToast()
   const copy = (): void => {
+    const done = (result: Outcome): void => (toast ? toast(result.text, result.ok) : setOutcome(result))
     navigator.clipboard.writeText(text).then(
-      () => setOutcome({ ok: true, text: t('Copied') }),
-      () => setOutcome({ ok: false, text: t('Copy failed, select the text instead') }),
+      () => done({ ok: true, text: t('Copied') }),
+      () => done({ ok: false, text: t('Copy failed, select the text instead') }),
     )
   }
   return (
     <span className="analytik-copy">
-      <Notice outcome={outcome} />
+      {!toast && <Notice outcome={outcome} />}
       <button type="button" className="analytik-button" onClick={copy}>
         {label}
       </button>

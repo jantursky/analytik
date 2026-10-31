@@ -141,6 +141,7 @@ export function Sessions() {
       <DataTable
         title={t('Sessions')}
         columns={columns}
+        columnsId="sessions"
         basis={requestKey('sessions', site.id, query.filters)}
         load={({ filters: { visitor, ...filters }, ...request }) =>
           client.sessions(site.id, { ...query, ...request, visitor, filters: { ...query.filters, ...filters } })

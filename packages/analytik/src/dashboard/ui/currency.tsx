@@ -7,8 +7,8 @@ export interface Currency {
   symbol: string
 }
 
-// The most used currencies lead the list; the rest follow by code.
-const FIRST = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CZK', 'PLN', 'SEK']
+// What older engines, which cannot list every currency, offer.
+const COMMON = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CZK', 'PLN', 'SEK']
 
 // Built for the chosen language the first time it is needed, and again if the language changes.
 let all: { tag: string; list: Map<string, Currency> } | undefined
@@ -28,7 +28,7 @@ export function currencies(): Map<string, Currency> {
     new Intl.NumberFormat(tag, { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
       .formatToParts(0)
       .find((part) => part.type === 'currency')?.value ?? code
-  const ordered = [...new Set([...FIRST, ...codes.sort()])]
+  const ordered = [...new Set(codes.length ? codes : COMMON)].sort()
   const list = new Map(ordered.map((code) => [code, { code, name: names.of(code) ?? code, symbol: symbol(code) }]))
   all = { tag, list }
   return list

@@ -22,6 +22,7 @@ export const site: Site = {
   allowLocalhost: false,
   paused: false,
   ignoredIps: ['10.0.0.1'],
+  ignoreAdmins: false,
   createdAt: Date.UTC(2026, 0, 1),
 }
 
@@ -188,6 +189,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     },
     'GET /sites': () => state.sites,
     'GET /version': () => state.version,
+    'GET /my-ip': () => ({ ip: '203.0.113.9' }),
     'GET /summary': () =>
       state.sites.map((s) => ({
         siteId: s.id,

@@ -226,10 +226,12 @@ describe('SiteTile', () => {
 })
 
 describe('currencies', () => {
-  it('lists every currency with its name and symbol, the common ones first', () => {
+  it('lists every currency with its name and symbol, in alphabetical order of code', () => {
     const list = [...currencies().values()]
     expect(list.length).toBeGreaterThan(100)
-    expect(list.slice(0, 3).map((c) => c.code)).toEqual(['USD', 'EUR', 'GBP'])
+    const codes = list.map((c) => c.code)
+    expect(codes).toEqual([...codes].sort())
+    expect(codes.slice(0, 3)).toEqual(['AED', 'AFN', 'ALL'])
     expect(currencies().get('EUR')).toEqual({ code: 'EUR', name: 'Euro', symbol: '€' })
     expect(new Set(list.map((c) => c.code)).size).toBe(list.length)
   })

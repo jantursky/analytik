@@ -346,8 +346,6 @@ export default {
   'Numbers and money': 'Numeri e denaro',
   'On the overview': 'Nella panoramica',
   'On the visitor’s device': 'Sul dispositivo del visitatore',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Uno per riga. Le richieste corrispondenti vengono scartate prima che venga memorizzato qualcosa.',
   'One site': 'Un sito',
   'Only when leaving': 'Solo all’uscita',
   'Only when there are some': 'Solo quando ce ne sono',
@@ -802,4 +800,25 @@ export default {
     'Importare {visits, plural, one {# visita} other {# visite}} e {events, plural, one {# evento} other {# eventi}} da {source} in {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Funziona con indirizzi http:// e https://; il protocollo viene scartato e resta solo il dominio.',
+  'Add my current IP': 'Aggiungi il mio IP attuale',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Ignora gli amministratori connessi (solo se dashboard e tracker usano lo stesso origin)',
+  'Ignore this browser': 'Ignora questo browser',
+  'Last 24 hours': 'Ultime 24 ore',
+  'Last 30 days': 'Ultimi 30 giorni',
+  'Last 7 days': 'Ultimi 7 giorni',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    "Un indirizzo o intervallo (203.0.113.0/24) per riga. Le richieste corrispondenti vengono scartate prima di salvare qualsiasi cosa. L'indirizzo condiviso di un ufficio nasconde anche gli altri visitatori.",
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Apri questo link in un browser per smettere di contarne le visite, su qualsiasi rete. Lo ricorda solo quel browser.',
+  Period: 'Periodo',
+  'The server could not tell your address.': 'Il server non è riuscito a determinare il tuo indirizzo.',
+  'To count that browser again, open': 'Per contare di nuovo quel browser, apri',
+  'visitors in the last 30 days': 'visitatori negli ultimi 30 giorni',
+  'visitors in the last 7 days': 'visitatori negli ultimi 7 giorni',
+  Columns: 'Colonne',
+  'Move {column} left': 'Sposta {column} a sinistra',
+  'Move {column} right': 'Sposta {column} a destra',
+  'Reset columns': 'Ripristina colonne',
+  'Show or hide columns, and change their order': "Mostra o nascondi le colonne e cambiane l'ordine",
 } satisfies Messages

@@ -14,7 +14,7 @@ import {
   parseFormatSettings,
   setFormatSettings,
 } from '../format'
-import { LANGUAGES, msg, t } from '../i18n'
+import { compareLabels, LANGUAGES, msg, t } from '../i18n'
 import { parseTheme, usePreferences } from '../preferences'
 import { Card } from '../ui'
 import { Select } from '../ui/select'
@@ -120,11 +120,9 @@ export function FormatSettings() {
         <Select
           label={t(label)}
           value={settings[key]}
-          options={options.map((option) => ({
-            value: option.value,
-            label: t(option.label),
-            description: example(option.value),
-          }))}
+          options={options
+            .map((option) => ({ value: option.value, label: t(option.label), description: example(option.value) }))
+            .sort((a, b) => compareLabels(a.label, b.label))}
           onChange={(value) => update({ format: { ...settings, [key]: value } })}
         />
         <span className="analytik-field-hint">

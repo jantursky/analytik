@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { DAY, MINUTE } from '../src/shared/time'
 import type { Site } from '../src/shared/types'
-import { CHROME, IPHONE, START, type TestServer, testServer } from './helpers/server'
+import { CHROME, IPHONE, PASSWORD, START, type TestServer, testServer } from './helpers/server'
 
 let server: TestServer
 let site: Site
@@ -203,6 +203,40 @@ describe('POST /event filtering and validation', () => {
     await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { ignoredIps: ['203.0.113.7'] } })
     expect((await server.event({ w: site.id, ...page('/') })).status).toBe(202)
     expect(await sessions()).toEqual([])
+  })
+
+  it('drops events from an ignored range, and from addresses outside it only when they are not in it', async () => {
+    await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { ignoredIps: ['203.0.113.0/24'] } })
+    const from = (ip: string) => server.event({ w: site.id, ...page('/') }, { 'cf-connecting-ip': ip })
+    expect((await from('203.0.113.77')).status).toBe(202)
+    expect(await sessions()).toEqual([])
+    await from('198.51.100.5')
+    expect(await sessions()).toHaveLength(1)
+  })
+
+  it('refuses a range that would drop most visitors', async () => {
+    const response = await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { ignoredIps: ['0.0.0.0/0'] } })
+    expect(response.status).toBe(400)
+  })
+
+  it('drops events from signed-in admins only when the site asks for it', async () => {
+    const login = await server.request('/auth/login', { method: 'POST', body: JSON.stringify({ password: PASSWORD }) })
+    const cookie = (login.headers.get('set-cookie') ?? '').split(';')[0] ?? ''
+    expect(cookie).toContain('analytik_session=')
+    await server.event({ w: site.id, ...page('/') }, { cookie })
+    expect(await sessions()).toHaveLength(1)
+
+    await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { ignoreAdmins: true } })
+    await server.event({ w: site.id, ...page('/other') }, { cookie })
+    expect(await sessions()).toHaveLength(1)
+    // A visitor without the cookie is still counted.
+    await server.event({ w: site.id, ...page('/other') }, { 'cf-connecting-ip': '198.51.100.20' })
+    expect(await sessions()).toHaveLength(2)
+  })
+
+  it('tells an admin their own address', async () => {
+    const response = await server.admin('/my-ip', { headers: { 'cf-connecting-ip': '203.0.113.9' } })
+    expect(await response.json()).toEqual({ ip: '203.0.113.9' })
   })
 
   it('rejects bad payloads', async () => {

@@ -41,7 +41,7 @@ Tracking never blocks the page. The tracker sends events with `sendBeacon` where
 
 ## How do I exclude my own visits?
 
-Open any page of your site once with `?analytik_ignore=true`, list your IP address in the site's ignored IPs, or call `analytik.optOut()`.
+In the site's Settings, under Privacy, copy the "Ignore this browser" link and open it in each browser you use (it is remembered in that browser only), or add your IP address or a range such as `203.0.113.0/24` to the ignored IPs ("Add my current IP" fills in the address the server sees). If the dashboard and the tracker share an origin, "Ignore signed-in admins" drops the visits of any browser signed in to the dashboard. You can also call `analytik.optOut()`.
 
 ## How do I get revenue per source?
 

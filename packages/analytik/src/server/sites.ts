@@ -1,3 +1,4 @@
+import { parseRange } from '../shared/cidr'
 import { sha256Hex } from '../shared/crypto'
 import { randomId } from '../shared/ids'
 import { isValidTimeZone } from '../shared/time'
@@ -28,6 +29,7 @@ interface SiteRow {
   allow_localhost: number
   paused: number
   ignored_ips: string
+  ignore_admins: number
   share_token: string | null
   created_at: number
 }
@@ -51,6 +53,7 @@ function toRecord(row: SiteRow): SiteRecord {
     retentionDays: row.retention_days,
     allowLocalhost: Boolean(row.allow_localhost),
     paused: Boolean(row.paused),
+    ignoreAdmins: Boolean(row.ignore_admins),
     ignoredIps: parseJson<string[]>(row.ignored_ips, []),
     createdAt: row.created_at,
     apiKeyHash: row.api_key_hash,
@@ -107,6 +110,8 @@ export interface SiteInput {
   /** Drop tracker events and server goals until set back to false; payments are still recorded. */
   paused?: boolean
   ignoredIps?: string[]
+  /** Drop events from browsers holding an admin session (needs dashboard and tracker on one origin). */
+  ignoreAdmins?: boolean
   /** Set or (with null) remove a provider's webhook secret. */
   webhookSecrets?: Partial<Record<PaymentProvider, string | null>>
   /** true creates a new share token, null turns sharing off. */
@@ -157,14 +162,16 @@ function validate(input: Record<string, unknown>, current: SiteRecord | null): C
   }
   if (input.ignoredIps !== undefined) {
     const ips = input.ignoredIps
-    if (
-      !Array.isArray(ips) ||
-      ips.length > 100 ||
-      !ips.every((ip) => typeof ip === 'string' && /^[\d.:a-f]{2,45}$/i.test(ip))
-    ) {
-      fail('ignoredIps must be a list of up to 100 IP addresses')
+    if (!Array.isArray(ips) || ips.length > 100 || !ips.every((ip) => typeof ip === 'string' && parseRange(ip))) {
+      fail(
+        'ignoredIps must be a list of up to 100 IP addresses or ranges such as 203.0.113.0/24 (at least /8 for IPv4, /32 for IPv6)',
+      )
     }
-    columns.ignored_ips = JSON.stringify(ips)
+    columns.ignored_ips = JSON.stringify((ips as string[]).map((ip) => ip.trim()))
+  }
+  if (input.ignoreAdmins !== undefined) {
+    if (typeof input.ignoreAdmins !== 'boolean') fail('ignoreAdmins must be a boolean')
+    columns.ignore_admins = input.ignoreAdmins
   }
   if (input.webhookSecrets !== undefined) {
     const secrets = input.webhookSecrets
@@ -200,6 +207,7 @@ export async function createSite(
     allow_localhost: false,
     paused: false,
     ignored_ips: '[]',
+    ignore_admins: false,
     ...columns,
     api_key_hash: await hashApiKey(apiKey),
     share_token: input.shareToken === true ? randomId(24, ctx.random) : null,

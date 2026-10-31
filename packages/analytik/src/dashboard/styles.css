@@ -1847,6 +1847,10 @@ button.analytik-bar:hover {
   font-weight: 500;
 }
 
+.analytik-spark-plot {
+  width: 100%;
+}
+
 .analytik-sparkline {
   display: block;
   flex-basis: 100%;
@@ -1862,6 +1866,9 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 /* ---- tables and timelines */
 
 .analytik-table-wrap {
+  /* The containing block for the screen-reader-only text in cells; without it that text sits relative to the page
+     and widens it, so the whole page scrolls sideways. */
+  position: relative;
   overflow-x: auto;
   margin: 0 -20px;
 }
@@ -2035,6 +2042,17 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   justify-content: flex-end;
 }
 
+.analytik-copy-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytik-copy-field .analytik-input {
+  flex: 1;
+  min-width: 0;
+}
+
 .analytik-notices {
   display: inline-flex;
 }
@@ -2059,6 +2077,89 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 .analytik-notice .analytik-icon {
   width: 14px;
   height: 14px;
+  stroke-width: 2;
+}
+
+/* ---- table columns */
+
+.analytik-columns-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analytik-columns-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 260px;
+  padding: 10px;
+}
+
+.analytik-columns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytik-columns-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.analytik-columns-name {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.analytik-columns-reset {
+  align-self: flex-start;
+  margin: 0 6px 2px;
+}
+
+/* ---- toasts */
+
+.analytik-toasts {
+  position: fixed;
+  right: 0;
+  bottom: 24px;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.analytik-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--analytik-border-strong);
+  border-radius: var(--analytik-radius-control);
+  background: var(--analytik-surface);
+  box-shadow: var(--analytik-shadow-card);
+  color: var(--analytik-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.analytik-toast[data-ok] .analytik-icon {
+  color: var(--analytik-success-text);
+  width: 16px;
+  height: 16px;
   stroke-width: 2;
 }
 
@@ -2473,10 +2574,27 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 }
 
 .analytik-site-number {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   font-size: 40px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
+}
+
+.analytik-site-number .analytik-delta {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.analytik-site-card .analytik-sparkline {
+  margin-top: 8px;
+}
+
+.analytik-site-card .analytik-sparkline + .analytik-sparkline {
+  margin-top: 0;
+  color: var(--analytik-success-text);
 }
 
 .analytik-site-online {

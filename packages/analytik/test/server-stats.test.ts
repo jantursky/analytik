@@ -183,6 +183,27 @@ describe.each(storageKinds())('stats on %s', (kind) => {
     expect(point?.previous?.visitors).toBe(1)
   })
 
+  it('summary: series per site in buckets, and the window before on request', async () => {
+    const day = '/summary?from=2026-03-16&to=2026-03-16'
+    const [plain] = (await server.adminJson<SiteSummary[]>(day)).filter((row) => row.siteId === site.id)
+    expect(plain).not.toHaveProperty('traffic')
+    expect(plain).not.toHaveProperty('previous')
+
+    const [hourly] = (await server.adminJson<SiteSummary[]>(`${day}&series=hour`)).filter((r) => r.siteId === site.id)
+    expect(hourly?.traffic).toHaveLength(24)
+    expect(hourly?.sales).toHaveLength(24)
+    expect(hourly?.sales?.reduce((sum, n) => sum + n, 0)).toBe(7000)
+    expect(hourly?.traffic?.reduce((sum, n) => sum + n, 0)).toBeGreaterThanOrEqual(3)
+
+    const week = '/summary?from=2026-03-10&to=2026-03-16&series=day&compare=1'
+    const [daily] = (await server.adminJson<SiteSummary[]>(week)).filter((r) => r.siteId === site.id)
+    expect(daily?.traffic).toHaveLength(7)
+    expect(daily?.traffic?.[6]).toBe(3)
+    expect(typeof daily?.previous?.visitors).toBe('number')
+    expect(typeof daily?.previous?.revenue).toBe('number')
+    expect((await server.admin(`${day}&series=week`)).status).toBe(400)
+  })
+
   it('summary: every site in one request, matching the overview', async () => {
     const empty = await server.createSite({ domain: 'quiet.example.org', currency: 'EUR' })
     const summary = await server.adminJson<SiteSummary[]>('/summary?from=2026-03-16&to=2026-03-16')
@@ -648,5 +669,30 @@ describe('empty sites', () => {
     expect(await server.adminJson(`/sites/${site.id}/sessions`)).toEqual({ items: [], nextCursor: null, total: 0 })
     expect(await (await server.admin(`/sites/${site.id}/export?format=csv`)).text()).toBe('')
     await server.close()
+  })
+})
+
+describe('summary query count', () => {
+  it('stays the same per chunk of sites however many there are', async () => {
+    const { createStorage } = await import('./helpers/databases')
+    const inner = await createStorage('memory')
+    let queries = 0
+    const storage = {
+      ...inner,
+      query: ((...args: Parameters<typeof inner.query>) => (queries++, inner.query(...args))) as typeof inner.query,
+    }
+    const counting = await testServer('memory', { storage })
+    const count = async (): Promise<number> => {
+      queries = 0
+      await counting.adminJson('/summary?series=day&compare=1')
+      return queries
+    }
+    await counting.createSite({ domain: 'one.example.org' })
+    const one = await count()
+    for (let i = 0; i < 59; i++) await counting.createSite({ domain: `site${i}.example.org` })
+    const sixty = await count()
+    // 60 sites are two chunks of 50: each chunk costs the same, however many sites it holds.
+    expect(sixty).toBeLessThanOrEqual(one * 2)
+    await counting.close()
   })
 })

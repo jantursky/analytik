@@ -16,12 +16,12 @@ describe.each(storageKinds())('%s storage', (kind) => {
   it('applies migrations once and records them', async () => {
     storage = await createStorage(kind)
     const first = await storage.migrate()
-    expect(first.applied).toEqual(['0001_init', '0002_imported'])
-    expect(first.version).toBe('0002_imported')
+    expect(first.applied).toEqual(['0001_init', '0002_imported', '0003_ignore_admins'])
+    expect(first.version).toBe('0003_ignore_admins')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
-    expect(rows.map((row) => row.version)).toEqual(['0001_init', '0002_imported'])
+    expect(rows.map((row) => row.version)).toEqual(['0001_init', '0002_imported', '0003_ignore_admins'])
   })
 
   it('runs parameterized statements and returns numbers for counts and sums', async () => {
@@ -88,9 +88,22 @@ describe('0002_imported', () => {
     )
 
     const result = await applyMigrations(storage, migrations)
-    expect(result.applied).toEqual(['0002_imported'])
+    expect(result.applied).toEqual(['0002_imported', '0003_ignore_admins'])
     expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
     expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])
+    await storage.close?.()
+  })
+})
+
+describe('0003_ignore_admins', () => {
+  it('leaves existing sites with the switch off', async () => {
+    const storage = memoryStorage()
+    await applyMigrations(storage, migrations.slice(0, 2))
+    await storage.run(
+      `INSERT INTO sites (id, name, domain, api_key_hash, created_at) VALUES ('s', 'S', 's.com', 'x', 1)`,
+    )
+    await applyMigrations(storage, migrations)
+    expect(await storage.query('SELECT ignore_admins FROM sites')).toEqual([{ ignore_admins: 0 }])
     await storage.close?.()
   })
 })

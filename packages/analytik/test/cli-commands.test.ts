@@ -84,8 +84,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     const db = temp('analytik.db')
     expect((await cli('doctor', '--db', db)).stdout).toContain('✗ schema not up to date')
     const migrate = await cli('migrate', '--db', db)
-    expect(migrate).toMatchObject({ code: 0, stdout: 'Applied 0001_init, 0002_imported\n' })
-    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0002_imported)\n')
+    expect(migrate).toMatchObject({ code: 0, stdout: 'Applied 0001_init, 0002_imported, 0003_ignore_admins\n' })
+    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0003_ignore_admins)\n')
     const seed = await cli('seed', '--db', db, '--days', '2', '--seed', '5')
     expect(seed.code).toBe(0)
     expect(seed.stdout).toMatch(/Seeded site demo \(API key ak_demo0005\w+\)/)
@@ -93,7 +93,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(doctor.code).toBe(0)
     expect(doctor.stdout).toContain('✓ Bun')
     expect(doctor.stdout).toContain('✓ database reachable (sqlite)')
-    expect(doctor.stdout).toContain('✓ schema up to date (0002_imported)')
+    expect(doctor.stdout).toContain('✓ schema up to date (0003_ignore_admins)')
     expect(doctor.stdout).toContain(`✓ ${healthUrl}/api/health answered 200`)
 
     const storage = sqliteStorage(db)
@@ -210,12 +210,14 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(db.all('SELECT version FROM schema_migrations', [])).toEqual([
       { version: '0001_init' },
       { version: '0002_imported' },
+      { version: '0003_ignore_admins' },
     ])
     expect(db.all("SELECT name FROM sqlite_master WHERE name = 'payments'", [])).toHaveLength(1)
     db.close()
     const postgres = (await cli('migrate', '--print-sql', 'postgres')).stdout
     expect(postgres).toContain('-- 0001_init')
     expect(postgres).toContain('-- 0002_imported')
+    expect(postgres).toContain('-- 0003_ignore_admins')
     expect(postgres).toContain('ALTER TABLE sessions ADD COLUMN imported TEXT')
     expect((await cli('migrate', '--print-sql', 'mysql')).code).toBe(2)
     const d1 = await cli('migrate', '--d1', 'analytik-db')

@@ -112,9 +112,11 @@ export interface IngestInput {
   geo?: Geo | null
   /** Do Not Track or Global Privacy Control was sent. */
   doNotTrack?: boolean
+  /** The request carries a valid admin session; the site's `ignoreAdmins` switch decides what that means. */
+  admin?: boolean
 }
 
-export type IngestFiltered = 'bot' | 'ignored-ip' | 'paused'
+export type IngestFiltered = 'bot' | 'ignored-ip' | 'admin' | 'paused'
 
 export type IngestResult =
   | { status: 202; visitorId: string | null; sessionId: string | null; filtered?: IngestFiltered }

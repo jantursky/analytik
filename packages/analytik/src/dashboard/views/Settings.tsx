@@ -11,7 +11,7 @@ import { DomainField } from '../Login'
 import { Logo } from '../logo'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
 import { Tooltip } from '../ui/tooltip'
-import { Actions, Card, ConfirmButton, CopyButton, Field, useOutcome } from '../ui'
+import { Actions, Card, ConfirmButton, CopyButton, Field, Notice, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
 import { DatePicker } from '../ui/date-picker'
 import { stagger, View } from '../ui/motion'
@@ -111,10 +111,28 @@ export function SiteSettings() {
 
 /** Privacy mode, retention, ignored addresses and localhost. */
 export function PrivacySettings() {
-  const { site } = useDashboard()
+  const { client, site } = useDashboard()
   const [ignoredIps, setIgnoredIps] = useState(site.ignoredIps.join('\n'))
+  const [ipProblem, setIpProblem] = useState(false)
+  const addMyIp = (): void => {
+    setIpProblem(false)
+    client.myIp().then(
+      ({ ip }) => {
+        if (!ip) {
+          setIpProblem(true)
+          return
+        }
+        setIgnoredIps((list) =>
+          list.split(/[\s,]+/).includes(ip) ? list : `${list.trimEnd()}${list.trim() ? '\n' : ''}${ip}`,
+        )
+      },
+      () => setIpProblem(true),
+    )
+  }
+  const ignoreLink = `https://${site.domain}/?analytik_ignore=true`
+  const undoLink = `https://${site.domain}/?analytik_ignore=false`
   const { draft, set, submit, outcome } = useSiteForm(
-    ['privacyMode', 'retentionDays', 'ignoredIps', 'allowLocalhost'],
+    ['privacyMode', 'retentionDays', 'ignoredIps', 'ignoreAdmins', 'allowLocalhost'],
     (patch) => {
       patch.ignoredIps = ignoredIps
         .split(/[\s,]+/)
@@ -187,7 +205,9 @@ export function PrivacySettings() {
           </Field>
           <Field
             label={t('Ignored IP addresses')}
-            hint={t('One per line. Matching requests are dropped before anything is stored.')}
+            hint={t(
+              'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.',
+            )}
           >
             <textarea
               className="analytik-input"
@@ -195,8 +215,33 @@ export function PrivacySettings() {
               value={ignoredIps}
               onChange={(e) => setIgnoredIps(e.target.value)}
             />
+            <span className="analytik-copy">
+              <button type="button" className="analytik-button" onClick={addMyIp}>
+                {t('Add my current IP')}
+              </button>
+              <Notice
+                outcome={ipProblem ? { ok: false, text: t('The server could not tell your address.') } : undefined}
+              />
+            </span>
           </Field>
         </div>
+        <Field
+          label={t('Ignore this browser')}
+          hint={t(
+            'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.',
+          )}
+        >
+          <span className="analytik-copy analytik-copy-field">
+            <input className="analytik-input" readOnly value={ignoreLink} onFocus={(e) => e.currentTarget.select()} />
+            <CopyButton text={ignoreLink} label={t('Copy link')} />
+          </span>
+          <span className="analytik-field-hint">
+            {t('To count that browser again, open')} <code>{undoLink}</code>
+          </span>
+        </Field>
+        <Switch checked={draft.ignoreAdmins} onChange={(on) => set('ignoreAdmins', on)}>
+          {t('Ignore signed-in admins (only when this dashboard and the tracker are on one origin)')}
+        </Switch>
         <Switch checked={draft.allowLocalhost} onChange={(on) => set('allowLocalhost', on)}>
           {t('Accept events from localhost (for testing; turn off once live)')}
         </Switch>

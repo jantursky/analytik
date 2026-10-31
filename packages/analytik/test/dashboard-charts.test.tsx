@@ -164,3 +164,35 @@ describe('Sparkline and DeltaBadge', () => {
     expect(container.querySelectorAll('.analytik-delta svg')).toHaveLength(3)
   })
 })
+
+describe('Sparkline details', () => {
+  const details = [
+    { when: 'Mon', value: '3' },
+    { when: 'Tue', value: '8' },
+  ]
+
+  it('names the point under the pointer, but only once the pointer has rested on the line', async () => {
+    const { SparkTip } = await import('../src/dashboard/chart-plot')
+    const item = [{ payload: { i: 1 } }] as never
+    const shown = await render(<SparkTip active payload={item} details={details} shown />)
+    expect(shown.container.textContent).toBe('Tue8')
+    for (const hidden of [
+      <SparkTip key="a" active payload={item} details={details} shown={false} />,
+      <SparkTip key="b" active={false} payload={item} details={details} shown />,
+      <SparkTip key="c" active payload={[] as never} details={details} shown />,
+      <SparkTip key="d" active payload={[{ payload: { i: 9 } }] as never} details={details} shown />,
+    ]) {
+      expect((await render(hidden)).container.textContent).toBe('')
+    }
+  })
+
+  it('waits before arming the tooltip and disarms it when the pointer leaves', async () => {
+    const { container } = await render(<Sparkline values={[3, 8]} details={details} />)
+    const plot = await waitFor(() => container.querySelector('.analytik-spark-plot'))
+    await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })))
+    await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })))
+    await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })))
+    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 800)))
+    expect(container.querySelector('.analytik-spark-plot')).not.toBeNull()
+  })
+})

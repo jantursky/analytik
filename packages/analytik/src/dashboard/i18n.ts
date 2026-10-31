@@ -123,6 +123,10 @@ export const currentLanguage = (): string => language
 /** The BCP 47 tag `Intl` gets for the current language: `sk-SK`. */
 export const languageTag = (): string => TAGS[language] ?? language
 
+/** Orders two texts as the chosen language does, ignoring case and accents; numbers count by value. */
+export const compareLabels = (a: string, b: string): number =>
+  a.localeCompare(b, languageTag(), { sensitivity: 'base', numeric: true })
+
 const isShipped = (value: unknown): value is string => LANGUAGES.some((l) => l.value === value)
 
 /**

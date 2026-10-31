@@ -1,3 +1,4 @@
+import { choicesProblem } from '../shared/choices'
 import { segmentsProblem } from '../shared/segments'
 import { AnalytikError, type Context } from './context'
 
@@ -21,7 +22,7 @@ export async function getPreferences(ctx: Context): Promise<Record<string, unkno
  * number it checks (the request body size is capped for the whole document).
  */
 export async function savePreferences(ctx: Context, value: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const problem = segmentsProblem(value.segments)
+  const problem = segmentsProblem(value.segments) ?? choicesProblem(value)
   if (problem) throw new AnalytikError(problem)
   await ctx.storage.run(
     `INSERT INTO preferences (key, value, updated_at) VALUES (?, ?, ?)

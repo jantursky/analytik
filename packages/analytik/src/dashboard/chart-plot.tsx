@@ -1,6 +1,6 @@
 // Loaded on demand by charts.tsx, so Recharts stays out of the first dashboard bundle.
 import { useReducedMotionConfig } from 'motion/react'
-import { type CSSProperties, useId } from 'react'
+import { type CSSProperties, useEffect, useId, useRef, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts'
 
+import type { SparkDetail } from './charts'
 import { t } from './i18n'
 import { niceMax } from './scale'
 
@@ -41,6 +42,8 @@ export interface AreaPlotProps {
 }
 
 // The legend marker reads the same variable, so a chart drawn in the revenue colour has a matching legend.
+// How long the pointer rests on a sparkline before its values show.
+const SPARK_TIP_DELAY_MS = 0
 const PRIMARY = 'var(--analytik-primary-series, var(--analytik-series-1))'
 const SECONDARY = 'var(--analytik-series-2)'
 // Before ResizeObserver reports the real width (and in tests, where it never does).
@@ -379,30 +382,72 @@ export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlot
   )
 }
 
+/** The time and value of the sparkline point under the pointer, once the pointer has rested on the line. */
+export function SparkTip({
+  active,
+  payload,
+  details,
+  shown,
+}: Pick<TooltipContentProps, 'active' | 'payload'> & { details: SparkDetail[]; shown: boolean }) {
+  const point = payload[0]?.payload as { i: number } | undefined
+  const detail = point && details[point.i]
+  if (!shown || !active || !detail) return null
+  return (
+    <div className="analytik-chart-tip">
+      <span className="analytik-chart-tip-time">{detail.when}</span>
+      <strong>{detail.value}</strong>
+    </div>
+  )
+}
+
 /** A tiny trend area without axes, for stat tiles. */
-export function SparkPlot({ values }: { values: number[] }) {
+export function SparkPlot({ values, details }: { values: number[]; details?: SparkDetail[] }) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
+  // The value shows only once the pointer has rested on the line for a moment, not as it passes over.
+  const [shown, setShown] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const rest = (): void => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setShown(true), SPARK_TIP_DELAY_MS)
+  }
+  const leave = (): void => {
+    clearTimeout(timer.current)
+    setShown(false)
+  }
   return (
-    <ResponsiveContainer width="100%" height={28} initialDimension={{ width: 120, height: 28 }}>
-      <AreaChart data={values.map((value, i) => ({ i, value }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
-        <defs>
-          <linearGradient id={`${id}-spark`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="currentColor" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          fill={`url(#${id}-spark)`}
-          dot={false}
-          isAnimationActive={animate}
-          animationDuration={700}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="analytik-spark-plot" onMouseEnter={details && rest} onMouseLeave={details && leave}>
+      <ResponsiveContainer width="100%" height={28} initialDimension={{ width: 120, height: 28 }}>
+        <AreaChart data={values.map((value, i) => ({ i, value }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+          <defs>
+            <linearGradient id={`${id}-spark`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          {details && (
+            <Tooltip
+              cursor={shown ? { stroke: 'var(--analytik-border-strong)', strokeDasharray: '3 3' } : false}
+              content={(props) => <SparkTip {...props} details={details} shown={shown} />}
+              allowEscapeViewBox={{ x: true, y: true }}
+              wrapperStyle={{ zIndex: 5, pointerEvents: 'none' }}
+              isAnimationActive={false}
+            />
+          )}
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            fill={`url(#${id}-spark)`}
+            dot={false}
+            activeDot={details && shown ? { r: 3, strokeWidth: 0, fill: 'currentColor' } : false}
+            isAnimationActive={animate}
+            animationDuration={700}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }

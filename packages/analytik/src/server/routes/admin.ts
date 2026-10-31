@@ -1,7 +1,7 @@
 import type { Context as HonoContext, Hono, MiddlewareHandler } from 'hono'
 
 import { timingSafeEqual } from '../../shared/crypto'
-import { DAY, clampInterval, isValidTimeZone, parseDate } from '../../shared/time'
+import { DAY, HOUR, clampInterval, isValidTimeZone, parseDate } from '../../shared/time'
 import type { Comparison, EventType, Interval } from '../../shared/types'
 import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
 import { isImportSource } from '../../shared/import/types'
@@ -157,6 +157,10 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   app.post('/debug/generate', async (c) => c.json(await generateTestData(ctx, await body(c))))
   app.delete('/debug/sites', async (c) => c.json(await deleteTestSites(ctx)))
 
+  // The address this request comes from as the server sees it, so "Add my IP" adds what ingest will match.
+  app.use('/my-ip', requireAdmin(ctx))
+  app.get('/my-ip', (c) => c.json({ ip: ctx.clientIp(c.req.raw) }))
+
   app.use('/version', requireAdmin(ctx))
   app.get('/version', async (c) => c.json(await versionInfo(ctx)))
 
@@ -168,7 +172,15 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     const to = c.req.query('to') ? parseDate(c.req.query('to') ?? '', 'UTC', true) : now
     if (from === null || to === null) throw new AnalytikError('from and to must be ISO 8601 dates')
     if (from >= to) throw new AnalytikError('from must be before to')
-    return c.json(await siteSummaries(ctx, await listSites(ctx), from, to))
+    // `series=hour|day` adds a visitors and a revenue series per site; `compare=1` the totals of the window before.
+    const series = c.req.query('series')
+    if (series !== undefined && series !== 'hour' && series !== 'day') {
+      throw new AnalytikError('series must be hour or day')
+    }
+    const bucket = series === 'hour' ? HOUR : series === 'day' ? DAY : undefined
+    return c.json(
+      await siteSummaries(ctx, await listSites(ctx), from, to, { bucket, compare: c.req.query('compare') === '1' }),
+    )
   })
 
   app.use('/sites', requireAdmin(ctx))

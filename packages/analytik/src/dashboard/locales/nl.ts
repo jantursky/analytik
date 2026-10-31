@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'Getallen en geld',
   'On the overview': 'Op het overzicht',
   'On the visitor’s device': 'Op het apparaat van de bezoeker',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Eén per regel. Overeenkomende verzoeken worden genegeerd voordat er iets wordt opgeslagen.',
   'One site': 'Eén site',
   'Only when leaving': 'Alleen bij vertrek',
   'Only when there are some': 'Alleen als die er zijn',
@@ -799,4 +797,25 @@ export default {
     '{visits, plural, one {# bezoek} other {# bezoeken}} en {events, plural, one {# gebeurtenis} other {# gebeurtenissen}} uit {source} importeren in {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Werkt met http://- en https://-adressen; het protocol wordt weggelaten en alleen het domein blijft over.',
+  'Add my current IP': 'Mijn huidige IP toevoegen',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Ingelogde beheerders negeren (alleen als dashboard en tracker dezelfde origin delen)',
+  'Ignore this browser': 'Deze browser negeren',
+  'Last 24 hours': 'Afgelopen 24 uur',
+  'Last 30 days': 'Afgelopen 30 dagen',
+  'Last 7 days': 'Afgelopen 7 dagen',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Eén adres of bereik (203.0.113.0/24) per regel. Overeenkomende verzoeken worden verworpen voordat er iets wordt opgeslagen. Een gedeeld kantooradres verbergt ook de overige bezoekers.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Open deze link in een browser om de bezoeken ervan niet meer te tellen, op elk netwerk. Alleen die browser onthoudt dit.',
+  Period: 'Periode',
+  'The server could not tell your address.': 'De server kon je adres niet bepalen.',
+  'To count that browser again, open': 'Om die browser weer mee te tellen, open',
+  'visitors in the last 30 days': 'bezoekers in de afgelopen 30 dagen',
+  'visitors in the last 7 days': 'bezoekers in de afgelopen 7 dagen',
+  Columns: 'Kolommen',
+  'Move {column} left': '{column} naar links verplaatsen',
+  'Move {column} right': '{column} naar rechts verplaatsen',
+  'Reset columns': 'Kolommen herstellen',
+  'Show or hide columns, and change their order': 'Kolommen tonen of verbergen en hun volgorde wijzigen',
 } satisfies Messages

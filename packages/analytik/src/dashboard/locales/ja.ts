@@ -346,8 +346,6 @@ export default {
   'Numbers and money': '数値と金額',
   'On the overview': '概要に表示',
   'On the visitor’s device': '訪問者のデバイス上',
-  'One per line. Matching requests are dropped before anything is stored.':
-    '1 行に 1 件。一致するリクエストは、何かが保存される前に破棄されます。',
   'One site': '1 つのサイト',
   'Only when leaving': '離脱時のみ',
   'Only when there are some': 'ある場合のみ',
@@ -791,4 +789,25 @@ export default {
     '{source} から {visits, plural, other {# 件の訪問}}と{events, plural, other {# 件のイベント}}を {site} にインポートしますか？',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'http:// と https:// のどちらのアドレスも使えます。プロトコルは除かれ、ドメインだけが残ります。',
+  'Add my current IP': '現在の IP を追加',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'サインイン中の管理者を無視する(ダッシュボードとトラッカーが同じ origin にある場合のみ)',
+  'Ignore this browser': 'このブラウザを無視',
+  'Last 24 hours': '過去 24 時間',
+  'Last 30 days': '過去 30 日間',
+  'Last 7 days': '過去 7 日間',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    '1 行に 1 つのアドレスまたは範囲(203.0.113.0/24)。一致するリクエストは何も保存される前に破棄されます。共有のオフィスアドレスを指定すると、他の訪問者も除外されます。',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'このリンクをブラウザで開くと、そのブラウザの訪問はどのネットワークでもカウントされなくなります。記憶されるのはそのブラウザだけです。',
+  Period: '期間',
+  'The server could not tell your address.': 'サーバーがあなたのアドレスを特定できませんでした。',
+  'To count that browser again, open': 'そのブラウザを再びカウントするには、次を開きます',
+  'visitors in the last 30 days': '人の訪問者(過去 30 日間)',
+  'visitors in the last 7 days': '人の訪問者(過去 7 日間)',
+  Columns: '列',
+  'Move {column} left': '{column} を左へ移動',
+  'Move {column} right': '{column} を右へ移動',
+  'Reset columns': '列をリセット',
+  'Show or hide columns, and change their order': '列の表示・非表示と並べ替え',
 } satisfies Messages

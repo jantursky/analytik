@@ -345,8 +345,6 @@ export default {
   'Numbers and money': 'Angka dan uang',
   'On the overview': 'Di ringkasan',
   'On the visitor’s device': 'Di perangkat pengunjung',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Satu per baris. Permintaan yang cocok dibuang sebelum apa pun disimpan.',
   'One site': 'Satu situs',
   'Only when leaving': 'Hanya saat pergi',
   'Only when there are some': 'Hanya jika ada',
@@ -791,4 +789,25 @@ export default {
     'Impor {visits, plural, other {# kunjungan}} dan {events, plural, other {# peristiwa}} dari {source} ke {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Berfungsi dengan alamat http:// maupun https://; protokol dibuang dan hanya domain yang disimpan.',
+  'Add my current IP': 'Tambahkan IP saya saat ini',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Abaikan admin yang sedang masuk (hanya jika dasbor dan tracker berada di origin yang sama)',
+  'Ignore this browser': 'Abaikan browser ini',
+  'Last 24 hours': '24 jam terakhir',
+  'Last 30 days': '30 hari terakhir',
+  'Last 7 days': '7 hari terakhir',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Satu alamat atau rentang (203.0.113.0/24) per baris. Permintaan yang cocok dibuang sebelum apa pun disimpan. Alamat kantor bersama juga menyembunyikan pengunjung lainnya.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Buka tautan ini di sebuah browser untuk berhenti menghitung kunjungannya, di jaringan mana pun. Hanya browser itu yang mengingatnya.',
+  Period: 'Periode',
+  'The server could not tell your address.': 'Server tidak dapat mengetahui alamat Anda.',
+  'To count that browser again, open': 'Untuk menghitung browser itu lagi, buka',
+  'visitors in the last 30 days': 'pengunjung dalam 30 hari terakhir',
+  'visitors in the last 7 days': 'pengunjung dalam 7 hari terakhir',
+  Columns: 'Kolom',
+  'Move {column} left': 'Geser {column} ke kiri',
+  'Move {column} right': 'Geser {column} ke kanan',
+  'Reset columns': 'Atur ulang kolom',
+  'Show or hide columns, and change their order': 'Tampilkan atau sembunyikan kolom dan ubah urutannya',
 } satisfies Messages

@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.11.0]
+
+### Added
+
+- Ignore your own visits: IP ranges (CIDR), "Add my current IP", an "ignore this browser" link and an option to ignore signed-in admins. Run `analytik upgrade` to add the new column.
+- All sites: a trend line and the change on each card, with a 24 hours / 7 / 30 days picker and Refresh.
+- Sessions: show, hide and reorder the table's columns.
+- The dashboard remembers your period, comparison and breakdown tabs between visits.
+- Brand logos in the Site integration prompt and Import data pickers, a "Copied" toast, and pickers in alphabetical order.
+
+### Fixed
+
+- The Sessions table no longer makes the whole page scroll sideways.
+- Correct GoatCounter, Matomo and Dodo Payments logos.
+
 ## [1.10.0]
 
 ### Added

@@ -95,8 +95,16 @@ export interface ApiClient {
   /** Whether this browser is signed in, and how admins sign in: `password`, `custom` (the `verify()` option) or `none`. */
   me(): Promise<{ loggedIn: boolean; login: 'password' | 'custom' | 'none' }>
   sites(): Promise<Site[]>
-  /** Every site's visitors, revenue and orders in the range (default the last 24 hours) and who is online. */
-  summary(range?: { from: number; to: number }): Promise<SiteSummary[]>
+  /**
+   * Every site's visitors, revenue and orders in the range (default the last 24 hours) and who is online. `series`
+   * adds a visitors and a revenue series per site, `compare` the totals of the window before, `fresh` skips the cache.
+   */
+  summary(
+    range?: { from: number; to: number },
+    options?: { series?: 'hour' | 'day'; compare?: boolean; fresh?: boolean },
+  ): Promise<SiteSummary[]>
+  /** The address this browser reaches the server from, as ingest would see it; null when the server can't tell. */
+  myIp(): Promise<{ ip: string | null }>
   /** The running version and the newest release, when the server could look it up. */
   version(): Promise<VersionInfo>
   site(siteId: string): Promise<Site>
@@ -233,8 +241,14 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     logout: () => write('POST', '/auth/logout', {}),
     me: () => get('/auth/me'),
     sites: () => get('/sites'),
+    myIp: () => get('/my-ip', undefined, true),
     version: () => get('/version'),
-    summary: (range) => get('/summary', range && new URLSearchParams({ from: iso(range.from), to: iso(range.to) })),
+    summary: (range, options = {}) => {
+      const params = range && new URLSearchParams({ from: iso(range.from), to: iso(range.to) })
+      if (params && options.series) params.set('series', options.series)
+      if (params && options.compare) params.set('compare', '1')
+      return get('/summary', params, options.fresh)
+    },
     site: (id) => get(site(id)),
     createSite: (input) => write<{ site: Site }>('POST', '/sites', input).then((created) => created.site),
     updateSite: (id, patch) => write('PATCH', site(id), patch),

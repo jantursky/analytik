@@ -341,8 +341,6 @@ export default {
   'Numbers and money': '数字和金额',
   'On the overview': '在概览中',
   'On the visitor’s device': '在访客的设备上',
-  'One per line. Matching requests are dropped before anything is stored.':
-    '每行一个。匹配的请求会在存储任何内容之前被丢弃。',
   'One site': '一个网站',
   'Only when leaving': '仅在离开时',
   'Only when there are some': '仅在有数据时',
@@ -772,4 +770,25 @@ export default {
     '将 {source} 中的 {visits, plural, other {# 次访问}}和{events, plural, other {# 个事件}} 导入到 {site}？',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     '支持 http:// 和 https:// 地址；协议会被去掉，只保留域名。',
+  'Add my current IP': '添加我当前的 IP',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    '忽略已登录的管理员(仅当仪表盘和追踪器在同一 origin 时)',
+  'Ignore this browser': '忽略此浏览器',
+  'Last 24 hours': '过去 24 小时',
+  'Last 30 days': '过去 30 天',
+  'Last 7 days': '过去 7 天',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    '每行一个地址或范围(203.0.113.0/24)。匹配的请求会在存储任何内容之前被丢弃。共用的办公室地址也会隐藏其他访客。',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    '在浏览器中打开此链接,即可在任何网络下停止统计该浏览器的访问。只有该浏览器会记住这一设置。',
+  Period: '时段',
+  'The server could not tell your address.': '服务器无法确定你的地址。',
+  'To count that browser again, open': '若要重新统计该浏览器,请打开',
+  'visitors in the last 30 days': '过去 30 天的访客',
+  'visitors in the last 7 days': '过去 7 天的访客',
+  Columns: '列',
+  'Move {column} left': '将 {column} 左移',
+  'Move {column} right': '将 {column} 右移',
+  'Reset columns': '重置列',
+  'Show or hide columns, and change their order': '显示或隐藏列，并调整其顺序',
 } satisfies Messages

@@ -1,12 +1,43 @@
 import { useEffect, useState } from 'react'
 
 import { useDashboard } from '../context'
-import { t } from '../i18n'
+import { compareLabels, t } from '../i18n'
+import { Logo } from '../logo'
 import { Actions, Card, CopyButton } from '../ui'
 import { Select } from '../ui/select'
 import type { SiteTarget } from '../site-prompt'
 
 const load = () => import('../site-prompt')
+
+/** The mark each framework or platform is shown with; Remix and React Router share one. */
+const LOGOS: Record<SiteTarget, string> = {
+  html: 'HTML',
+  'react-vite': 'React',
+  nextjs: 'Next.js',
+  remix: 'Remix',
+  vue: 'Vue',
+  nuxt: 'Nuxt',
+  astro: 'Astro',
+  sveltekit: 'Svelte',
+  angular: 'Angular',
+  solidstart: 'SolidStart',
+  qwik: 'Qwik',
+  gatsby: 'Gatsby',
+  docusaurus: 'Docusaurus',
+  hugo: 'Hugo',
+  jekyll: 'Jekyll',
+  eleventy: 'Eleventy',
+  wordpress: 'WordPress',
+  shopify: 'Shopify',
+  webflow: 'Webflow',
+  framer: 'Framer',
+  ghost: 'Ghost',
+  laravel: 'Laravel',
+  rails: 'Ruby on Rails',
+  django: 'Django',
+  flask: 'Flask',
+  gtm: 'Google Tag Manager',
+}
 
 /**
  * A prompt for a coding assistant that adds the tracker to the site, in the right file for its framework. The
@@ -24,7 +55,7 @@ export function IntegrationPrompt() {
     }
   }, [])
 
-  const options = module?.SITE_TARGETS
+  const options = module && [...module.SITE_TARGETS].sort((a, b) => compareLabels(a.label, b.label))
   const prompt = module?.sitePrompt(target, {
     host: new URL(apiUrl).origin,
     siteId: site.id,
@@ -43,7 +74,8 @@ export function IntegrationPrompt() {
           <Select
             label={t('Framework or platform')}
             value={target}
-            options={options.map(({ id, label }) => ({ value: id, label }))}
+            options={options.map(({ id, label }) => ({ value: id, label, icon: <Logo name={LOGOS[id]} /> }))}
+            leading={<Logo name={LOGOS[target]} />}
             onChange={setTarget}
           />
           <pre className="analytik-code analytik-prompt-preview" tabIndex={0} aria-label={t('Prompt')}>

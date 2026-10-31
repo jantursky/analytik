@@ -346,8 +346,6 @@ export default {
   'Numbers and money': 'Числа и деньги',
   'On the overview': 'На обзоре',
   'On the visitor’s device': 'На устройстве посетителя',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'По одному в строке. Подходящие запросы отбрасываются до того, как что-либо сохранится.',
   'One site': 'Один сайт',
   'Only when leaving': 'Только при уходе',
   'Only when there are some': 'Только если они есть',
@@ -801,4 +799,25 @@ export default {
     'Импортировать {visits, plural, one {# визит} few {# визита} many {# визитов} other {# визита}} и {events, plural, one {# событие} few {# события} many {# событий} other {# события}} из {source} в {site}?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Работает с адресами http:// и https://; протокол отбрасывается, остаётся только домен.',
+  'Add my current IP': 'Добавить мой текущий IP',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Игнорировать вошедших администраторов (только если дашборд и трекер работают на одном origin)',
+  'Ignore this browser': 'Игнорировать этот браузер',
+  'Last 24 hours': 'Последние 24 часа',
+  'Last 30 days': 'Последние 30 дней',
+  'Last 7 days': 'Последние 7 дней',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    'Один адрес или диапазон (203.0.113.0/24) в строке. Подходящие запросы отбрасываются до того, как что-либо сохранится. Общий адрес офиса скрывает и остальных его посетителей.',
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    'Откройте эту ссылку в браузере, чтобы перестать считать его визиты в любой сети. Это помнит только сам браузер.',
+  Period: 'Период',
+  'The server could not tell your address.': 'Сервер не смог определить ваш адрес.',
+  'To count that browser again, open': 'Чтобы снова считать этот браузер, откройте',
+  'visitors in the last 30 days': 'посетителей за последние 30 дней',
+  'visitors in the last 7 days': 'посетителей за последние 7 дней',
+  Columns: 'Столбцы',
+  'Move {column} left': 'Переместить {column} влево',
+  'Move {column} right': 'Переместить {column} вправо',
+  'Reset columns': 'Сбросить столбцы',
+  'Show or hide columns, and change their order': 'Показать или скрыть столбцы и изменить их порядок',
 } satisfies Messages

@@ -5,18 +5,46 @@ import type { Site, SiteSummary } from '../../shared/types'
 import type { ApiClient } from '../api'
 import { requestKey } from '../context'
 import { useResource } from '../data'
-import { formatMoney, formatMoneyShort, formatNumber } from '../format'
+import { formatDate, formatDateTime, formatMoney, formatMoneyShort, formatNumber } from '../format'
 import { msg, t } from '../i18n'
 import { Icon } from '../icons'
 import { usePreferences } from '../preferences'
-import { Shortened, SiteTile } from '../ui'
+import { Sparkline, type SparkDetail } from '../charts'
+import { DeltaBadge, Shortened, SiteTile } from '../ui'
 import { ActionMenu, MenuButton } from '../ui/menu'
 import { rise, View } from '../ui/motion'
 import { Select } from '../ui/select'
+import { Tooltip } from '../ui/tooltip'
 import { DeleteSiteDialog, togglePaused } from './SiteActions'
 
+const HOUR = 3600000
 const DAY = 86400000
 const MINUTE = 60000
+
+type PeriodKey = '24h' | '7d' | '30d'
+
+/** What the cards cover; longer periods are drawn a day at a time, the shortest an hour at a time. */
+interface Period {
+  value: PeriodKey
+  label: string
+  foot: string
+  days: number
+  series: 'hour' | 'day'
+}
+const PERIODS: [Period, ...Period[]] = [
+  { value: '24h', label: msg('Last 24 hours'), foot: msg('visitors in the last 24h'), days: 1, series: 'hour' },
+  { value: '7d', label: msg('Last 7 days'), foot: msg('visitors in the last 7 days'), days: 7, series: 'day' },
+  { value: '30d', label: msg('Last 30 days'), foot: msg('visitors in the last 30 days'), days: 30, series: 'day' },
+]
+
+/** The saved period of the sites overview; anything unknown is the last 24 hours. */
+function parsePeriod(value: unknown): Period {
+  return PERIODS.find((p) => p.value === value) ?? PERIODS[0]
+}
+
+/** Change against the window before; null (shown as "new") when that had no visitors to compare with. */
+const visitorChange = (data: SiteSummary): number | null =>
+  data.previous && data.previous.visitors > 0 ? (data.visitors - data.previous.visitors) / data.previous.visitors : null
 
 type SortKey = 'added' | 'name' | 'domain' | 'visitors' | 'revenue' | 'orders'
 
@@ -66,6 +94,8 @@ function SiteCard({
   site,
   data,
   failed,
+  foot,
+  trend,
   onOpen,
   onChange,
 }: {
@@ -73,10 +103,22 @@ function SiteCard({
   site: Site
   data: SiteSummary | undefined
   failed: boolean
+  /** The period's caption under the visitor number. */
+  foot: string
+  /** Where the sparklines start and how long each point is, to say what a point stands for. */
+  trend: { from: number; step: number }
   onOpen: () => void
   onChange: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
+  const details = (values: number[], format: (value: number) => string): SparkDetail[] =>
+    values.map((value, i) => {
+      const at = trend.from + i * trend.step
+      return {
+        when: trend.step < DAY ? formatDateTime(at, site.timezone) : formatDate(at, site.timezone),
+        value: format(value),
+      }
+    })
   const online = data?.online ?? 0
   const visitors = failed ? '–' : data ? formatNumber(data.visitors) : '…'
   // Revenue only for sites that take payments: a provider is connected, or payments came in anyway (API, client).
@@ -97,8 +139,15 @@ function SiteCard({
             </span>
           )}
         </span>
-        <span className="analytik-site-number">{visitors}</span>
-        <span className="analytik-muted">{t('visitors in the last 24h')}</span>
+        <span className="analytik-site-number">
+          {visitors}
+          {data?.previous && !failed && <DeltaBadge change={visitorChange(data)} />}
+        </span>
+        <span className="analytik-muted">{t(foot)}</span>
+        {data?.traffic && <Sparkline values={data.traffic} details={details(data.traffic, formatNumber)} />}
+        {takesPayments && data?.sales && data.sales.some((n) => n !== 0) && (
+          <Sparkline values={data.sales} details={details(data.sales, (v) => formatMoney(v, data.currency))} />
+        )}
         <span className="analytik-site-foot">
           <span className="analytik-site-online">
             <span className="analytik-live-dot" data-idle={online ? undefined : ''} aria-hidden="true" />
@@ -162,14 +211,23 @@ export function SitesOverview({
   onImport,
   onChange = () => undefined,
 }: SitesOverviewProps) {
-  // Fixed on mount and to the minute, so the request isn't repeated on every render and opening the view again
-  // within the minute is answered from the client's cache.
-  const [since] = useState(() => Math.floor(Date.now() / MINUTE) * MINUTE - DAY)
-  const summary = useResource<SiteSummary[]>(requestKey('summary', since, sites.length), () =>
-    client.summary({ from: since, to: since + DAY }),
-  )
-  const summaries = new Map((summary.data ?? []).map((row) => [row.siteId, row]))
   const { values, update } = usePreferences()
+  const period = parsePeriod(values.sitesPeriod)
+  // Fixed to the minute, so the request isn't repeated on every render and opening the view again within the minute
+  // is answered from the client's cache. Refresh moves it on and skips the cache once.
+  const [now, setNow] = useState(() => Math.floor(Date.now() / MINUTE) * MINUTE)
+  const [refreshed, setRefreshed] = useState(false)
+  const to = now
+  const from = to - period.days * DAY
+  const summary = useResource<SiteSummary[]>(requestKey('summary', period.value, to, sites.length), () =>
+    client.summary({ from, to }, { series: period.series, compare: true, fresh: refreshed }),
+  )
+  const refresh = (): void => {
+    setRefreshed(true)
+    setNow(Math.floor(Date.now() / MINUTE) * MINUTE)
+    summary.reload()
+  }
+  const summaries = new Map((summary.data ?? []).map((row) => [row.siteId, row]))
   const { by, descending } = parseSort(values.sitesSort)
   const choose = (next: SortKey): void =>
     update({ sitesSort: { by: next, descending: SORTS.find((s) => s.value === next)?.numeric ?? false } })
@@ -179,6 +237,24 @@ export function SitesOverview({
       <div className="analytik-page-head">
         <h1>{t('All sites')}</h1>
         <div className="analytik-action-right">
+          <Select
+            label={t('Period')}
+            hideLabel
+            className="analytik-pill"
+            value={period.value}
+            options={PERIODS.map((p) => ({ value: p.value, label: t(p.label) }))}
+            onChange={(value) => update({ sitesPeriod: value })}
+          />
+          <Tooltip label={t('Refresh')}>
+            <button
+              type="button"
+              className="analytik-pill-icon analytik-pill"
+              aria-label={t('Refresh')}
+              onClick={refresh}
+            >
+              <Icon name="refresh" />
+            </button>
+          </Tooltip>
           {sites.length > 1 && (
             <div className="analytik-sites-sort">
               <Select
@@ -224,6 +300,8 @@ export function SitesOverview({
             site={site}
             data={summaries.get(site.id)}
             failed={!!summary.error}
+            foot={period.foot}
+            trend={{ from, step: period.series === 'hour' ? HOUR : DAY }}
             onOpen={() => onOpen(site)}
             onChange={onChange}
           />

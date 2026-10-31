@@ -9,6 +9,7 @@ import { isId, isSiteId, randomId } from '../../shared/ids'
 import { MINUTE } from '../../shared/time'
 import type { PaymentInput, PaymentProvider } from '../../shared/types'
 import { clip } from '../../shared/url'
+import { hasAdminSession } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { SESSION_WINDOW, cleanProps, ingest, sessionUpdate } from '../ingest'
 import { recordPayment } from '../payments'
@@ -66,6 +67,7 @@ export function publicRoutes(app: Hono, ctx: Context): void {
       origin: c.req.header('origin') ?? null,
       geo: await (ctx.geo ?? geoFromRequest)(request),
       doNotTrack: doNotTrack(request),
+      admin: await hasAdminSession(ctx, c),
     })
     return 'error' in result ? c.json({ error: result.error }, result.status) : c.body(null, 202)
   })

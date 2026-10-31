@@ -347,8 +347,6 @@ export default {
   'Numbers and money': 'Chiffres et montants',
   'On the overview': "Sur l'aperçu",
   'On the visitor’s device': 'Sur l’appareil du visiteur',
-  'One per line. Matching requests are dropped before anything is stored.':
-    'Une par ligne. Les requêtes correspondantes sont ignorées avant tout stockage.',
   'One site': 'Un site',
   'Only when leaving': 'Uniquement au départ',
   'Only when there are some': "Uniquement s'il y en a",
@@ -803,4 +801,25 @@ export default {
     'Importer {visits, plural, one {# visite} other {# visites}} et {events, plural, one {# événement} other {# événements}} depuis {source} dans {site} ?',
   'Works with http:// and https:// addresses; the protocol is dropped and only the domain is kept.':
     'Fonctionne avec les adresses http:// et https:// ; le protocole est retiré et seul le domaine est conservé.',
+  'Add my current IP': 'Ajouter mon IP actuelle',
+  'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)':
+    'Ignorer les administrateurs connectés (seulement si le tableau de bord et le tracker partagent la même origin)',
+  'Ignore this browser': 'Ignorer ce navigateur',
+  'Last 24 hours': '24 dernières heures',
+  'Last 30 days': '30 derniers jours',
+  'Last 7 days': '7 derniers jours',
+  'One address or range (203.0.113.0/24) per line. Matching requests are dropped before anything is stored. A shared office address hides its other visitors too.':
+    "Une adresse ou une plage (203.0.113.0/24) par ligne. Les requêtes correspondantes sont rejetées avant tout stockage. L'adresse partagée d'un bureau masque aussi ses autres visiteurs.",
+  'Open this link in a browser to stop counting its visits, on any network. It is remembered in that browser only.':
+    "Ouvrez ce lien dans un navigateur pour ne plus compter ses visites, sur n'importe quel réseau. Seul ce navigateur s'en souvient.",
+  Period: 'Période',
+  'The server could not tell your address.': "Le serveur n'a pas pu déterminer votre adresse.",
+  'To count that browser again, open': 'Pour recompter ce navigateur, ouvrez',
+  'visitors in the last 30 days': 'visiteurs ces 30 derniers jours',
+  'visitors in the last 7 days': 'visiteurs ces 7 derniers jours',
+  Columns: 'Colonnes',
+  'Move {column} left': 'Déplacer {column} vers la gauche',
+  'Move {column} right': 'Déplacer {column} vers la droite',
+  'Reset columns': 'Réinitialiser les colonnes',
+  'Show or hide columns, and change their order': 'Afficher ou masquer les colonnes et changer leur ordre',
 } satisfies Messages

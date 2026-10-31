@@ -278,6 +278,21 @@ describe('dashboard preferences', () => {
     await put({})
   })
 
+  it('checks the remembered period, comparison and tabs', async () => {
+    const put = (json: unknown) => server.admin('/preferences', { method: 'PUT', json })
+    const ok = { period: '30d', interval: 'week', compare: 'year', tabs: { 'page,entry': 'entry' } }
+    expect((await put(ok)).status).toBe(200)
+    expect(await server.adminJson('/preferences')).toEqual(ok)
+    expect((await put({ period: 'forever' })).status).toBe(400)
+    expect((await put({ interval: 'minute' })).status).toBe(400)
+    expect((await put({ compare: 'sideways' })).status).toBe(400)
+    expect((await put({ tabs: [1] })).status).toBe(400)
+    expect((await put({ tabs: { page: 5 } })).status).toBe(400)
+    const many = Object.fromEntries(Array.from({ length: 31 }, (_, n) => [`card${n}`, 'page']))
+    expect((await put({ tabs: many })).status).toBe(400)
+    await put({})
+  })
+
   it('is admin only and takes a JSON object', async () => {
     expect((await server.request('/preferences')).status).toBe(401)
     expect((await server.admin('/preferences', { method: 'PUT', json: [1, 2] })).status).toBe(400)

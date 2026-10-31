@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
+import { parseTabs } from '../../shared/choices'
 import type { BreakdownRow, Dimension } from '../../shared/types'
 import { BarList, type BarListRow } from '../charts'
 import { requestKey, useDashboard } from '../context'
@@ -11,6 +12,7 @@ import { countryName, formatMoney, formatNumber } from '../format'
 import { Icon } from '../icons'
 import { msg, t } from '../i18n'
 import { hasLogo, Logo } from '../logo'
+import { usePreferences } from '../preferences'
 import { Card, Status } from '../ui'
 import { Tabs } from '../ui/tabs'
 
@@ -91,7 +93,13 @@ function rowLabel(dimension: Dimension, key: string): BarListRow['label'] {
 /** A card with one tab per dimension; clicking a row filters the dashboard by it. */
 export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 10 }: BreakdownCardProps) {
   const { client, site, query, addFilter, known } = useDashboard()
-  const [dimension, setDimension] = useState(dimensions[0] ?? 'page')
+  // The tab of each card is remembered with the other preferences, by the card's dimensions.
+  const { values, update } = usePreferences()
+  const cardId = dimensions.join(',')
+  const tabs = parseTabs(values.tabs)
+  const saved = dimensions.find((d) => d === tabs[cardId])
+  const dimension = saved ?? dimensions[0] ?? 'page'
+  const setDimension = (next: Dimension): void => update({ tabs: { ...tabs, [cardId]: next } })
   const [expanded, setExpanded] = useState(false)
   // The rows carry their dimension: while another tab loads, the previous tab's rows stay until they cross-fade.
   const rows = useResource(requestKey('breakdown', site.id, dimension, query), () =>
