@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Payment webhook adapters for Paddle, Polar, Razorpay, Creem and Gumroad.
+
+### Security
+
+- Login attempts are counted before the password check, `identify()` no longer rewrites a stored email, name or user id, and API responses are sent with `no-store` and `nosniff`.
+
 ## [1.11.1]
 
 ### Fixed

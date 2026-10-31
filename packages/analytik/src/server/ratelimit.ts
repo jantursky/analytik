@@ -19,16 +19,6 @@ export async function hit(ctx: Context, key: string, windowMs: number): Promise<
   return count
 }
 
-/** Hits counted so far in the current window, without counting one. */
-export async function hits(ctx: Context, key: string, windowMs: number): Promise<number> {
-  const windowStart = Math.floor(ctx.now() / windowMs) * windowMs
-  const [row] = await ctx.storage.query<{ count: number }>(
-    'SELECT count FROM rate_limits WHERE key = ? AND window_start = ?',
-    [key, windowStart],
-  )
-  return row?.count ?? 0
-}
-
 export async function reset(ctx: Context, key: string): Promise<void> {
   await ctx.storage.run('DELETE FROM rate_limits WHERE key = ?', [key])
 }

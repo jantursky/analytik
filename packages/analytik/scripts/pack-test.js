@@ -45,7 +45,7 @@ import { memoryStorage } from 'analytik/storage/memory'
 import { seedDemo } from 'analytik/migrate'
 
 for (const path of ['analytik', 'analytik/storage/d1', 'analytik/storage/postgres', 'analytik/storage/sqlite',
-  'analytik/adapters/stripe', 'analytik/adapters/dodo', 'analytik/adapters/lemonsqueezy', 'analytik/client',
+  'analytik/adapters/stripe', 'analytik/adapters/dodo', 'analytik/adapters/lemonsqueezy', 'analytik/adapters/paddle', 'analytik/adapters/polar', 'analytik/adapters/razorpay', 'analytik/adapters/creem', 'analytik/adapters/gumroad', 'analytik/client',
   'analytik/react', 'analytik/dashboard', 'analytik/standalone']) {
   await import(path)
 }

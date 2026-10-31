@@ -32,7 +32,16 @@ describe('site management', () => {
       paused: false,
       ignoredIps: [],
       shareToken: null,
-      webhooks: { stripe: false, dodo: false, lemonsqueezy: false },
+      webhooks: {
+        stripe: false,
+        dodo: false,
+        lemonsqueezy: false,
+        paddle: false,
+        polar: false,
+        razorpay: false,
+        creem: false,
+        gumroad: false,
+      },
     })
     expect(JSON.stringify(site)).not.toContain(apiKey)
     const [row] = await server.rows<{ api_key_hash: string }>('SELECT api_key_hash FROM sites')

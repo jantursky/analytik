@@ -18,6 +18,11 @@ const PROVIDERS = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'dodo', label: 'Dodo Payments' },
   { value: 'lemonsqueezy', label: 'Lemon Squeezy' },
+  { value: 'paddle', label: 'Paddle' },
+  { value: 'polar', label: 'Polar' },
+  { value: 'razorpay', label: 'Razorpay' },
+  { value: 'creem', label: 'Creem' },
+  { value: 'gumroad', label: 'Gumroad' },
   { value: 'api', label: msg('API') },
 ]
 

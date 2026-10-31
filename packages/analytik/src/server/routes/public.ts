@@ -2,7 +2,12 @@ import type { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import * as dodo from '../../adapters/dodo'
+import * as creem from '../../adapters/creem'
+import * as gumroad from '../../adapters/gumroad'
 import * as lemonsqueezy from '../../adapters/lemonsqueezy'
+import * as paddle from '../../adapters/paddle'
+import * as polar from '../../adapters/polar'
+import * as razorpay from '../../adapters/razorpay'
 import type { WebhookRequest } from '../../adapters/shared'
 import * as stripe from '../../adapters/stripe'
 import { isId, isSiteId, randomId } from '../../shared/ids'
@@ -25,11 +30,21 @@ const ATTRIBUTION_PER_MINUTE = 60
 
 const ADAPTERS: Record<
   PaymentProvider,
-  { verify(request: WebhookRequest): Promise<boolean>; toPayment(event: unknown): PaymentInput | null }
+  {
+    verify(request: WebhookRequest): Promise<boolean>
+    toPayment(event: unknown): PaymentInput | null
+    /** For providers that do not send JSON. */
+    parse?(body: string): unknown
+  }
 > = {
   stripe,
   dodo,
   lemonsqueezy,
+  paddle,
+  polar,
+  razorpay,
+  creem,
+  gumroad,
 }
 
 async function readJson(request: Request, limit: number): Promise<unknown> {
@@ -161,12 +176,12 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     if (!secret) throw new AnalytikError(`no ${provider} webhook secret configured for this site`)
     const body = await readText(c.req.raw, WEBHOOK_LIMIT)
     if (body === null) throw new AnalytikError('payload too large', 413)
-    if (!(await adapter.verify({ headers: c.req.raw.headers, body, secret, now: ctx.now() }))) {
+    if (!(await adapter.verify({ headers: c.req.raw.headers, body, secret, now: ctx.now(), url: c.req.url }))) {
       throw new AnalytikError('invalid signature', 401)
     }
     let event: unknown
     try {
-      event = JSON.parse(body)
+      event = adapter.parse ? adapter.parse(body) : JSON.parse(body)
     } catch {
       throw new AnalytikError('body must be JSON')
     }

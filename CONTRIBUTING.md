@@ -32,7 +32,7 @@ Without `ANALYTIK_TEST_POSTGRES_URL` those tests are skipped. CI always runs the
 
 - `packages/analytik/src/server`: `createAnalytik()`, the Hono routes, auth and the privacy rules (hashing and salts).
 - `packages/analytik/src/storage`: the D1, Postgres, SQLite and in-memory storage, the shared query builders and the ordered migrations.
-- `packages/analytik/src/adapters`: the Stripe, Dodo and Lemon Squeezy webhook verification and mapping.
+- `packages/analytik/src/adapters`: the Stripe, Dodo, Lemon Squeezy, Paddle, Polar, Razorpay, Creem and Gumroad webhook verification and mapping.
 - `packages/analytik/src/tracker`: the browser script, built to `dist/analytik.js`.
 - `packages/analytik/src/client`, `src/react`: the browser client and the React bindings.
 - `packages/analytik/src/dashboard`: the embeddable dashboard and its styles.

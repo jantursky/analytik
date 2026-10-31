@@ -14,7 +14,7 @@ The current version is {{version}}. See the [changelog](/changelog) for what eac
 - **One package.** `analytik` contains the server (a [Hono](https://hono.dev) app), storage drivers, the tracker script, a browser client, React bindings and the dashboard. There is nothing else to install except `hono` and, for Postgres, a driver.
 - **Runs where your site runs.** The same code runs on Cloudflare Workers with D1, on Vercel with Supabase, on Railway with Postgres, and on Bun or Node with SQLite.
 - **Cookieless by default.** In `strict` mode the tracker stores no identifier on the visitor's device and the server derives a pseudonymous visitor id that is tied to a salt which changes every month.
-- **Revenue attribution.** Payments from Stripe, Dodo Payments, Lemon Squeezy or your own code are credited to the visitor's last non-direct session.
+- **Revenue attribution.** Payments from Stripe, Dodo Payments, Lemon Squeezy, Paddle, Polar, Razorpay, Creem, Gumroad or your own code are credited to the visitor's last non-direct session.
 
 It is not a hosted service and does not try to be one: no multi-tenant accounts, no Google sign-in, no plan billing. You deploy it, you hold the data.
 

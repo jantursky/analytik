@@ -318,6 +318,17 @@ describe('POST /event in persistent and enriched modes', () => {
     ])
   })
 
+  it('fills identify fields once and never rewrites them', async () => {
+    await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { privacyMode: 'persistent' } })
+    const ids = { m: 'persistent', vid: 'visitor-0001', sid: 'session-0001' } as const
+    await server.event({ w: site.id, ...page('/'), ...ids })
+    const identify = (p: Record<string, string>) =>
+      server.event({ w: site.id, t: 'identify', u: 'https://example.com/', ...ids, p })
+    await identify({ email: 'ann@example.com' })
+    await identify({ email: 'evil@example.com', name: 'Ann' })
+    expect(await server.rows('SELECT email, name FROM visitors')).toEqual([{ email: 'ann@example.com', name: 'Ann' }])
+  })
+
   it('downgrades to strict for Do Not Track and Global Privacy Control', async () => {
     await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { privacyMode: 'persistent' } })
     await server.event(

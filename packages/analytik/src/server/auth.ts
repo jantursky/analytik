@@ -5,7 +5,7 @@ import { hmacSha256, timingSafeEqual, toBase64Url } from '../shared/crypto'
 import { DAY, MINUTE } from '../shared/time'
 import { AnalytikError, type Context } from './context'
 import { hashedKey } from './privacy'
-import { hit, hits, reset } from './ratelimit'
+import { hit, reset } from './ratelimit'
 import type { AdminPasswordAuth } from './types'
 
 export const SESSION_COOKIE = 'analytik_session'
@@ -74,11 +74,11 @@ export async function login(ctx: Context, c: HonoContext, password: unknown): Pr
   if (!isPasswordAuth(admin)) throw new AnalytikError('login is handled by the verify() option', 400)
   // Without a trusted client IP every caller shares one counter: stricter, but it can't be dodged.
   const key = await hashedKey(ctx, 'login', ctx.clientIp(c.req.raw) ?? '')
-  if ((await hits(ctx, key, LOGIN_WINDOW)) >= LOGIN_ATTEMPTS) {
+  // Count the attempt before checking the password, so a burst of parallel guesses cannot all slip under the limit.
+  if ((await hit(ctx, key, LOGIN_WINDOW)) > LOGIN_ATTEMPTS) {
     throw new AnalytikError('too many failed logins, try again in 15 minutes', 429)
   }
   if (typeof password !== 'string' || !timingSafeEqual(password, admin.password)) {
-    await hit(ctx, key, LOGIN_WINDOW)
     throw new AnalytikError('wrong password', 401)
   }
   await reset(ctx, key)
@@ -119,11 +119,10 @@ export async function confirmDeletion(
   const { admin } = ctx
   if (!isPasswordAuth(admin)) return
   const key = await hashedKey(ctx, 'login', ctx.clientIp(c.req.raw) ?? '')
-  if ((await hits(ctx, key, LOGIN_WINDOW)) >= LOGIN_ATTEMPTS) {
+  if ((await hit(ctx, key, LOGIN_WINDOW)) > LOGIN_ATTEMPTS) {
     throw new AnalytikError('too many wrong passwords, try again in 15 minutes', 429)
   }
   if (typeof input.password !== 'string' || !timingSafeEqual(input.password, admin.password)) {
-    await hit(ctx, key, LOGIN_WINDOW)
     // Not 401: the session is fine, and the dashboard signs out on a 401.
     throw new AnalytikError('wrong password', 403)
   }

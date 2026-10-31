@@ -1,6 +1,6 @@
 ---
 title: Payments
-description: Record revenue through the generic API or the Stripe, Dodo Payments and Lemon Squeezy webhooks, with the checkout metadata that links each payment to a source.
+description: Record revenue through the generic API or the Stripe, Dodo Payments, Lemon Squeezy, Paddle, Polar, Razorpay, Creem and Gumroad webhooks, with the checkout metadata that links each payment to a source.
 ---
 
 Revenue gets a source in two steps: the payment must reach Analytik, and it must be linked to a visitor. Read [Attribution and payments](/concepts/attribution-and-payments) first for the matching order. The short version: put the visitor and session ids in the checkout metadata, and everything else follows.
@@ -57,13 +57,18 @@ Server-side goals work the same way, with `POST /api/v1/goals` and `{ "name": "t
 
 ## Webhooks
 
-Analytik verifies and maps provider webhooks itself. For each provider, create a webhook that points to your server and paste its signing secret into the site's settings (Webhooks). The URL has the form `https://analytics.example.com/api/webhooks/PROVIDER/SITE_ID`, where `PROVIDER` is `stripe`, `dodo` or `lemonsqueezy`. Requests that fail verification are rejected.
+Analytik verifies and maps provider webhooks itself. For each provider, create a webhook that points to your server and paste its signing secret into the site's settings (Webhooks). The URL has the form `https://analytics.example.com/api/webhooks/PROVIDER/SITE_ID`, where `PROVIDER` is `stripe`, `dodo`, `lemonsqueezy`, `paddle`, `polar`, `razorpay`, `creem` or `gumroad`. Requests that fail verification are rejected.
 
 | Provider      | Events used                                                       | Signature                       |
 | ------------- | ----------------------------------------------------------------- | ------------------------------- |
 | Stripe        | `checkout.session.completed`, `invoice.paid`, `charge.refunded`   | HMAC-SHA256, `Stripe-Signature` |
 | Dodo Payments | `payment.succeeded`, `refund.succeeded`                           | Standard Webhooks               |
 | Lemon Squeezy | `order_created`, `subscription_payment_success`, `order_refunded` | `X-Signature`                   |
+| Paddle        | `transaction.completed`, `adjustment.updated` (approved refunds)  | `Paddle-Signature`              |
+| Polar         | `order.paid`, `order.refunded`                                    | Standard Webhooks               |
+| Razorpay      | `payment.captured`, `refund.processed`                            | `X-Razorpay-Signature`          |
+| Creem         | `checkout.completed`, `subscription.paid`, `refund.created`       | `creem-signature`               |
+| Gumroad       | sale pings (`refunded=true` for refunds)                          | secret in the URL (`?token=`)   |
 
 Subscribe only to those events. Others are ignored.
 
@@ -126,6 +131,33 @@ window.location.href = url.toString()
 ```
 
 When creating the checkout through the API, put the same keys in `checkout_data.custom`.
+
+### Paddle
+
+Pass the ids as `customData` when you open the checkout (Paddle.js) or create the transaction:
+
+```ts
+const ids = await analytik.attribution()
+Paddle.Checkout.open({ items: [{ priceId: 'pri_...', quantity: 1 }], customData: ids ?? undefined })
+```
+
+Paddle does not put the buyer's email on these events, so payments without ids match through the return page or the customer.
+
+### Polar
+
+Pass the ids as checkout `metadata` (API) or `metadata[...]` query parameters on a checkout link. Paste the endpoint secret exactly as Polar shows it.
+
+### Razorpay
+
+Put the ids in the payment or order `notes`, for example `notes: { ...ids }` when you create the order.
+
+### Creem
+
+Pass the ids as checkout `metadata` when you create the checkout through the API.
+
+### Gumroad
+
+Gumroad does not sign its pings. Set the ping URL (Settings, Advanced) to `https://analytics.example.com/api/webhooks/gumroad/SITE_ID?token=SECRET` and save the same `SECRET` in the site's webhook settings. Add the ids to the product link as query parameters (`?analytik_visitor_id=...&analytik_session_id=...`); Gumroad passes them back as `url_params`.
 
 ## Revenue sent from the browser
 

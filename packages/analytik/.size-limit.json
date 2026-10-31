@@ -61,7 +61,7 @@
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "33 kB"
+    "limit": "34 kB"
   },
   {
     "name": "D1 storage",
@@ -77,9 +77,18 @@
   },
   {
     "name": "Payment adapters",
-    "path": ["dist/adapters/stripe.js", "dist/adapters/dodo.js", "dist/adapters/lemonsqueezy.js"],
+    "path": [
+      "dist/adapters/stripe.js",
+      "dist/adapters/dodo.js",
+      "dist/adapters/lemonsqueezy.js",
+      "dist/adapters/paddle.js",
+      "dist/adapters/polar.js",
+      "dist/adapters/razorpay.js",
+      "dist/adapters/creem.js",
+      "dist/adapters/gumroad.js"
+    ],
     "gzip": true,
-    "limit": "4 kB"
+    "limit": "10 kB"
   },
   {
     "name": "Demo data and storage opener",

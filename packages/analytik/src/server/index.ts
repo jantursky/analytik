@@ -48,9 +48,14 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
       return c.json({ ok: false, dialect: ctx.storage.dialect }, 503)
     }
   })
-  app.use(async (_c, next) => {
+  app.use(async (c, next) => {
     await ready()
     await next()
+    // Admin and stats responses must never be cached or sniffed; the tracker endpoint and favicons set their own.
+    c.res.headers.set('x-content-type-options', 'nosniff')
+    if (!c.res.headers.has('cache-control') && !/\/(event|attribution)$/.test(c.req.path)) {
+      c.res.headers.set('cache-control', 'no-store')
+    }
   })
   publicRoutes(app, ctx)
   const admin = new Hono<AdminEnv>()

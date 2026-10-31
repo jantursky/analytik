@@ -339,7 +339,7 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
         params: [site.id, visit.visitorId, now],
       },
       {
-        sql: `UPDATE visitors SET user_id = COALESCE(?, user_id), email = COALESCE(?, email), name = COALESCE(?, name)
+        sql: `UPDATE visitors SET user_id = COALESCE(user_id, ?), email = COALESCE(email, ?), name = COALESCE(name, ?)
               WHERE site_id = ? AND id = ?`,
         params: [
           clip(props.userId ?? props.user_id, 128),

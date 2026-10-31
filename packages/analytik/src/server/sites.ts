@@ -6,7 +6,16 @@ import type { PaymentProvider, PrivacyMode, Site } from '../shared/types'
 import { cleanDomain } from '../shared/url'
 import { AnalytikError, type Context } from './context'
 
-export const PROVIDERS: readonly PaymentProvider[] = ['stripe', 'dodo', 'lemonsqueezy']
+export const PROVIDERS: readonly PaymentProvider[] = [
+  'stripe',
+  'dodo',
+  'lemonsqueezy',
+  'paddle',
+  'polar',
+  'razorpay',
+  'creem',
+  'gumroad',
+]
 const MODES: readonly PrivacyMode[] = ['strict', 'enriched', 'persistent']
 
 /** A site as stored, including what never leaves the server. */
@@ -71,6 +80,11 @@ export function publicSite(record: SiteRecord): Site {
       stripe: !!webhookSecrets.stripe,
       dodo: !!webhookSecrets.dodo,
       lemonsqueezy: !!webhookSecrets.lemonsqueezy,
+      paddle: !!webhookSecrets.paddle,
+      polar: !!webhookSecrets.polar,
+      razorpay: !!webhookSecrets.razorpay,
+      creem: !!webhookSecrets.creem,
+      gumroad: !!webhookSecrets.gumroad,
     },
   }
 }

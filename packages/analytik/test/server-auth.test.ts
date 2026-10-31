@@ -39,6 +39,20 @@ describe('admin login', () => {
     expect(viaBearer.status).toBe(200)
   })
 
+  it('counts parallel guesses before checking them', async () => {
+    server = await testServer()
+    const statuses = (await Promise.all(Array.from({ length: 14 }, async () => login('wrong')))).map((r) => r.status)
+    expect(statuses.filter((status) => status === 401)).toHaveLength(10)
+    expect(statuses.filter((status) => status === 429)).toHaveLength(4)
+  })
+
+  it('never lets admin responses be cached or sniffed', async () => {
+    server = await testServer()
+    const response = await server.request('/auth/me')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+  })
+
   it('rejects wrong passwords and locks out after ten failures', async () => {
     server = await testServer()
     for (let attempt = 0; attempt < 10; attempt++) expect((await login('wrong')).status).toBe(401)

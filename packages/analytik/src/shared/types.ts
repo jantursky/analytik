@@ -5,7 +5,7 @@ export type Interval = 'hour' | 'day' | 'week' | 'month'
 export type EventType = 'pageview' | 'goal' | 'outbound' | 'ping' | 'identify' | 'revenue'
 export type PaymentKind = 'payment' | 'refund'
 export type PaymentMatch = 'metadata' | 'return_page' | 'customer' | 'email' | 'timing'
-export type PaymentProvider = 'stripe' | 'dodo' | 'lemonsqueezy'
+export type PaymentProvider = 'stripe' | 'dodo' | 'lemonsqueezy' | 'paddle' | 'polar' | 'razorpay' | 'creem' | 'gumroad'
 
 export type Dimension =
   | 'channel'

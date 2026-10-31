@@ -35,7 +35,19 @@ export const CREDITED_SESSION_SQL = `SELECT id FROM sessions WHERE site_id = ? A
 /** How far back a click to checkout can explain a payment. */
 const CLICK_LOOKBACK = 3 * HOUR
 
-const CHECKOUT_HOSTS = ['checkout.stripe.com', 'buy.stripe.com', 'dodopayments.com', 'lemonsqueezy.com']
+const CHECKOUT_HOSTS = [
+  'checkout.stripe.com',
+  'buy.stripe.com',
+  'dodopayments.com',
+  'lemonsqueezy.com',
+  'paddle.com',
+  'polar.sh',
+  'razorpay.com',
+  'rzp.io',
+  'creem.io',
+  'gumroad.com',
+  'gum.co',
+]
 const CHECKOUT_GOALS = ['checkout', 'buy', 'purchase']
 
 /** SQL condition on events aliased `e`: an outbound click to a checkout host or a goal named like a purchase. */

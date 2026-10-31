@@ -56,6 +56,26 @@
       "types": "./dist/adapters/lemonsqueezy.d.ts",
       "default": "./dist/adapters/lemonsqueezy.js"
     },
+    "./adapters/paddle": {
+      "types": "./dist/adapters/paddle.d.ts",
+      "default": "./dist/adapters/paddle.js"
+    },
+    "./adapters/polar": {
+      "types": "./dist/adapters/polar.d.ts",
+      "default": "./dist/adapters/polar.js"
+    },
+    "./adapters/razorpay": {
+      "types": "./dist/adapters/razorpay.d.ts",
+      "default": "./dist/adapters/razorpay.js"
+    },
+    "./adapters/creem": {
+      "types": "./dist/adapters/creem.d.ts",
+      "default": "./dist/adapters/creem.js"
+    },
+    "./adapters/gumroad": {
+      "types": "./dist/adapters/gumroad.d.ts",
+      "default": "./dist/adapters/gumroad.js"
+    },
     "./client": {
       "types": "./dist/client.d.ts",
       "default": "./dist/client.js"

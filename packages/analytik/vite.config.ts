@@ -19,6 +19,11 @@ const entries = {
   'adapters/stripe': 'src/adapters/stripe.ts',
   'adapters/dodo': 'src/adapters/dodo.ts',
   'adapters/lemonsqueezy': 'src/adapters/lemonsqueezy.ts',
+  'adapters/paddle': 'src/adapters/paddle.ts',
+  'adapters/polar': 'src/adapters/polar.ts',
+  'adapters/razorpay': 'src/adapters/razorpay.ts',
+  'adapters/creem': 'src/adapters/creem.ts',
+  'adapters/gumroad': 'src/adapters/gumroad.ts',
   migrate: 'src/migrate/index.ts',
   cli: 'src/cli.ts',
   // Browser side. The tracker script (dist/analytik.js) is a separate IIFE build below.

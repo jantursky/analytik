@@ -5,6 +5,8 @@ export interface WebhookRequest {
   /** The raw request body, exactly as received; signatures cover these bytes. */
   body: string
   secret: string
+  /** The request URL, for providers that cannot sign their webhooks and put the secret in it. */
+  url?: string
   /** Unix ms, for the replay window. Defaults to now. */
   now?: number
 }

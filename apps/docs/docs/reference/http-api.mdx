@@ -9,14 +9,14 @@ All paths are relative to `basePath` (default `/api`). Dates are ISO 8601, or Un
 
 CORS is open and `text/plain` bodies are accepted, so the browser sends events without a preflight request.
 
-| Method and path                    | Auth                | Description                                                                                                    |
-| ---------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `POST /event`                      | none                | Tracker payload, see below. 202 on accept and on a filtered bot. 400, 403, 404 or 413 otherwise. 8 KB at most. |
-| `POST /attribution`                | none                | Returns `{ visitorId, sessionId }` computed on the server for this request. Rate limited per hash.             |
-| `POST /v1/payments`                | Bearer site API key | Body: `PaymentInput`. Idempotent on `(siteId, id)`. Answers `{ ok, duplicate, payment, attributed }`.          |
-| `POST /v1/goals`                   | Bearer site API key | Body: `name`, optional `props`, and `visitorId` or `email`.                                                    |
-| `POST /webhooks/:provider/:siteId` | signature           | `provider` is `stripe`, `dodo` or `lemonsqueezy`. Verified with the site's webhook secret.                     |
-| `GET /health`                      | none                | Health check.                                                                                                  |
+| Method and path                    | Auth                | Description                                                                                                                                   |
+| ---------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /event`                      | none                | Tracker payload, see below. 202 on accept and on a filtered bot. 400, 403, 404 or 413 otherwise. 8 KB at most.                                |
+| `POST /attribution`                | none                | Returns `{ visitorId, sessionId }` computed on the server for this request. Rate limited per hash.                                            |
+| `POST /v1/payments`                | Bearer site API key | Body: `PaymentInput`. Idempotent on `(siteId, id)`. Answers `{ ok, duplicate, payment, attributed }`.                                         |
+| `POST /v1/goals`                   | Bearer site API key | Body: `name`, optional `props`, and `visitorId` or `email`.                                                                                   |
+| `POST /webhooks/:provider/:siteId` | signature           | `provider` is `stripe`, `dodo`, `lemonsqueezy`, `paddle`, `polar`, `razorpay`, `creem` or `gumroad`. Verified with the site's webhook secret. |
+| `GET /health`                      | none                | Health check.                                                                                                                                 |
 
 ### Event body
 
