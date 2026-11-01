@@ -6,10 +6,14 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.12.0]
+
 ### Added
 
 - Bots view: which crawlers (AI answers, indexing, training) request which pages, reported by your server with `POST /api/v1/bots`. Run `analytik upgrade` to add the new table.
-- Payment webhook adapters for Paddle, Polar, Razorpay, Creem and Gumroad.
+- Email notifications: payment alerts, a daily or weekly summary and a tracker-down warning, set up in Settings → Email with a sender from `analytik/email` and a schedule (`scheduled()` or `POST /api/v1/cron`). Run `analytik upgrade` to add the new tables.
+- Payment webhook adapters for Paddle, Polar, Razorpay, Creem and Gumroad, with their logos.
+- "Import from another tool" in the site switcher.
 
 ### Security
 

@@ -16,8 +16,14 @@ describe.each(storageKinds())('%s storage', (kind) => {
   it('applies migrations once and records them', async () => {
     storage = await createStorage(kind)
     const first = await storage.migrate()
-    expect(first.applied).toEqual(['0001_init', '0002_imported', '0003_ignore_admins', '0004_bot_requests'])
-    expect(first.version).toBe('0004_bot_requests')
+    expect(first.applied).toEqual([
+      '0001_init',
+      '0002_imported',
+      '0003_ignore_admins',
+      '0004_bot_requests',
+      '0005_notifications',
+    ])
+    expect(first.version).toBe('0005_notifications')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
@@ -26,6 +32,7 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0002_imported',
       '0003_ignore_admins',
       '0004_bot_requests',
+      '0005_notifications',
     ])
   })
 
@@ -93,7 +100,7 @@ describe('0002_imported', () => {
     )
 
     const result = await applyMigrations(storage, migrations)
-    expect(result.applied).toEqual(['0002_imported', '0003_ignore_admins', '0004_bot_requests'])
+    expect(result.applied).toEqual(['0002_imported', '0003_ignore_admins', '0004_bot_requests', '0005_notifications'])
     expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
     expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])
     await storage.close?.()

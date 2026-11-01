@@ -1,0 +1,77 @@
+---
+title: Email notifications
+description: Get an email when a payment arrives, a daily or weekly summary of every site, and a warning when tracking goes quiet.
+---
+
+Analytik can email you so you do not have to open the dashboard. There are three messages, each switched on separately in **Settings → Email**:
+
+- **Payment alert**: the amount, currency and source of each new payment. Refunds and retried webhooks send nothing.
+- **Summary**: one email per day or week covering every site, with visitors, revenue, conversion rate and revenue per visitor against the period before, the top sources by revenue and the top pages. The numbers are the ones the dashboard shows for the same period.
+- **Tracker-down alert**: a site that had events in the days before and has had none for 24 hours. You get one email per outage; if events resume and stop again you get a new one. Only outages that begin after you switch the alert on are reported, so sites that were already quiet do not trigger a burst of emails.
+
+Nothing is sent until you configure a sender and turn at least one message on.
+
+## 1. Configure a sender
+
+Pass `email` to `createAnalytik()`. The helpers in `analytik/email` use only `fetch`, so they run on Workers and Node.
+
+```ts
+import { createAnalytik } from 'analytik/server'
+import { resendSender } from 'analytik/email'
+
+const analytik = createAnalytik({
+  storage,
+  admin,
+  email: {
+    send: resendSender({ apiKey: process.env.RESEND_API_KEY! }),
+    from: 'Analytik <analytik@example.com>',
+    to: 'you@example.com', // optional, used until you set one in the dashboard
+    cronSecret: process.env.CRON_SECRET, // only for the HTTP cron route
+  },
+})
+```
+
+| Sender                                           | Use                                                                                                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `resendSender({ apiKey })`                       | [Resend](https://resend.com).                                                                                                         |
+| `httpSender({ url, headers?, body? })`           | Any JSON email API. Posts `{ from, to, subject, text, html }`, or what `body(message)` returns.                                       |
+| `cloudflareSender(env.SEND_EMAIL, EmailMessage)` | The Worker `send_email` binding. Import `EmailMessage` from `cloudflare:email`; the recipient must be a verified destination address. |
+
+Your own sender is a function `(message: EmailMessage) => Promise<void>` that throws when the message is refused. Secrets stay in your server configuration; they are never stored in the database or put in an email.
+
+## 2. Run the schedule
+
+Payment alerts need nothing more. The summary and the tracker-down alert need something to call Analytik about once an hour. It is safe to call more often: each email goes out once.
+
+**Cloudflare Workers**: add a cron trigger and call `scheduled()` (the Cloudflare template already does):
+
+```ts
+export default {
+  fetch: handler.fetch,
+  scheduled: (_controller, _env, ctx) => ctx.waitUntil(analytik.scheduled()),
+}
+```
+
+```jsonc
+// wrangler.jsonc
+"triggers": { "crons": ["0 * * * *"] }
+```
+
+**Vercel and other hosts**: call `/api/v1/cron` with the secret. Vercel Cron sends `CRON_SECRET` as a bearer token on its own.
+
+```bash
+curl -X POST https://analytics.example.com/api/v1/cron -H "Authorization: Bearer $CRON_SECRET"
+```
+
+The route answers 401 without the right secret, and always when no `cronSecret` is set. `GET` works too, because Vercel Cron only makes GET requests. The Vercel template calls it once a day, which the Hobby plan allows; choose a summary hour at or after that time, or move to an hourly schedule on Pro.
+
+## 3. Choose what to send
+
+Open **Settings → Email**, enter the recipient, switch on the messages you want, pick daily or weekly and the hour, and press **Send test email**. A refused test shows the sender's error. The hour and the period covered are read in the time zone you choose there; a weekly summary goes out on Monday and covers the week before.
+
+## Limits
+
+- A payment alert is sent while the webhook is handled and waits at most eight seconds for the sender. If the sender fails the payment is still recorded and the failure is logged. The summary always covers the revenue.
+- A message is reserved before it is sent. If a run dies mid-send, the reservation is taken over after ten minutes and the summary or alert is sent again; a payment alert is not retried, because the webhook retry is a duplicate.
+- The summary time is accurate to the hour of your schedule.
+- There is one recipient and one set of settings for all sites. Run `analytik upgrade` after updating to create the settings tables.

@@ -7,6 +7,8 @@ import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
 import { isImportSource } from '../../shared/import/types'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
+import { sendTest } from '../email/notify'
+import { getEmailSettings, saveEmailSettings } from '../email/settings'
 import { siteFavicon } from '../favicon'
 import { importVisits } from '../import/core'
 import { listImports, removeImport } from '../import/manage'
@@ -147,6 +149,26 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   app.use('/preferences', requireAdmin(ctx))
   app.get('/preferences', async (c) => c.json(await getPreferences(ctx)))
   app.put('/preferences', async (c) => c.json(await savePreferences(ctx, await body(c))))
+
+  // Owner emails: whether a sender is configured, the settings chosen here and a test send.
+  app.use('/email', requireAdmin(ctx))
+  app.use('/email/*', requireAdmin(ctx))
+  app.get('/email', async (c) =>
+    c.json({ configured: ctx.email !== undefined, to: ctx.email?.to ?? null, settings: await getEmailSettings(ctx) }),
+  )
+  app.put('/email', async (c) => c.json(await saveEmailSettings(ctx, await body(c))))
+  app.post('/email/test', async (c) => {
+    if (!ctx.email) throw new AnalytikError('no email sender is configured; pass email to createAnalytik()')
+    const input = await body(c)
+    const to = typeof input.to === 'string' && input.to ? input.to : (await getEmailSettings(ctx)).to || ctx.email.to
+    if (!to || !/^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(to)) throw new AnalytikError('enter a recipient address')
+    try {
+      await sendTest(ctx, to)
+    } catch (error) {
+      throw new AnalytikError(error instanceof Error ? error.message : 'the email sender failed', 502)
+    }
+    return c.json({ ok: true, to })
+  })
 
   app.use('/debug', requireAdmin(ctx))
   app.use('/debug/*', requireAdmin(ctx))

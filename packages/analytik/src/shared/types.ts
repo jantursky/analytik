@@ -363,3 +363,28 @@ export interface BotFilters {
   category?: BotCategory[]
   page?: string[]
 }
+
+export type SummaryFrequency = 'off' | 'daily' | 'weekly'
+
+/** What the owner chose in Settings → Email. */
+export interface EmailSettings {
+  /** Recipient; empty uses the server's `email.to`. */
+  to: string
+  /** Email after each new payment. */
+  payments: boolean
+  summary: SummaryFrequency
+  /** Hour of the day (0-23) in `timezone` after which the summary is sent. */
+  hour: number
+  /** Email when a site that had traffic goes 24 hours without events. */
+  down: boolean
+  /** IANA time zone the summary hour and period are read in. */
+  timezone: string
+}
+
+/** `GET /email`: the saved settings and whether the server has a sender to use them. */
+export interface EmailState {
+  configured: boolean
+  /** The server's default recipient, used while `settings.to` is empty. */
+  to: string | null
+  settings: EmailSettings
+}

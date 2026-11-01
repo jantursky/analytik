@@ -19,6 +19,7 @@ const PATHS = {
   flat: 'M2 4h12v8H2zM2 8h12M6 4v8M10 4v8',
   theme: 'M8 2a6 6 0 1 0 0 12zM8 2a6 6 0 0 1 0 12',
   expand: 'M3 6V3h3M10 3h3v3M13 10v3h-3M6 13H3v-3',
+  mail: 'M1.5 3.5h13v9h-13zM1.5 4.5 8 9.5l6.5-5',
   desktop: 'M2 3h12v8H2zM6 14h4M8 11v3',
   mobile: 'M5 1.5h6v13H5zM7.5 12.5h1',
   tablet: 'M3 2h10v12H3zM7.5 12h1',

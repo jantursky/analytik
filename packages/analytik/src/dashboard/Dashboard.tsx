@@ -123,6 +123,7 @@ export interface DashboardProps {
 }
 
 const NEW_SITE = '\u0000new'
+const IMPORT_DATA = '\u0000import'
 // A live refresh reads the whole range again; once a minute keeps that affordable on metered databases.
 const LIVE_MS = 60_000
 
@@ -448,9 +449,19 @@ export function Dashboard({
                     </span>
                   ),
                 },
+                {
+                  value: IMPORT_DATA,
+                  label: t('Import from another tool'),
+                  icon: (
+                    <span className="analytik-tile analytik-tile-add" aria-hidden="true">
+                      <Icon name="upload" />
+                    </span>
+                  ),
+                },
               ]}
               onChange={(id) => {
                 if (id === NEW_SITE) setAdding(true)
+                else if (id === IMPORT_DATA) setImporting(true)
                 else openSite(id)
               }}
             />

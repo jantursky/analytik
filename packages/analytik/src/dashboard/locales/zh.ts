@@ -805,4 +805,21 @@ export default {
   Requests: '请求',
   'Track crawlers': '追踪爬虫',
   Training: '训练',
+  'Email me when a payment arrives': '有付款时给我发邮件',
+  'Email me when a site gets no events for 24 hours': '网站连续 24 小时没有事件时给我发邮件',
+  'Every day': '每天',
+  'Every Monday': '每周一',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    '资金到账时收到消息，收到所有网站的每日或每周汇总，或在跟踪停止时收到警告。这些设置适用于所有网站。',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    '服务器上未设置邮件发送方，因此不会发送任何内容。请向 createAnalytik() 传入 email 选项和发送方：Resend、任意 HTTP 邮件 API 或 Cloudflare Email。',
+  Off: '关闭',
+  'Send after': '在此时间之后发送',
+  'Send test email': '发送测试邮件',
+  'Send to': '发送至',
+  'Summary of all sites': '所有网站的汇总',
+  'Test email sent to {to}': '测试邮件已发送至 {to}',
+  'The hour and the day or week covered are read in this time zone.': '小时以及汇总涵盖的日期或周按此时区计算。',
+  'Time zone': '时区',
+  'Using the address set on the server: {to}': '正在使用服务器上设置的地址：{to}',
 } satisfies Messages

@@ -21,6 +21,7 @@ import { TimeZoneSelect } from '../ui/timezone'
 import { Icon, type IconName } from '../icons'
 import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
+import { EmailSettings } from './EmailSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { ImportedData } from './ImportData'
 import { IntegrationPrompt } from './IntegrationPrompt'
@@ -684,6 +685,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
+  { value: 'email', label: msg('Email'), icon: 'mail', content: EmailSettings },
   { value: 'appearance', label: msg('Appearance'), icon: 'theme', content: ThemeSettings },
   { value: 'formatting', label: msg('Formatting'), icon: 'format', content: FormatSettings },
   { value: 'changelog', label: msg('Changelog'), icon: 'clock', content: Changelog, tone: 'meta' },
@@ -700,6 +702,7 @@ export type SettingsSection =
   | 'campaigns'
   | 'payments'
   | 'data'
+  | 'email'
   | 'appearance'
   | 'formatting'
   | 'changelog'

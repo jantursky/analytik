@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { createApiClient } from '../src/dashboard/api'
 import {
@@ -35,6 +35,17 @@ afterEach(() => {
   vi.useRealTimers()
   localStorage.clear()
 })
+
+/** The calendar only offers past days, so on the first of a month it has none to pick: these tests run on a fixed Sunday in July. */
+function midMonth(): void {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 6, 19, 12))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+}
 
 describe('Dashboard shell', () => {
   it('lets the theme be switched and the password shown on the login screen', async () => {
@@ -120,6 +131,7 @@ describe('Dashboard shell', () => {
   })
 
   describe('remembered choices', () => {
+    midMonth()
     const DAYS = 86_400_000
     const spanOf = (call: { params: Record<string, string> } | undefined) =>
       Math.round((Date.parse(call?.params.to ?? '') - Date.parse(call?.params.from ?? '')) / DAYS)
@@ -712,6 +724,9 @@ describe('Dashboard shell', () => {
   })
 
   it('moves through the calendar with the keyboard', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 6, 19, 12))
+    onTestFinished(() => void vi.useRealTimers())
     const { container } = await open()
     await click(container.querySelector('.analytik-range-trigger'))
     await settled()
@@ -910,6 +925,13 @@ describe('Dashboard shell', () => {
     await click(container.querySelector('[aria-label="Previous period"]'))
     expect(live?.getAttribute('aria-checked')).toBe('false')
     expect(live?.hasAttribute('data-disabled')).toBe(true)
+  })
+
+  it('opens the import dialog from the site switcher', async () => {
+    const { container } = await open(fakeApi(), undefined, { siteId: 'site_2' })
+    await choose(selectTrigger(container, 'Site'), 'Import from another tool')
+    await waitFor(() => byText(container, 'Import from another tool', '[role="dialog"] h2'))
+    expect(selectTrigger(container, 'Site')?.textContent).toBe('OOther')
   })
 
   it('switches sites and adds one in a dialog', async () => {
@@ -1911,6 +1933,62 @@ describe('Settings', () => {
     expect(byText(container, 'Copy prompt', 'button')).toBeDefined()
   })
 
+  it('sets up owner emails, saves them and sends a test message', async () => {
+    const api = fakeApi()
+    const { container } = await open(api, 'settings')
+    await section(container, 'Email')
+    expect(api.find('GET', '/email')).toHaveLength(1)
+    expect(container.textContent).not.toContain('No email sender is set up')
+    const testButton = () => byText(container, 'Send test email', 'button') as HTMLButtonElement
+    // Without a recipient there is nowhere to send a test.
+    expect(testButton().disabled).toBe(true)
+    await fill(byLabel(container, 'Send to'), 'me@example.com')
+    expect(testButton().disabled).toBe(false)
+    await click(switchFor(container, 'Email me when a payment arrives'))
+    await click(switchFor(container, 'Email me when a site gets no events for 24 hours'))
+    // The time zone and hour only matter once there is a summary.
+    expect(container.textContent).not.toContain('Send after')
+    await choose(selectTrigger(container, 'Summary of all sites'), 'Every Monday')
+    await choose(selectTrigger(container, 'Send after'), '09:00')
+
+    await click(testButton())
+    await settled()
+    expect(api.find('POST', '/email/test')[0]?.body).toEqual({ to: 'me@example.com' })
+    expect(byText(container, 'Test email sent to me@example.com', '[role="status"]')).toBeDefined()
+
+    await submit(container.querySelector('form'))
+    await settled()
+    expect(api.find('PUT', '/email')[0]?.body).toMatchObject({
+      to: 'me@example.com',
+      payments: true,
+      down: true,
+      summary: 'weekly',
+      hour: 9,
+    })
+    expect(byText(container, 'Settings saved', '[role="status"]')).toBeDefined()
+  })
+
+  it('shows the sender error of a failed test email and explains a missing sender', async () => {
+    const api = fakeApi()
+    api.state.email.to = 'owner@example.com'
+    api.state.emailError = 'domain not verified'
+    const { container } = await open(api, 'settings')
+    await section(container, 'Email')
+    expect(container.textContent).toContain('Using the address set on the server: owner@example.com')
+    await click(byText(container, 'Send test email', 'button'))
+    await settled()
+    expect(api.find('POST', '/email/test')[0]?.body).toEqual({ to: 'owner@example.com' })
+    expect(byText(container, 'domain not verified', '[role="alert"]')).toBeDefined()
+    expect(api.find('PUT', '/email')).toHaveLength(0)
+
+    const bare = fakeApi()
+    bare.state.email.configured = false
+    const second = await open(bare, 'settings')
+    await section(second.container, 'Email')
+    expect(second.container.textContent).toContain('No email sender is set up on the server')
+    expect((byText(second.container, 'Send test email', 'button') as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('hides the debug section when the server has the debug tools off', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     expect(api.find('GET', '/debug')).toHaveLength(1)
@@ -2323,7 +2401,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(10)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(11)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

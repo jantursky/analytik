@@ -835,4 +835,22 @@ export default {
   Requests: 'Żądania',
   'Track crawlers': 'Śledź roboty',
   Training: 'Trenowanie',
+  'Email me when a payment arrives': 'Wyślij e-mail, gdy wpłynie płatność',
+  'Email me when a site gets no events for 24 hours': 'Wyślij e-mail, gdy witryna przez 24 godziny nie ma zdarzeń',
+  'Every day': 'Codziennie',
+  'Every Monday': 'W każdy poniedziałek',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Dostawaj wiadomość, gdy wpłyną pieniądze, dzienne lub tygodniowe podsumowanie wszystkich witryn albo ostrzeżenie, gdy śledzenie przestanie działać. Te ustawienia dotyczą wszystkich witryn.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Na serwerze nie skonfigurowano nadawcy e-maili, więc nic nie jest wysyłane. Przekaż do createAnalytik() opcję email z nadawcą: Resend, dowolne API HTTP do e-maili lub Cloudflare Email.',
+  Off: 'Wyłączone',
+  'Send after': 'Wyślij po',
+  'Send test email': 'Wyślij testowy e-mail',
+  'Send to': 'Wyślij do',
+  'Summary of all sites': 'Podsumowanie wszystkich witryn',
+  'Test email sent to {to}': 'Testowy e-mail wysłano na adres {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'Godzina oraz dzień lub tydzień objęty podsumowaniem są odczytywane w tej strefie czasowej.',
+  'Time zone': 'Strefa czasowa',
+  'Using the address set on the server: {to}': 'Używany jest adres ustawiony na serwerze: {to}',
 } satisfies Messages

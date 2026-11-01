@@ -827,4 +827,22 @@ export default {
   Requests: 'Yêu cầu',
   'Track crawlers': 'Theo dõi trình thu thập',
   Training: 'Huấn luyện',
+  'Email me when a payment arrives': 'Gửi email cho tôi khi có thanh toán',
+  'Email me when a site gets no events for 24 hours': 'Gửi email cho tôi khi một trang web 24 giờ không có sự kiện',
+  'Every day': 'Mỗi ngày',
+  'Every Monday': 'Mỗi thứ Hai',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Nhận tin nhắn khi có tiền về, bản tóm tắt hằng ngày hoặc hằng tuần của mọi trang web, hoặc cảnh báo khi theo dõi ngừng hoạt động. Các cài đặt này áp dụng cho mọi trang web.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Máy chủ chưa thiết lập trình gửi email nên sẽ không có gì được gửi. Hãy truyền tùy chọn email cho createAnalytik() cùng một trình gửi: Resend, API email HTTP bất kỳ hoặc Cloudflare Email.',
+  Off: 'Tắt',
+  'Send after': 'Gửi sau',
+  'Send test email': 'Gửi email thử',
+  'Send to': 'Gửi tới',
+  'Summary of all sites': 'Tóm tắt mọi trang web',
+  'Test email sent to {to}': 'Đã gửi email thử tới {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'Giờ cùng ngày hoặc tuần mà bản tóm tắt bao quát được tính theo múi giờ này.',
+  'Time zone': 'Múi giờ',
+  'Using the address set on the server: {to}': 'Đang dùng địa chỉ đặt trên máy chủ: {to}',
 } satisfies Messages

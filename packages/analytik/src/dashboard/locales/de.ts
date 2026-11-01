@@ -833,4 +833,23 @@ export default {
   Requests: 'Anfragen',
   'Track crawlers': 'Crawler erfassen',
   Training: 'Training',
+  'Email me when a payment arrives': 'E-Mail senden, wenn eine Zahlung eingeht',
+  'Email me when a site gets no events for 24 hours':
+    'E-Mail senden, wenn eine Website 24 Stunden keine Ereignisse hat',
+  'Every day': 'Jeden Tag',
+  'Every Monday': 'Jeden Montag',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Erhalte eine Nachricht, wenn Geld eingeht, eine tägliche oder wöchentliche Zusammenfassung aller Websites oder eine Warnung, wenn das Tracking aussetzt. Diese Einstellungen gelten für alle Websites.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Auf dem Server ist kein E-Mail-Versand eingerichtet, daher wird nichts gesendet. Übergib createAnalytik() die Option email mit einem Versender: Resend, eine beliebige HTTP-E-Mail-API oder Cloudflare Email.',
+  Off: 'Aus',
+  'Send after': 'Senden nach',
+  'Send test email': 'Test-E-Mail senden',
+  'Send to': 'Senden an',
+  'Summary of all sites': 'Zusammenfassung aller Websites',
+  'Test email sent to {to}': 'Test-E-Mail an {to} gesendet',
+  'The hour and the day or week covered are read in this time zone.':
+    'Die Uhrzeit sowie der abgedeckte Tag oder die Woche werden in dieser Zeitzone gelesen.',
+  'Time zone': 'Zeitzone',
+  'Using the address set on the server: {to}': 'Es wird die auf dem Server festgelegte Adresse verwendet: {to}',
 } satisfies Messages

@@ -833,4 +833,22 @@ export default {
   Requests: 'Požiadavky',
   'Track crawlers': 'Sledovať crawlery',
   Training: 'Trénovanie',
+  'Email me when a payment arrives': 'Poslať e-mail, keď príde platba',
+  'Email me when a site gets no events for 24 hours': 'Poslať e-mail, keď web 24 hodín nemá žiadne udalosti',
+  'Every day': 'Každý deň',
+  'Every Monday': 'Každý pondelok',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Dostávajte správu, keď prídu peniaze, denný alebo týždenný súhrn všetkých webov, alebo upozornenie, keď sledovanie prestane fungovať. Nastavenia platia pre všetky weby.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Na serveri nie je nastavený odosielateľ e-mailov, takže sa nič neodosiela. Odovzdajte createAnalytik() voľbu email s odosielateľom: Resend, ľubovoľné HTTP API pre e-maily alebo Cloudflare Email.',
+  Off: 'Vypnuté',
+  'Send after': 'Odoslať po',
+  'Send test email': 'Odoslať skúšobný e-mail',
+  'Send to': 'Odoslať na',
+  'Summary of all sites': 'Súhrn všetkých webov',
+  'Test email sent to {to}': 'Skúšobný e-mail odoslaný na {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'V tomto časovom pásme sa čítajú hodina a deň alebo týždeň, ktorý súhrn pokrýva.',
+  'Time zone': 'Časové pásmo',
+  'Using the address set on the server: {to}': 'Použitá adresa nastavená na serveri: {to}',
 } satisfies Messages

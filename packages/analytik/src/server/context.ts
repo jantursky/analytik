@@ -2,6 +2,7 @@ import { cryptoRandom, type RandomBytes } from '../shared/ids'
 import type { PrivacyMode } from '../shared/types'
 import type { Storage } from '../storage/types'
 import { clientIpFrom } from './request'
+import type { EmailOptions } from './email/types'
 import type { AdminAuth, AllowedOrigins, CreateAnalytikOptions, Geo } from './types'
 
 /** Everything the handlers share; built once per `createAnalytik()`. */
@@ -18,6 +19,8 @@ export interface Context {
   geo: ((request: Request) => Geo | null | Promise<Geo | null>) | undefined
   clientIp: (request: Request) => string | null
   debug: boolean
+  /** Owner emails; undefined when no sender is configured. */
+  email: EmailOptions | undefined
   updateCheck: boolean
   /** Month salts this instance has loaded, so the hot path doesn't query them on every event. */
   salts: Map<string, string>
@@ -54,6 +57,7 @@ export function createContext(options: CreateAnalytikOptions): Context {
     geo: options.geo,
     clientIp: options.clientIp ?? ((request) => clientIpFrom(request, trustProxy)),
     debug: options.debug === true,
+    email: options.email,
     updateCheck: options.updateCheck !== false,
     salts: new Map(),
     retentionRuns: new Map(),
@@ -64,7 +68,7 @@ export function createContext(options: CreateAnalytikOptions): Context {
 export class AnalytikError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 401 | 403 | 404 | 409 | 413 | 429 = 400,
+    readonly status: 400 | 401 | 403 | 404 | 409 | 413 | 429 | 502 = 400,
   ) {
     super(message)
     this.name = 'AnalytikError'

@@ -824,4 +824,22 @@ export default {
   Requests: 'Permintaan',
   'Track crawlers': 'Lacak crawler',
   Training: 'Pelatihan',
+  'Email me when a payment arrives': 'Kirim email saat ada pembayaran masuk',
+  'Email me when a site gets no events for 24 hours': 'Kirim email saat situs tidak menerima event selama 24 jam',
+  'Every day': 'Setiap hari',
+  'Every Monday': 'Setiap Senin',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Dapatkan pesan saat uang masuk, ringkasan harian atau mingguan semua situs, atau peringatan saat pelacakan berhenti. Pengaturan ini berlaku untuk semua situs.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Server belum memiliki pengirim email, jadi tidak ada yang dikirim. Berikan opsi email ke createAnalytik() dengan sebuah pengirim: Resend, API email HTTP apa pun, atau Cloudflare Email.',
+  Off: 'Mati',
+  'Send after': 'Kirim setelah',
+  'Send test email': 'Kirim email uji',
+  'Send to': 'Kirim ke',
+  'Summary of all sites': 'Ringkasan semua situs',
+  'Test email sent to {to}': 'Email uji terkirim ke {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'Jam serta hari atau minggu yang dicakup dibaca dalam zona waktu ini.',
+  'Time zone': 'Zona waktu',
+  'Using the address set on the server: {to}': 'Memakai alamat yang diatur di server: {to}',
 } satisfies Messages

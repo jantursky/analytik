@@ -824,4 +824,22 @@ export default {
   Requests: 'リクエスト',
   'Track crawlers': 'クローラーを追跡',
   Training: '学習',
+  'Email me when a payment arrives': '支払いがあったらメールで知らせる',
+  'Email me when a site gets no events for 24 hours': 'サイトのイベントが24時間ない場合にメールで知らせる',
+  'Every day': '毎日',
+  'Every Monday': '毎週月曜日',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    '入金があったときのメッセージ、全サイトの日次または週次のまとめ、トラッキングが止まったときの警告を受け取れます。この設定はすべてのサイトに適用されます。',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'サーバーにメール送信手段が設定されていないため、何も送信されません。createAnalytik() に email オプションと送信手段（Resend、任意のHTTPメールAPI、Cloudflare Email）を渡してください。',
+  Off: 'オフ',
+  'Send after': '送信する時刻',
+  'Send test email': 'テストメールを送信',
+  'Send to': '送信先',
+  'Summary of all sites': '全サイトのまとめ',
+  'Test email sent to {to}': 'テストメールを {to} に送信しました',
+  'The hour and the day or week covered are read in this time zone.':
+    '時刻と、まとめが対象とする日または週は、このタイムゾーンで判断されます。',
+  'Time zone': 'タイムゾーン',
+  'Using the address set on the server: {to}': 'サーバーに設定されたアドレスを使用: {to}',
 } satisfies Messages

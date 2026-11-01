@@ -832,4 +832,22 @@ export default {
   Requests: 'Verzoeken',
   'Track crawlers': 'Crawlers volgen',
   Training: 'Training',
+  'Email me when a payment arrives': 'Mail mij als er een betaling binnenkomt',
+  'Email me when a site gets no events for 24 hours': 'Mail mij als een site 24 uur geen events heeft',
+  'Every day': 'Elke dag',
+  'Every Monday': 'Elke maandag',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Ontvang een bericht als er geld binnenkomt, een dagelijks of wekelijks overzicht van alle sites, of een waarschuwing als het tracken stopt. Deze instellingen gelden voor alle sites.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Op de server is geen e-mailverzender ingesteld, dus er wordt niets verstuurd. Geef createAnalytik() de optie email mee met een verzender: Resend, een willekeurige HTTP-e-mail-API of Cloudflare Email.',
+  Off: 'Uit',
+  'Send after': 'Versturen na',
+  'Send test email': 'Testmail versturen',
+  'Send to': 'Versturen naar',
+  'Summary of all sites': 'Overzicht van alle sites',
+  'Test email sent to {to}': 'Testmail verstuurd naar {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'Het uur en de dag of week die het overzicht dekt, worden in deze tijdzone gelezen.',
+  'Time zone': 'Tijdzone',
+  'Using the address set on the server: {to}': 'Het adres dat op de server is ingesteld wordt gebruikt: {to}',
 } satisfies Messages

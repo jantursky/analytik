@@ -1,6 +1,6 @@
 {
   "name": "analytik",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "description": "Privacy-first, cookieless web analytics you host yourself: a Hono server for Cloudflare Workers, Vercel, Bun and Node, D1, Postgres and SQLite storage, a tiny tracker, React bindings and an embeddable dashboard.",
   "license": "MIT",
   "author": {
@@ -27,6 +27,10 @@
     "./server": {
       "types": "./dist/server.d.ts",
       "default": "./dist/server.js"
+    },
+    "./email": {
+      "types": "./dist/email.d.ts",
+      "default": "./dist/email.js"
     },
     "./storage/d1": {
       "types": "./dist/storage/d1.d.ts",

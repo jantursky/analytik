@@ -835,4 +835,22 @@ export default {
   Requests: 'Richieste',
   'Track crawlers': 'Monitora i crawler',
   Training: 'Addestramento',
+  'Email me when a payment arrives': 'Inviami un’email quando arriva un pagamento',
+  'Email me when a site gets no events for 24 hours': 'Inviami un’email quando un sito resta 24 ore senza eventi',
+  'Every day': 'Ogni giorno',
+  'Every Monday': 'Ogni lunedì',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Ricevi un messaggio quando arrivano soldi, un riepilogo giornaliero o settimanale di tutti i siti, o un avviso quando il tracciamento si ferma. Queste impostazioni valgono per tutti i siti.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Sul server non è configurato alcun mittente di email, quindi non viene inviato nulla. Passa l’opzione email a createAnalytik() con un mittente: Resend, qualsiasi API HTTP per email o Cloudflare Email.',
+  Off: 'Disattivato',
+  'Send after': 'Invia dopo',
+  'Send test email': 'Invia email di prova',
+  'Send to': 'Invia a',
+  'Summary of all sites': 'Riepilogo di tutti i siti',
+  'Test email sent to {to}': 'Email di prova inviata a {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'L’ora e il giorno o la settimana coperti vengono letti in questo fuso orario.',
+  'Time zone': 'Fuso orario',
+  'Using the address set on the server: {to}': 'Viene usato l’indirizzo impostato sul server: {to}',
 } satisfies Messages

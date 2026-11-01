@@ -12,6 +12,7 @@ const entries = {
   // Server side: runs on Workers, Vercel, Bun and Node.
   index: 'src/index.ts',
   server: 'src/server/index.ts',
+  email: 'src/server/email/senders.ts',
   'storage/d1': 'src/storage/d1.ts',
   'storage/postgres': 'src/storage/postgres.ts',
   'storage/sqlite': 'src/storage/sqlite.ts',

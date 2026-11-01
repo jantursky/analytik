@@ -1,6 +1,6 @@
 import { MotionConfig } from 'motion/react'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { presetRange } from '../src/dashboard/range'
 import { currencies } from '../src/dashboard/ui/currency'
@@ -92,7 +92,20 @@ describe('Switch', () => {
   })
 })
 
+/** The calendar only offers past days, so on the first of a month it has none to pick: these tests run on a fixed Sunday in July. */
+function midMonth(): void {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 6, 19, 12))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+}
+
 describe('date pickers', () => {
+  midMonth()
+
   it('labels ranges by preset or by their days', () => {
     expect(rangeLabel(presetRange('30d', Date.now()))).toBe('Past 30 days')
     expect(

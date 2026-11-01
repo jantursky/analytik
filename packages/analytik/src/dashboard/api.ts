@@ -3,6 +3,8 @@ import type {
   BotStats,
   BreakdownRow,
   Dimension,
+  EmailSettings,
+  EmailState,
   EventType,
   Funnel,
   FunnelResult,
@@ -122,6 +124,11 @@ export interface ApiClient {
   /** The dashboard settings shared by every admin; `{}` before anything was saved. */
   preferences(): Promise<Record<string, unknown>>
   savePreferences(preferences: Record<string, unknown>): Promise<Record<string, unknown>>
+  /** Whether the server has an email sender, and the owner's email settings. */
+  email(): Promise<EmailState>
+  saveEmail(settings: Partial<EmailSettings>): Promise<EmailSettings>
+  /** Sends a test message to `to` (default the saved recipient); rejects with the sender's error. */
+  sendTestEmail(to?: string): Promise<{ ok: true; to: string }>
   /** Whether the server was started with `debug: true`. */
   debug(): Promise<{ enabled: boolean }>
   /** Writes made-up traffic and payments; needs `debug: true` on the server. */
@@ -259,6 +266,9 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     rotateKey: (id) => write('POST', `${site(id)}/rotate-key`, {}),
     preferences: () => get('/preferences'),
     savePreferences: (preferences) => write('PUT', '/preferences', preferences),
+    email: () => get('/email'),
+    saveEmail: (settings) => write('PUT', '/email', settings),
+    sendTestEmail: (to) => write('POST', '/email/test', to ? { to } : {}),
     debug: () => get('/debug'),
     generateTestData: (input) => write('POST', '/debug/generate', input),
     deleteTestSites: () => write('DELETE', '/debug/sites'),

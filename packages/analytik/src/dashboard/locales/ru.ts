@@ -834,4 +834,22 @@ export default {
   Requests: 'Запросы',
   'Track crawlers': 'Отслеживать краулеры',
   Training: 'Обучение',
+  'Email me when a payment arrives': 'Присылать письмо при поступлении платежа',
+  'Email me when a site gets no events for 24 hours': 'Присылать письмо, если на сайте нет событий 24 часа',
+  'Every day': 'Каждый день',
+  'Every Monday': 'Каждый понедельник',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Получайте сообщение, когда приходят деньги, ежедневную или еженедельную сводку по всем сайтам или предупреждение, когда отслеживание останавливается. Эти настройки действуют для всех сайтов.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'На сервере не настроен отправитель писем, поэтому ничего не отправляется. Передайте в createAnalytik() параметр email с отправителем: Resend, любой HTTP API для почты или Cloudflare Email.',
+  Off: 'Выкл.',
+  'Send after': 'Отправлять после',
+  'Send test email': 'Отправить тестовое письмо',
+  'Send to': 'Кому отправлять',
+  'Summary of all sites': 'Сводка по всем сайтам',
+  'Test email sent to {to}': 'Тестовое письмо отправлено на {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'Час, а также день или неделя, которые охватывает сводка, определяются в этом часовом поясе.',
+  'Time zone': 'Часовой пояс',
+  'Using the address set on the server: {to}': 'Используется адрес, заданный на сервере: {to}',
 } satisfies Messages

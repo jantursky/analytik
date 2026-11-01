@@ -23,13 +23,13 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "453 kB"
+    "limit": "464 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
     "path": "dist/chunks/{sk,cs,de,es,fr,pt,pl,it,nl,ru,tr,ja,zh,ko,id,hi,vi}-*.js",
     "gzip": true,
-    "limit": "306 kB"
+    "limit": "316 kB"
   },
   {
     "name": "Country flags (a lazy chunk, loaded when the first country is shown)",
@@ -54,14 +54,14 @@
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "800 kB"
+    "limit": "812 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "36 kB"
+    "limit": "40 kB"
   },
   {
     "name": "D1 storage",

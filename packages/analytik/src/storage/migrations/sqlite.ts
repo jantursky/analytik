@@ -3,6 +3,7 @@ import { init } from './0001_init'
 import { imported } from './0002_imported'
 import { ignoreAdmins } from './0003_ignore_admins'
 import { botRequests } from './0004_bot_requests'
+import { notifications } from './0005_notifications'
 
 /** SQLite and Cloudflare D1, applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -10,4 +11,5 @@ export const migrations: readonly Migration[] = [
   { version: '0002_imported', sql: imported() },
   { version: '0003_ignore_admins', sql: ignoreAdmins() },
   { version: '0004_bot_requests', sql: botRequests({ big: 'INTEGER' }) },
+  { version: '0005_notifications', sql: notifications({ big: 'INTEGER' }) },
 ]

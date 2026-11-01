@@ -173,6 +173,15 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     version: { current: '1.1.0', latest: null as string | null },
     preferences: {} as Record<string, unknown>,
     debug: false,
+    email: {
+      configured: true,
+      to: null as string | null,
+      settings: { to: '', payments: false, summary: 'off', hour: 8, down: false, timezone: 'UTC' } as Record<
+        string,
+        unknown
+      >,
+    },
+    emailError: null as string | null,
     login: 'password' as 'password' | 'custom',
   }
 
@@ -219,6 +228,15 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       state.sites = state.sites.filter((s) => s !== target)
       return { ok: true }
     },
+    'GET /email': () => state.email,
+    'PUT /email': ({ body }) => {
+      state.email.settings = { ...state.email.settings, ...(body as Record<string, unknown>) }
+      return state.email.settings
+    },
+    'POST /email/test': ({ body }) =>
+      state.emailError
+        ? Response.json({ error: state.emailError }, { status: 502 })
+        : { ok: true, to: (body as { to?: string }).to },
     'GET /debug': () => ({ enabled: state.debug }),
     'POST /debug/generate': () => ({
       sites: [{ id: 'debug-a1', name: 'Test site a1' }],

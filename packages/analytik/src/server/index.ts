@@ -1,9 +1,11 @@
 import { Hono } from 'hono'
 
 import { AnalytikError, createContext } from './context'
+import { runScheduled } from './email/notify'
 import { ingest } from './ingest'
 import { recordPayment } from './payments'
 import { type AdminEnv, adminRoutes } from './routes/admin'
+import { cronRoute } from './routes/cron'
 import { publicRoutes } from './routes/public'
 import { requireSite } from './sites'
 import { createStatsApi } from './stats'
@@ -58,6 +60,7 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
     }
   })
   publicRoutes(app, ctx)
+  cronRoute(app, ctx)
   const admin = new Hono<AdminEnv>()
   adminRoutes(admin, ctx)
   app.route('/', admin)
@@ -74,5 +77,9 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
       return recordPayment(ctx, await requireSite(ctx, siteId), input, provider)
     },
     stats: createStatsApi(ctx, ready),
+    async scheduled(options) {
+      await ready()
+      return runScheduled(ctx, options?.url)
+    },
   }
 }

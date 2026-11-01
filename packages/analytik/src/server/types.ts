@@ -1,6 +1,7 @@
 import type { Hono } from 'hono'
 
 import type { RandomBytes } from '../shared/ids'
+import type { EmailOptions, ScheduledResult } from './email/types'
 import type {
   BotFilters,
   BotStats,
@@ -101,7 +102,14 @@ export interface CreateAnalytikOptions {
    * server, at most every six hours. Default true; `false` makes no request. The dashboard sends nothing to npm.
    */
   updateCheck?: boolean
+  /**
+   * Emails the owner about payments, a periodic summary and a silent tracker. Off unless set; what is sent is chosen
+   * in the dashboard. Summaries and tracker alerts need `scheduled()` or `POST /api/v1/cron` called every hour.
+   */
+  email?: EmailOptions
 }
+
+export type { EmailMessage, EmailOptions, EmailSend, EmailSettings, ScheduledResult } from './email/types'
 
 export interface IngestInput {
   /** Untrusted tracker payload; validated like an HTTP request body. */
@@ -208,4 +216,9 @@ export interface Analytik {
   ingest(input: IngestInput): Promise<IngestResult>
   recordPayment(input: RecordPaymentInput): Promise<RecordPaymentResult>
   stats: StatsApi
+  /**
+   * Sends the summary if it is due and the tracker-down alerts. Safe to call every hour, or more often: each email
+   * goes out once. Call it from a Worker's `scheduled` handler.
+   */
+  scheduled(options?: { url?: string }): Promise<ScheduledResult>
 }

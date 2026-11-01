@@ -836,4 +836,23 @@ export default {
   Requests: 'Requêtes',
   'Track crawlers': 'Suivre les robots',
   Training: 'Entraînement',
+  'Email me when a payment arrives': 'M’envoyer un e-mail quand un paiement arrive',
+  'Email me when a site gets no events for 24 hours':
+    'M’envoyer un e-mail quand un site reste 24 heures sans événement',
+  'Every day': 'Chaque jour',
+  'Every Monday': 'Chaque lundi',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Recevez un message quand de l’argent arrive, un résumé quotidien ou hebdomadaire de tous les sites, ou une alerte quand le suivi s’arrête. Ces réglages s’appliquent à tous les sites.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'Aucun expéditeur d’e-mails n’est configuré sur le serveur, donc rien n’est envoyé. Passez l’option email à createAnalytik() avec un expéditeur : Resend, n’importe quelle API HTTP d’e-mail ou Cloudflare Email.',
+  Off: 'Désactivé',
+  'Send after': 'Envoyer après',
+  'Send test email': 'Envoyer un e-mail de test',
+  'Send to': 'Envoyer à',
+  'Summary of all sites': 'Résumé de tous les sites',
+  'Test email sent to {to}': 'E-mail de test envoyé à {to}',
+  'The hour and the day or week covered are read in this time zone.':
+    'L’heure ainsi que le jour ou la semaine couverts sont lus dans ce fuseau horaire.',
+  'Time zone': 'Fuseau horaire',
+  'Using the address set on the server: {to}': 'Adresse définie sur le serveur utilisée : {to}',
 } satisfies Messages

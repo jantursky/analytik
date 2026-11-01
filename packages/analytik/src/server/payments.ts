@@ -4,6 +4,7 @@ import { clip } from '../shared/url'
 import type { Statement } from '../storage/types'
 import { type VisitMatch, attribute } from './attribution'
 import { AnalytikError, type Context } from './context'
+import { alertPayment } from './email/notify'
 import type { SiteRecord } from './sites'
 import type { RecordPaymentResult, RematchResult } from './types'
 
@@ -241,27 +242,27 @@ export async function recordPayment(
     statements.push(...identifyVisitor(site.id, match.visitorId, payment.email, payment.name, payment.ts))
   }
   await storage.batch(statements)
-  return {
-    payment: {
-      id: payment.id,
-      siteId: site.id,
-      provider,
-      ts: payment.ts,
-      amount: payment.amount,
-      kind: payment.kind,
-      currency: payment.currency,
-      visitorId: match.visitorId,
-      sessionId: match.sessionId,
-      customerId: payment.customerId,
-      email: payment.email,
-      name: payment.name,
-      renewal: match.renewal,
-      matchedBy: match.matchedBy,
-      subscriptionId: payment.subscriptionId,
-      orderId: payment.orderId,
-    },
-    duplicate: false,
+  const recorded: Payment = {
+    id: payment.id,
+    siteId: site.id,
+    provider,
+    ts: payment.ts,
+    amount: payment.amount,
+    kind: payment.kind,
+    currency: payment.currency,
+    visitorId: match.visitorId,
+    sessionId: match.sessionId,
+    customerId: payment.customerId,
+    email: payment.email,
+    name: payment.name,
+    renewal: match.renewal,
+    matchedBy: match.matchedBy,
+    subscriptionId: payment.subscriptionId,
+    orderId: payment.orderId,
   }
+  // A new payment (not a refund or a retry) may email the owner; this never fails the webhook.
+  await alertPayment(ctx, site, recorded)
+  return { payment: recorded, duplicate: false }
 }
 
 /** Tries again to link payments that have no visitor yet, e.g. ones that arrived before the return-page visit. */

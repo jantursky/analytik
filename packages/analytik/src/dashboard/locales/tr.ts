@@ -830,4 +830,22 @@ export default {
   Requests: 'İstekler',
   'Track crawlers': 'Tarayıcı botları izle',
   Training: 'Eğitim',
+  'Email me when a payment arrives': 'Ödeme geldiğinde bana e-posta gönder',
+  'Email me when a site gets no events for 24 hours': 'Bir site 24 saat olaysız kalırsa bana e-posta gönder',
+  'Every day': 'Her gün',
+  'Every Monday': 'Her Pazartesi',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'Para geldiğinde bir mesaj, tüm sitelerin günlük veya haftalık özetini ya da izleme durduğunda bir uyarı alın. Bu ayarlar tüm sitelere uygulanır.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    "Sunucuda bir e-posta gönderici ayarlanmadığı için hiçbir şey gönderilmez. createAnalytik() işlevine bir göndericiyle email seçeneğini verin: Resend, herhangi bir HTTP e-posta API'si veya Cloudflare Email.",
+  Off: 'Kapalı',
+  'Send after': 'Şundan sonra gönder',
+  'Send test email': 'Test e-postası gönder',
+  'Send to': 'Alıcı',
+  'Summary of all sites': 'Tüm sitelerin özeti',
+  'Test email sent to {to}': 'Test e-postası {to} adresine gönderildi',
+  'The hour and the day or week covered are read in this time zone.':
+    'Saat ile özetin kapsadığı gün veya hafta bu saat diliminde okunur.',
+  'Time zone': 'Saat dilimi',
+  'Using the address set on the server: {to}': 'Sunucuda ayarlanan adres kullanılıyor: {to}',
 } satisfies Messages

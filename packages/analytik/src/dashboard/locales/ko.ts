@@ -820,4 +820,22 @@ export default {
   Requests: '요청',
   'Track crawlers': '크롤러 추적',
   Training: '학습',
+  'Email me when a payment arrives': '결제가 들어오면 이메일 받기',
+  'Email me when a site gets no events for 24 hours': '사이트에 24시간 동안 이벤트가 없으면 이메일 받기',
+  'Every day': '매일',
+  'Every Monday': '매주 월요일',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    '입금 알림, 모든 사이트의 일간 또는 주간 요약, 추적이 멈췄을 때의 경고를 받아 보세요. 이 설정은 모든 사이트에 적용됩니다.',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    '서버에 이메일 발송 수단이 설정되어 있지 않아 아무것도 발송되지 않습니다. createAnalytik()에 email 옵션과 발송 수단(Resend, 임의의 HTTP 이메일 API, Cloudflare Email)을 전달하세요.',
+  Off: '끔',
+  'Send after': '발송 시각 이후',
+  'Send test email': '테스트 이메일 보내기',
+  'Send to': '받는 사람',
+  'Summary of all sites': '모든 사이트 요약',
+  'Test email sent to {to}': '{to}(으)로 테스트 이메일을 보냈습니다',
+  'The hour and the day or week covered are read in this time zone.':
+    '시각과 요약이 다루는 날 또는 주는 이 시간대를 기준으로 계산됩니다.',
+  'Time zone': '시간대',
+  'Using the address set on the server: {to}': '서버에 설정된 주소를 사용합니다: {to}',
 } satisfies Messages

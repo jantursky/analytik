@@ -826,4 +826,22 @@ export default {
   Requests: 'अनुरोध',
   'Track crawlers': 'क्रॉलर ट्रैक करें',
   Training: 'प्रशिक्षण',
+  'Email me when a payment arrives': 'भुगतान आने पर मुझे ईमेल भेजें',
+  'Email me when a site gets no events for 24 hours': 'किसी साइट पर 24 घंटे कोई इवेंट न आने पर मुझे ईमेल भेजें',
+  'Every day': 'हर दिन',
+  'Every Monday': 'हर सोमवार',
+  'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.':
+    'पैसे आने पर संदेश पाएँ, सभी साइटों का दैनिक या साप्ताहिक सारांश पाएँ, या ट्रैकिंग रुकने पर चेतावनी पाएँ। ये सेटिंग सभी साइटों पर लागू होती हैं।',
+  'No email sender is set up on the server, so nothing is sent. Pass an email option to createAnalytik() with a sender: Resend, any HTTP email API or Cloudflare Email.':
+    'सर्वर पर कोई ईमेल भेजने वाला सेट नहीं है, इसलिए कुछ नहीं भेजा जाता। createAnalytik() को email विकल्प के साथ एक भेजने वाला दें: Resend, कोई भी HTTP ईमेल API या Cloudflare Email।',
+  Off: 'बंद',
+  'Send after': 'इसके बाद भेजें',
+  'Send test email': 'टेस्ट ईमेल भेजें',
+  'Send to': 'इन्हें भेजें',
+  'Summary of all sites': 'सभी साइटों का सारांश',
+  'Test email sent to {to}': 'टेस्ट ईमेल {to} को भेजा गया',
+  'The hour and the day or week covered are read in this time zone.':
+    'समय और सारांश में शामिल दिन या सप्ताह इसी टाइम ज़ोन में पढ़े जाते हैं।',
+  'Time zone': 'टाइम ज़ोन',
+  'Using the address set on the server: {to}': 'सर्वर पर सेट पता इस्तेमाल हो रहा है: {to}',
 } satisfies Messages
