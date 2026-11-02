@@ -1559,6 +1559,114 @@ button.analytik-stat[aria-pressed='true'] {
   color: var(--analytik-text);
 }
 
+.analytik-details-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0.8;
+}
+
+.analytik-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.analytik-details-row .analytik-export {
+  margin-left: auto;
+}
+
+.analytik-chart-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.analytik-chart-tools .analytik-export {
+  margin: 0;
+}
+
+/* ---- notes on the chart: flags on the plot and the panel under it */
+
+.analytik-note {
+  cursor: pointer;
+  outline: none;
+}
+
+.analytik-note-line {
+  stroke: var(--analytik-accent-text);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.5;
+}
+
+.analytik-note-dot {
+  fill: var(--analytik-accent-text);
+  stroke: var(--analytik-surface);
+  stroke-width: 2;
+}
+
+.analytik-note-count {
+  fill: var(--analytik-surface);
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.analytik-note:hover .analytik-note-line,
+.analytik-note:focus-visible .analytik-note-line {
+  opacity: 1;
+}
+
+.analytik-note:focus-visible .analytik-note-dot {
+  stroke: var(--analytik-text);
+}
+
+.analytik-notes-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--analytik-border);
+  border-radius: 10px;
+  background: var(--analytik-bg-subtle);
+}
+
+.analytik-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytik-notes-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.analytik-note-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.analytik-note-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.analytik-note-form .analytik-field:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
 .analytik-bars,
 .analytik-funnel {
   display: flex;
@@ -5417,4 +5525,92 @@ tr:hover .analytik-row-button {
 .analytik-dropzone[data-over] {
   border-color: var(--analytik-primary);
   background: var(--analytik-bg-subtle);
+}
+
+/* ---- sharing: the link form and the list of links */
+
+.analytik-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.analytik-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.analytik-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.analytik-share-created {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--analytik-border);
+  border-radius: 10px;
+  background: var(--analytik-bg-subtle);
+}
+
+.analytik-share-created p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--analytik-text-muted);
+}
+
+.analytik-share-created .analytik-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.analytik-share-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytik-share-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--analytik-border);
+}
+
+.analytik-share-list li:first-child {
+  border-top: 0;
+}
+
+.analytik-share-list li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.analytik-share-list li:not([data-active]) strong {
+  color: var(--analytik-text-muted);
+  text-decoration: line-through;
+}
+
+/* The site's name in the toolbar of a shared dashboard, where there is nothing to switch to. */
+.analytik-site-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
 }

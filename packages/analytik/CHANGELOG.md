@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.13.0]
+
+### Added
+
+- Share links in Settings → Sharing (named, limited to chosen views, with expiry and revoke, cached by your CDN), read-only shared dashboards, and notes on the charts, also from `POST /api/v1/annotations`. Run `analytik upgrade` to add the new tables.
+- Export CSV on every table and breakdown, and Export PNG on every chart.
+
 ## [1.12.0]
 
 ### Added

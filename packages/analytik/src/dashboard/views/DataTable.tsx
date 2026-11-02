@@ -1,10 +1,11 @@
-import { createContext, type ReactNode, useContext, useEffect, useId, useState } from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useId, useRef, useState } from 'react'
 
 import { parseColumns } from '../../shared/choices'
 import type { Page } from '../../shared/types'
 import type { Paging } from '../api'
 import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
+import { downloadCsv, fileName, tableRows } from '../export'
 import { formatNumber } from '../format'
 import { t } from '../i18n'
 import { Icon } from '../icons'
@@ -187,7 +188,8 @@ export function DataTable<T>({
   openLabel,
   columnsId,
 }: DataTableProps<T>) {
-  const { range } = useDashboard()
+  const { range, site } = useDashboard()
+  const tableRef = useRef<HTMLTableElement>(null)
   const { values: preferences, update } = usePreferences()
   const arranged = arrangeColumns(columns, columnsId ? parseColumns(preferences.columns, columnsId) : undefined)
   const shownColumns = arranged.filter((item) => item.shown).map((item) => item.column)
@@ -311,12 +313,24 @@ export function DataTable<T>({
             {t('Clear')}
           </button>
         )}
+        {!!data?.items.length && (
+          <button
+            type="button"
+            className="analytik-pill"
+            onClick={() =>
+              tableRef.current && downloadCsv(fileName([site.domain, title], 'csv'), tableRows(tableRef.current))
+            }
+          >
+            <Icon name="download" />
+            {t('Export CSV')}
+          </button>
+        )}
       </div>
       <Status loading={!data} error={rows.error}>
         <FilterContext value={setFilter}>
           {data?.items.length ? (
             <div className="analytik-table-wrap">
-              <table className="analytik-table" aria-busy={rows.loading} aria-label={title}>
+              <table ref={tableRef} className="analytik-table" aria-busy={rows.loading} aria-label={title}>
                 <thead>
                   <tr>
                     {shownColumns.map((column) => {

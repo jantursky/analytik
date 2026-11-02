@@ -41,8 +41,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      // types.ts is declarations only; the CLI runs in a child process in its tests, where coverage can't see it.
-      exclude: ['src/index.ts', 'src/shared/types.ts', 'src/cli.ts', 'src/standalone/main.tsx'],
+      // types.ts is declarations only; the CLI runs in a child process in its tests, where coverage can't see it. The
+      // PNG encoder draws to a canvas, which happy-dom cannot, so test/browser runs it in real browsers.
+      exclude: [
+        'src/index.ts',
+        'src/shared/types.ts',
+        'src/cli.ts',
+        'src/standalone/main.tsx',
+        'src/dashboard/chart-export.ts',
+      ],
       reporter: ['text-summary', 'text', 'html', 'lcov'],
       thresholds: {
         [SERVER_SOURCES]: GATE,

@@ -125,7 +125,7 @@ export function Revenue() {
       </Status>
       <Card title={t('Revenue')}>
         <Status loading={series.loading && !series.data} error={series.error}>
-          <TrafficChart points={series.data ?? []} metric="revenue" />
+          <TrafficChart points={series.data ?? []} metric="revenue" reload={series.reload} />
         </Status>
       </Card>
       <BreakdownCard

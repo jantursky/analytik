@@ -187,7 +187,19 @@ export interface TimeseriesPoint {
   conversionRate: number
   revenuePerVisitor: number
   /** The bucket at the same position in the comparison period, when `compare` was asked for. */
-  previous?: Omit<TimeseriesPoint, 'previous'>
+  previous?: Omit<TimeseriesPoint, 'previous' | 'notes'>
+  /** Notes dated inside this bucket; left out when there are none. */
+  notes?: Annotation[]
+}
+
+/** A dated note on a site's charts, such as "launched on Product Hunt". */
+export interface Annotation {
+  id: string
+  /** The day or moment the note is about, unix milliseconds. */
+  ts: number
+  /** Plain text, at most 200 characters. */
+  text: string
+  createdAt: number
 }
 
 export interface BreakdownRow {
@@ -387,4 +399,29 @@ export interface EmailState {
   /** The server's default recipient, used while `settings.to` is empty. */
   to: string | null
   settings: EmailSettings
+}
+
+/** The dashboard views a share link can be limited to. An empty list means every shareable view. */
+export const SHARE_VIEWS = [
+  'overview',
+  'sources',
+  'pages',
+  'events',
+  'sessions',
+  'bots',
+  'funnels',
+  'realtime',
+] as const
+export type ShareView = (typeof SHARE_VIEWS)[number]
+
+/** A read-only link to one site's dashboard. The token itself is shown once, when the link is created. */
+export interface ShareLink {
+  id: string
+  siteId: string
+  label: string
+  views: ShareView[]
+  createdAt: number
+  /** Unix ms after which the link stops working; null for no expiry. */
+  expiresAt: number | null
+  revokedAt: number | null
 }

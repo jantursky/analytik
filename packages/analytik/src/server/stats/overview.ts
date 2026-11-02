@@ -1,5 +1,6 @@
 import { MINUTE, bucketStarts } from '../../shared/time'
-import type { Overview, SiteSummary, TimeseriesPoint } from '../../shared/types'
+import type { Annotation, Overview, SiteSummary, TimeseriesPoint } from '../../shared/types'
+import { annotationsBetween } from '../annotations'
 import type { Context } from '../context'
 import type { SiteRecord } from '../sites'
 import {
@@ -265,7 +266,12 @@ interface TrafficRow {
  */
 export async function timeseries(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<TimeseriesPoint[]> {
   const { compare, ...own } = query
-  const points = await series(ctx, site, own)
+  // The notes come in the same request, one indexed read; each rides on the bucket that holds its date.
+  const [traffic, notes] = await Promise.all([
+    series(ctx, site, own),
+    annotationsBetween(ctx, site.id, own.from, own.to),
+  ])
+  const points = attachNotes(traffic, notes)
   if (!compare) return points
   // The same query over the comparison window, matched bucket by bucket by position, so a leap day or a clock
   // change can't pull the line out of step. The window is as long as the range, so it has the same interval.
@@ -274,6 +280,19 @@ export async function timeseries(ctx: Context, site: SiteRecord, query: StatsQue
     const before = earlier[index]
     return before ? { ...point, previous: before } : point
   })
+}
+
+/** Puts each note on the last bucket that starts at or before it. */
+function attachNotes(points: TimeseriesPoint[], notes: Annotation[]): TimeseriesPoint[] {
+  if (!notes.length) return points
+  const out = points.map((point) => ({ ...point }))
+  for (const note of notes) {
+    let at = -1
+    for (let i = 0; i < out.length && (out[i]?.ts ?? Infinity) <= note.ts; i++) at = i
+    const point = out[at]
+    if (point) point.notes = [...(point.notes ?? []), note]
+  }
+  return out
 }
 
 async function series(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<TimeseriesPoint[]> {

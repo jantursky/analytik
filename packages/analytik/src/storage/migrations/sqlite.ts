@@ -4,6 +4,8 @@ import { imported } from './0002_imported'
 import { ignoreAdmins } from './0003_ignore_admins'
 import { botRequests } from './0004_bot_requests'
 import { notifications } from './0005_notifications'
+import { shareLinks } from './0006_share_links'
+import { annotations } from './0007_annotations'
 
 /** SQLite and Cloudflare D1, applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -12,4 +14,6 @@ export const migrations: readonly Migration[] = [
   { version: '0003_ignore_admins', sql: ignoreAdmins() },
   { version: '0004_bot_requests', sql: botRequests({ big: 'INTEGER' }) },
   { version: '0005_notifications', sql: notifications({ big: 'INTEGER' }) },
+  { version: '0006_share_links', sql: shareLinks({ big: 'INTEGER' }) },
+  { version: '0007_annotations', sql: annotations({ big: 'INTEGER' }) },
 ]

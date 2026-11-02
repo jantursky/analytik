@@ -22,6 +22,7 @@ import { Icon, type IconName } from '../icons'
 import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
 import { EmailSettings } from './EmailSettings'
+import { SharingSettings } from './SharingSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { ImportedData } from './ImportData'
 import { IntegrationPrompt } from './IntegrationPrompt'
@@ -685,6 +686,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
       </>
     ),
   },
+  { value: 'sharing', label: msg('Sharing'), icon: 'link', content: SharingSettings },
   { value: 'email', label: msg('Email'), icon: 'mail', content: EmailSettings },
   { value: 'appearance', label: msg('Appearance'), icon: 'theme', content: ThemeSettings },
   { value: 'formatting', label: msg('Formatting'), icon: 'format', content: FormatSettings },
@@ -702,6 +704,7 @@ export type SettingsSection =
   | 'campaigns'
   | 'payments'
   | 'data'
+  | 'sharing'
   | 'email'
   | 'appearance'
   | 'formatting'

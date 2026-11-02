@@ -2,12 +2,17 @@ import { seedDemo } from 'analytik/migrate'
 import { createAnalytik } from 'analytik/server'
 import { memoryStorage } from 'analytik/storage/memory'
 
-import { API_BASE, SITE_ID } from '../src/config.js'
+import { API_BASE, DEMO_SHARE_TOKEN, SITE_ID } from '../src/config.js'
 import { createSimulator, type Simulator } from './simulator.js'
 
 type Handle = (request: Request) => Promise<Response>
 
 const DOMAIN = 'demo.analytik.dev'
+
+const sha256Hex = async (text: string): Promise<string> =>
+  Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('')
 
 // The demo is public, so the only writes visitors may make are the tracker's own.
 const WRITABLE = new Set([
@@ -27,6 +32,11 @@ const boot = async (local: boolean): Promise<{ handle: Handle; simulator: Simula
   const storage = memoryStorage()
   await storage.migrate()
   await seedDemo(storage, { siteId: SITE_ID, domain: DOMAIN, now: Date.now() })
+  // A fixed share link, so the read-only dashboard can be opened in the demo (the demo's own API refuses to make one).
+  await storage.run(
+    'INSERT INTO share_links (id, site_id, token_hash, label, views, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    ['sl_demo', SITE_ID, await sha256Hex(DEMO_SHARE_TOKEN), 'Demo link', '[]', Date.now()],
+  )
   const analytik = createAnalytik({
     storage,
     admin: { verify: () => Promise.resolve(true) },

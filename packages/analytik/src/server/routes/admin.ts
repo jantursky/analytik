@@ -9,7 +9,10 @@ import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
 import { sendTest } from '../email/notify'
 import { getEmailSettings, saveEmailSettings } from '../email/settings'
+import { createAnnotation, deleteAnnotation, updateAnnotation } from '../annotations'
 import { siteFavicon } from '../favicon'
+import type { ShareLink } from '../../shared/types'
+import { createShareLink, findShareLink, linkAllows, listShareLinks, revokeShareLink } from '../share'
 import { importVisits } from '../import/core'
 import { listImports, removeImport } from '../import/manage'
 import { IMPORT_BODY_LIMIT, parseImportBody } from '../import/validate'
@@ -54,10 +57,11 @@ const EVENT_TYPES: readonly EventType[] = ['pageview', 'goal', 'outbound', 'iden
  * Stats a share link may read: aggregates and the session list. Payments and session details carry
  * names and emails, so they stay admin-only, like settings, export and writes.
  */
-const SHAREABLE = /^\/sites\/[^/]+\/(overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
+const SHAREABLE =
+  /^\/sites\/[^/]+\/(shared|overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
-  Variables: { site: SiteRecord }
+  Variables: { site: SiteRecord; share: ShareLink | null }
 }
 
 async function body(c: HonoContext, limit = BODY_LIMIT): Promise<Record<string, unknown>> {
@@ -120,17 +124,43 @@ function pageParams(c: HonoContext): PageOptions {
   }
 }
 
-/** Admin, or a GET carrying the site's share token on a read-only stats route. */
+/** How long a CDN may keep a response served through a share link, so a popular link does not hit the database each time. */
+const SHARE_CACHE_SECONDS = 60
+const SHARE_CACHE_LIVE_SECONDS = 10
+
+/**
+ * Admin, or a GET carrying a share token on a read-only stats route. A link made in Settings is checked by its hash,
+ * against its site, its views, its expiry and revocation; the older site-wide `shareToken` still opens every shareable
+ * route. Only responses to a link's token in the address are cached publicly: the address is the cache key, so the key
+ * holds the token and one link's response never answers another request.
+ */
 function siteAccess(ctx: Context): MiddlewareHandler<AdminEnv> {
   const admin = requireAdmin(ctx)
   return async (c, next) => {
     const id = c.req.param('id') ?? ''
-    const share = c.req.query('share') ?? c.req.header('x-analytik-share')
-    if (share && c.req.method === 'GET' && SHAREABLE.test(c.req.path.slice(ctx.basePath.length))) {
+    const fromAddress = c.req.query('share')
+    const share = fromAddress ?? c.req.header('x-analytik-share')
+    const route = c.req.path.slice(ctx.basePath.length)
+    if (share && c.req.method === 'GET' && SHAREABLE.test(route)) {
       const site = await getSite(ctx, id)
-      if (site?.shareToken && timingSafeEqual(share, site.shareToken)) {
-        c.set('site', site)
-        return next()
+      if (site) {
+        const link = await findShareLink(ctx, id, share)
+        const name = route.split('/')[3] ?? ''
+        if (link && linkAllows(link.views, name)) {
+          c.set('site', site)
+          c.set('share', link)
+          await next()
+          if (fromAddress && c.res.status === 200) {
+            const seconds = name === 'realtime' ? SHARE_CACHE_LIVE_SECONDS : SHARE_CACHE_SECONDS
+            c.res.headers.set('cache-control', `public, s-maxage=${seconds}`)
+          }
+          return
+        }
+        if (!link && site.shareToken && timingSafeEqual(share, site.shareToken)) {
+          c.set('site', site)
+          c.set('share', null)
+          return next()
+        }
       }
     }
     return admin(c, async () => {
@@ -227,6 +257,14 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
 
   const query = (c: HonoContext<AdminEnv>) => statsQuery(new URL(c.req.url), c.get('site'), ctx.now())
 
+  // What a shared dashboard needs to start: the site's name, domain and formats, and which views the link shows.
+  app.get('/sites/:id/shared', (c) => {
+    const { id, name, domain, timezone, currency, privacyMode, createdAt } = c.get('site')
+    return c.json({
+      site: { id, name, domain, timezone, currency, privacyMode, createdAt },
+      views: c.get('share')?.views ?? [],
+    })
+  })
   app.get('/sites/:id/favicon', async (c) => (await siteFavicon(c.get('site').domain)) ?? c.body(null, 404))
   app.get('/sites/:id/overview', async (c) => c.json(await overview(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/timeseries', async (c) => c.json(await timeseries(ctx, c.get('site'), query(c))))
@@ -249,6 +287,34 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     const type = c.req.query('type') as EventType | undefined
     if (type !== undefined && !EVENT_TYPES.includes(type)) throw new AnalytikError('unknown event type')
     return c.json(await events(ctx, c.get('site'), query(c), { ...pageParams(c), name: c.req.query('name'), type }))
+  })
+
+  // Read-only links to this site's dashboard. Admin only: a link cannot list, create or revoke links.
+  app.get('/sites/:id/share-links', async (c) => c.json(await listShareLinks(ctx, c.get('site').id)))
+  app.post('/sites/:id/share-links', async (c) =>
+    c.json(await createShareLink(ctx, c.get('site').id, await body(c)), 201),
+  )
+  app.delete('/sites/:id/share-links/:lid', async (c) => {
+    if (!(await revokeShareLink(ctx, c.get('site').id, c.req.param('lid')))) {
+      throw new AnalytikError('link not found', 404)
+    }
+    return c.json({ ok: true })
+  })
+
+  // Dated notes on the charts. They are read through the timeseries; a share link can read them but not change them.
+  app.post('/sites/:id/annotations', async (c) =>
+    c.json(await createAnnotation(ctx, c.get('site').id, await body(c)), 201),
+  )
+  app.patch('/sites/:id/annotations/:nid', async (c) => {
+    const note = await updateAnnotation(ctx, c.get('site').id, c.req.param('nid'), await body(c))
+    if (!note) throw new AnalytikError('note not found', 404)
+    return c.json(note)
+  })
+  app.delete('/sites/:id/annotations/:nid', async (c) => {
+    if (!(await deleteAnnotation(ctx, c.get('site').id, c.req.param('nid')))) {
+      throw new AnalytikError('note not found', 404)
+    }
+    return c.json({ ok: true })
   })
 
   app.get('/sites/:id/funnels', async (c) => c.json(await listFunnels(ctx, c.get('site').id)))

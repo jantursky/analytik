@@ -26,6 +26,7 @@ import {
   type SummaryConfig,
 } from './metrics'
 import { ComparisonNote } from './ComparisonNote'
+import { useChartNotes } from './chart-notes'
 import { useOverview } from './useOverview'
 
 /** Lists labels the way a sentence would: "Visitors, Revenue and Bounce rate". */
@@ -52,6 +53,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
   const data = overview.data
   const currency = data?.currency ?? site.currency
   const points = series.data ?? []
+  const noted = useChartNotes(points, series.reload)
   const save = (next: Partial<SummaryConfig>): void => update({ summary: { ...config, ...next } })
   const focus = editing ? null : picked
   const plotted = focus ?? config.chart
@@ -86,6 +88,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       }))}
       formatTime={(ts) => formatBucket(ts, range.interval, site.timezone)}
       height={260}
+      {...noted}
     />
   )
 

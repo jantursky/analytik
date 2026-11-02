@@ -14,6 +14,7 @@ import { isId, isSiteId, randomId } from '../../shared/ids'
 import { MINUTE } from '../../shared/time'
 import type { PaymentInput, PaymentProvider } from '../../shared/types'
 import { clip } from '../../shared/url'
+import { createAnnotation } from '../annotations'
 import { hasAdminSession } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { SESSION_WINDOW, cleanProps, ingest, sessionUpdate } from '../ingest'
@@ -131,6 +132,15 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     const body = (await readJson(c.req.raw, BOTS_LIMIT)) as { requests?: unknown } | null
     const result = await recordBots(ctx, site, body?.requests)
     return c.json({ ok: true, ...result })
+  })
+
+  // A deploy script marks the chart: `{ "text": "Deployed v2", "ts": "2026-03-03" }`, ts optional (default now).
+  app.post('/v1/annotations', async (c) => {
+    const site = await siteByApiKey(ctx, bearer(c.req.raw))
+    if (!site) throw new AnalytikError('invalid api key', 401)
+    const body = await readJson(c.req.raw, API_LIMIT)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new AnalytikError('body must be a JSON object')
+    return c.json({ ok: true, note: await createAnnotation(ctx, site.id, body as Record<string, unknown>) }, 201)
   })
 
   app.post('/v1/goals', async (c) => {

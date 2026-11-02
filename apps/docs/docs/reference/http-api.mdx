@@ -9,16 +9,17 @@ All paths are relative to `basePath` (default `/api`). Dates are ISO 8601, or Un
 
 CORS is open and `text/plain` bodies are accepted, so the browser sends events without a preflight request.
 
-| Method and path                    | Auth                | Description                                                                                                                                                                                                              |
-| ---------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `POST /event`                      | none                | Tracker payload, see below. 202 on accept and on a filtered bot. 400, 403, 404 or 413 otherwise. 8 KB at most.                                                                                                           |
-| `POST /attribution`                | none                | Returns `{ visitorId, sessionId }` computed on the server for this request. Rate limited per hash.                                                                                                                       |
-| `POST /v1/payments`                | Bearer site API key | Body: `PaymentInput`. Idempotent on `(siteId, id)`. Answers `{ ok, duplicate, payment, attributed }`.                                                                                                                    |
-| `POST /v1/bots`                    | Bearer site API key | Body: `{ requests: [{ userAgent, path, ts? }] }`, at most 500. Answers `{ ok, recorded, skipped }`. See [Bot traffic](/guides/bot-traffic).                                                                              |
-| `POST /v1/goals`                   | Bearer site API key | Body: `name`, optional `props`, and `visitorId` or `email`.                                                                                                                                                              |
-| `POST /webhooks/:provider/:siteId` | signature           | `provider` is `stripe`, `dodo`, `lemonsqueezy`, `paddle`, `polar`, `razorpay`, `creem` or `gumroad`. Verified with the site's webhook secret.                                                                            |
-| `POST /v1/cron`                    | Bearer cron secret  | Runs the scheduled email work: the summary if due and tracker-down alerts. Answers `{ ok, summary, down }`. 401 without the `email.cronSecret`. `GET` works too. See [Email notifications](/guides/email-notifications). |
-| `GET /health`                      | none                | Health check.                                                                                                                                                                                                            |
+| Method and path                    | Auth                | Description                                                                                                                                                                                                                                    |
+| ---------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /event`                      | none                | Tracker payload, see below. 202 on accept and on a filtered bot. 400, 403, 404 or 413 otherwise. 8 KB at most.                                                                                                                                 |
+| `POST /attribution`                | none                | Returns `{ visitorId, sessionId }` computed on the server for this request. Rate limited per hash.                                                                                                                                             |
+| `POST /v1/payments`                | Bearer site API key | Body: `PaymentInput`. Idempotent on `(siteId, id)`. Answers `{ ok, duplicate, payment, attributed }`.                                                                                                                                          |
+| `POST /v1/bots`                    | Bearer site API key | Body: `{ requests: [{ userAgent, path, ts? }] }`, at most 500. Answers `{ ok, recorded, skipped }`. See [Bot traffic](/guides/bot-traffic).                                                                                                    |
+| `POST /v1/annotations`             | Bearer site API key | Body: `{ text, ts? }`. Adds a dated note to the charts. `ts` is Unix ms or an ISO 8601 date, default now; `text` at most 200 characters. Answers 201 `{ ok, note }`. See [Notes on the chart](/guides/dashboard-embedding#notes-on-the-chart). |
+| `POST /v1/goals`                   | Bearer site API key | Body: `name`, optional `props`, and `visitorId` or `email`.                                                                                                                                                                                    |
+| `POST /webhooks/:provider/:siteId` | signature           | `provider` is `stripe`, `dodo`, `lemonsqueezy`, `paddle`, `polar`, `razorpay`, `creem` or `gumroad`. Verified with the site's webhook secret.                                                                                                  |
+| `POST /v1/cron`                    | Bearer cron secret  | Runs the scheduled email work: the summary if due and tracker-down alerts. Answers `{ ok, summary, down }`. 401 without the `email.cronSecret`. `GET` works too. See [Email notifications](/guides/email-notifications).                       |
+| `GET /health`                      | none                | Health check.                                                                                                                                                                                                                                  |
 
 ### Event body
 
@@ -142,9 +143,29 @@ curl -b cookies.txt \
 
 ### Share links
 
-Turn sharing on with `PATCH /sites/:id` and `{ "shareToken": true }`, and off with `{ "shareToken": null }`. The new token is in the `shareToken` field of the response. The dashboard has no screen for this; it is an API call.
+Admin routes, per site:
 
-A request that carries the token, as `?share=TOKEN` or an `x-analytik-share: TOKEN` header, can read these `GET` routes without logging in: `overview`, `timeseries`, `breakdown`, `realtime`, `sessions`, `events`, and the funnel list and funnel results. That is the aggregate numbers and the session list, including visitor ids, countries, cities, browsers, pages, referrers, and event names and properties. Payments, single-session details, the site settings, export and every write stay admin only. Treat the token like a password: anyone who has the link sees all of the above, and turning sharing off and on again issues a new token.
+| Method and path                      | Description                                                                                                                                                                                                                                                                                  |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /sites/:id/share-links`        | Body: optional `label` (80 characters), `views` (any of `overview`, `sources`, `pages`, `events`, `sessions`, `bots`, `funnels`, `realtime`; empty means all) and `expiresInDays` (1 to 3650). Answers 201 `{ link, token }`. The token is shown only now. At most 50 active links per site. |
+| `GET /sites/:id/share-links`         | `ShareLink[]`, newest first, revoked ones included, without tokens.                                                                                                                                                                                                                          |
+| `DELETE /sites/:id/share-links/:lid` | Revokes the link at once. 404 for an unknown link.                                                                                                                                                                                                                                           |
+
+A request that carries a token, as `?share=TOKEN` or an `x-analytik-share: TOKEN` header, can read these `GET` routes without logging in: `shared` (the site's name, domain, time zone and currency, and the link's views), `overview`, `timeseries`, `breakdown`, `realtime`, `sessions`, `events`, `bots`, and the funnel list and funnel results. A link limited to some views reads only the routes behind them; any other route answers 401, as does a token for another site, a revoked or an expired one. That is the aggregate numbers and the session list, including visitor ids, countries, cities, browsers, pages, referrers, and event names and properties. Payments, single-session details, the site settings, export and every write, including the share-link routes, stay admin only.
+
+Only a token in the address is cached publicly: those answers carry `Cache-Control: public, s-maxage=60` (10 seconds for `realtime`). Tokens are stored as SHA-256 hashes.
+
+The older single token still works: `PATCH /sites/:id` with `{ "shareToken": true }` returns a plain `shareToken` that opens every shareable route, uncached, until `{ "shareToken": null }`. Prefer share links.
+
+### Annotations
+
+| Method and path                      | Description                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `POST /sites/:id/annotations`        | Body: `{ text, ts? }`, see `POST /v1/annotations`. Answers 201 with the note. |
+| `PATCH /sites/:id/annotations/:nid`  | Body: `text` and/or `ts`. Answers the note, or 404.                           |
+| `DELETE /sites/:id/annotations/:nid` | 404 for an unknown note.                                                      |
+
+Notes are read with `GET /sites/:id/timeseries`: each point carries the notes dated in its bucket as `notes: [{ id, ts, text, createdAt }]`, at most 100 for the range, left out when there are none.
 
 ### Funnels
 

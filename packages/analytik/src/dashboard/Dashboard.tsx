@@ -2,7 +2,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import { type ComponentType, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 
 import { parseSegments } from '../shared/segments'
-import type { Comparison, Filters, Site } from '../shared/types'
+import type { Comparison, Filters, ShareView, Site } from '../shared/types'
 import { type AddressState, readAddress as parseAddress, writeAddress } from './address'
 import { createApiClient, type Fetcher } from './api'
 import { BrandMark } from './brand'
@@ -118,14 +118,45 @@ export interface DashboardProps {
   locale?: string
   /** Replaces single strings, or adds a language: `{ sk: { Overview: 'Prehľad' }, en: { Overview: 'Home' } }`. */
   messages?: Record<string, Messages>
+  /**
+   * A share token: the dashboard opens read-only for the site named by `siteId` (or `?site=` in the address), through
+   * a link made in Settings → Sharing. Without it, a `?share=` in the address does the same.
+   */
+  share?: string
   /** The line under the dashboard saying it is analytik, with links to its source and its author. Default true. */
   credits?: boolean
+}
+
+/** The views a share link can show, in navigation order; Settings, Revenue and the sites overview are admin-only. */
+const SHARED_VIEWS: readonly DashboardView[] = [
+  'overview',
+  'sources',
+  'pages',
+  'events',
+  'bots',
+  'funnels',
+  'sessions',
+  'realtime',
+]
+/** The API route behind each shared view, which a link may be limited to. */
+const SHARE_OF: Partial<Record<DashboardView, ShareView>> = {
+  overview: 'overview',
+  sources: 'sources',
+  pages: 'pages',
+  events: 'events',
+  bots: 'bots',
+  funnels: 'funnels',
+  sessions: 'sessions',
+  realtime: 'realtime',
 }
 
 const NEW_SITE = '\u0000new'
 const IMPORT_DATA = '\u0000import'
 // A live refresh reads the whole range again; once a minute keeps that affordable on metered databases.
 const LIVE_MS = 60_000
+
+/** The time now; read by name so event handlers may call it. */
+const clock = (): number => Date.now()
 
 /** The same preset ending now, keeping the chosen interval; custom ranges stay as they are. */
 const renew = (range: DateRange): DateRange =>
@@ -153,11 +184,20 @@ export function Dashboard({
   shortcuts = true,
   locale,
   messages,
+  share,
 }: DashboardProps) {
   const [unauthorized, setUnauthorized] = useState(false)
-  const [initial] = useState(() => (urlState ? readAddress() : undefined))
+  // A share token makes the dashboard read-only: from the prop, else the address (also when urlState is off).
+  const [shareToken] = useState(
+    () =>
+      share ??
+      (typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('share')) ??
+      undefined,
+  )
+  const readOnly = shareToken !== undefined
+  const [initial] = useState(() => (urlState || readOnly ? readAddress() : undefined))
   const [chosenId, setChosenId] = useState(() => initial?.site ?? siteId)
-  const [view, setViewState] = useState<DashboardView>(
+  const [requestedView, setViewState] = useState<DashboardView>(
     () => (initial?.view as DashboardView | undefined) ?? initialView,
   )
   const [tab, setTab] = useState<SettingsSection | undefined>(initial?.tab as SettingsSection | undefined)
@@ -177,17 +217,34 @@ export function Dashboard({
   const client = useMemo(() => {
     const base = fetcher ?? ((input: string, init?: RequestInit) => fetch(input, init))
     return createApiClient(api, async (input, init) => {
-      const response = await base(input, init)
-      if (response.status === 401 && !input.endsWith('/auth/login')) setUnauthorized(true)
+      // A share link's token travels in the address, which is also what a CDN keeps the response under.
+      const url = shareToken
+        ? `${input}${input.includes('?') ? '&' : '?'}share=${encodeURIComponent(shareToken)}`
+        : input
+      const response = await base(url, init)
+      if (response.status === 401 && !input.endsWith('/auth/login') && !shareToken) setUnauthorized(true)
       return response
     })
-  }, [api, fetcher])
+  }, [api, fetcher, shareToken])
   const apiUrl = useMemo(() => new URL(api, location.href).href.replace(/\/+$/, ''), [api])
-  const sites = useResource<Site[]>(requestKey('sites', api, unauthorized), () =>
-    unauthorized ? Promise.resolve([]) : client.sites(),
+  const loaded = useResource<{ sites: Site[]; views: ShareView[] }>(
+    requestKey('sites', api, unauthorized, shareToken, chosenId),
+    () => {
+      if (unauthorized) return Promise.resolve({ sites: [], views: [] })
+      if (!readOnly) return client.sites().then((all) => ({ sites: all, views: [] }))
+      if (!chosenId) return Promise.reject(new Error('A share link needs the site in the address'))
+      return client.sharedSite(chosenId).then((shared) => ({ sites: [shared.site], views: shared.views }))
+    },
   )
-  // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on.
-  const preferences = usePreferencesStore(syncPreferences ? client : undefined, !unauthorized)
+  const sites = { ...loaded, data: loaded.data?.sites }
+  // The views a share link shows; undefined for the admin, who sees all of them.
+  const allowed = readOnly
+    ? SHARED_VIEWS.filter((v) => !loaded.data?.views.length || loaded.data.views.includes(SHARE_OF[v] ?? 'overview'))
+    : undefined
+  const view = allowed && !allowed.includes(requestedView) ? (allowed[0] ?? 'overview') : requestedView
+  // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on. A shared
+  // dashboard has no admin to save for, so its choices stay in the visitor's browser.
+  const preferences = usePreferencesStore(syncPreferences && !readOnly ? client : undefined, !unauthorized)
   const live = preferences.values.live === true
   // The period and comparison from the last visit, unless the address names its own or the admin already chose here.
   // Applied while rendering, like the linked segment below; the saved copy from the database may arrive later.
@@ -247,6 +304,7 @@ export function Dashboard({
   // its top instead of wherever the scroll position ends up.
   const main = useRef<HTMLDivElement>(null)
   const setView = (next: DashboardView): void => {
+    if (allowed && !allowed.includes(next)) return
     if (next !== 'settings') setTab(undefined)
     const element = main.current
     const toolbar = element?.querySelector('.analytik-toolbar')
@@ -301,6 +359,7 @@ export function Dashboard({
 
   const list = sites.data ?? []
   const site = list.find((s) => s.id === chosenId) ?? list[0]
+  const nav = allowed ? NAV.filter((item) => allowed.includes(item.value)) : NAV
 
   // The address follows the whole state. Moving to another site or view adds a history entry, so Back steps through
   // places; anything else (Settings section, range, interval, filters) replaces it, so Back skips the clicks.
@@ -369,7 +428,7 @@ export function Dashboard({
     {
       go: setView,
       step: (direction) => {
-        const next = view !== 'sites' && VIEWS[view].ranged ? shiftRange(range, direction, Date.now()) : null
+        const next = view !== 'sites' && VIEWS[view].ranged ? shiftRange(range, direction, clock()) : null
         if (next) setRange(next)
       },
       refresh,
@@ -390,6 +449,12 @@ export function Dashboard({
   let content
   if (unauthorized) {
     content = <LoginForm client={client} onLogin={() => setUnauthorized(false)} />
+  } else if (readOnly && sites.error) {
+    content = (
+      <div className="analytik-empty" role="alert">
+        <p>{t('This share link does not work. It may have been revoked or expired.')}</p>
+      </div>
+    )
   } else if (sites.loading || sites.error) {
     content = <Status loading={sites.loading} error={sites.error} />
   } else if (!site) {
@@ -422,49 +487,57 @@ export function Dashboard({
         onFilter={addFilter}
         onSiteChange={sites.reload}
         onViewChange={setView}
-        customizing={customizing && view === 'overview'}
+        customizing={customizing && view === 'overview' && !readOnly}
+        readOnly={readOnly}
       >
         <div className="analytik-toolbar">
           <div className="analytik-action-left">
             <h1 className="analytik-sr-only">{t(current.label)}</h1>
-            <Select
-              label={t('Site')}
-              hideLabel
-              className="analytik-pill analytik-switcher"
-              leading={<SiteTile site={site} />}
-              value={site.id}
-              options={[
-                ...list.map((s) => ({
-                  value: s.id,
-                  label: s.name,
-                  description: s.domain,
-                  icon: <SiteTile site={s} />,
-                })),
-                {
-                  value: NEW_SITE,
-                  label: t('Add website…'),
-                  icon: (
-                    <span className="analytik-tile analytik-tile-add" aria-hidden="true">
-                      +
-                    </span>
-                  ),
-                },
-                {
-                  value: IMPORT_DATA,
-                  label: t('Import from another tool'),
-                  icon: (
-                    <span className="analytik-tile analytik-tile-add" aria-hidden="true">
-                      <Icon name="upload" />
-                    </span>
-                  ),
-                },
-              ]}
-              onChange={(id) => {
-                if (id === NEW_SITE) setAdding(true)
-                else if (id === IMPORT_DATA) setImporting(true)
-                else openSite(id)
-              }}
-            />
+            {readOnly ? (
+              <span className="analytik-pill analytik-switcher analytik-site-name">
+                <SiteTile site={site} />
+                {site.name}
+              </span>
+            ) : (
+              <Select
+                label={t('Site')}
+                hideLabel
+                className="analytik-pill analytik-switcher"
+                leading={<SiteTile site={site} />}
+                value={site.id}
+                options={[
+                  ...list.map((s) => ({
+                    value: s.id,
+                    label: s.name,
+                    description: s.domain,
+                    icon: <SiteTile site={s} />,
+                  })),
+                  {
+                    value: NEW_SITE,
+                    label: t('Add website…'),
+                    icon: (
+                      <span className="analytik-tile analytik-tile-add" aria-hidden="true">
+                        +
+                      </span>
+                    ),
+                  },
+                  {
+                    value: IMPORT_DATA,
+                    label: t('Import from another tool'),
+                    icon: (
+                      <span className="analytik-tile analytik-tile-add" aria-hidden="true">
+                        <Icon name="upload" />
+                      </span>
+                    ),
+                  },
+                ]}
+                onChange={(id) => {
+                  if (id === NEW_SITE) setAdding(true)
+                  else if (id === IMPORT_DATA) setImporting(true)
+                  else openSite(id)
+                }}
+              />
+            )}
             {current.ranged && (
               <>
                 <RangePicker range={range} onChange={chooseRange} />
@@ -493,7 +566,7 @@ export function Dashboard({
             )}
           </div>
           <div className="analytik-action-right">
-            {view === 'overview' && customizing && (
+            {view === 'overview' && customizing && !readOnly && (
               <ConfirmButton
                 label={t('Reset')}
                 icon="reset"
@@ -506,7 +579,7 @@ export function Dashboard({
                 onConfirm={() => preferences.update({ layout: undefined, summary: undefined })}
               />
             )}
-            {view === 'overview' && (
+            {view === 'overview' && !readOnly && (
               <button
                 type="button"
                 className="analytik-button analytik-customize"
@@ -537,8 +610,16 @@ export function Dashboard({
       <div className="analytik" data-theme={theme ?? parseTheme(preferences.values.theme)} ref={setRoot}>
         <PreferencesProvider value={preferences}>
           <LayerContext value={root}>
-            <FaviconsContext value={favicons === true ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon` : favicons}>
-              {!unauthorized && site && <UpdateNotice client={client} />}
+            <FaviconsContext
+              value={
+                readOnly
+                  ? () => undefined
+                  : favicons === true
+                    ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon`
+                    : favicons
+              }
+            >
+              {!unauthorized && site && !readOnly && <UpdateNotice client={client} />}
               {!unauthorized && site && (
                 <header className="analytik-header" ref={header}>
                   <div className="analytik-header-left">
@@ -547,7 +628,7 @@ export function Dashboard({
                     </span>
                     <nav aria-label={t('Dashboard')}>
                       <ul>
-                        {NAV.map(({ value, label }) => (
+                        {nav.map(({ value, label }) => (
                           <li key={value}>
                             <button
                               type="button"
@@ -572,13 +653,15 @@ export function Dashboard({
                   <div className="analytik-header-right">
                     {locale === undefined && <LanguageSwitch />}
                     <ThemeToggle />
-                    <button
-                      type="button"
-                      className="analytik-button analytik-signout"
-                      onClick={() => void client.logout().finally(() => setUnauthorized(true))}
-                    >
-                      {t('Log out')}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        className="analytik-button analytik-signout"
+                        onClick={() => void client.logout().finally(() => setUnauthorized(true))}
+                      >
+                        {t('Log out')}
+                      </button>
+                    )}
                   </div>
                 </header>
               )}
@@ -601,7 +684,7 @@ export function Dashboard({
                   <Palette
                     onClose={() => setOverlay(null)}
                     controls={{
-                      views: NAV,
+                      views: nav,
                       go: setView,
                       sites: list,
                       siteId: site.id,
@@ -626,9 +709,9 @@ export function Dashboard({
                     }}
                   />
                 )}
-                {overlay === 'help' && <ShortcutHelp views={NAV} onClose={() => setOverlay(null)} />}
+                {overlay === 'help' && <ShortcutHelp views={nav} onClose={() => setOverlay(null)} />}
               </Suspense>
-              {!unauthorized && importing && (
+              {!unauthorized && !readOnly && importing && (
                 <Suspense>
                   <ImportDialog
                     client={client}
@@ -643,7 +726,7 @@ export function Dashboard({
                   />
                 </Suspense>
               )}
-              {!unauthorized && (
+              {!unauthorized && !readOnly && (
                 <AddSiteDialog
                   client={client}
                   sites={list}

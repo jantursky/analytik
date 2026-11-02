@@ -7,6 +7,7 @@ import { BarList, type BarListRow } from '../charts'
 import { requestKey, useDashboard } from '../context'
 import { pageUrl } from '../copy-id'
 import { useResource } from '../data'
+import { downloadCsv, fileName } from '../export'
 import { Flag } from '../flags'
 import { countryName, formatMoney, formatNumber } from '../format'
 import { Icon } from '../icons'
@@ -147,16 +148,33 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
               limit={expanded ? EXPANDED_LIMIT : limit}
               metric={metric}
             />
-            {data.length > limit && (
-              <button
-                type="button"
-                className="analytik-details"
-                aria-expanded={expanded}
-                onClick={() => setExpanded(!expanded)}
-              >
-                {expanded ? t('Fewer') : t('Details')}
-              </button>
-            )}
+            <div className="analytik-details-row">
+              {data.length > limit && (
+                <button
+                  type="button"
+                  className="analytik-details"
+                  aria-expanded={expanded}
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  {expanded ? t('Fewer') : t('Details')}
+                </button>
+              )}
+              {data.length > 0 && (
+                <button
+                  type="button"
+                  className="analytik-details analytik-export"
+                  onClick={() =>
+                    downloadCsv(fileName([site.domain, shown.dimension], 'csv'), [
+                      [t(DIMENSION_LABELS[shown.dimension]), metric === 'revenue' ? t('Revenue') : t('Visitors')],
+                      ...data.map((r) => [r.key, r[metric]]),
+                    ])
+                  }
+                >
+                  <Icon name="download" />
+                  {t('Export CSV')}
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

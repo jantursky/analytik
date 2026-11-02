@@ -44,7 +44,7 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
 - **Strict mode by default.** The tracker stores no identifier on the visitor's device and no IP address is kept. The visitor id is a pseudonymous hash of IP, user agent and site, salted with a random value that is removed from the live database once the next month starts. Do Not Track visitors are still counted, in strict mode. Strict mode is designed to avoid needing consent, which is not legal advice.
 - **Two more modes when you need them.** `enriched` adds a per-tab id after the visitor consents. `persistent` uses first-party cookies like most analytics tools do, and should be treated as needing consent in the EU.
 - **Revenue.** A payments API with refunds, optional Stripe, Dodo, Lemon Squeezy, Paddle, Polar, Razorpay, Creem and Gumroad webhook adapters, and attribution to the visit that brought the buyer.
-- **Goals, funnels, campaigns, realtime**, JSON and CSV export, retention, share links (read-only, set through the API).
+- **Goals, funnels, campaigns, realtime**, JSON and CSV export, retention, share links (read-only, named, with expiry and revoke), notes on charts, CSV and PNG export.
 - **Bring your history.** Import the visits and events of Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 or PostHog from Settings or with `analytik import`. A repeated import adds nothing, and an import can be removed without touching what Analytik tracked.
 - **One server, three databases.** It runs on D1, Postgres and SQLite, and the tests run every case against each of them.
 

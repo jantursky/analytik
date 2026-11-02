@@ -1,4 +1,5 @@
 import type {
+  Annotation,
   BotFilters,
   BotStats,
   BreakdownRow,
@@ -19,6 +20,8 @@ import type {
   Query,
   Realtime,
   SessionSummary,
+  ShareLink,
+  ShareView,
   Site,
   SiteSummary,
   VersionInfo,
@@ -59,6 +62,29 @@ export interface EventRow {
 export interface SessionDetail {
   session: SessionSummary
   events: EventRow[]
+}
+
+export interface ShareLinkInput {
+  /** A name for the list, e.g. who the link is for. */
+  label?: string
+  /** Limits the link to these views; left out or empty shows every shareable view. */
+  views?: ShareView[]
+  /** The link stops working after this many days; left out means never. */
+  expiresInDays?: number | null
+}
+
+/** What a shared dashboard starts from: the site's public details and the views its link shows. */
+export interface SharedSite {
+  site: Site
+  /** Empty when the link shows every shareable view. */
+  views: ShareView[]
+}
+
+export interface AnnotationInput {
+  /** Plain text, at most 200 characters. */
+  text: string
+  /** Unix ms or an ISO 8601 date; default now. */
+  ts?: number | string
 }
 
 export interface FunnelInput {
@@ -112,6 +138,14 @@ export interface ApiClient {
   /** The running version and the newest release, when the server could look it up. */
   version(): Promise<VersionInfo>
   site(siteId: string): Promise<Site>
+  /** For a dashboard opened with a share link: the site and the views the link shows. */
+  sharedSite(siteId: string): Promise<SharedSite>
+  /** The site's share links, newest first, without their tokens. */
+  shareLinks(siteId: string): Promise<ShareLink[]>
+  /** Makes a read-only link. The token comes back only now; the server keeps just its hash. */
+  createShareLink(siteId: string, input?: ShareLinkInput): Promise<{ link: ShareLink; token: string }>
+  /** Ends a link at once. */
+  revokeShareLink(siteId: string, linkId: string): Promise<unknown>
   /** Creates the site and resolves to it; its API key is shown later in the settings by rotating it. */
   createSite(input: SiteInput): Promise<Site>
   updateSite(siteId: string, patch: SitePatch): Promise<Site>
@@ -143,6 +177,10 @@ export interface ApiClient {
   sessions(siteId: string, query: Query & Paging): Promise<Page<SessionSummary>>
   session(siteId: string, sessionId: string): Promise<SessionDetail>
   events(siteId: string, query: Query & Paging & { name?: string; type?: EventType }): Promise<Page<EventRow>>
+  /** Adds a dated note to the site's charts. Notes are read with `timeseries`, on the points they fall in. */
+  createAnnotation(siteId: string, input: AnnotationInput): Promise<Annotation>
+  updateAnnotation(siteId: string, id: string, patch: Partial<AnnotationInput>): Promise<Annotation>
+  deleteAnnotation(siteId: string, id: string): Promise<unknown>
   funnels(siteId: string): Promise<Funnel[]>
   createFunnel(siteId: string, input: FunnelInput): Promise<Funnel>
   deleteFunnel(siteId: string, funnelId: string): Promise<unknown>
@@ -260,6 +298,25 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
       return get('/summary', params, options.fresh)
     },
     site: (id) => get(site(id)),
+    sharedSite: (id) =>
+      get<{
+        site: Pick<Site, 'id' | 'name' | 'domain' | 'timezone' | 'currency' | 'privacyMode' | 'createdAt'>
+        views: ShareView[]
+      }>(`${site(id)}/shared`).then((shared) => ({
+        // The link shows no settings, so the fields only an admin sees are filled with plain defaults.
+        site: {
+          retentionDays: null,
+          allowLocalhost: false,
+          paused: false,
+          ignoredIps: [],
+          ignoreAdmins: false,
+          ...shared.site,
+        },
+        views: shared.views,
+      })),
+    shareLinks: (id) => get(`${site(id)}/share-links`),
+    createShareLink: (id, input = {}) => write('POST', `${site(id)}/share-links`, input),
+    revokeShareLink: (id, linkId) => write('DELETE', `${site(id)}/share-links/${encodeURIComponent(linkId)}`),
     createSite: (input) => write<{ site: Site }>('POST', '/sites', input).then((created) => created.site),
     updateSite: (id, patch) => write('PATCH', site(id), patch),
     deleteSite: (id, proof) => write('DELETE', site(id), proof),
@@ -286,6 +343,10 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     sessions: (id, query) => get(`${site(id)}/sessions`, queryParams(query)),
     session: (id, sessionId) => get(`${site(id)}/sessions/${encodeURIComponent(sessionId)}`),
     events: (id, query) => get(`${site(id)}/events`, queryParams(query)),
+    createAnnotation: (id, input) => write('POST', `${site(id)}/annotations`, input),
+    updateAnnotation: (id, noteId, patch) =>
+      write('PATCH', `${site(id)}/annotations/${encodeURIComponent(noteId)}`, patch),
+    deleteAnnotation: (id, noteId) => write('DELETE', `${site(id)}/annotations/${encodeURIComponent(noteId)}`),
     funnels: (id) => get(`${site(id)}/funnels`),
     createFunnel: (id, input) => write('POST', `${site(id)}/funnels`, input),
     deleteFunnel: (id, funnelId) => write('DELETE', `${site(id)}/funnels/${encodeURIComponent(funnelId)}`),

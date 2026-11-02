@@ -131,7 +131,7 @@ function FunnelForm({ onCreated }: { onCreated: (funnel: Funnel) => void }) {
 }
 
 export function Funnels() {
-  const { client, site } = useDashboard()
+  const { client, site, readOnly } = useDashboard()
   const funnels = useResource<Funnel[]>(requestKey('funnels', site.id), () => client.funnels(site.id))
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const list = funnels.data ?? []
@@ -155,30 +155,36 @@ export function Funnels() {
                     onChange={setSelectedId}
                   />
                 )}
-                <ConfirmButton
-                  label={t('Delete')}
-                  title={t('Delete the funnel “{name}”?', { name: selected.name })}
-                  description={t('The funnel definition is removed. The visits and events it counted stay.')}
-                  confirmLabel={t('Delete funnel')}
-                  onConfirm={() => void client.deleteFunnel(site.id, selected.id).then(funnels.reload)}
-                />
+                {!readOnly && (
+                  <ConfirmButton
+                    label={t('Delete')}
+                    title={t('Delete the funnel “{name}”?', { name: selected.name })}
+                    description={t('The funnel definition is removed. The visits and events it counted stay.')}
+                    confirmLabel={t('Delete funnel')}
+                    onConfirm={() => void client.deleteFunnel(site.id, selected.id).then(funnels.reload)}
+                  />
+                )}
               </div>
             }
           >
             <FunnelSteps funnel={selected} />
           </Card>
         ) : (
-          <p className="analytik-empty">{t('No funnels yet. Create one to see where visitors drop off.')}</p>
+          <p className="analytik-empty">
+            {readOnly ? t('No funnels yet.') : t('No funnels yet. Create one to see where visitors drop off.')}
+          </p>
         )}
       </Status>
-      <Card title={t('New funnel')}>
-        <FunnelForm
-          onCreated={(funnel) => {
-            setSelectedId(funnel.id)
-            funnels.reload()
-          }}
-        />
-      </Card>
+      {!readOnly && (
+        <Card title={t('New funnel')}>
+          <FunnelForm
+            onCreated={(funnel) => {
+              setSelectedId(funnel.id)
+              funnels.reload()
+            }}
+          />
+        </Card>
+      )}
     </View>
   )
 }

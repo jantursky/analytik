@@ -11,11 +11,15 @@ import {
   ResponsiveContainer,
   Tooltip,
   type TooltipContentProps,
+  usePlotArea,
+  ZIndexLayer,
+  DefaultZIndexes,
+  useXAxisScale,
   XAxis,
   YAxis,
 } from 'recharts'
 
-import type { SparkDetail } from './charts'
+import type { ChartNote, SparkDetail } from './charts'
 import { t } from './i18n'
 import { niceMax } from './scale'
 
@@ -39,6 +43,9 @@ export interface AreaPlotProps {
   hidden: { primary: boolean; secondary: boolean }
   height: number
   kind?: 'area' | 'line' | 'bars'
+  /** Notes to flag on the plot, and what to do when one is picked. */
+  notes?: ChartNote[]
+  onNotes?: (notes: ChartNote[]) => void
 }
 
 // The legend marker reads the same variable, so a chart drawn in the revenue colour has a matching legend.
@@ -49,6 +56,90 @@ const SECONDARY = 'var(--analytik-series-2)'
 // Before ResizeObserver reports the real width (and in tests, where it never does).
 const INITIAL_WIDTH = 640
 const AXIS = { axisLine: false, tickLine: false, tick: { fill: 'var(--analytik-text-faint)', fontSize: 11 } } as const
+
+/** Markers closer than this many pixels merge into one with a count. */
+const NOTE_CLUSTER_PX = 14
+const NOTE_RADIUS = 7
+
+export interface NoteMarkersProps {
+  notes: ChartNote[]
+  /** Every bucket start, to tell how wide a bucket is. */
+  times: number[]
+  /** Called with the notes under a marker (several when markers merged). */
+  onOpen: (notes: ChartNote[]) => void
+  formatTime: (ts: number) => string
+}
+
+/** Flags on the plot where notes were written: a dashed line down from a dot at the top, a count when they merge. */
+function NoteMarkers({ notes, times, onOpen, formatTime }: NoteMarkersProps) {
+  const scale = useXAxisScale()
+  const area = usePlotArea()
+  if (!scale || !area || !notes.length) return null
+  // The scale gives where a bucket starts; a flag sits in the middle of it, like the bars.
+  const first = scale(times[0])
+  const second = scale(times[1])
+  const step = typeof first === 'number' && typeof second === 'number' ? second - first : area.width
+  const placed = notes
+    .flatMap((note) => {
+      const at = scale(note.ts)
+      if (typeof at !== 'number') return []
+      return [{ note, x: at + step / 2 }]
+    })
+    .sort((a, b) => a.x - b.x)
+  const groups: { x: number; notes: ChartNote[] }[] = []
+  for (const { note, x } of placed) {
+    const last = groups.at(-1)
+    if (last && x - last.x < NOTE_CLUSTER_PX) last.notes.push(note)
+    else groups.push({ x, notes: [note] })
+  }
+  return (
+    <ZIndexLayer zIndex={DefaultZIndexes.scatter}>
+      <g className="analytik-notes" data-testid="chart-notes">
+        {groups.map((group) => {
+          const text = group.notes.map((n) => `${formatTime(n.ts)}: ${n.text}`).join('\n')
+          const open = (): void => onOpen(group.notes)
+          return (
+            <g
+              key={group.notes[0]?.id}
+              className="analytik-note"
+              role="button"
+              tabIndex={0}
+              aria-label={text}
+              onClick={open}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  open()
+                }
+              }}
+            >
+              <title>{text}</title>
+              <line
+                x1={group.x}
+                x2={group.x}
+                y1={area.y + NOTE_RADIUS}
+                y2={area.y + area.height}
+                className="analytik-note-line"
+              />
+              <circle cx={group.x} cy={area.y + NOTE_RADIUS} r={NOTE_RADIUS} className="analytik-note-dot" />
+              {group.notes.length > 1 && (
+                <text
+                  x={group.x}
+                  y={area.y + NOTE_RADIUS}
+                  className="analytik-note-count"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                >
+                  {group.notes.length}
+                </text>
+              )}
+            </g>
+          )
+        })}
+      </g>
+    </ZIndexLayer>
+  )
+}
 
 function PlotTooltip({
   active,
@@ -88,6 +179,8 @@ export function AreaPlot({
   hidden,
   height,
   kind = 'area',
+  notes,
+  onNotes,
 }: AreaPlotProps) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
@@ -199,6 +292,9 @@ export function AreaPlot({
             animationEasing="ease-out"
           />
         )}
+        {notes && onNotes && (
+          <NoteMarkers notes={notes} times={rows.map((r) => r.ts)} onOpen={onNotes} formatTime={formatTime} />
+        )}
       </ComposedChart>
     </ResponsiveContainer>
   )
@@ -222,6 +318,8 @@ export interface MultiPlotProps {
   formatTime: (ts: number) => string
   height: number
   label: string
+  notes?: ChartNote[]
+  onNotes?: (notes: ChartNote[]) => void
 }
 
 function MultiTooltip({
@@ -271,7 +369,7 @@ function MultiTooltip({
  * Several metrics over one time axis: bars behind, areas and lines in front. Metrics of the same kind (counts, money,
  * rates, durations) share a scale; the first two scales get an axis each, any further one scales on its own.
  */
-export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlotProps) {
+export function MultiPlot({ rows, series, formatTime, height, label, notes, onNotes }: MultiPlotProps) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
   const scales = [...new Set(series.map((s) => s.scale))]
@@ -376,6 +474,9 @@ export function MultiPlot({ rows, series, formatTime, height, label }: MultiPlot
               animationEasing="ease-out"
             />
           ),
+        )}
+        {notes && onNotes && (
+          <NoteMarkers notes={notes} times={rows.map((r) => r.ts)} onOpen={onNotes} formatTime={formatTime} />
         )}
       </ComposedChart>
     </ResponsiveContainer>

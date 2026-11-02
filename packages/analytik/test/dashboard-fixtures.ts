@@ -7,6 +7,8 @@ import type {
   Realtime,
   RealtimeVisit,
   SessionSummary,
+  ShareLink,
+  ShareView,
   Site,
   TimeseriesPoint,
 } from '../src/shared/types'
@@ -169,6 +171,9 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
   const state = {
     sites: [site, otherSite],
     funnels: [funnel],
+    shareLinks: [] as ShareLink[],
+    /** What a link's token opens in the shared dashboard; a token not listed here is refused. */
+    sharedViews: { 'good-token-1234567890abcdef': [] as ShareView[] } as Record<string, ShareView[]>,
     loggedIn: true,
     version: { current: '1.1.0', latest: null as string | null },
     preferences: {} as Record<string, unknown>,
@@ -226,6 +231,33 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       if (state.login === 'password' && proof.password !== 'secret')
         return Response.json({ error: 'wrong password' }, { status: 403 })
       state.sites = state.sites.filter((s) => s !== target)
+      return { ok: true }
+    },
+    'GET /sites/:id/shared': ({ params }) => {
+      const views = state.sharedViews[params.share ?? '']
+      if (!views) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+      const { id, name, domain, timezone, currency, privacyMode, createdAt } = state.sites[0] ?? site
+      return { site: { id, name, domain, timezone, currency, privacyMode, createdAt }, views }
+    },
+    'GET /sites/:id/share-links': () => state.shareLinks,
+    'POST /sites/:id/share-links': ({ body }) => {
+      const input = body as { label?: string; views?: ShareView[]; expiresInDays?: number }
+      const link: ShareLink = {
+        id: `sl_${state.shareLinks.length + 1}`,
+        siteId: 'site_1',
+        label: input.label ?? '',
+        views: input.views ?? [],
+        createdAt: Date.UTC(2026, 9, 26),
+        expiresAt: input.expiresInDays ? Date.UTC(2026, 9, 26) + input.expiresInDays * 86_400_000 : null,
+        revokedAt: null,
+      }
+      state.shareLinks = [link, ...state.shareLinks]
+      return { link, token: 'new-token-1234567890abcdefghij' }
+    },
+    'DELETE /sites/:id/share-links/:lid': ({ path }) => {
+      state.shareLinks = state.shareLinks.map((l) =>
+        path.endsWith(`/${l.id}`) ? { ...l, revokedAt: Date.UTC(2026, 9, 27) } : l,
+      )
       return { ok: true }
     },
     'GET /email': () => state.email,

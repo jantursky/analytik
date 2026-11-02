@@ -1,16 +1,72 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type CSSProperties, lazy, type ReactNode, Suspense, useState } from 'react'
 
+import { type ChartNote, type NoteActions, NotesPanel, type NotesView } from './chart-notes'
 import { CopyId } from './copy-id'
+import { download, fileName } from './export'
 import { formatChange } from './format'
 import { Icon } from './icons'
 import { t } from './i18n'
 import { EASE } from './ui/motion'
+import { useToast } from './ui/toast'
 
 // Recharts is a big dependency: it loads with the first chart, not with the dashboard.
 const AreaPlot = lazy(() => import('./chart-plot').then((m) => ({ default: m.AreaPlot })))
 const SparkPlot = lazy(() => import('./chart-plot').then((m) => ({ default: m.SparkPlot })))
 const MultiPlot = lazy(() => import('./chart-plot').then((m) => ({ default: m.MultiPlot })))
+
+/** Saves the chart it sits in as a PNG; the encoder is its own chunk, fetched on the first click. */
+function ExportPng({ label }: { label: string }) {
+  const toast = useToast()
+  return (
+    <button
+      type="button"
+      className="analytik-details analytik-export analytik-chart-export"
+      onClick={(event) => {
+        const figure = event.currentTarget.closest('figure')
+        if (!figure) return
+        void import('./chart-export')
+          .then((m) => m.chartPng(figure, label))
+          .then((blob) => download(fileName([label], 'png'), blob))
+          .catch((error: unknown) => toast?.(error instanceof Error ? error.message : t('Export failed'), false))
+      }}
+    >
+      <Icon name="download" />
+      {t('Export PNG')}
+    </button>
+  )
+}
+
+export type { ChartNote, NoteActions }
+
+/** The notes flagged on a chart and the Add note button; shared by the area and the multi chart. */
+function useNotes(
+  notes: ChartNote[] | undefined,
+  actions: NoteActions | undefined,
+  formatTime: (ts: number) => string,
+  onChanged?: () => void,
+) {
+  const [view, setView] = useState<NotesView | null>(null)
+  return {
+    open: notes?.length || actions ? (list: ChartNote[]) => setView({ kind: 'list', notes: list }) : undefined,
+    add: actions ? (
+      <button type="button" className="analytik-details analytik-export" onClick={() => setView({ kind: 'form' })}>
+        <Icon name="plus" />
+        {t('Add note')}
+      </button>
+    ) : null,
+    panel: view && (
+      <NotesPanel
+        view={view}
+        actions={actions}
+        formatTime={formatTime}
+        onView={setView}
+        onClose={() => setView(null)}
+        onChanged={() => onChanged?.()}
+      />
+    ),
+  }
+}
 
 export interface ChartPoint {
   ts: number
@@ -46,6 +102,12 @@ export interface AreaChartProps {
   kind?: 'area' | 'line' | 'bars'
   /** CSS colour of the main series. Default the first series colour. */
   colour?: string
+  /** Dated notes flagged on the chart; clicking a flag lists them. */
+  notes?: ChartNote[]
+  /** Lets the person add, change and delete notes; left out the notes can only be read. */
+  noteActions?: NoteActions
+  /** Called after a note was added, changed or deleted, so the chart's data can be loaded again. */
+  onNotesChanged?: () => void
 }
 
 /**
@@ -62,8 +124,12 @@ export function AreaChart({
   height = 200,
   kind = 'area',
   colour,
+  notes,
+  noteActions,
+  onNotesChanged,
 }: AreaChartProps) {
   const [hidden, setHidden] = useState({ primary: false, secondary: false })
+  const flags = useNotes(notes, noteActions, formatTime, onNotesChanged)
   if (!points.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
 
   const peak = points.reduce((best, p) => (p.value > best.value ? p : best))
@@ -104,6 +170,8 @@ export function AreaChart({
             hidden={hidden}
             height={height}
             kind={kind}
+            notes={notes}
+            onNotes={flags.open}
           />
         </Suspense>
       </div>
@@ -133,6 +201,11 @@ export function AreaChart({
           ))}
         </tbody>
       </table>
+      {flags.panel}
+      <div className="analytik-chart-tools">
+        {flags.add}
+        <ExportPng label={label} />
+      </div>
     </figure>
   )
 }
@@ -162,14 +235,26 @@ export interface MultiChartProps {
   formatTime: (ts: number) => string
   /** Plot height in pixels. Default 200. */
   height?: number
+  notes?: ChartNote[]
+  noteActions?: NoteActions
+  onNotesChanged?: () => void
 }
 
 /**
  * Any number of metrics over one time axis, each drawn its own way, with a legend that switches each one on and off.
  * Screen readers get a summary and every value in a table.
  */
-export function MultiChart({ times, series, formatTime, height = 200 }: MultiChartProps) {
+export function MultiChart({
+  times,
+  series,
+  formatTime,
+  height = 200,
+  notes,
+  noteActions,
+  onNotesChanged,
+}: MultiChartProps) {
   const [hidden, setHidden] = useState<string[]>([])
+  const flags = useNotes(notes, noteActions, formatTime, onNotesChanged)
   if (!times.length || !series.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
 
   const shown = series.filter((s) => !hidden.includes(s.key))
@@ -212,6 +297,8 @@ export function MultiChart({ times, series, formatTime, height = 200 }: MultiCha
             formatTime={formatTime}
             height={height}
             label={label}
+            notes={notes}
+            onNotes={flags.open}
           />
         </Suspense>
       </div>
@@ -250,6 +337,11 @@ export function MultiChart({ times, series, formatTime, height = 200 }: MultiCha
           ))}
         </tbody>
       </table>
+      {flags.panel}
+      <div className="analytik-chart-tools">
+        {flags.add}
+        <ExportPng label={label} />
+      </div>
     </figure>
   )
 }

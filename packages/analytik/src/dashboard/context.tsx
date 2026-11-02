@@ -28,6 +28,8 @@ export interface DashboardState {
   openView?: (view: DashboardView) => void
   /** The overview layout editor is open (the toolbar's Customize button). */
   customizing?: boolean
+  /** Opened through a share link: parts show data only and leave out everything that edits. */
+  readOnly?: boolean
 }
 
 const DashboardContext = createContext<DashboardState | null>(null)
@@ -53,6 +55,8 @@ export interface DashboardProviderProps {
   onViewChange?: (view: DashboardView) => void
   /** Opens the overview layout editor. */
   customizing?: boolean
+  /** Hides what edits, as on a shared dashboard. */
+  readOnly?: boolean
   children: ReactNode
 }
 
@@ -74,6 +78,7 @@ export function DashboardProvider({
   onSiteChange = ignore,
   onViewChange,
   customizing,
+  readOnly,
   children,
 }: DashboardProviderProps) {
   const value = useMemo<DashboardState>(
@@ -97,8 +102,9 @@ export function DashboardProvider({
       onSiteChange,
       openView: onViewChange,
       customizing,
+      readOnly,
     }),
-    [client, apiUrl, site, range, filters, compare, known, onFilter, onSiteChange, onViewChange, customizing],
+    [client, apiUrl, site, range, filters, compare, known, onFilter, onSiteChange, onViewChange, customizing, readOnly],
   )
   // Motion follows the visitor's reduced-motion setting here and in <Dashboard>.
   return (

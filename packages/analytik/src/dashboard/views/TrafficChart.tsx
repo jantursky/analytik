@@ -1,6 +1,7 @@
 import type { TimeseriesPoint } from '../../shared/types'
 import { AreaChart } from '../charts'
 import { useDashboard } from '../context'
+import { useChartNotes } from './chart-notes'
 import { ComparisonNote } from './ComparisonNote'
 import { msg, t } from '../i18n'
 import { formatBucket, formatInteger, formatMoney, formatMoneyShort, formatNumber } from '../format'
@@ -15,8 +16,18 @@ export const SERIES_LABELS: Record<SeriesMetric, string> = {
 }
 
 /** The timeseries of one metric for the dashboard range. */
-export function TrafficChart({ points, metric }: { points: TimeseriesPoint[]; metric: SeriesMetric }) {
+export function TrafficChart({
+  points,
+  metric,
+  reload,
+}: {
+  points: TimeseriesPoint[]
+  metric: SeriesMetric
+  /** Loads the points again after a note changed. */
+  reload?: () => void
+}) {
   const { site, range } = useDashboard()
+  const noted = useChartNotes(points, reload ?? (() => undefined))
   return (
     <>
       <AreaChart
@@ -29,6 +40,7 @@ export function TrafficChart({ points, metric }: { points: TimeseriesPoint[]; me
         formatValue={metric === 'revenue' ? (v) => formatMoney(v, site.currency) : formatInteger}
         formatAxis={metric === 'revenue' ? (v) => formatMoneyShort(v, site.currency) : formatNumber}
         formatTime={(ts) => formatBucket(ts, range.interval, site.timezone)}
+        {...noted}
       />
       <ComparisonNote points={points} />
     </>

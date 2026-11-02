@@ -1382,6 +1382,25 @@ describe('Dashboard views', () => {
     expect(api.find('GET', '/sites/site_1/payments').at(-1)?.params.visitor).toBe('vis_1')
   })
 
+  it('exports the visible Sessions table as CSV without asking the server again', async () => {
+    const { container, api } = await open(fakeApi(), 'sessions')
+    const saved: Blob[] = []
+    const create = vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => (saved.push(blob as Blob), 'blob:x'))
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+    const before = api.requests.length
+    const button = [...container.querySelectorAll('.analytik-table-tools button')].find((b) =>
+      b.textContent.includes('Export CSV'),
+    )
+    await click(button)
+    expect(api.requests.length).toBe(before)
+    const text = (await saved[0]?.text()) ?? ''
+    const [head, first] = text.split('\r\n')
+    expect(head).toContain('Visitor,Started,Location')
+    expect(first).toContain('vis_1,')
+    expect(first).toContain('Germany Berlin')
+    create.mockRestore()
+  })
+
   it('Sessions shows an empty state that clears its filters', async () => {
     const api = fakeApi({
       'GET /sites/:id/sessions': ({ params }) => ({
@@ -2401,7 +2420,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(11)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(12)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 
