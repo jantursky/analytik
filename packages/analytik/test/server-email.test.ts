@@ -268,7 +268,12 @@ describe('payment alert', () => {
       void response.then(() => {
         state.answered = true
       })
-      for (let step = 0; step < 20 && !state.answered; step++) await vi.advanceTimersByTimeAsync(1000)
+      // The request does real storage work before it arms the send timeout, so wait on the clock, not on a tick count.
+      const deadline = performance.now() + 15_000
+      while (!state.answered && performance.now() < deadline) {
+        await vi.advanceTimersByTimeAsync(1000)
+        await new Promise<void>((resolve) => setImmediate(resolve))
+      }
       expect(state.answered).toBe(true)
       expect((await response).status).toBe(200)
       expect(ctxSend).toHaveBeenCalledTimes(1)
