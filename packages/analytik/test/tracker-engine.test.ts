@@ -342,7 +342,11 @@ describe('modes', () => {
     expect(first).toMatchObject({ m: 'persistent' })
     expect(document.cookie).toContain(`analytik_vid=${first?.vid}`)
     expect(document.cookie).toContain(`analytik_sid=${first?.sid}`)
-    expect(await engine?.attribution()).toEqual({ analytik_visitor_id: first?.vid, analytik_session_id: first?.sid })
+    expect(await engine?.attribution()).toEqual({
+      analytik_visitor_id: first?.vid,
+      analytik_session_id: first?.sid,
+      analytik_site_id: 'site_1',
+    })
     engine?.destroy()
     wire.clear()
     start({ mode: 'persistent', domain: 'example.com' })
@@ -400,7 +404,11 @@ describe('attribution', () => {
   it('asks the server in strict mode', async () => {
     wire.respond('/attribution', () => Response.json({ visitorId: 'v1', sessionId: 's1' }))
     const e = start()
-    expect(await e.attribution()).toEqual({ analytik_visitor_id: 'v1', analytik_session_id: 's1' })
+    expect(await e.attribution()).toEqual({
+      analytik_visitor_id: 'v1',
+      analytik_session_id: 's1',
+      analytik_site_id: 'site_1',
+    })
     const request = vi.mocked(fetch).mock.calls.find(([url]) => url === 'https://stats.example.net/api/attribution')
     expect(JSON.parse(request?.[1]?.body as string)).toEqual({
       w: 'site_1',

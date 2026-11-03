@@ -30,6 +30,7 @@ export const number = (value: unknown): number | undefined => {
 // Dodo checkout links pass `metadata_*` query params, which some integrations forward with the prefix kept.
 const VISITOR_KEYS = ['analytik_visitor_id', 'metadata_analytik_visitor_id', 'visitor_id']
 const SESSION_KEYS = ['analytik_session_id', 'metadata_analytik_session_id', 'session_id']
+const SITE_KEYS = ['analytik_site_id', 'metadata_analytik_site_id']
 
 function pick(metadata: Json, keys: string[]): string | undefined {
   for (const key of keys) {
@@ -39,11 +40,12 @@ function pick(metadata: Json, keys: string[]): string | undefined {
   return undefined
 }
 
-/** Visitor and session ids from checkout metadata (the keys `analytik.attribution()` returns). */
-export function attributionFrom(metadata: Json): { visitorId?: string; sessionId?: string } {
+/** Visitor, session and site ids from checkout metadata (the keys `analytik.attribution()` returns). */
+export function attributionFrom(metadata: Json): { visitorId?: string; sessionId?: string; siteId?: string } {
   const visitorId = pick(metadata, VISITOR_KEYS)
   const sessionId = pick(metadata, SESSION_KEYS)
-  return { ...(visitorId && { visitorId }), ...(sessionId && { sessionId }) }
+  const siteId = pick(metadata, SITE_KEYS)
+  return { ...(visitorId && { visitorId }), ...(sessionId && { sessionId }), ...(siteId && { siteId }) }
 }
 
 /** Unix seconds or an ISO date to unix ms. */

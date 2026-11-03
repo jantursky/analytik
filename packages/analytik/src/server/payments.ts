@@ -160,6 +160,36 @@ async function unrecordedRefund(
 }
 
 /**
+ * Whether a webhook payment is clearly meant for another site, so a provider account shared by several sites does not
+ * record every payment on each of them. Decided by the site id in the checkout metadata, else by the buyer only being
+ * known elsewhere: a visitor seen only on another site, or a renewal of a customer or subscription that another site
+ * sold. Unclear payments stay, so a single-site setup is unchanged.
+ */
+export async function belongsElsewhere(ctx: Context, site: SiteRecord, input: PaymentInput): Promise<boolean> {
+  if (typeof input.siteId === 'string' && input.siteId) return input.siteId !== site.id
+  const { storage } = ctx
+  if (isId(input.visitorId)) {
+    const rows = await storage.query<{ site_id: string }>('SELECT site_id FROM visitors WHERE id = ? LIMIT 50', [
+      input.visitorId,
+    ])
+    if (rows.length > 0 && !rows.some((row) => row.site_id === site.id)) return true
+  }
+  const keys: [column: string, value: string][] = []
+  const customerId = clip(input.customerId, 200)
+  const subscriptionId = clip(input.subscriptionId, 200)
+  if (customerId) keys.push(['customer_id', customerId])
+  if (subscriptionId) keys.push(['subscription_id', subscriptionId])
+  if (input.renewal === true && input.kind !== 'refund' && keys.length) {
+    const rows = await storage.query<{ site_id: string }>(
+      `SELECT DISTINCT site_id FROM payments WHERE kind = 'payment' AND (${keys.map(([column]) => `${column} = ?`).join(' OR ')}) LIMIT 50`,
+      keys.map(([, value]) => value),
+    )
+    if (rows.length > 0 && !rows.some((row) => row.site_id === site.id)) return true
+  }
+  return false
+}
+
+/**
  * Stores a payment or refund once per `(site, id)` and links it to the visit that earned it. Tracker revenue
  * (`client`) arrives as `client:<order id>`, so the browser can't take a provider's payment id; it is skipped
  * when a verified payment for the order exists, and a verified payment replaces it instead of counting twice.

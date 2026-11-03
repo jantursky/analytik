@@ -18,7 +18,7 @@ import { createAnnotation } from '../annotations'
 import { hasAdminSession } from '../auth'
 import { AnalytikError, type Context } from '../context'
 import { SESSION_WINDOW, cleanProps, ingest, sessionUpdate } from '../ingest'
-import { recordPayment } from '../payments'
+import { belongsElsewhere, recordPayment } from '../payments'
 import { recordBots } from '../stats/bots'
 import { hashedKey, strictVisitorId } from '../privacy'
 import { hit } from '../ratelimit'
@@ -208,6 +208,8 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     const input = adapter.toPayment(event)
     // Every other event type is acknowledged so the provider doesn't retry it.
     if (!input) return c.json({ ok: true, ignored: true })
+    // One provider account can feed several sites, each with its own webhook; a site keeps only its own payments.
+    if (await belongsElsewhere(ctx, site, input)) return c.json({ ok: true, ignored: true })
     const { duplicate } = await recordPayment(ctx, site, input, provider)
     return c.json({ ok: true, duplicate })
   })

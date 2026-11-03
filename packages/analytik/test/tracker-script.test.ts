@@ -100,6 +100,7 @@ describe('script tag', () => {
     expect(await win.analytik?.attribution()).toEqual({
       analytik_visitor_id: sent[0]?.body.vid,
       analytik_session_id: sent[0]?.body.sid,
+      analytik_site_id: 'site_2',
     })
   })
 

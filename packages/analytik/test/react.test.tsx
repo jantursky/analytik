@@ -49,7 +49,7 @@ describe('AnalytikProvider', () => {
         <Signup />
       </AnalytikProvider>,
     )
-    expect(await early.ids).toEqual({ analytik_visitor_id: 'v', analytik_session_id: 's' })
+    expect(await early.ids).toEqual({ analytik_visitor_id: 'v', analytik_session_id: 's', analytik_site_id: 'app' })
     await click(view.container.querySelector('button'))
     const events = (await wire.sent()).filter((s) => s.url.endsWith('/event'))
     expect(events.map((s) => [s.body.t, s.body.n, s.body.p])).toEqual([

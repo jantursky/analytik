@@ -53,6 +53,7 @@ function checkoutSession(session: Json): PaymentInput | null {
     orderId: string(session.payment_intent) ?? string(session.invoice) ?? String(session.id),
     visitorId: attribution.visitorId ?? reference,
     sessionId: attribution.sessionId,
+    siteId: attribution.siteId,
     ts: timestamp(session.created),
   })
 }

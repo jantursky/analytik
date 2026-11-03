@@ -396,6 +396,59 @@ describe('POST /webhooks/:provider/:siteId', () => {
     return (await response.json()) as { duplicate?: boolean; ignored?: boolean }
   }
 
+  it("keeps a shared Stripe account's payments on the site they belong to", async () => {
+    const { site: other } = await server.createSite({ privacyMode: 'persistent', domain: 'other.example.org' })
+    await server.admin(`/sites/${other.id}`, { method: 'PATCH', json: { webhookSecrets: { stripe: 'whsec_stripe' } } })
+    const send = async (siteId: string, object: Record<string, unknown>, type = 'checkout.session.completed') => {
+      const body = JSON.stringify({ type, data: { object } })
+      const response = await post(`/webhooks/stripe/${siteId}`, body, await stripeHeaders('whsec_stripe', body))
+      return (await response.json()) as { duplicate?: boolean; ignored?: boolean }
+    }
+    const session = (id: string, metadata: Record<string, string>) => ({
+      id,
+      amount_total: 1000,
+      currency: 'usd',
+      payment_status: 'paid',
+      customer: 'cus_1',
+      metadata,
+    })
+    // The checkout names its site: the other site's webhook ignores it.
+    expect(await send(site.id, session('cs_a', { analytik_site_id: site.id }))).toEqual({ ok: true, duplicate: false })
+    expect(await send(other.id, session('cs_a', { analytik_site_id: site.id }))).toEqual({ ok: true, ignored: true })
+    // A visitor seen only on the first site.
+    await server.event({
+      w: site.id,
+      t: 'pageview',
+      u: 'https://example.com/',
+      m: 'persistent',
+      vid: 'visitor-0001',
+      sid: 'session-0001',
+    })
+    expect(await send(other.id, session('cs_b', { analytik_visitor_id: 'visitor-0001' }))).toEqual({
+      ok: true,
+      ignored: true,
+    })
+    expect(await send(site.id, session('cs_b', { analytik_visitor_id: 'visitor-0001' }))).toEqual({
+      ok: true,
+      duplicate: false,
+    })
+    // A renewal of a customer another site sold.
+    const renewal = {
+      id: 'in_1',
+      amount_paid: 1000,
+      currency: 'usd',
+      customer: 'cus_1',
+      billing_reason: 'subscription_cycle',
+    }
+    expect(await send(other.id, renewal, 'invoice.paid')).toEqual({ ok: true, ignored: true })
+    expect(await send(site.id, renewal, 'invoice.paid')).toEqual({ ok: true, duplicate: false })
+    expect(await server.rows('SELECT id, site_id FROM payments ORDER BY id')).toEqual([
+      { id: 'cs_a', site_id: site.id },
+      { id: 'cs_b', site_id: site.id },
+      { id: 'in_1', site_id: site.id },
+    ])
+  })
+
   it('records a Stripe payment whose id a tracker revenue event used first, without counting it twice', async () => {
     const revenue = { w: site.id, t: 'revenue', u: 'https://example.com/thanks', a: 1, c: 'USD', o: 'cs_taken' }
     await server.event({ ...revenue, m: 'persistent', vid: 'visitor-0001', sid: 'session-0001' })

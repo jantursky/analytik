@@ -206,6 +206,60 @@ describe('user agents', () => {
     expect(parseUserAgent('Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 390).device).toBe(
       'Mobile',
     )
+    const browserOf = (ua: string) => parseUserAgent(ua).browser
+    const cases: [string, string][] = [
+      ['Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko', 'Internet Explorer'],
+      ['Opera/9.80 (Android; Opera Mini/36.2.2254/119.132; U; en) Presto/2.12.423 Version/12.16', 'Opera Mini'],
+      [
+        'Mozilla/5.0 (Linux; U; Android 13; en-US; V2203) AppleWebKit/537.36 Chrome/100.0 UCBrowser/13.4.0 Mobile Safari/537.36',
+        'UC Browser',
+      ],
+      ['Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/100.0 Mobile Safari/537.36 Quark/6.4.0', 'Quark'],
+      [
+        'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/100.0 MQQBrowser/13.0 Mobile Safari/537.36',
+        'QQ Browser',
+      ],
+      [
+        'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/100.0 Mobile Safari/537.36 MicroMessenger/8.0',
+        'WeChat',
+      ],
+      ['Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/100.0 Safari/537.36 360SE', '360 Browser'],
+      [
+        'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/100.0 Mobile Safari/537.36 HuaweiBrowser/14.0',
+        'Huawei Browser',
+      ],
+      [
+        'Mozilla/5.0 (Linux; U; Android 12) AppleWebKit/537.36 Chrome/100.0 Mobile Safari/537.36 XiaoMi/MiuiBrowser/17.0',
+        'Mi Browser',
+      ],
+      ['Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/100.0 Safari/537.36 Whale/3.20', 'Whale'],
+      ['Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/100.0 Safari/537.36 coc_coc_browser/100.0', 'Coc Coc'],
+      ['Mozilla/5.0 (Linux; Android 9; KFTRWI) AppleWebKit/537.36 Silk/100.0 like Chrome/100.0 Safari/537.36', 'Silk'],
+      ['Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/100.0 Electron/30.0 Safari/537.36', 'Electron'],
+      ['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chromium/120.0 Chrome/120.0 Safari/537.36', 'Chromium'],
+      ['Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0 Waterfox/120.0', 'Waterfox'],
+      ['Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0 LibreWolf/120.0', 'LibreWolf'],
+      [
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/605.1.15 Focus/17.0',
+        'Firefox Focus',
+      ],
+      ['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/602.1 (KHTML, like Gecko) Falkon/3.2 Safari/602.1', 'Falkon'],
+      ['Lynx/2.9.0 libwww-FM/2.14', 'Lynx'],
+      [
+        'Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; GT-I9500) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
+        'Android Browser',
+      ],
+      [
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1 GSA/300.0',
+        'Google App',
+      ],
+      [
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Pinterest/12.0',
+        'Pinterest',
+      ],
+      ['Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/100.0 Mobile Safari/537.36 Line/13.0.0', 'Line'],
+    ]
+    for (const [ua, browser] of cases) expect(browserOf(ua), browser).toBe(browser)
     expect(parseUserAgent('Something else')).toEqual({ browser: 'Other', os: 'Other', device: 'Desktop' })
   })
 })

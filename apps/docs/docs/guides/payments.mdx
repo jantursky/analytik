@@ -16,6 +16,8 @@ if (ids) {
 
 Send them to your server, or add them to a checkout link, right before the visitor pays. In `strict` mode this asks the server to compute the ids, so nothing is stored in the browser. The type is `AttributionIds`.
 
+`attribution()` also returns `analytik_site_id`. Pass it along with the other two when one payment provider account sells for several sites: a site's webhook ignores a payment whose `analytik_site_id` names another site. Without it, a payment is still skipped when its visitor is known only to another site, or when it renews a customer another site sold.
+
 `attribution()` can return `null`: when the visitor has opted out, when the request fails, or in `strict` and `enriched` mode when the server has no session for the visitor yet, for example before the first pageview was sent. Handle that case and let the checkout go ahead without the ids; the payment is then matched by the other methods in [Attribution and payments](/concepts/attribution-and-payments).
 
 ## Generic API

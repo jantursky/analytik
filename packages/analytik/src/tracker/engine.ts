@@ -295,6 +295,7 @@ export function createEngine(options: AnalytikOptions): AnalytikClient {
       if (vid && sid) {
         url.searchParams.set('metadata_analytik_visitor_id', vid)
         url.searchParams.set('metadata_analytik_session_id', sid)
+        url.searchParams.set('metadata_analytik_site_id', site)
         link.setAttribute('href', url.href)
       }
       if (options.autoOutbound !== false && isOutbound(url, loc.hostname, domain ?? cookieDomain ?? undefined)) {
@@ -339,7 +340,7 @@ export function createEngine(options: AnalytikOptions): AnalytikClient {
   async function attribution(): Promise<AttributionIds | null> {
     if (optedOut()) return null
     const { m, vid, sid } = ids()
-    if (vid && sid) return { analytik_visitor_id: vid, analytik_session_id: sid }
+    if (vid && sid) return { analytik_visitor_id: vid, analytik_session_id: sid, analytik_site_id: site }
     try {
       const response = await fetch(api + '/attribution', {
         method: 'POST',
@@ -349,7 +350,7 @@ export function createEngine(options: AnalytikOptions): AnalytikClient {
       })
       const ids = JSON.parse(await response.text()) as { visitorId?: string; sessionId?: string }
       return response.ok && ids.visitorId && ids.sessionId
-        ? { analytik_visitor_id: ids.visitorId, analytik_session_id: ids.sessionId }
+        ? { analytik_visitor_id: ids.visitorId, analytik_session_id: ids.sessionId, analytik_site_id: site }
         : null
     } catch (error) {
       log('attribution failed:', error)

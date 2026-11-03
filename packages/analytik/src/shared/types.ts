@@ -87,6 +87,11 @@ export interface PaymentInput {
   orderId?: string
   visitorId?: string
   sessionId?: string
+  /**
+   * The site the checkout came from, from `analytik_site_id` in the checkout metadata. A webhook for another site
+   * ignores the payment, so one provider account can feed several sites.
+   */
+  siteId?: string
   renewal?: boolean
   /** Unix milliseconds. Defaults to now. */
   ts?: number
@@ -284,6 +289,7 @@ export interface FunnelResult {
 export interface AttributionIds {
   analytik_visitor_id: string
   analytik_session_id: string
+  analytik_site_id: string
 }
 
 export interface EventRow {

@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.14.0]
+
+### Added
+
+- About 50 more browsers recognised (Internet Explorer, UC, QQ, Huawei, Mi, Whale, Waterfox, Falkon, in-app browsers and more), most with a mark in the dashboard.
+- One payment provider account can feed several sites: a webhook ignores payments for another site (`analytik_site_id` from `attribution()`, a visitor seen only elsewhere, or a renewal another site sold).
+
 ## [1.13.0]
 
 ### Added
