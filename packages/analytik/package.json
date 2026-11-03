@@ -155,7 +155,7 @@
   "peerDependencies": {
     "@base-ui/react": "^1.9.0",
     "hono": "^4.13.0",
-    "motion": "^14.6.0",
+    "motion": "^14.9.0",
     "pg": "^8.0.0",
     "postgres": "^3.4.0",
     "react": "^19.0.0",
@@ -191,8 +191,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@base-ui/react": "^1.9.0",
-    "@cloudflare/workers-types": "^5.20261026.1",
-    "@microsoft/api-extractor": "^7.59.4",
+    "@cloudflare/workers-types": "^5.20261031.1",
+    "@microsoft/api-extractor": "^7.60.1",
     "@size-limit/esbuild": "^14",
     "@size-limit/file": "^14",
     "@types/node": "^26",
@@ -205,7 +205,7 @@
     "circle-flags": "^2.8.3",
     "happy-dom": "^21.0.4",
     "hono": "^4.13.14",
-    "motion": "^14.6.0",
+    "motion": "^14.9.0",
     "pg": "^8.23.1",
     "postgres": "^3.4.9",
     "publint": "^0.3.25",
