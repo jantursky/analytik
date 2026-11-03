@@ -139,7 +139,7 @@ describe('tracker in a real browser', () => {
   it('asks the server for attribution ids in strict mode and honours opt-out', async () => {
     const { run, win } = await openPage({ 'data-site': 'site_1', 'data-require-interaction': 'false' })
     const ids: AttributionIds | null = await win.analytik.attribution()
-    expect(ids).toEqual({ analytik_visitor_id: 'v_srv', analytik_session_id: 's_srv' })
+    expect(ids).toEqual({ analytik_visitor_id: 'v_srv', analytik_session_id: 's_srv', analytik_site_id: 'site_1' })
     const requests = await collect(run, 2)
     expect(requests.find((r) => r.path === 'api/attribution')?.body).toMatchObject({ w: 'site_1', m: 'strict' })
     win.analytik.optOut()
