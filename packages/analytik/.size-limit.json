@@ -6,6 +6,12 @@
     "limit": "4 kB"
   },
   {
+    "name": "Core Web Vitals script (analytik-vitals.js, loaded only by sites that measure them)",
+    "path": "dist/analytik-vitals.js",
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
     "name": "Browser client",
     "path": "dist/client.js",
     "gzip": true,
@@ -23,13 +29,13 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "490 kB"
+    "limit": "534 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
     "path": "dist/chunks/{sk,cs,de,es,fr,pt,pl,it,nl,ru,tr,ja,zh,ko,id,hi,vi}-*.js",
     "gzip": true,
-    "limit": "332 kB"
+    "limit": "348 kB"
   },
   {
     "name": "Country flags (a lazy chunk, loaded when the first country is shown)",
@@ -54,14 +60,14 @@
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "840 kB"
+    "limit": "882 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "43 kB"
+    "limit": "44 kB"
   },
   {
     "name": "D1 storage",

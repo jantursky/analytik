@@ -9,6 +9,8 @@ import { EXPORT_TABLES, exportCsv, exportJson } from './export'
 import { funnelResult, getFunnel } from './funnels'
 import { overview, timeseries } from './overview'
 import { purgeBefore } from './purge'
+import { targetProgress } from './targets'
+import { vitalsResult } from './vitals'
 import { isDimension, pageLimit, toStatsQuery } from './query'
 
 export function createStatsApi(ctx: Context, ready: () => Promise<unknown>): StatsApi {
@@ -56,6 +58,13 @@ export function createStatsApi(ctx: Context, ready: () => Promise<unknown>): Sta
     async bots(siteId, query, filters = {}) {
       const site = await load(siteId)
       return botStats(ctx, site, toStatsQuery(site, query), filters)
+    },
+    async vitals(siteId, query) {
+      const site = await load(siteId)
+      return vitalsResult(ctx, site, toStatsQuery(site, query))
+    },
+    async targets(siteId) {
+      return targetProgress(ctx, await load(siteId))
     },
     async export(siteId, format, table = 'events') {
       const site = await load(siteId)

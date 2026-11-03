@@ -87,6 +87,14 @@ function standaloneAssets(): Plugin {
           lib: { entry: root('src/tracker/tracker.ts'), formats: ['iife'], name: 'analytikTracker' },
         },
       })
+      const vitals = await output({
+        build: {
+          write: false,
+          target: 'es2020',
+          minify: true,
+          lib: { entry: root('src/tracker/vitals.ts'), formats: ['iife'], name: 'analytikVitals' },
+        },
+      })
       const code = (list: typeof files): string => {
         const chunk = list.find((file) => file.type === 'chunk')
         return chunk && 'code' in chunk ? chunk.code : ''
@@ -96,33 +104,34 @@ function standaloneAssets(): Plugin {
         js: code(files),
         css: css && 'source' in css ? String(css.source) : '',
         tracker: code(scripts),
+        vitals: code(vitals),
       })}`
     },
   }
 }
 
-/** `<script src=".../analytik.js">`: a self-contained IIFE with no imports, built after the library. */
+/** `<script src=".../analytik.js">` and the opt-in `analytik-vitals.js`: self-contained IIFEs, built after the library. */
 function trackerScript(): Plugin {
   return {
     name: 'analytik:tracker',
     apply: 'build',
     async closeBundle() {
-      await build({
-        configFile: false,
-        logLevel: 'warn',
-        build: {
-          outDir: root('dist'),
-          emptyOutDir: false,
-          target: 'es2020',
-          minify: true,
-          lib: {
-            entry: root('src/tracker/tracker.ts'),
-            formats: ['iife'],
-            name: 'analytikTracker',
-            fileName: () => 'analytik.js',
+      for (const [entry, name, fileName] of [
+        ['src/tracker/tracker.ts', 'analytikTracker', 'analytik.js'],
+        ['src/tracker/vitals.ts', 'analytikVitals', 'analytik-vitals.js'],
+      ] as const) {
+        await build({
+          configFile: false,
+          logLevel: 'warn',
+          build: {
+            outDir: root('dist'),
+            emptyOutDir: false,
+            target: 'es2020',
+            minify: true,
+            lib: { entry: root(entry), formats: ['iife'], name, fileName: () => fileName },
           },
-        },
-      })
+        })
+      }
     },
   }
 }

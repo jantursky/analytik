@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "upgrade": "analytik upgrade"
+    "analytik:upgrade": "analytik upgrade"
   },
   "dependencies": {
     "analytik": "^1.1.0",

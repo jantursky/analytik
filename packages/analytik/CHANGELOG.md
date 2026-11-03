@@ -4,7 +4,16 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.15.0]
+
+### Added
+
+- Goal targets in Settings → Goals (a number per week, month or quarter) with progress and an estimate in the overview's Goals block, and `GET /api/sites/:id/targets`. Run `analytik upgrade` to add the new column.
+- Core Web Vitals (LCP, INP, CLS), opt in per site and sampled: `data-vitals` loads a 0.5 kB script for sampled page views only, reports ride on the leave beacon, and the Pages view rates the 75th percentile per page. Run `analytik upgrade` to add the new table.
+
+### Changed
+
+- Meters in the channel, source, country, browser, OS and device breakdowns show each row's share of the total; the site switcher is sorted by name; new projects get an `analytik:upgrade` script (`bun upgrade` is a Bun command).
 
 ## [1.14.0]
 

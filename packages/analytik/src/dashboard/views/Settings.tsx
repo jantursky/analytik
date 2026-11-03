@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { type ComponentType, type SubmitEvent, useState } from 'react'
 
-import type { PaymentProvider, PrivacyMode, Site } from '../../shared/types'
+import type { GoalTarget, PaymentProvider, PrivacyMode, Site, TargetPeriod } from '../../shared/types'
 import { cleanDomain, domainProblem } from '../../shared/url'
 import type { ExportFormat } from '../api'
 import { useDashboard } from '../context'
@@ -15,7 +15,7 @@ import { Actions, Card, ConfirmButton, CopyButton, Field, Notice, useOutcome } f
 import { CurrencySelect } from '../ui/currency'
 import { DatePicker } from '../ui/date-picker'
 import { stagger, View } from '../ui/motion'
-import { Select } from '../ui/select'
+import { Select, type SelectOption } from '../ui/select'
 import { Switch } from '../ui/switch'
 import { TimeZoneSelect } from '../ui/timezone'
 import { Icon, type IconName } from '../icons'
@@ -103,6 +103,151 @@ export function SiteSettings() {
             onChange={(currency) => set('currency', currency)}
           />
         </div>
+        <Actions outcome={outcome}>
+          <SaveButton />
+        </Actions>
+      </form>
+    </Card>
+  )
+}
+
+const MAX_TARGETS = 20
+
+const PERIOD_OPTIONS: SelectOption<TargetPeriod>[] = [
+  { value: 'week', label: msg('Week') },
+  { value: 'month', label: msg('Month') },
+  { value: 'quarter', label: msg('Quarter') },
+]
+
+/** Targets for goals: a number to reach within a week, month or quarter, shown as progress in the Goals block. */
+export function GoalSettings() {
+  const { draft, set, submit, outcome } = useSiteForm(['targets'], (patch) => {
+    // A row without a goal name is a row left empty, not a mistake worth refusing the save for.
+    patch.targets = patch.targets.filter((row) => row.goal.trim())
+    return true
+  })
+  const rows = draft.targets
+  const update = (index: number, change: Partial<GoalTarget>): void =>
+    set(
+      'targets',
+      rows.map((row, i) => (i === index ? { ...row, ...change } : row)),
+    )
+  return (
+    <Card
+      title={t('Goal targets')}
+      description={t(
+        'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.',
+      )}
+    >
+      <form className="analytik-form" onSubmit={submit}>
+        {rows.length === 0 && <p className="analytik-empty">{t('No targets yet')}</p>}
+        <div className="analytik-target-rows">
+          {rows.map((row, index) => (
+            <fieldset key={index} className="analytik-target-row">
+              <legend className="analytik-sr-only">{t('Target {number}', { number: index + 1 })}</legend>
+              <Field label={t('Goal name')}>
+                <input
+                  className="analytik-input"
+                  value={row.goal}
+                  maxLength={100}
+                  placeholder="signup"
+                  onChange={(e) => update(index, { goal: e.target.value })}
+                />
+              </Field>
+              <Field label={t('Target')}>
+                <input
+                  className="analytik-input"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  value={row.target || ''}
+                  placeholder="1000"
+                  onChange={(e) => update(index, { target: Math.trunc(Number(e.target.value)) })}
+                />
+              </Field>
+              <Select
+                label={t('Period')}
+                value={row.period}
+                options={PERIOD_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))}
+                onChange={(period) => update(index, { period })}
+              />
+              <button
+                type="button"
+                className="analytik-button"
+                aria-label={t('Remove target {number}', { number: index + 1 })}
+                onClick={() =>
+                  set(
+                    'targets',
+                    rows.filter((_, i) => i !== index),
+                  )
+                }
+              >
+                {t('Remove')}
+              </button>
+            </fieldset>
+          ))}
+        </div>
+        <p className="analytik-field-hint">{t("Periods start in the site's time zone, and weeks on Monday.")}</p>
+        <Actions outcome={outcome}>
+          <button
+            type="button"
+            className="analytik-button"
+            disabled={rows.length >= MAX_TARGETS}
+            onClick={() => set('targets', [...rows, { goal: '', target: 0, period: 'month' }])}
+          >
+            {t('Add a target')}
+          </button>
+          <SaveButton />
+        </Actions>
+      </form>
+    </Card>
+  )
+}
+
+const DEFAULT_VITALS_SAMPLE = 10
+
+/** Whether the tracker measures Core Web Vitals, and for what share of page views. */
+export function VitalsSettings() {
+  const { site } = useDashboard()
+  const [on, setOn] = useState(site.vitalsSample > 0)
+  const [sample, setSample] = useState(String(site.vitalsSample || DEFAULT_VITALS_SAMPLE))
+  const { submit, outcome } = useSiteForm(['vitalsSample'], (patch) => {
+    patch.vitalsSample = on ? Math.min(100, Math.max(1, Math.round(Number(sample)) || DEFAULT_VITALS_SAMPLE)) : 0
+    return true
+  })
+  return (
+    <Card
+      title={t('Core Web Vitals')}
+      description={t(
+        'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.',
+      )}
+    >
+      <form className="analytik-form" onSubmit={submit}>
+        <div className="analytik-switches">
+          <Switch checked={on} onChange={setOn}>
+            {t('Measure Core Web Vitals')}
+          </Switch>
+        </div>
+        {on && (
+          <Field
+            label={t('Share of page views measured (%)')}
+            hint={t(
+              'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.',
+            )}
+          >
+            <input
+              className="analytik-input"
+              type="number"
+              min={1}
+              max={100}
+              step={1}
+              inputMode="numeric"
+              value={sample}
+              onChange={(e) => setSample(e.target.value)}
+            />
+          </Field>
+        )}
         <Actions outcome={outcome}>
           <SaveButton />
         </Actions>
@@ -299,6 +444,7 @@ export function SnippetGenerator() {
     autoOutbound,
     keepQuery,
     pingInterval: Number(updates),
+    vitals: site.vitalsSample,
     debug: false,
   })
 
@@ -657,12 +803,14 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     icon: 'code',
     content: () => (
       <>
+        <VitalsSettings />
         <SnippetGenerator />
         <IntegrationPrompt />
       </>
     ),
   },
   { value: 'campaigns', label: msg('Campaign links'), icon: 'link', content: CampaignLinkBuilder },
+  { value: 'goals', label: msg('Goals'), icon: 'target', content: GoalSettings },
   {
     value: 'payments',
     label: msg('Payments and API'),
@@ -702,6 +850,7 @@ export type SettingsSection =
   | 'privacy'
   | 'tracking'
   | 'campaigns'
+  | 'goals'
   | 'payments'
   | 'data'
   | 'sharing'

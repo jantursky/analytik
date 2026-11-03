@@ -6,6 +6,7 @@ export default {
   '(none)': '(geen)',
   ', filter by this': ', filter hierop',
   ', then the same kinds again': ', daarna opnieuw dezelfde soorten',
+  '{count} of {target}': '{count} van {target}',
   '1 to 20, named Test site …': '1 tot 20, genaamd Test site …',
   '1 to 20; each takes the next kind of site.': '1 tot 20; elk krijgt de volgende soort site.',
   '12-hour clock': '12-uursklok',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Een maand van een rustige site.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Er wordt een nieuwe sleutel aangemaakt en de huidige werkt meteen niet meer. Servers die nog de oude sleutel sturen, worden geweigerd totdat u ze bijwerkt.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Een getal dat een doel in een week, maand of kwartaal moet halen. Het blok Doelen in het overzicht toont de voortgang.',
   'A paid keyword, shown as Keyword': 'Een betaald zoekwoord, weergegeven als Zoekwoord',
   'A payment as the dashboard will show it.': 'Een betaling zoals het dashboard die toont.',
   'A quarter at 3,000 visits a day.': 'Een kwartaal met 3.000 bezoeken per dag.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Blok toevoegen na {name}',
   'Add a block before {name}': 'Blok toevoegen vóór {name}',
   'Add a number': 'Getal toevoegen',
+  'Add a target': 'Streefwaarde toevoegen',
   'Add a website': 'Website toevoegen',
   'Add block': 'Blok toevoegen',
   'Add step': 'Stap toevoegen',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Alle browsers',
   'All channels': 'Alle kanalen',
   'All devices': 'Alle apparaten',
+  'All pages': "Alle pagina's",
   'All providers': 'Alle aanbieders',
   'All sites': 'Alle sites',
   'All types': 'Alle typen',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Snippet kopiëren',
   'Copy URL': 'URL kopiëren',
   'Copy visitor id': 'Bezoeker-id kopiëren',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'De website kon niet worden toegevoegd',
   "Couldn't delete the website": 'De website kon niet worden verwijderd',
   "Couldn't sign in": 'Inloggen is mislukt',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Download alles wat voor deze site is opgeslagen, of voer de attributie opnieuw uit.',
   Duration: 'Duur',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    "Elke gemeten paginaweergave voegt één rij toe aan je database, dus een kleiner aandeel kost minder schrijfacties. Plak de bijgewerkte trackingcode in je pagina's.",
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Elke site is anders: leeg, rustig, gemiddeld, druk, net gelanceerd, gepauzeerd.',
   Email: 'E-mail',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'Wereldbol',
   Goal: 'Doel',
   'Goal name': 'Naam van het doel',
+  'Goal targets': 'Streefwaarden',
   Goals: 'Doelen',
   'Goals and events': 'Doelen en gebeurtenissen',
+  Good: 'Goed',
   'Half width': 'Halve breedte',
   'Hide password': 'Wachtwoord verbergen',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Hoe aantallen, percentages en bedragen in elke weergave worden geschreven. Opgeslagen voor elke beheerder.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    "Hoe snel pagina's laden, reageren en stabiel blijven voor echte bezoekers, beoordeeld voor de site en voor elke pagina.",
   'How the site is named, where its events come from and how its reports are dated.':
     'Hoe de site heet, waar de gebeurtenissen vandaan komen en hoe de rapporten worden gedateerd.',
   'How to update': 'Hoe bij te werken',
@@ -297,6 +309,8 @@ export default {
   Limits: 'Limieten',
   Live: 'Live',
   'Live now': 'Nu live',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Laden, reactiesnelheid en lay-outverschuiving bij echte bezoeken, voor een deel van de paginaweergaven. De cijfers reizen mee met de update die wordt verstuurd als een bezoeker een pagina verlaat.',
   'Loading…': 'Laden…',
   Location: 'Locatie',
   'Log out': 'Uitloggen',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': 'Maak 1 tot 20 sites.',
   'Many sites': 'Veel sites',
   'Map with no visitor locations': 'Kaart zonder bezoekerslocaties',
+  'Measure Core Web Vitals': 'Core Web Vitals meten',
   Medium: 'Medium',
   Mobile: 'Mobiel',
   Mode: 'Modus',
+  Month: 'Maand',
   'Month first, in words': 'Eerst de maand, in woorden',
   'Month, day, year': 'Maand, dag, jaar',
   'Move {name} earlier': '{name} eerder plaatsen',
   'Move {name} later': '{name} later plaatsen',
   'My website': 'Mijn website',
   Name: 'Naam',
+  'Needs work': 'Moet beter',
   new: 'nieuw',
   'New API key': 'Nieuwe API-sleutel',
   'New funnel': 'Nieuwe trechter',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Nog geen trechters. Maak er een om te zien waar bezoekers afhaken.',
   'No matches': 'Geen resultaten',
+  'No measurements in this period': 'Geen metingen in deze periode',
   'No payments in this period': 'Geen betalingen in deze periode',
   'No sessions in this period': 'Geen sessies in deze periode',
+  'No targets yet': 'Nog geen streefwaarden',
   'Nobody here right now': 'Op dit moment is er niemand',
   'Not set up': 'Niet ingesteld',
   'Nothing matches these filters': 'Niets komt overeen met deze filters',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'Getal {number}',
   Numbers: 'Getallen',
   'Numbers and money': 'Getallen en geld',
+  'On pace for about {count} (an estimate)': 'Op het huidige tempo ongeveer {count} (schatting)',
   'On the overview': 'Op het overzicht',
   'On the visitor’s device': 'Op het apparaat van de bezoeker',
   'One site': 'Eén site',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'Betalingen en API',
   'Payments and refunds': 'Betalingen en terugbetalingen',
   'Per site, weekends quieter; 0 for an empty site.': 'Per site, in het weekend rustiger; 0 voor een lege site.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Periodes beginnen in de tijdzone van de site, en weken op maandag.',
   Persistent: 'Permanent',
   'Pick a date': 'Kies een datum',
   'Pick one or more blocks to add {place}.': 'Kies een of meer blokken om {place} toe te voegen.',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Abonnementen kosten 9, 29 en 99 keer dit bedrag.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Richt uw betaalaanbieder op het endpoint en plak het ondertekeningsgeheim. Betalingen worden gekoppeld aan de bezoeken die eraan voorafgingen.',
+  Poor: 'Slecht',
   Preset: 'Voorinstelling',
   Presets: 'Voorinstellingen',
   Preview: 'Voorbeeld',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'Privacymodus',
   Prompt: 'Prompt',
   Provider: 'Aanbieder',
+  Quarter: 'Kwartaal',
   'Re-run payment attribution': 'Betalingsattributie opnieuw uitvoeren',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Lezers blijven in de liveweergave; ongeveer een kwart van de verzoeken van elke minuut.',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Filter {dimension} is {value} verwijderen',
   'Remove one to add it somewhere else.': 'Verwijder er een om het ergens anders toe te voegen.',
   'Remove step {number}': 'Stap {number} verwijderen',
+  'Remove target {number}': 'Streefwaarde {number} verwijderen',
   'Remove test data': 'Testgegevens verwijderen',
   'Remove the {filter} filter': 'Het filter {filter} verwijderen',
   'Remove {name}': '{name} verwijderen',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Verwijdert de bezoeken die vóór een bepaalde dag zijn vastgelegd. Oudere betalingen blijven behouden voor de omzet, zonder klantgegevens.',
   renewal: 'verlenging',
+  Reports: 'Meldingen',
   Reset: 'Herstellen',
   'Reset layout': 'Indeling herstellen',
   'Reset the overview?': 'Het overzicht herstellen?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'Sessies',
   Settings: 'Instellingen',
   'Settings saved': 'Instellingen opgeslagen',
+  'Share of page views measured (%)': 'Aandeel gemeten paginaweergaven (%)',
   'Show only this visitor': 'Alleen deze bezoeker tonen',
   'Show password': 'Wachtwoord tonen',
   'Show {label} list': 'Lijst {label} tonen',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'Tablet',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Label de links die u deelt, zodat bezoeken via die links aan de juiste campagne worden toegeschreven.',
+  Target: 'Streefwaarde',
+  'Target {number}': 'Streefwaarde {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Tien verschillende sites over twee maanden: leeg, rustig, net gelanceerd, gepauzeerd, een drukke winkel.',
   Term: 'Term',
@@ -539,7 +568,11 @@ export default {
   Theme: 'Thema',
   'Theme: {current}': 'Thema: {current}',
   'Theme: {current}. Switch to {next}': 'Thema: {current}. Wisselen naar {next}',
+  'This month': 'Deze maand',
+  'This quarter': 'Dit kwartaal',
   'This site ({name})': 'Deze site ({name})',
+  'This week': 'Deze week',
+  'Three in four page loads are at least this good.': 'Drie van de vier paginalaadbeurten zijn minstens zo goed.',
   Time: 'Tijd',
   Timezone: 'Tijdzone',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'Verkeersbronnen',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Beschouw het als verplicht voor bezoekers uit de EU: vraag toestemming voordat de tracker draait en roep analytik.consent() aan bij akkoord.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Schakel Core Web Vitals in via Instellingen → Trackingcode om ze hier te zien.',
   'Twelve sites with a month each, for the sites overview.': 'Twaalf sites met elk een maand, voor het siteoverzicht.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     'Twee first-party cookies: analytik_vid voor een jaar en analytik_sid voor 30 minuten, beide willekeurige id’s.',
@@ -601,6 +636,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Bezoeken per dag lopen van 0 tot 100.000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Wacht op een interactie of 3 seconden op het scherm voordat er wordt geteld (filtert bots)',
+  Week: 'Week',
   'What the tracker may store, and which visits are counted.':
     'Wat de tracker mag opslaan en welke bezoeken worden geteld.',
   'What {mode} mode means': 'Wat de modus {mode} betekent',

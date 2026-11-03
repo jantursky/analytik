@@ -401,7 +401,7 @@ describe('Dashboard shell', () => {
 
     await click(container.querySelector('[aria-label="Add a block after Pages"]'))
     expect(byText(document.body, 'Pick one or more blocks to add after Pages.', 'p')).toBeDefined()
-    expect(category('All blocks')?.textContent).toBe('All blocks16')
+    expect(category('All blocks')?.textContent).toBe('All blocks17')
     await click(category('Revenue'))
     expect([...document.body.querySelectorAll('.analytik-picker-head strong')].map((t) => t.textContent)).toEqual([
       'Channel performance',
@@ -576,6 +576,18 @@ describe('Dashboard shell', () => {
     expect(nav(container, 'Live')?.getAttribute('aria-current')).toBe('page')
   })
 
+  it("shows each row's share of the whole, and one decimal below 1%", async () => {
+    const { container } = await open(
+      fakeApi({
+        'GET /sites/:id/breakdown': ({ params }) =>
+          params.dimension === 'channel' ? [row('Direct', 990), row('Referral', 4), row('AI', 6)] : [],
+      }),
+    )
+    const card = byText(container, 'Channel', '[role="tab"]')?.closest('section')
+    await waitFor(() => card?.querySelector('.analytik-bar-share'))
+    expect(texts(card!, '.analytik-bar-share')).toEqual(['99%', '0.4%', '0.6%'])
+  })
+
   it('marks browsers, systems and devices with an icon', async () => {
     const { container } = await open(
       fakeApi({
@@ -590,7 +602,8 @@ describe('Dashboard shell', () => {
     const card = byText(container, 'Browser', '[role="tab"]')?.closest('section')
     const icons = () =>
       [...(card?.querySelectorAll('.analytik-bar-label') ?? [])].map((l) => !!l.querySelector('.analytik-logo, svg'))
-    expect(icons()).toEqual([true, true, false])
+    // A browser without a mark of its own (Netscape) gets the generic globe, not a brand logo.
+    expect(icons()).toEqual([true, true, true])
     expect(card?.querySelectorAll('.analytik-bar-icon')).toHaveLength(3)
     await waitFor(() => card?.querySelector('img.analytik-logo'))
     expect(
@@ -2420,7 +2433,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(12)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(13)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

@@ -1,4 +1,4 @@
-import type { Interval } from './types'
+import type { Interval, TargetPeriod } from './types'
 
 export const MINUTE = 60_000
 export const HOUR = 3_600_000
@@ -90,6 +90,17 @@ function nextBucket(start: number, interval: Interval, timeZone: string): number
   const wall = wallClock(start, timeZone)
   if (interval === 'month') return zonedTime(timeZone, wall.year, wall.month + 1)
   return zonedTime(timeZone, wall.year, wall.month, wall.day + (interval === 'week' ? 7 : 1))
+}
+
+/** `[start, end)` of the week (from Monday), month or calendar quarter containing `at`, in `timeZone`. */
+export function periodBounds(at: number, period: TargetPeriod, timeZone: string): { start: number; end: number } {
+  if (period === 'quarter') {
+    const wall = wallClock(at, timeZone)
+    const first = Math.floor((wall.month - 1) / 3) * 3 + 1
+    return { start: zonedTime(timeZone, wall.year, first), end: zonedTime(timeZone, wall.year, first + 3) }
+  }
+  const start = startOfBucket(at, period, timeZone)
+  return { start, end: nextBucket(start, period, timeZone) }
 }
 
 /** Start of every bucket that overlaps `[from, to)`, so charts have no gaps. */

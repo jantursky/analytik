@@ -68,6 +68,7 @@ The same logical tables exist in every dialect.
 | `payments`          | Amount in minor units, kind, currency, provider, how it was matched                                           |
 | `payment_claims`    | Payment ids seen on return pages, for `return_page` matching                                                  |
 | `funnels`           | Funnel definitions                                                                                            |
+| `vitals`            | Core Web Vitals reports: site, time, page path and the three metrics, with no visitor or session id           |
 | `salts`             | The monthly secret for strict-mode visitor ids. Older months are deleted by the first request of a new month. |
 | `rate_limits`       | Counters for the rate-limited public routes                                                                   |
 | `schema_migrations` | Applied migration versions and timestamps                                                                     |

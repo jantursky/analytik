@@ -6,6 +6,7 @@ export default {
   '(none)': '(なし)',
   ', filter by this': '、これで絞り込む',
   ', then the same kinds again': '、その後は同じ種類を繰り返します',
+  '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1〜20 件、名前は Test site …',
   '1 to 20; each takes the next kind of site.': '1〜20 件。それぞれ次の種類のサイトになります。',
   '12-hour clock': '12 時間表示',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': '静かなサイトの 1 か月分。',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     '新しいキーが作成され、現在のキーはすぐに使えなくなります。古いキーを送信し続けるサーバーは、更新するまで拒否されます。',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    '目標を1週間、1か月、または四半期のうちに達成すべき数値です。概要の「目標」ブロックに進捗が表示されます。',
   'A paid keyword, shown as Keyword': '有料キーワード。「キーワード」として表示されます',
   'A payment as the dashboard will show it.': 'ダッシュボードに表示される支払いの例です。',
   'A quarter at 3,000 visits a day.': '1 日 3,000 訪問の 3 か月分。',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': '{name} の後にブロックを追加',
   'Add a block before {name}': '{name} の前にブロックを追加',
   'Add a number': '数値を追加',
+  'Add a target': '目標値を追加',
   'Add a website': 'ウェブサイトを追加',
   'Add block': 'ブロックを追加',
   'Add step': 'ステップを追加',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'すべてのブラウザ',
   'All channels': 'すべてのチャネル',
   'All devices': 'すべてのデバイス',
+  'All pages': 'すべてのページ',
   'All providers': 'すべてのプロバイダー',
   'All sites': 'すべてのサイト',
   'All types': 'すべての種類',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'スニペットをコピー',
   'Copy URL': 'URL をコピー',
   'Copy visitor id': '訪問者 ID をコピー',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'ウェブサイトを追加できませんでした',
   "Couldn't delete the website": 'ウェブサイトを削除できませんでした',
   "Couldn't sign in": 'ログインできませんでした',
@@ -215,6 +221,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'このサイトに保存されているすべてをダウンロードするか、アトリビューションを再実行します。',
   Duration: '所要時間',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    '計測したページビューごとにデータベースへ1行追加されるため、割合を小さくすると書き込みが減ります。更新したトラッキングコードをページに貼り付けてください。',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'サイトごとに異なります。空、静か、平均的、多忙、公開直後、一時停止。',
   Email: 'メールアドレス',
@@ -268,12 +276,16 @@ export default {
   'Globe view': '地球儀',
   Goal: '目標',
   'Goal name': '目標名',
+  'Goal targets': '目標値',
   Goals: '目標',
   'Goals and events': '目標とイベント',
+  Good: '良好',
   'Half width': '半幅',
   'Hide password': 'パスワードを隠す',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'すべての画面での件数、割合、金額の表記方法です。すべての管理者に保存されます。',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    '実際の訪問者にとってページがどれだけ速く読み込まれ、反応し、安定しているかを、サイト全体とページごとに評価します。',
   'How the site is named, where its events come from and how its reports are dated.':
     'サイトの名前、イベントの送信元、レポートの日付の扱いを設定します。',
   'How to update': '更新方法',
@@ -298,6 +310,8 @@ export default {
   Limits: '上限',
   Live: 'ライブ',
   'Live now': '現在のライブ',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    '実際の訪問での読み込み、応答性、レイアウトのずれを、ページビューの一部について計測します。値は、訪問者がページを離れるときに送られる更新と一緒に送信されます。',
   'Loading…': '読み込み中…',
   Location: '場所',
   'Log out': 'ログアウト',
@@ -308,15 +322,18 @@ export default {
   'Make 1 to 20 sites.': '1〜20 件のサイトを作成します。',
   'Many sites': '多数のサイト',
   'Map with no visitor locations': '訪問者の場所がない地図',
+  'Measure Core Web Vitals': 'Core Web Vitals を計測する',
   Medium: 'メディア',
   Mobile: 'モバイル',
   Mode: 'モード',
+  Month: '月',
   'Month first, in words': '月が先、文字表記',
   'Month, day, year': '月、日、年',
   'Move {name} earlier': '{name} を前へ移動',
   'Move {name} later': '{name} を後ろへ移動',
   'My website': 'マイウェブサイト',
   Name: '名前',
+  'Needs work': '要改善',
   new: '新規',
   'New API key': '新しい API キー',
   'New funnel': '新しいファネル',
@@ -333,8 +350,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'ファネルはまだありません。作成すると、訪問者がどこで離脱するかを確認できます。',
   'No matches': '一致するものはありません',
+  'No measurements in this period': 'この期間の計測はありません',
   'No payments in this period': 'この期間の支払いはありません',
   'No sessions in this period': 'この期間のセッションはありません',
+  'No targets yet': '目標値はまだありません',
   'Nobody here right now': '現在は誰もいません',
   'Not set up': '未設定',
   'Nothing matches these filters': 'これらのフィルターに一致するものはありません',
@@ -344,6 +363,7 @@ export default {
   'Number {number}': '数値 {number}',
   Numbers: '数値',
   'Numbers and money': '数値と金額',
+  'On pace for about {count} (an estimate)': 'このペースだと約 {count}（推定）',
   'On the overview': '概要に表示',
   'On the visitor’s device': '訪問者のデバイス上',
   'One site': '1 つのサイト',
@@ -399,6 +419,8 @@ export default {
   'Payments and API': '支払いと API',
   'Payments and refunds': '支払いと返金',
   'Per site, weekends quieter; 0 for an empty site.': 'サイトごとの件数です。週末は少なめになります。空のサイトは 0。',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    '期間はサイトのタイムゾーンで始まり、週は月曜日に始まります。',
   Persistent: '永続',
   'Pick a date': '日付を選択',
   'Pick one or more blocks to add {place}.': '{place}に追加するブロックを 1 つ以上選んでください。',
@@ -406,6 +428,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'プランの価格は、この金額の 9 倍、29 倍、99 倍です。',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     '決済プロバイダーのエンドポイントにこの URL を指定し、署名シークレットを貼り付けてください。支払いは、その元になった訪問と照合されます。',
+  Poor: '不良',
   Preset: 'プリセット',
   Presets: 'プリセット',
   Preview: 'プレビュー',
@@ -419,6 +442,7 @@ export default {
   'Privacy mode': 'プライバシーモード',
   Prompt: 'プロンプト',
   Provider: 'プロバイダー',
+  Quarter: '四半期',
   'Re-run payment attribution': '支払いのアトリビューションを再実行',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     '閲覧者はライブ表示に残ります。リクエスト数は 1 分ごとの場合の約 4 分の 1 です。',
@@ -439,6 +463,7 @@ export default {
   'Remove filter {dimension} is {value}': 'フィルター「{dimension} が {value}」を削除',
   'Remove one to add it somewhere else.': '別の場所に追加するには、1 つ削除してください。',
   'Remove step {number}': 'ステップ {number} を削除',
+  'Remove target {number}': '目標値 {number} を削除',
   'Remove test data': 'テストデータを削除',
   'Remove the {filter} filter': '{filter} フィルターを削除',
   'Remove {name}': '{name} を削除',
@@ -447,6 +472,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     '指定した日より前に記録された訪問を削除します。それ以前の支払いは、顧客情報なしで収益に残ります。',
   renewal: '更新',
+  Reports: 'レポート',
   Reset: 'リセット',
   'Reset layout': 'レイアウトをリセット',
   'Reset the overview?': '概要をリセットしますか?',
@@ -477,6 +503,7 @@ export default {
   Sessions: 'セッション',
   Settings: '設定',
   'Settings saved': '設定を保存しました',
+  'Share of page views measured (%)': '計測するページビューの割合（%）',
   'Show only this visitor': 'この訪問者のみ表示',
   'Show password': 'パスワードを表示',
   'Show {label} list': '{label} の一覧を表示',
@@ -511,6 +538,8 @@ export default {
   Tablet: 'タブレット',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     '共有するリンクにタグを付けると、そのリンク経由の訪問が正しいキャンペーンに帰属します。',
+  Target: '目標値',
+  'Target {number}': '目標値 {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     '2 か月分の 10 種類のサイト。空、静か、公開直後、一時停止、繁盛しているショップ。',
   Term: '語句',
@@ -540,7 +569,11 @@ export default {
   Theme: 'テーマ',
   'Theme: {current}': 'テーマ: {current}',
   'Theme: {current}. Switch to {next}': 'テーマ: {current}。{next} に切り替え',
+  'This month': '今月',
+  'This quarter': '今四半期',
   'This site ({name})': 'このサイト({name})',
+  'This week': '今週',
+  'Three in four page loads are at least this good.': 'ページ読み込みの4回に3回は、少なくともこの水準です。',
   Time: '時刻',
   Timezone: 'タイムゾーン',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'トラフィックの参照元',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'EU の訪問者には必須として扱ってください。トラッカーの実行前に同意を求め、同意されたら analytik.consent() を呼び出します。',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'ここに表示するには、設定 → トラッキングコード で Core Web Vitals をオンにしてください。',
   'Twelve sites with a month each, for the sites overview.': 'サイト概要用に、1 か月分ずつの 12 サイト。',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     '2 つのファーストパーティ Cookie を使います。analytik_vid は 1 年、analytik_sid は 30 分で、どちらもランダムな ID です。',
@@ -601,6 +636,7 @@ export default {
   'Visits per day go from 0 to 100,000.': '1 日あたりの訪問数は 0 から 100,000 までです。',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     '操作があるか、画面に 3 秒表示されるまで集計を待つ(ボットを除外)',
+  Week: '週',
   'What the tracker may store, and which visits are counted.':
     'トラッカーが保存できる内容と、集計対象となる訪問を設定します。',
   'What {mode} mode means': '{mode}モードとは',

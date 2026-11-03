@@ -130,6 +130,46 @@ describe('site management', () => {
     expect((await server.admin('/sites', { method: 'POST', body: '[]' })).status).toBe(400)
   })
 
+  it('stores goal targets, trims names and replaces the whole list', async () => {
+    const { site } = await server.createSite()
+    expect(site.targets).toEqual([])
+    const patch = (targets: unknown) =>
+      server.adminJson<Site>(`/sites/${site.id}`, { method: 'PATCH', json: { targets } })
+    expect((await patch([{ goal: ' signup ', target: 1000, period: 'month' }])).targets).toEqual([
+      { goal: 'signup', target: 1000, period: 'month' },
+    ])
+    expect((await patch([{ goal: 'signup', target: 50, period: 'week' }])).targets).toEqual([
+      { goal: 'signup', target: 50, period: 'week' },
+    ])
+    expect((await patch([])).targets).toEqual([])
+  })
+
+  it('rejects invalid goal targets', async () => {
+    const { site } = await server.createSite()
+    const good = { goal: 'signup', target: 10, period: 'month' }
+    const invalid = [
+      'x',
+      Array.from({ length: 21 }, (_, i) => ({ ...good, goal: `g${i}` })),
+      [null],
+      [{ ...good, goal: '' }],
+      [{ ...good, goal: 'x'.repeat(101) }],
+      [{ ...good, target: 0 }],
+      [{ ...good, target: 1.5 }],
+      [{ ...good, target: '10' }],
+      [{ ...good, target: 1_000_000_001 }],
+      [{ ...good, period: 'year' }],
+      [good, good],
+    ]
+    for (const targets of invalid) {
+      const response = await server.admin(`/sites/${site.id}`, { method: 'PATCH', json: { targets } })
+      expect(response.status, JSON.stringify(targets)).toBe(400)
+    }
+    const same = [good, { ...good, period: 'week' }]
+    expect(
+      (await server.adminJson<Site>(`/sites/${site.id}`, { method: 'PATCH', json: { targets: same } })).targets,
+    ).toHaveLength(2)
+  })
+
   it('rotates the API key so the old one stops working', async () => {
     const { site, apiKey } = await server.createSite()
     const pay = (key: string) =>

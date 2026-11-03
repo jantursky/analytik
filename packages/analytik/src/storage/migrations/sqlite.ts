@@ -6,6 +6,8 @@ import { botRequests } from './0004_bot_requests'
 import { notifications } from './0005_notifications'
 import { shareLinks } from './0006_share_links'
 import { annotations } from './0007_annotations'
+import { goalTargets } from './0008_goal_targets'
+import { vitals } from './0009_vitals'
 
 /** SQLite and Cloudflare D1, applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -16,4 +18,6 @@ export const migrations: readonly Migration[] = [
   { version: '0005_notifications', sql: notifications({ big: 'INTEGER' }) },
   { version: '0006_share_links', sql: shareLinks({ big: 'INTEGER' }) },
   { version: '0007_annotations', sql: annotations({ big: 'INTEGER' }) },
+  { version: '0008_goal_targets', sql: goalTargets() },
+  { version: '0009_vitals', sql: vitals({ big: 'INTEGER', real: 'REAL' }) },
 ]

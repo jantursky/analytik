@@ -6,6 +6,7 @@ export default {
   '(none)': '(nessuno)',
   ', filter by this': ', filtra per questo',
   ', then the same kinds again': ', poi di nuovo gli stessi tipi',
+  '{count} of {target}': '{count} su {target}',
   '1 to 20, named Test site …': 'Da 1 a 20, chiamati Test site …',
   '1 to 20; each takes the next kind of site.': 'Da 1 a 20; ognuno prende il tipo di sito successivo.',
   '12-hour clock': 'Formato 12 ore',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Un mese di un sito tranquillo.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Viene creata una nuova chiave e quella attuale smette subito di funzionare. I server che inviano ancora la vecchia chiave vengono rifiutati finché non li aggiorna.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Un numero che un obiettivo deve raggiungere in una settimana, un mese o un trimestre. Il blocco Obiettivi nella panoramica mostra i progressi.',
   'A paid keyword, shown as Keyword': 'Una parola chiave a pagamento, mostrata come Parola chiave',
   'A payment as the dashboard will show it.': 'Un pagamento come lo mostrerà la dashboard.',
   'A quarter at 3,000 visits a day.': 'Un trimestre con 3.000 visite al giorno.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Aggiungi un blocco dopo {name}',
   'Add a block before {name}': 'Aggiungi un blocco prima di {name}',
   'Add a number': 'Aggiungi un numero',
+  'Add a target': 'Aggiungi un traguardo',
   'Add a website': 'Aggiungi un sito web',
   'Add block': 'Aggiungi blocco',
   'Add step': 'Aggiungi passaggio',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Tutti i browser',
   'All channels': 'Tutti i canali',
   'All devices': 'Tutti i dispositivi',
+  'All pages': 'Tutte le pagine',
   'All providers': 'Tutti i provider',
   'All sites': 'Tutti i siti',
   'All types': 'Tutti i tipi',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Copia snippet',
   'Copy URL': 'Copia URL',
   'Copy visitor id': 'Copia ID visitatore',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Impossibile aggiungere il sito web',
   "Couldn't delete the website": 'Impossibile eliminare il sito web',
   "Couldn't sign in": 'Accesso non riuscito',
@@ -215,6 +221,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Scarichi tutto ciò che è memorizzato per questo sito, oppure riesegua l’attribuzione.',
   Duration: 'Durata',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Ogni visualizzazione di pagina misurata aggiunge una riga al database, quindi una quota minore costa meno scritture. Incolla il codice di tracciamento aggiornato nelle tue pagine.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Ogni sito è diverso: vuoto, tranquillo, nella media, molto attivo, appena lanciato, in pausa.',
   Email: 'E-mail',
@@ -268,12 +276,16 @@ export default {
   'Globe view': 'Vista globo',
   Goal: 'Obiettivo',
   'Goal name': 'Nome dell’obiettivo',
+  'Goal targets': 'Traguardi degli obiettivi',
   Goals: 'Obiettivi',
   'Goals and events': 'Obiettivi ed eventi',
+  Good: 'Buono',
   'Half width': 'Metà larghezza',
   'Hide password': 'Nascondi password',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Come vengono scritti conteggi, percentuali e importi in ogni vista. Salvato per ogni amministratore.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Quanto velocemente le pagine si caricano, rispondono e restano stabili per i visitatori reali, valutato per il sito e per ogni pagina.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Come si chiama il sito, da dove provengono i suoi eventi e come vengono datati i suoi report.',
   'How to update': 'Come aggiornare',
@@ -298,6 +310,8 @@ export default {
   Limits: 'Limiti',
   Live: 'Live',
   'Live now': 'Adesso live',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    "Caricamento, reattività e spostamento del layout nelle visite reali, per una quota delle visualizzazioni di pagina. I valori viaggiano con l'aggiornamento inviato quando un visitatore lascia una pagina.",
   'Loading…': 'Caricamento…',
   Location: 'Posizione',
   'Log out': 'Esci',
@@ -308,15 +322,18 @@ export default {
   'Make 1 to 20 sites.': 'Crei da 1 a 20 siti.',
   'Many sites': 'Molti siti',
   'Map with no visitor locations': 'Mappa senza posizioni dei visitatori',
+  'Measure Core Web Vitals': 'Misura i Core Web Vitals',
   Medium: 'Mezzo',
   Mobile: 'Cellulare',
   Mode: 'Modalità',
+  Month: 'Mese',
   'Month first, in words': 'Prima il mese, in lettere',
   'Month, day, year': 'Mese, giorno, anno',
   'Move {name} earlier': 'Sposta {name} prima',
   'Move {name} later': 'Sposta {name} dopo',
   'My website': 'Il mio sito web',
   Name: 'Nome',
+  'Needs work': 'Da migliorare',
   new: 'nuovo',
   'New API key': 'Nuova chiave API',
   'New funnel': 'Nuovo funnel',
@@ -333,8 +350,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Ancora nessun funnel. Ne crei uno per vedere dove si perdono i visitatori.',
   'No matches': 'Nessuna corrispondenza',
+  'No measurements in this period': 'Nessuna misurazione in questo periodo',
   'No payments in this period': 'Nessun pagamento in questo periodo',
   'No sessions in this period': 'Nessuna sessione in questo periodo',
+  'No targets yet': 'Ancora nessun traguardo',
   'Nobody here right now': 'Nessuno qui al momento',
   'Not set up': 'Non configurato',
   'Nothing matches these filters': 'Nessun risultato per questi filtri',
@@ -344,6 +363,7 @@ export default {
   'Number {number}': 'Numero {number}',
   Numbers: 'Numeri',
   'Numbers and money': 'Numeri e denaro',
+  'On pace for about {count} (an estimate)': 'Al ritmo attuale, circa {count} (stima)',
   'On the overview': 'Nella panoramica',
   'On the visitor’s device': 'Sul dispositivo del visitatore',
   'One site': 'Un sito',
@@ -400,6 +420,8 @@ export default {
   'Payments and refunds': 'Pagamenti e rimborsi',
   'Per site, weekends quieter; 0 for an empty site.':
     'Per sito, con i fine settimana più tranquilli; 0 per un sito vuoto.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'I periodi iniziano nel fuso orario del sito e le settimane di lunedì.',
   Persistent: 'Persistente',
   'Pick a date': 'Scegli una data',
   'Pick one or more blocks to add {place}.': 'Scelga uno o più blocchi da aggiungere {place}.',
@@ -407,6 +429,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'I piani costano 9, 29 e 99 volte questo importo.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Indirizzi il suo provider di pagamento a questo endpoint e incolli il relativo segreto di firma. I pagamenti vengono abbinati alle visite che li hanno generati.',
+  Poor: 'Scarso',
   Preset: 'Preimpostazione',
   Presets: 'Preimpostazioni',
   Preview: 'Anteprima',
@@ -421,6 +444,7 @@ export default {
   'Privacy mode': 'Modalità privacy',
   Prompt: 'Prompt',
   Provider: 'Provider',
+  Quarter: 'Trimestre',
   'Re-run payment attribution': 'Riesegui l’attribuzione dei pagamenti',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'I lettori restano nella vista live; circa un quarto delle richieste rispetto al controllo ogni minuto.',
@@ -441,6 +465,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Rimuovi il filtro {dimension} è {value}',
   'Remove one to add it somewhere else.': 'Ne rimuova uno per aggiungerlo altrove.',
   'Remove step {number}': 'Rimuovi il passaggio {number}',
+  'Remove target {number}': 'Rimuovi il traguardo {number}',
   'Remove test data': 'Rimuovi dati di prova',
   'Remove the {filter} filter': 'Rimuovi il filtro {filter}',
   'Remove {name}': 'Rimuovi {name}',
@@ -449,6 +474,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Rimuove le visite registrate prima di un certo giorno. I pagamenti più vecchi restano nei ricavi, senza i dati del cliente.',
   renewal: 'rinnovo',
+  Reports: 'Segnalazioni',
   Reset: 'Ripristina',
   'Reset layout': 'Ripristina layout',
   'Reset the overview?': 'Ripristinare la panoramica?',
@@ -479,6 +505,7 @@ export default {
   Sessions: 'Sessioni',
   Settings: 'Impostazioni',
   'Settings saved': 'Impostazioni salvate',
+  'Share of page views measured (%)': 'Quota di visualizzazioni di pagina misurate (%)',
   'Show only this visitor': 'Mostra solo questo visitatore',
   'Show password': 'Mostra password',
   'Show {label} list': 'Mostra l’elenco: {label}',
@@ -513,6 +540,8 @@ export default {
   Tablet: 'Tablet',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Contrassegni i link che condivide, in modo che le visite tramite essi siano attribuite alla campagna giusta.',
+  Target: 'Traguardo',
+  'Target {number}': 'Traguardo {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Dieci siti diversi su due mesi: vuoto, tranquillo, appena lanciato, in pausa, un negozio molto attivo.',
   Term: 'Termine',
@@ -543,7 +572,11 @@ export default {
   Theme: 'Tema',
   'Theme: {current}': 'Tema: {current}',
   'Theme: {current}. Switch to {next}': 'Tema: {current}. Passa a {next}',
+  'This month': 'Questo mese',
+  'This quarter': 'Questo trimestre',
   'This site ({name})': 'Questo sito ({name})',
+  'This week': 'Questa settimana',
+  'Three in four page loads are at least this good.': 'Tre caricamenti di pagina su quattro sono almeno così buoni.',
   Time: 'Ora',
   Timezone: 'Fuso orario',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -566,6 +599,8 @@ export default {
   'Traffic sources': 'Fonti di traffico',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Lo consideri obbligatorio per i visitatori dell’UE: chieda il consenso prima che il tracker venga eseguito e chiami analytik.consent() quando viene dato.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Attiva i Core Web Vitals in Impostazioni → Codice di tracciamento per vederli qui.',
   'Twelve sites with a month each, for the sites overview.':
     'Dodici siti con un mese ciascuno, per la panoramica dei siti.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
@@ -607,6 +642,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Le visite al giorno vanno da 0 a 100.000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Attendi un’interazione o 3 secondi a schermo prima di conteggiare (filtra i bot)',
+  Week: 'Settimana',
   'What the tracker may store, and which visits are counted.':
     'Cosa può memorizzare il tracker e quali visite vengono conteggiate.',
   'What {mode} mode means': 'Cosa significa la modalità {mode}',

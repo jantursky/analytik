@@ -11,6 +11,8 @@ export interface SnippetOptions {
   keepQuery: string
   /** Seconds between activity updates; 0 only on leaving. Default 240. */
   pingInterval?: number
+  /** Share of page views, in percent, that measure Core Web Vitals; 0 or left out measures none. */
+  vitals?: number
   debug: boolean
 }
 
@@ -33,6 +35,7 @@ export function buildSnippet(options: SnippetOptions): string {
       'data-ping-interval',
       options.pingInterval === undefined || options.pingInterval === 240 ? null : String(options.pingInterval),
     ],
+    ['data-vitals', options.vitals ? String(options.vitals) : null],
     ['data-debug', options.debug ? 'true' : null],
   ]
   const rendered = attrs.flatMap(([name, value]) => (value == null ? [] : [`${name}="${escapeAttr(value)}"`]))

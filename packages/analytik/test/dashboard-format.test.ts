@@ -7,6 +7,7 @@ import {
   formatAgo,
   formatBucket,
   formatChange,
+  formatShare,
   formatDateTime,
   DEFAULT_FORMAT,
   formatDayRange,
@@ -45,6 +46,15 @@ describe('format', () => {
       '-5%',
       '0%',
       'new',
+    ])
+    expect([0.594, 0.1, 1, 0.0042, 0.0004, 0, 0.0149].map(formatShare)).toEqual([
+      '59%',
+      '10%',
+      '100%',
+      '0.4%',
+      '<0.1%',
+      '0%',
+      '1%',
     ])
   })
 

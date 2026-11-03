@@ -4,7 +4,7 @@ import { type CSSProperties, lazy, type ReactNode, Suspense, useState } from 're
 import { type ChartNote, type NoteActions, NotesPanel, type NotesView } from './chart-notes'
 import { CopyId } from './copy-id'
 import { download, fileName } from './export'
-import { formatChange } from './format'
+import { formatChange, formatShare } from './format'
 import { Icon } from './icons'
 import { t } from './i18n'
 import { EASE } from './ui/motion'
@@ -367,6 +367,8 @@ export interface BarListProps {
   limit?: number
   /** Revenue rows get the revenue colour. */
   metric?: string
+  /** What the rows add up to: meters then show each row's share of it. Without it they are scaled to the largest row. */
+  total?: number
 }
 
 /** The change of a row against the comparison period; without a number to compare against it says so, never 0% or ∞. */
@@ -386,9 +388,9 @@ function RowChange({ value, previous }: { value: number; previous: number }) {
 }
 
 /** Ranked rows with a proportional meter under each; rows fade in and meters grow to their length. */
-export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric }: BarListProps) {
+export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric, total }: BarListProps) {
   if (!rows.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
-  const max = Math.max(...rows.map((r) => r.value), 1)
+  const scale = total && total > 0 ? total : Math.max(...rows.map((r) => r.value), 1)
   return (
     <ul className="analytik-bars" aria-label={label} data-metric={metric}>
       <AnimatePresence initial={false}>
@@ -398,7 +400,7 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
               <motion.span
                 className="analytik-bar-fill"
                 initial={{ scaleX: 0 }}
-                animate={{ scaleX: row.value / max }}
+                animate={{ scaleX: Math.min(row.value / scale, 1) }}
                 transition={{ duration: 0.6, ease: EASE, delay: Math.min(index, 10) * 0.03 }}
                 aria-hidden="true"
               />
@@ -413,6 +415,9 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
               )}
               <span className="analytik-bar-figures">
+                {total !== undefined && total > 0 && (
+                  <span className="analytik-bar-share">{formatShare(row.value / total)}</span>
+                )}
                 <span className="analytik-bar-value">{formatValue(row.value)}</span>
                 {row.previous !== undefined && <RowChange value={row.value} previous={row.previous} />}
               </span>

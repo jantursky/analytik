@@ -142,6 +142,10 @@ const refunds = await stats.payments(
 console.log(refunds.total, refunds.items)
 ```
 
+`stats.targets(siteId)` takes no query: it returns the progress of the site's goal targets in their own periods, as a `TargetsResult`.
+
+`stats.vitals(siteId, query)` returns the 75th percentile of Core Web Vitals over the range as a `VitalsResult`.
+
 ## Mounting
 
 On Cloudflare Workers, Bun and Vercel, export `analytik.app.fetch` or the app itself. On Node, use `@hono/node-server`. To nest it in an existing Hono app:

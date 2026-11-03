@@ -6,6 +6,7 @@ export default {
   '(none)': '(нет)',
   ', filter by this': ', фильтровать по этому',
   ', then the same kinds again': ', затем снова те же виды',
+  '{count} of {target}': '{count} из {target}',
   '1 to 20, named Test site …': 'от 1 до 20, с названием Test site …',
   '1 to 20; each takes the next kind of site.': 'от 1 до 20; каждый получает следующий вид сайта.',
   '12-hour clock': '12-часовой формат',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Месяц спокойного сайта.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Создаётся новый ключ, а текущий сразу перестаёт работать. Серверы, которые всё ещё отправляют старый ключ, будут отклоняться, пока вы их не обновите.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Число, которого цель должна достичь за неделю, месяц или квартал. Блок «Цели» в обзоре показывает прогресс.',
   'A paid keyword, shown as Keyword': 'Платное ключевое слово, отображается как Ключевое слово',
   'A payment as the dashboard will show it.': 'Платёж в том виде, в котором его покажет дашборд.',
   'A quarter at 3,000 visits a day.': 'Квартал с 3 000 визитов в день.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Добавить блок после {name}',
   'Add a block before {name}': 'Добавить блок перед {name}',
   'Add a number': 'Добавить число',
+  'Add a target': 'Добавить плановое значение',
   'Add a website': 'Добавить сайт',
   'Add block': 'Добавить блок',
   'Add step': 'Добавить шаг',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Все браузеры',
   'All channels': 'Все каналы',
   'All devices': 'Все устройства',
+  'All pages': 'Все страницы',
   'All providers': 'Все провайдеры',
   'All sites': 'Все сайты',
   'All types': 'Все типы',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Копировать код',
   'Copy URL': 'Копировать URL',
   'Copy visitor id': 'Копировать ID посетителя',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Не удалось добавить сайт',
   "Couldn't delete the website": 'Не удалось удалить сайт',
   "Couldn't sign in": 'Не удалось войти',
@@ -215,6 +221,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Скачайте всё, что хранится для этого сайта, или заново запустите атрибуцию.',
   Duration: 'Длительность',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Каждый измеренный просмотр страницы добавляет в базу данных одну строку, поэтому меньшая доля означает меньше записей. Вставьте обновлённый код отслеживания на свои страницы.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Каждый сайт особый: пустой, спокойный, средний, оживлённый, только что запущенный, приостановленный.',
   Email: 'E-mail',
@@ -268,12 +276,16 @@ export default {
   'Globe view': 'Глобус',
   Goal: 'Цель',
   'Goal name': 'Название цели',
+  'Goal targets': 'Плановые значения целей',
   Goals: 'Цели',
   'Goals and events': 'Цели и события',
+  Good: 'Хорошо',
   'Half width': 'Половина ширины',
   'Hide password': 'Скрыть пароль',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Как записываются количества, доли и суммы во всех разделах. Сохраняется для всех администраторов.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Как быстро страницы загружаются, реагируют и не прыгают для реальных посетителей, с оценкой для сайта и для каждой страницы.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Как называется сайт, откуда приходят его события и как датируются отчёты.',
   'How to update': 'Как обновить',
@@ -298,6 +310,8 @@ export default {
   Limits: 'Ограничения',
   Live: 'В реальном времени',
   'Live now': 'Сейчас на сайте',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Загрузка, отзывчивость и смещение макета при реальных визитах, для части просмотров страниц. Значения отправляются вместе с обновлением, которое уходит, когда посетитель покидает страницу.',
   'Loading…': 'Загрузка…',
   Location: 'Местоположение',
   'Log out': 'Выйти',
@@ -308,15 +322,18 @@ export default {
   'Make 1 to 20 sites.': 'Создайте от 1 до 20 сайтов.',
   'Many sites': 'Много сайтов',
   'Map with no visitor locations': 'Карта без местоположений посетителей',
+  'Measure Core Web Vitals': 'Измерять Core Web Vitals',
   Medium: 'Тип трафика',
   Mobile: 'Телефон',
   Mode: 'Режим',
+  Month: 'Месяц',
   'Month first, in words': 'Сначала месяц, словами',
   'Month, day, year': 'Месяц, день, год',
   'Move {name} earlier': 'Переместить {name} раньше',
   'Move {name} later': 'Переместить {name} позже',
   'My website': 'Мой сайт',
   Name: 'Название',
+  'Needs work': 'Требует улучшения',
   new: 'новые',
   'New API key': 'Новый API-ключ',
   'New funnel': 'Новая воронка',
@@ -333,8 +350,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Воронок пока нет. Создайте воронку, чтобы увидеть, где уходят посетители.',
   'No matches': 'Нет совпадений',
+  'No measurements in this period': 'В этом периоде нет измерений',
   'No payments in this period': 'В этом периоде нет платежей',
   'No sessions in this period': 'В этом периоде нет сеансов',
+  'No targets yet': 'Плановых значений пока нет',
   'Nobody here right now': 'Сейчас здесь никого нет',
   'Not set up': 'Не настроено',
   'Nothing matches these filters': 'Ничего не соответствует этим фильтрам',
@@ -344,6 +363,7 @@ export default {
   'Number {number}': 'Число {number}',
   Numbers: 'Числа',
   'Numbers and money': 'Числа и деньги',
+  'On pace for about {count} (an estimate)': 'При текущем темпе около {count} (оценка)',
   'On the overview': 'На обзоре',
   'On the visitor’s device': 'На устройстве посетителя',
   'One site': 'Один сайт',
@@ -399,6 +419,8 @@ export default {
   'Payments and API': 'Платежи и API',
   'Payments and refunds': 'Платежи и возвраты',
   'Per site, weekends quieter; 0 for an empty site.': 'На сайт, по выходным спокойнее; 0 для пустого сайта.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Периоды начинаются в часовом поясе сайта, а недели — в понедельник.',
   Persistent: 'Постоянный',
   'Pick a date': 'Выбрать дату',
   'Pick one or more blocks to add {place}.': 'Выберите один или несколько блоков, чтобы добавить {place}.',
@@ -406,6 +428,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Тарифы стоят в 9, 29 и 99 раз больше этой суммы.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Укажите своему платёжному провайдеру эту конечную точку и вставьте его ключ подписи. Платежи сопоставляются с визитами, которые к ним привели.',
+  Poor: 'Плохо',
   Preset: 'Шаблон',
   Presets: 'Шаблоны',
   Preview: 'Предпросмотр',
@@ -419,6 +442,7 @@ export default {
   'Privacy mode': 'Режим конфиденциальности',
   Prompt: 'Промпт',
   Provider: 'Провайдер',
+  Quarter: 'Квартал',
   'Re-run payment attribution': 'Заново запустить атрибуцию платежей',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Читатели остаются в просмотре в реальном времени; около четверти запросов по сравнению с проверкой каждую минуту.',
@@ -439,6 +463,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Убрать фильтр: {dimension} — {value}',
   'Remove one to add it somewhere else.': 'Уберите один, чтобы добавить его в другое место.',
   'Remove step {number}': 'Убрать шаг {number}',
+  'Remove target {number}': 'Убрать плановое значение {number}',
   'Remove test data': 'Удалить тестовые данные',
   'Remove the {filter} filter': 'Убрать фильтр {filter}',
   'Remove {name}': 'Убрать {name}',
@@ -447,6 +472,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Удаляет визиты, записанные до определённого дня. Более старые платежи остаются в выручке, без данных о клиенте.',
   renewal: 'продление',
+  Reports: 'Отчёты',
   Reset: 'Сбросить',
   'Reset layout': 'Сбросить расположение',
   'Reset the overview?': 'Сбросить обзор?',
@@ -477,6 +503,7 @@ export default {
   Sessions: 'Сеансы',
   Settings: 'Настройки',
   'Settings saved': 'Настройки сохранены',
+  'Share of page views measured (%)': 'Доля измеряемых просмотров страниц (%)',
   'Show only this visitor': 'Показать только этого посетителя',
   'Show password': 'Показать пароль',
   'Show {label} list': 'Показать список: {label}',
@@ -511,6 +538,8 @@ export default {
   Tablet: 'Планшет',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Помечайте ссылки, которыми делитесь, чтобы визиты по ним засчитывались нужной кампании.',
+  Target: 'Плановое значение',
+  'Target {number}': 'Плановое значение {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Десять разных сайтов за два месяца: пустой, спокойный, только что запущенный, приостановленный, оживлённый магазин.',
   Term: 'Запрос',
@@ -540,7 +569,11 @@ export default {
   Theme: 'Тема',
   'Theme: {current}': 'Тема: {current}',
   'Theme: {current}. Switch to {next}': 'Тема: {current}. Переключить на {next}',
+  'This month': 'Этот месяц',
+  'This quarter': 'Этот квартал',
   'This site ({name})': 'Этот сайт ({name})',
+  'This week': 'Эта неделя',
+  'Three in four page loads are at least this good.': 'Три из четырёх загрузок страниц не хуже этого.',
   Time: 'Время',
   Timezone: 'Часовой пояс',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -563,6 +596,8 @@ export default {
   'Traffic sources': 'Источники трафика',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Считайте его обязательным для посетителей из ЕС: запрашивайте согласие до запуска трекера и вызывайте analytik.consent() при согласии.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Включите Core Web Vitals в Настройки → Код отслеживания, чтобы видеть их здесь.',
   'Twelve sites with a month each, for the sites overview.': 'Двенадцать сайтов по одному месяцу для обзора сайтов.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     'Два собственных cookie: analytik_vid на год и analytik_sid на 30 минут, оба со случайными ID.',
@@ -602,6 +637,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Количество визитов в день от 0 до 100 000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Перед учётом ждать действия или 3 секунды на экране (отсеивает ботов)',
+  Week: 'Неделя',
   'What the tracker may store, and which visits are counted.': 'Что трекер может хранить и какие визиты учитываются.',
   'What {mode} mode means': 'Что означает режим «{mode}»',
   "What's new": 'Что нового',

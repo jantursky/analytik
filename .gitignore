@@ -122,6 +122,9 @@ dist
 # Deploy
 .vercel/
 
+# Others
+others/
+
 # OS / editor
 .DS_Store
 .idea/

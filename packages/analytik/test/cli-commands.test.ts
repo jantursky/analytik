@@ -87,9 +87,9 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(migrate).toMatchObject({
       code: 0,
       stdout:
-        'Applied 0001_init, 0002_imported, 0003_ignore_admins, 0004_bot_requests, 0005_notifications, 0006_share_links, 0007_annotations\n',
+        'Applied 0001_init, 0002_imported, 0003_ignore_admins, 0004_bot_requests, 0005_notifications, 0006_share_links, 0007_annotations, 0008_goal_targets, 0009_vitals\n',
     })
-    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0007_annotations)\n')
+    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0009_vitals)\n')
     const seed = await cli('seed', '--db', db, '--days', '2', '--seed', '5')
     expect(seed.code).toBe(0)
     expect(seed.stdout).toMatch(/Seeded site demo \(API key ak_demo0005\w+\)/)
@@ -97,7 +97,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(doctor.code).toBe(0)
     expect(doctor.stdout).toContain('✓ Bun')
     expect(doctor.stdout).toContain('✓ database reachable (sqlite)')
-    expect(doctor.stdout).toContain('✓ schema up to date (0007_annotations)')
+    expect(doctor.stdout).toContain('✓ schema up to date (0009_vitals)')
     expect(doctor.stdout).toContain(`✓ ${healthUrl}/api/health answered 200`)
 
     const storage = sqliteStorage(db)
@@ -219,6 +219,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
       { version: '0005_notifications' },
       { version: '0006_share_links' },
       { version: '0007_annotations' },
+      { version: '0008_goal_targets' },
+      { version: '0009_vitals' },
     ])
     expect(db.all("SELECT name FROM sqlite_master WHERE name = 'payments'", [])).toHaveLength(1)
     db.close()
@@ -230,6 +232,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(postgres).toContain('-- 0005_notifications')
     expect(postgres).toContain('-- 0006_share_links')
     expect(postgres).toContain('-- 0007_annotations')
+    expect(postgres).toContain('-- 0008_goal_targets')
+    expect(postgres).toContain('-- 0009_vitals')
     expect(postgres).toContain('ALTER TABLE sessions ADD COLUMN imported TEXT')
     expect((await cli('migrate', '--print-sql', 'mysql')).code).toBe(2)
     const d1 = await cli('migrate', '--d1', 'analytik-db')

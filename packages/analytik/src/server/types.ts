@@ -5,6 +5,8 @@ import type { EmailOptions, ScheduledResult } from './email/types'
 import type {
   BotFilters,
   BotStats,
+  TargetsResult,
+  VitalsResult,
   BreakdownRow,
   Dimension,
   EventRow,
@@ -205,6 +207,10 @@ export interface StatsApi {
    * revenue numbers, with their email, name, customer, visitor and session cleared.
    */
   purge(siteId: string, before: number): Promise<PurgeResult>
+  /** Progress of the site's goal targets in their own periods, whatever range the dashboard shows. */
+  targets(siteId: string): Promise<TargetsResult>
+  /** The 75th percentile of Core Web Vitals over the range, for the site and its pages with the most reports. */
+  vitals(siteId: string, query: Query): Promise<VitalsResult>
   /** Crawler traffic reported with `POST /v1/bots`, kept apart from visitors and revenue. */
   bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
 }

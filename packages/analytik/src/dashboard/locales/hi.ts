@@ -6,6 +6,7 @@ export default {
   '(none)': '(कोई नहीं)',
   ', filter by this': ', इससे फ़िल्टर करें',
   ', then the same kinds again': ', फिर वही प्रकार दोबारा',
+  '{count} of {target}': '{target} में से {count}',
   '1 to 20, named Test site …': '1 से 20, नाम Test site …',
   '1 to 20; each takes the next kind of site.': '1 से 20; हर एक को अगले प्रकार की साइट मिलती है।',
   '12-hour clock': '12 घंटे की घड़ी',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'एक शांत साइट का एक महीना।',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'नई कुंजी बनती है और मौजूदा कुंजी तुरंत काम करना बंद कर देती है। जो सर्वर अब भी पुरानी कुंजी भेजते हैं, उन्हें अपडेट करने तक अस्वीकार किया जाएगा।',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'वह संख्या जिसे कोई लक्ष्य एक सप्ताह, महीने या तिमाही में हासिल करे। अवलोकन में “लक्ष्य” ब्लॉक प्रगति दिखाता है।',
   'A paid keyword, shown as Keyword': 'एक पेड कीवर्ड, कीवर्ड के रूप में दिखता है',
   'A payment as the dashboard will show it.': 'भुगतान, जैसा डैशबोर्ड उसे दिखाएगा।',
   'A quarter at 3,000 visits a day.': 'रोज़ 3,000 विज़िट के साथ एक तिमाही।',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': '{name} के बाद ब्लॉक जोड़ें',
   'Add a block before {name}': '{name} से पहले ब्लॉक जोड़ें',
   'Add a number': 'संख्या जोड़ें',
+  'Add a target': 'लक्ष्य मान जोड़ें',
   'Add a website': 'वेबसाइट जोड़ें',
   'Add block': 'ब्लॉक जोड़ें',
   'Add step': 'चरण जोड़ें',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'सभी ब्राउज़र',
   'All channels': 'सभी चैनल',
   'All devices': 'सभी डिवाइस',
+  'All pages': 'सभी पेज',
   'All providers': 'सभी प्रदाता',
   'All sites': 'सभी साइटें',
   'All types': 'सभी प्रकार',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'स्निपेट कॉपी करें',
   'Copy URL': 'URL कॉपी करें',
   'Copy visitor id': 'विज़िटर आईडी कॉपी करें',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'वेबसाइट जोड़ी नहीं जा सकी',
   "Couldn't delete the website": 'वेबसाइट हटाई नहीं जा सकी',
   "Couldn't sign in": 'साइन इन नहीं हो सका',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'इस साइट के लिए संग्रहीत सब कुछ डाउनलोड करें, या एट्रिब्यूशन दोबारा चलाएँ।',
   Duration: 'अवधि',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'मापे गए हर पेज व्यू से आपके डेटाबेस में एक पंक्ति जुड़ती है, इसलिए छोटा हिस्सा कम राइट लेता है। अपडेट किया गया ट्रैकिंग कोड अपने पेजों में चिपकाएँ।',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'हर साइट अलग है: खाली, शांत, औसत, व्यस्त, अभी शुरू हुई, रुकी हुई।',
   Email: 'ईमेल',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'ग्लोब व्यू',
   Goal: 'लक्ष्य',
   'Goal name': 'लक्ष्य का नाम',
+  'Goal targets': 'लक्ष्य मान',
   Goals: 'लक्ष्य',
   'Goals and events': 'लक्ष्य और इवेंट',
+  Good: 'अच्छा',
   'Half width': 'आधी चौड़ाई',
   'Hide password': 'पासवर्ड छिपाएँ',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'हर व्यू में गिनती, दरें और राशियाँ कैसे लिखी जाती हैं। हर एडमिन के लिए सहेजा जाता है।',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'असली विज़िटरों के लिए पेज कितनी तेज़ी से लोड होते हैं, प्रतिक्रिया देते हैं और स्थिर रहते हैं, साइट और हर पेज के लिए रेटिंग के साथ।',
   'How the site is named, where its events come from and how its reports are dated.':
     'साइट का नाम क्या है, उसके इवेंट कहाँ से आते हैं और उसकी रिपोर्ट में तारीख़ें कैसे लिखी जाती हैं।',
   'How to update': 'अपडेट कैसे करें',
@@ -297,6 +309,8 @@ export default {
   Limits: 'सीमाएँ',
   Live: 'लाइव',
   'Live now': 'अभी लाइव',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'असली विज़िट में लोडिंग, प्रतिक्रिया और लेआउट शिफ्ट, पेज व्यू के एक हिस्से के लिए। ये संख्याएँ उस अपडेट के साथ जाती हैं जो विज़िटर के पेज छोड़ते समय भेजा जाता है।',
   'Loading…': 'लोड हो रहा है…',
   Location: 'स्थान',
   'Log out': 'लॉग आउट करें',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': '1 से 20 साइटें बनाएँ।',
   'Many sites': 'कई साइटें',
   'Map with no visitor locations': 'विज़िटर के स्थान के बिना मानचित्र',
+  'Measure Core Web Vitals': 'Core Web Vitals मापें',
   Medium: 'मीडियम',
   Mobile: 'मोबाइल',
   Mode: 'मोड',
+  Month: 'महीना',
   'Month first, in words': 'पहले महीना, शब्दों में',
   'Month, day, year': 'महीना, दिन, साल',
   'Move {name} earlier': '{name} को पहले करें',
   'Move {name} later': '{name} को बाद में करें',
   'My website': 'मेरी वेबसाइट',
   Name: 'नाम',
+  'Needs work': 'सुधार चाहिए',
   new: 'नया',
   'New API key': 'नई API कुंजी',
   'New funnel': 'नया फ़नल',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'अभी तक कोई फ़नल नहीं। एक बनाएँ और देखें कि विज़िटर कहाँ छोड़ देते हैं।',
   'No matches': 'कोई मेल नहीं मिला',
+  'No measurements in this period': 'इस अवधि में कोई माप नहीं',
   'No payments in this period': 'इस अवधि में कोई भुगतान नहीं',
   'No sessions in this period': 'इस अवधि में कोई सत्र नहीं',
+  'No targets yet': 'अभी कोई लक्ष्य मान नहीं',
   'Nobody here right now': 'अभी यहाँ कोई नहीं है',
   'Not set up': 'सेट अप नहीं है',
   'Nothing matches these filters': 'इन फ़िल्टर से कुछ मेल नहीं खाता',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'संख्या {number}',
   Numbers: 'संख्याएँ',
   'Numbers and money': 'संख्याएँ और पैसे',
+  'On pace for about {count} (an estimate)': 'मौजूदा गति से लगभग {count} (अनुमान)',
   'On the overview': 'ओवरव्यू में',
   'On the visitor’s device': 'विज़िटर के डिवाइस पर',
   'One site': 'एक साइट',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'भुगतान और API',
   'Payments and refunds': 'भुगतान और रिफ़ंड',
   'Per site, weekends quieter; 0 for an empty site.': 'प्रति साइट, सप्ताहांत में कम; खाली साइट के लिए 0।',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'अवधियाँ साइट के समय क्षेत्र में शुरू होती हैं, और सप्ताह सोमवार से।',
   Persistent: 'स्थायी',
   'Pick a date': 'तारीख़ चुनें',
   'Pick one or more blocks to add {place}.': '{place} जोड़ने के लिए एक या अधिक ब्लॉक चुनें।',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'प्लान इसके 9, 29 और 99 गुना के होते हैं।',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'अपने भुगतान प्रदाता को इस एंडपॉइंट पर भेजें और उसका साइनिंग सीक्रेट चिपकाएँ। भुगतान उन विज़िट से मिलाए जाते हैं जिनसे वे हुए।',
+  Poor: 'खराब',
   Preset: 'प्रीसेट',
   Presets: 'प्रीसेट',
   Preview: 'पूर्वावलोकन',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'गोपनीयता मोड',
   Prompt: 'प्रॉम्प्ट',
   Provider: 'प्रदाता',
+  Quarter: 'तिमाही',
   'Re-run payment attribution': 'भुगतान एट्रिब्यूशन दोबारा चलाएँ',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'पाठक लाइव व्यू में बने रहते हैं; हर मिनट वाली जाँच के लगभग एक-चौथाई अनुरोध।',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'फ़िल्टर हटाएँ: {dimension} है {value}',
   'Remove one to add it somewhere else.': 'इसे कहीं और जोड़ने के लिए एक को हटाएँ।',
   'Remove step {number}': 'चरण {number} हटाएँ',
+  'Remove target {number}': 'लक्ष्य मान {number} हटाएँ',
   'Remove test data': 'टेस्ट डेटा हटाएँ',
   'Remove the {filter} filter': '{filter} फ़िल्टर हटाएँ',
   'Remove {name}': '{name} हटाएँ',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'किसी दिन से पहले दर्ज विज़िट हटाता है। पुराने भुगतान राजस्व के लिए बने रहते हैं, ग्राहक के विवरण के बिना।',
   renewal: 'नवीनीकरण',
+  Reports: 'रिपोर्ट',
   Reset: 'रीसेट करें',
   'Reset layout': 'लेआउट रीसेट करें',
   'Reset the overview?': 'ओवरव्यू रीसेट करें?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'सत्र',
   Settings: 'सेटिंग्स',
   'Settings saved': 'सेटिंग्स सहेजी गईं',
+  'Share of page views measured (%)': 'मापे गए पेज व्यू का हिस्सा (%)',
   'Show only this visitor': 'केवल इस विज़िटर को दिखाएँ',
   'Show password': 'पासवर्ड दिखाएँ',
   'Show {label} list': '{label} सूची दिखाएँ',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'टैबलेट',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'जो लिंक आप साझा करते हैं उन्हें टैग करें, ताकि उनसे आई विज़िट सही अभियान के खाते में जाएँ।',
+  Target: 'लक्ष्य मान',
+  'Target {number}': 'लक्ष्य मान {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'दो महीनों की दस अलग साइटें: खाली, शांत, अभी शुरू हुई, रुकी हुई, एक व्यस्त दुकान।',
   Term: 'शब्द',
@@ -539,7 +568,11 @@ export default {
   Theme: 'थीम',
   'Theme: {current}': 'थीम: {current}',
   'Theme: {current}. Switch to {next}': 'थीम: {current}। {next} पर जाएँ',
+  'This month': 'यह महीना',
+  'This quarter': 'यह तिमाही',
   'This site ({name})': 'यह साइट ({name})',
+  'This week': 'यह सप्ताह',
+  'Three in four page loads are at least this good.': 'चार में से तीन पेज लोड कम से कम इतने अच्छे हैं।',
   Time: 'समय',
   Timezone: 'समय क्षेत्र',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'ट्रैफ़िक स्रोत',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'EU के विज़िटर के लिए इसे अनिवार्य मानें: ट्रैकर चलने से पहले पूछें, और सहमति मिलने पर analytik.consent() कॉल करें।',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'इन्हें यहाँ देखने के लिए सेटिंग्स → ट्रैकिंग कोड में Core Web Vitals चालू करें।',
   'Twelve sites with a month each, for the sites overview.': 'साइट ओवरव्यू के लिए बारह साइटें, हर एक का एक महीना।',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     'दो फ़र्स्ट-पार्टी कुकी: analytik_vid एक साल के लिए और analytik_sid 30 मिनट के लिए, दोनों यादृच्छिक आईडी।',
@@ -600,6 +635,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'प्रति दिन विज़िट 0 से 100,000 तक हो सकती हैं।',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'गिनने से पहले किसी इंटरैक्शन या स्क्रीन पर 3 सेकंड का इंतज़ार करें (बॉट फ़िल्टर करता है)',
+  Week: 'सप्ताह',
   'What the tracker may store, and which visits are counted.':
     'ट्रैकर क्या संग्रहीत कर सकता है, और कौन-सी विज़िट गिनी जाती हैं।',
   'What {mode} mode means': '{mode} मोड का मतलब',

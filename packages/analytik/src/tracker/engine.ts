@@ -1,4 +1,4 @@
-import type { AttributionIds, EventType, PrivacyMode, Props, TrackerPayload } from '../shared/types'
+import type { AttributionIds, EventType, PrivacyMode, Props, TrackerPayload, Vitals } from '../shared/types'
 import { NAVIGATE, patchHistory } from './history'
 import { attributeProps, clip, sanitizeProps } from './payload'
 import type { AnalytikClient, AnalytikOptions, IdentifyInput, RevenueOptions } from './types'
@@ -234,13 +234,26 @@ export function createEngine(options: AnalytikOptions): AnalytikClient {
     return false
   }
 
+  // ---- Core Web Vitals: a sampled page load loads the measuring script, which reports once, on the first hide
+  const rate = options.vitals ?? 0
+  let vitals = !!options.vitalsSrc && rate > 0 && Math.random() * 100 < rate
+  if (vitals) {
+    const script = d.createElement('script')
+    script.async = true
+    script.src = options.vitalsSrc ?? ''
+    d.head.append(script)
+  }
+
   function flush(beacon: boolean): void {
     if (since) {
       pending += Date.now() - since
       since = visible() ? Date.now() : 0
     }
     if (pending >= 1000 && last) {
-      send('ping', { d: Math.round(pending) }, beacon, last)
+      const v = beacon && vitals ? (w as Window & { analytikVitals?: () => Vitals }).analytikVitals?.() : undefined
+      // Sent once, and only when something was measured; a page hidden before the script loaded tries again.
+      if (v && Object.keys(v).length) vitals = false
+      send('ping', { d: Math.round(pending), ...(v && Object.keys(v).length && { v }) }, beacon, last)
       pending = 0
     }
   }

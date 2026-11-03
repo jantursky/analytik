@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { parseTabs } from '../../shared/choices'
 import type { BreakdownRow, Dimension } from '../../shared/types'
@@ -49,9 +49,29 @@ export interface BreakdownCardProps {
   metric?: BreakdownMetric
   /** Rows shown before "Details" expands the list. Default 10. */
   limit?: number
+  /** Shown above the tabs inside the card. */
+  before?: ReactNode
 }
 
 const EXPANDED_LIMIT = 100
+
+/** Dimensions where every session has exactly one value, so the rows add up to the whole and meters can show shares. */
+const PARTS_OF_A_WHOLE = new Set<Dimension>([
+  'channel',
+  'source',
+  'referrer',
+  'campaign',
+  'medium',
+  'term',
+  'content',
+  'ref',
+  'country',
+  'region',
+  'city',
+  'browser',
+  'os',
+  'device',
+])
 
 /** Dimensions whose rows are page paths or addresses, so a row can offer to copy its URL. */
 const ADDRESS_DIMENSIONS = new Set<Dimension>(['page', 'entry', 'exit', 'outbound'])
@@ -77,10 +97,11 @@ function rowLabel(dimension: Dimension, key: string): BarListRow['label'] {
   }
   if (!key || (dimension !== 'browser' && dimension !== 'os' && dimension !== 'device')) return undefined
   let icon
-  if (dimension !== 'device' && hasLogo(key)) icon = <Logo name={key} />
+  if (dimension !== 'device')
+    icon = hasLogo(key) ? <Logo name={key} /> : <Icon name={dimension === 'os' ? 'desktop' : 'globe'} />
   if (dimension === 'device' && key in DEVICE_ICONS)
     icon = <Icon name={DEVICE_ICONS[key as keyof typeof DEVICE_ICONS]} />
-  // Rows without a mark keep an empty slot, so every name in the list starts at the same place.
+  // Names without a mark get a generic icon, so every name in the list starts at the same place.
   return (
     <>
       <span className="analytik-bar-icon" aria-hidden="true">
@@ -92,7 +113,7 @@ function rowLabel(dimension: Dimension, key: string): BarListRow['label'] {
 }
 
 /** A card with one tab per dimension; clicking a row filters the dashboard by it. */
-export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 10 }: BreakdownCardProps) {
+export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 10, before }: BreakdownCardProps) {
   const { client, site, query, addFilter, known } = useDashboard()
   // The tab of each card is remembered with the other preferences, by the card's dimensions.
   const { values, update } = usePreferences()
@@ -109,6 +130,11 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
   const format = metric === 'revenue' ? (v: number) => formatMoney(v, site.currency) : formatNumber
   const shown = rows.data
   const data = (shown?.list ?? []).filter((r: BreakdownRow) => metric !== 'revenue' || r.revenue)
+  // Shares need every row: a list cut off at the server's limit would leave out part of the whole.
+  const total =
+    shown && PARTS_OF_A_WHOLE.has(shown.dimension) && shown.list.length < EXPANDED_LIMIT
+      ? data.reduce((sum, r) => sum + r[metric], 0)
+      : undefined
   // The palette offers these values as filters without asking the server again.
   const loaded = shown?.list
   useEffect(() => {
@@ -147,6 +173,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
               onSelect={(key) => addFilter(shown.dimension, key)}
               limit={expanded ? EXPANDED_LIMIT : limit}
               metric={metric}
+              total={total}
             />
             <div className="analytik-details-row">
               {data.length > limit && (
@@ -182,6 +209,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
   )
   return (
     <Card title={title} hideTitle>
+      {before}
       {dimensions.length > 1 ? (
         <Tabs
           label={title}

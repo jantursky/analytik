@@ -24,6 +24,8 @@ import type {
   ShareView,
   Site,
   SiteSummary,
+  TargetsResult,
+  VitalsResult,
   VersionInfo,
   TestDataInput,
   TestDataResult,
@@ -174,6 +176,10 @@ export interface ApiClient {
   breakdown(siteId: string, dimension: Dimension, query: Query): Promise<BreakdownRow[]>
   bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
   realtime(siteId: string): Promise<Realtime>
+  /** How far each goal target is in its own period, whatever range the dashboard shows. */
+  targets(siteId: string): Promise<TargetsResult>
+  /** The 75th percentile of Core Web Vitals for the site and its pages with the most reports. */
+  vitals(siteId: string, query: Query): Promise<VitalsResult>
   sessions(siteId: string, query: Query & Paging): Promise<Page<SessionSummary>>
   session(siteId: string, sessionId: string): Promise<SessionDetail>
   events(siteId: string, query: Query & Paging & { name?: string; type?: EventType }): Promise<Page<EventRow>>
@@ -310,6 +316,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
           paused: false,
           ignoredIps: [],
           ignoreAdmins: false,
+          targets: [],
+          vitalsSample: 0,
           ...shared.site,
         },
         views: shared.views,
@@ -340,6 +348,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
       return get(`${site(id)}/bots`, params)
     },
     realtime: (id) => get(`${site(id)}/realtime`, undefined, true),
+    targets: (id) => get(`${site(id)}/targets`),
+    vitals: (id, query) => get(`${site(id)}/vitals`, queryParams(query)),
     sessions: (id, query) => get(`${site(id)}/sessions`, queryParams(query)),
     session: (id, sessionId) => get(`${site(id)}/sessions/${encodeURIComponent(sessionId)}`),
     events: (id, query) => get(`${site(id)}/events`, queryParams(query)),

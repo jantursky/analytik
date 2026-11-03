@@ -63,6 +63,9 @@ interface Formatters {
   numbers: (options: Intl.NumberFormatOptions) => NumberFormatter
   integer: NumberFormatter
   compact: NumberFormatter
+  percent: NumberFormatter
+  /** One decimal, for shares under 1%. */
+  fraction: NumberFormatter
   money: Map<string, NumberFormatter>
 }
 
@@ -81,6 +84,8 @@ function formattersFor(settings: FormatSettings): Formatters {
     numbers,
     integer: numbers({ maximumFractionDigits: 0 }),
     compact: numbers({ notation: 'compact', maximumFractionDigits: 1 }),
+    percent: numbers({ style: 'percent', maximumFractionDigits: 0 }),
+    fraction: numbers({ style: 'percent', maximumFractionDigits: 1 }),
     money: new Map(),
   }
 }
@@ -130,6 +135,12 @@ const minorUnits = (currency: string): number =>
 /** Exact below 10,000, compact above (12.3K). */
 export function formatNumber(value: number): string {
   return Math.abs(value) < 10000 ? formatters().integer.format(value) : formatters().compact.format(value)
+}
+
+/** A share of a whole (0 to 1) as a percentage: whole percent, but one decimal below 1%, and `<0.1%` for less. */
+export function formatShare(share: number): string {
+  if (share >= 0.01 || share <= 0) return formatters().percent.format(share)
+  return share < 0.001 ? `<${formatters().fraction.format(0.001)}` : formatters().fraction.format(share)
 }
 
 /** Every digit, for tooltips next to a compact number: 101,098. */

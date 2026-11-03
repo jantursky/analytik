@@ -206,6 +206,53 @@ describe('user agents', () => {
     expect(parseUserAgent('Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 390).device).toBe(
       'Mobile',
     )
+    const osOf = (ua: string) => parseUserAgent(ua).os
+    const systems: [string, string][] = [
+      ['Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 'Ubuntu'],
+      ['Mozilla/5.0 (X11; Debian; Linux x86_64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36', 'Debian'],
+      ['Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 'Fedora'],
+      ['Mozilla/5.0 (X11; Linux x86_64; Linux Mint) Chrome/141.0', 'Linux Mint'],
+      ['Mozilla/5.0 (X11; openSUSE; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 'openSUSE'],
+      ['Mozilla/5.0 (X11; Red Hat; Linux x86_64) Chrome/141.0', 'Red Hat'],
+      ['Mozilla/5.0 (X11; CentOS; Linux x86_64) Chrome/141.0', 'CentOS'],
+      ['Mozilla/5.0 (X11; Gentoo; Linux x86_64) Chrome/141.0', 'Gentoo'],
+      ['Mozilla/5.0 (X11; Arch Linux; Linux x86_64) Chrome/141.0', 'Arch Linux'],
+      ['Mozilla/5.0 (X11; Manjaro; Linux x86_64) Chrome/141.0', 'Manjaro'],
+      ['Mozilla/5.0 (X11; Linux armv7l) Raspbian Chromium/120.0', 'Raspberry Pi OS'],
+      ['Mozilla/5.0 (X11; Deepin; Linux x86_64) Chrome/141.0', 'Deepin'],
+      ['Mozilla/5.0 (X11; FreeBSD amd64; rv:140.0) Gecko/20100101 Firefox/140.0', 'FreeBSD'],
+      ['Mozilla/5.0 (X11; OpenBSD amd64; rv:140.0) Gecko/20100101 Firefox/140.0', 'OpenBSD'],
+      ['Mozilla/5.0 (X11; NetBSD amd64; rv:140.0) Gecko/20100101 Firefox/140.0', 'NetBSD'],
+      ['Mozilla/5.0 (X11; SunOS i86pc; rv:140.0) Gecko/20100101 Firefox/140.0', 'Solaris'],
+      [
+        'Mozilla/5.0 (Linux; Android 12; HarmonyOS; ALN-AL00) AppleWebKit/537.36 Chrome/114.0 Mobile Safari/537.36',
+        'HarmonyOS',
+      ],
+      ['Mozilla/5.0 (Mobile; Nokia 8110 4G; rv:48.0) Gecko/48.0 Firefox/48.0 KAIOS/2.5', 'KaiOS'],
+      ['Mozilla/5.0 (BB10; Touch) AppleWebKit/537.10+ Version/10.0.9.2372 Mobile Safari/537.10+', 'BlackBerry'],
+      ['Mozilla/5.0 (Linux; U; Sailfish 3.0; Mobile; rv:78.0) Gecko/78.0 Firefox/78.0', 'Sailfish OS'],
+      ['Mozilla/5.0 (PlayStation; PlayStation 5/2.26) AppleWebKit/605.1.15 Safari/605.1.15', 'PlayStation'],
+      ['Roku/DVP-9.10 (519.10E04111A)', 'Roku'],
+      ['Mozilla/5.0 (SMART-TV; Linux; Tizen 6.5) AppleWebKit/537.36 Chrome/94.0 TV Safari/537.36', 'Tizen'],
+      ['Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 Chrome/79.0 Safari/537.36 WebAppManager', 'webOS'],
+      [
+        'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Lumia 950) AppleWebKit/537.36 Chrome/52.0 Mobile Edge/15.15254',
+        'Windows Phone',
+      ],
+      [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Xbox; Xbox One) AppleWebKit/537.36 Chrome/70.0 Edge/18.19041',
+        'Xbox',
+      ],
+      [
+        'Mozilla/5.0 (Nintendo Switch; WifiWebAuthApplet) AppleWebKit/601.6 (KHTML, like Gecko) NF/4.0.0.5.10 NintendoBrowser/5.1.0',
+        'Nintendo',
+      ],
+      ['Mozilla/5.0 (Symbian/3; Series60/5.2 NokiaN8-00/012.002; Profile/MIDP-2.1) AppleWebKit/533.4', 'Symbian'],
+      ['Mozilla/5.0 (Linux; Android 9; AFTMM Build/PS7233) AppleWebKit/537.36 Chrome/88.0 Safari/537.36', 'Fire OS'],
+      ['Mozilla/5.0 (Linux; Android 11; BRAVIA 4K GB) AppleWebKit/537.36 Chrome/100.0 Safari/537.36', 'Android TV'],
+      ['Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0', 'Linux'],
+    ]
+    for (const [ua, os] of systems) expect(osOf(ua), os).toBe(os)
     const browserOf = (ua: string) => parseUserAgent(ua).browser
     const cases: [string, string][] = [
       ['Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko', 'Internet Explorer'],

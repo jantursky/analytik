@@ -11,6 +11,7 @@ import type {
   ShareView,
   Site,
   TimeseriesPoint,
+  VitalsResult,
 } from '../src/shared/types'
 
 export const site: Site = {
@@ -25,6 +26,8 @@ export const site: Site = {
   paused: false,
   ignoredIps: ['10.0.0.1'],
   ignoreAdmins: false,
+  targets: [],
+  vitalsSample: 0,
   createdAt: Date.UTC(2026, 0, 1),
 }
 
@@ -175,6 +178,12 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     /** What a link's token opens in the shared dashboard; a token not listed here is refused. */
     sharedViews: { 'good-token-1234567890abcdef': [] as ShareView[] } as Record<string, ShareView[]>,
     loggedIn: true,
+    /** The vitals view: nothing measured, and the site does not measure. */
+    vitals: {
+      enabled: false,
+      total: { samples: 0, lcp: null, inp: null, cls: null },
+      pages: [],
+    } as VitalsResult,
     version: { current: '1.1.0', latest: null as string | null },
     preferences: {} as Record<string, unknown>,
     debug: false,
@@ -321,6 +330,21 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       pages: [{ key: '/blog/a', requests: 6 }],
       recent: [{ ts: Date.UTC(2026, 0, 2, 10), crawler: 'GPTBot', category: 'training', path: '/blog/a' }],
     }),
+    // Every target is 30% done and on pace for 60% of its number.
+    'GET /sites/:id/targets': ({ path }) => {
+      const own = state.sites.find((s) => path.includes(`/${s.id}/`)) ?? site
+      return {
+        now: Date.UTC(2026, 9, 16),
+        targets: own.targets.map((t) => ({
+          ...t,
+          count: Math.round(t.target * 0.3),
+          start: Date.UTC(2026, 9, 1),
+          end: Date.UTC(2026, 10, 1),
+          projection: Math.round(t.target * 0.6),
+        })),
+      }
+    },
+    'GET /sites/:id/vitals': () => state.vitals,
     'GET /sites/:id/realtime': () => realtime,
     'GET /sites/:id/sessions': ({ params }) =>
       Number(params.offset ?? 0) > 0

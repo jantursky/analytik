@@ -6,6 +6,7 @@ export default {
   '(none)': '(yok)',
   ', filter by this': ', buna göre filtrele',
   ', then the same kinds again': ', sonra aynı türler yeniden',
+  '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 ile 20 arası, adı Test site …',
   '1 to 20; each takes the next kind of site.': '1 ile 20 arası; her biri sıradaki site türünü alır.',
   '12-hour clock': '12 saatlik saat',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Sakin bir sitenin bir ayı.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Yeni bir anahtar oluşturulur ve mevcut anahtar hemen çalışmayı bırakır. Eski anahtarı hâlâ gönderen sunucular, siz güncelleyene kadar reddedilir.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Bir hedefin bir hafta, ay veya çeyrekte ulaşması gereken sayı. Genel bakıştaki Hedefler bloğu ilerlemeyi gösterir.',
   'A paid keyword, shown as Keyword': 'Ücretli bir anahtar kelime, Anahtar kelime olarak gösterilir',
   'A payment as the dashboard will show it.': 'Bir ödeme, panelde görüneceği şekilde.',
   'A quarter at 3,000 visits a day.': 'Günde 3.000 ziyaretle üç ay.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': '{name} sonrasına blok ekle',
   'Add a block before {name}': '{name} öncesine blok ekle',
   'Add a number': 'Sayı ekle',
+  'Add a target': 'Hedef değeri ekle',
   'Add a website': 'Web sitesi ekle',
   'Add block': 'Blok ekle',
   'Add step': 'Adım ekle',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Tüm tarayıcılar',
   'All channels': 'Tüm kanallar',
   'All devices': 'Tüm cihazlar',
+  'All pages': 'Tüm sayfalar',
   'All providers': 'Tüm sağlayıcılar',
   'All sites': 'Tüm siteler',
   'All types': 'Tüm türler',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Kodu kopyala',
   'Copy URL': 'URL’yi kopyala',
   'Copy visitor id': 'Ziyaretçi kimliğini kopyala',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Web sitesi eklenemedi',
   "Couldn't delete the website": 'Web sitesi silinemedi',
   "Couldn't sign in": 'Giriş yapılamadı',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Bu site için saklanan her şeyi indirin veya atfı yeniden çalıştırın.',
   Duration: 'Süre',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Ölçülen her sayfa görüntüleme veritabanınıza bir satır ekler; bu yüzden daha küçük bir pay daha az yazma maliyeti demektir. Güncellenmiş izleme kodunu sayfalarınıza yapıştırın.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Her site farklıdır: boş, sakin, ortalama, yoğun, yeni açılmış, duraklatılmış.',
   Email: 'E-posta',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'Küre görünümü',
   Goal: 'Hedef',
   'Goal name': 'Hedef adı',
+  'Goal targets': 'Hedef değerleri',
   Goals: 'Hedefler',
   'Goals and events': 'Hedefler ve olaylar',
+  Good: 'İyi',
   'Half width': 'Yarım genişlik',
   'Hide password': 'Parolayı gizle',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Sayıların, oranların ve tutarların her görünümde nasıl yazılacağı. Tüm yöneticiler için kaydedilir.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Gerçek ziyaretçiler için sayfaların ne kadar hızlı yüklendiği, yanıt verdiği ve sabit kaldığı; site ve her sayfa için değerlendirilmiştir.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Sitenin nasıl adlandırıldığı, olaylarının nereden geldiği ve raporlarının nasıl tarihlendiği.',
   'How to update': 'Nasıl güncellenir',
@@ -297,6 +309,8 @@ export default {
   Limits: 'Sınırlar',
   Live: 'Canlı',
   'Live now': 'Şu an canlı',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Gerçek ziyaretlerde yükleme, yanıt verme ve düzen kayması, sayfa görüntülemelerinin bir payı için. Değerler, ziyaretçi bir sayfadan ayrılırken gönderilen güncellemeyle birlikte gider.',
   'Loading…': 'Yükleniyor…',
   Location: 'Konum',
   'Log out': 'Çıkış yap',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': '1 ile 20 arası site oluşturun.',
   'Many sites': 'Çok sayıda site',
   'Map with no visitor locations': 'Ziyaretçi konumu olmayan harita',
+  'Measure Core Web Vitals': 'Core Web Vitals ölç',
   Medium: 'Ortam',
   Mobile: 'Mobil',
   Mode: 'Mod',
+  Month: 'Ay',
   'Month first, in words': 'Önce ay, yazıyla',
   'Month, day, year': 'Ay, gün, yıl',
   'Move {name} earlier': '{name} öğesini öne taşı',
   'Move {name} later': '{name} öğesini sona taşı',
   'My website': 'Web sitem',
   Name: 'Ad',
+  'Needs work': 'İyileştirme gerekli',
   new: 'yeni',
   'New API key': 'Yeni API anahtarı',
   'New funnel': 'Yeni dönüşüm hunisi',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Henüz dönüşüm hunisi yok. Ziyaretçilerin nerede ayrıldığını görmek için bir tane oluşturun.',
   'No matches': 'Eşleşme yok',
+  'No measurements in this period': 'Bu dönemde ölçüm yok',
   'No payments in this period': 'Bu dönemde ödeme yok',
   'No sessions in this period': 'Bu dönemde oturum yok',
+  'No targets yet': 'Henüz hedef değeri yok',
   'Nobody here right now': 'Şu an burada kimse yok',
   'Not set up': 'Ayarlanmadı',
   'Nothing matches these filters': 'Bu filtrelerle eşleşen bir şey yok',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'Sayı {number}',
   Numbers: 'Sayılar',
   'Numbers and money': 'Sayılar ve para',
+  'On pace for about {count} (an estimate)': 'Mevcut hızla yaklaşık {count} (tahmin)',
   'On the overview': 'Genel bakışta',
   'On the visitor’s device': 'Ziyaretçinin cihazında',
   'One site': 'Tek site',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'Ödemeler ve API',
   'Payments and refunds': 'Ödemeler ve iadeler',
   'Per site, weekends quieter; 0 for an empty site.': 'Site başına, hafta sonları daha sakin; boş site için 0.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Dönemler sitenin saat diliminde başlar, haftalar Pazartesi başlar.',
   Persistent: 'Kalıcı',
   'Pick a date': 'Tarih seçin',
   'Pick one or more blocks to add {place}.': '{place} eklenecek bir veya daha fazla blok seçin.',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Planlar bunun 9, 29 ve 99 katı tutar.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Ödeme sağlayıcınızı bu uç noktaya yönlendirin ve imzalama sırrını yapıştırın. Ödemeler, kendilerine yol açan ziyaretlerle eşleştirilir.',
+  Poor: 'Kötü',
   Preset: 'Hazır ayar',
   Presets: 'Hazır ayarlar',
   Preview: 'Önizleme',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'Gizlilik modu',
   Prompt: 'İstem',
   Provider: 'Sağlayıcı',
+  Quarter: 'Çeyrek',
   'Re-run payment attribution': 'Ödeme atfını yeniden çalıştır',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Okuyucular canlı görünümde kalır; her dakikadaki isteklerin yaklaşık dörtte biri.',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Filtreyi kaldır: {dimension} = {value}',
   'Remove one to add it somewhere else.': 'Başka yere eklemek için birini kaldırın.',
   'Remove step {number}': '{number}. adımı kaldır',
+  'Remove target {number}': '{number}. hedef değerini kaldır',
   'Remove test data': 'Test verilerini kaldır',
   'Remove the {filter} filter': '{filter} filtresini kaldır',
   'Remove {name}': '{name} öğesini kaldır',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Belirli bir günden önce kaydedilen ziyaretleri kaldırır. Daha eski ödemeler gelir için kalır, müşteri bilgileri olmadan.',
   renewal: 'yenileme',
+  Reports: 'Raporlar',
   Reset: 'Sıfırla',
   'Reset layout': 'Düzeni sıfırla',
   'Reset the overview?': 'Genel bakış sıfırlansın mı?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'Oturumlar',
   Settings: 'Ayarlar',
   'Settings saved': 'Ayarlar kaydedildi',
+  'Share of page views measured (%)': 'Ölçülen sayfa görüntüleme payı (%)',
   'Show only this visitor': 'Yalnızca bu ziyaretçiyi göster',
   'Show password': 'Parolayı göster',
   'Show {label} list': '{label} listesini göster',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'Tablet',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Paylaştığınız bağlantıları etiketleyin; böylece bunlar üzerinden gelen ziyaretler doğru kampanyaya yazılır.',
+  Target: 'Hedef değeri',
+  'Target {number}': 'Hedef değeri {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'İki ay boyunca on farklı site: boş, sakin, yeni açılmış, duraklatılmış, yoğun bir mağaza.',
   Term: 'Terim',
@@ -539,7 +568,11 @@ export default {
   Theme: 'Tema',
   'Theme: {current}': 'Tema: {current}',
   'Theme: {current}. Switch to {next}': 'Tema: {current}. Geç: {next}',
+  'This month': 'Bu ay',
+  'This quarter': 'Bu çeyrek',
   'This site ({name})': 'Bu site ({name})',
+  'This week': 'Bu hafta',
+  'Three in four page loads are at least this good.': 'Sayfa yüklemelerinin dörtte üçü en az bu kadar iyidir.',
   Time: 'Zaman',
   Timezone: 'Saat dilimi',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'Trafik kaynakları',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'AB’li ziyaretçiler için zorunlu sayın: izleyici çalışmadan önce sorun ve kabul edildiğinde analytik.consent() çağırın.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    "Burada görmek için Ayarlar → İzleme kodu bölümünde Core Web Vitals'ı açın.",
   'Twelve sites with a month each, for the sites overview.': 'Site genel bakışı için her biri bir aylık on iki site.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     'İki birinci taraf çerez: bir yıl süreli analytik_vid ve 30 dakika süreli analytik_sid; ikisi de rastgele kimliktir.',
@@ -601,6 +636,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Günlük ziyaret sayısı 0 ile 100.000 arasındadır.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Saymadan önce bir etkileşim veya ekranda 3 saniye bekle (botları filtreler)',
+  Week: 'Hafta',
   'What the tracker may store, and which visits are counted.':
     'İzleyicinin neyi saklayabileceği ve hangi ziyaretlerin sayılacağı.',
   'What {mode} mode means': '{mode} modu ne anlama gelir',

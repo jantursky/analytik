@@ -6,6 +6,7 @@ export default {
   '(none)': '(tidak ada)',
   ', filter by this': ', filter berdasarkan ini',
   ', then the same kinds again': ', lalu jenis yang sama lagi',
+  '{count} of {target}': '{count} dari {target}',
   '1 to 20, named Test site …': '1 sampai 20, bernama Test site …',
   '1 to 20; each takes the next kind of site.': '1 sampai 20; masing-masing mendapat jenis situs berikutnya.',
   '12-hour clock': 'Format 12 jam',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Satu bulan situs yang sepi.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Kunci baru dibuat dan kunci saat ini langsung berhenti berfungsi. Server yang masih mengirim kunci lama akan ditolak sampai Anda memperbaruinya.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Angka yang harus dicapai sebuah sasaran dalam seminggu, sebulan, atau sekuartal. Blok Sasaran di ringkasan menampilkan kemajuannya.',
   'A paid keyword, shown as Keyword': 'Kata kunci berbayar, ditampilkan sebagai Kata kunci',
   'A payment as the dashboard will show it.': 'Pembayaran seperti yang akan ditampilkan dasbor.',
   'A quarter at 3,000 visits a day.': 'Satu kuartal dengan 3.000 kunjungan per hari.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Tambah blok setelah {name}',
   'Add a block before {name}': 'Tambah blok sebelum {name}',
   'Add a number': 'Tambah angka',
+  'Add a target': 'Tambah target',
   'Add a website': 'Tambah situs web',
   'Add block': 'Tambah blok',
   'Add step': 'Tambah langkah',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Semua browser',
   'All channels': 'Semua saluran',
   'All devices': 'Semua perangkat',
+  'All pages': 'Semua halaman',
   'All providers': 'Semua penyedia',
   'All sites': 'Semua situs',
   'All types': 'Semua jenis',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Salin cuplikan',
   'Copy URL': 'Salin URL',
   'Copy visitor id': 'Salin ID pengunjung',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Tidak dapat menambahkan situs web',
   "Couldn't delete the website": 'Tidak dapat menghapus situs web',
   "Couldn't sign in": 'Tidak dapat masuk',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Unduh semua yang tersimpan untuk situs ini, atau jalankan ulang atribusi.',
   Duration: 'Durasi',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Setiap tampilan halaman yang diukur menambah satu baris ke database Anda, jadi porsi yang lebih kecil berarti lebih sedikit penulisan. Tempel kode pelacakan yang diperbarui ke halaman Anda.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Setiap situs berbeda: kosong, sepi, rata-rata, ramai, baru diluncurkan, dijeda.',
   Email: 'Email',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'Tampilan globe',
   Goal: 'Sasaran',
   'Goal name': 'Nama sasaran',
+  'Goal targets': 'Target sasaran',
   Goals: 'Sasaran',
   'Goals and events': 'Sasaran dan peristiwa',
+  Good: 'Baik',
   'Half width': 'Setengah lebar',
   'Hide password': 'Sembunyikan kata sandi',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Cara jumlah, rasio, dan nominal ditulis di setiap tampilan. Disimpan untuk semua admin.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Seberapa cepat halaman dimuat, merespons, dan tetap stabil bagi pengunjung nyata, dinilai untuk situs dan setiap halaman.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Nama situs, asal peristiwanya, dan cara laporannya diberi tanggal.',
   'How to update': 'Cara memperbarui',
@@ -297,6 +309,8 @@ export default {
   Limits: 'Batas',
   Live: 'Live',
   'Live now': 'Live sekarang',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Pemuatan, responsivitas, dan pergeseran tata letak dari kunjungan nyata, untuk sebagian tampilan halaman. Angkanya dikirim bersama pembaruan yang terkirim saat pengunjung meninggalkan halaman.',
   'Loading…': 'Memuat…',
   Location: 'Lokasi',
   'Log out': 'Keluar',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': 'Buat 1 sampai 20 situs.',
   'Many sites': 'Banyak situs',
   'Map with no visitor locations': 'Peta tanpa lokasi pengunjung',
+  'Measure Core Web Vitals': 'Ukur Core Web Vitals',
   Medium: 'Medium',
   Mobile: 'Seluler',
   Mode: 'Mode',
+  Month: 'Bulan',
   'Month first, in words': 'Bulan dahulu, dengan kata',
   'Month, day, year': 'Bulan, hari, tahun',
   'Move {name} earlier': 'Pindahkan {name} lebih awal',
   'Move {name} later': 'Pindahkan {name} lebih akhir',
   'My website': 'Situs web saya',
   Name: 'Nama',
+  'Needs work': 'Perlu perbaikan',
   new: 'baru',
   'New API key': 'Kunci API baru',
   'New funnel': 'Corong baru',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Belum ada corong. Buat satu untuk melihat di mana pengunjung pergi.',
   'No matches': 'Tidak ada yang cocok',
+  'No measurements in this period': 'Tidak ada pengukuran pada periode ini',
   'No payments in this period': 'Tidak ada pembayaran pada periode ini',
   'No sessions in this period': 'Tidak ada sesi pada periode ini',
+  'No targets yet': 'Belum ada target',
   'Nobody here right now': 'Tidak ada siapa pun saat ini',
   'Not set up': 'Belum diatur',
   'Nothing matches these filters': 'Tidak ada yang cocok dengan filter ini',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'Angka {number}',
   Numbers: 'Angka',
   'Numbers and money': 'Angka dan uang',
+  'On pace for about {count} (an estimate)': 'Dengan laju saat ini sekitar {count} (perkiraan)',
   'On the overview': 'Di ringkasan',
   'On the visitor’s device': 'Di perangkat pengunjung',
   'One site': 'Satu situs',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'Pembayaran dan API',
   'Payments and refunds': 'Pembayaran dan pengembalian dana',
   'Per site, weekends quieter; 0 for an empty site.': 'Per situs, akhir pekan lebih sepi; 0 untuk situs kosong.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Periode dimulai pada zona waktu situs, dan minggu dimulai pada hari Senin.',
   Persistent: 'Persisten',
   'Pick a date': 'Pilih tanggal',
   'Pick one or more blocks to add {place}.': 'Pilih satu atau beberapa blok untuk ditambahkan {place}.',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Paket berharga 9, 29, dan 99 kali lipat dari ini.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Arahkan penyedia pembayaran Anda ke endpoint dan tempel rahasia penandatanganannya. Pembayaran dicocokkan dengan kunjungan yang mengarah ke sana.',
+  Poor: 'Buruk',
   Preset: 'Prasetel',
   Presets: 'Prasetel',
   Preview: 'Pratinjau',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'Mode privasi',
   Prompt: 'Prompt',
   Provider: 'Penyedia',
+  Quarter: 'Kuartal',
   'Re-run payment attribution': 'Jalankan ulang atribusi pembayaran',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Pembaca tetap di tampilan langsung; sekitar seperempat dari permintaan setiap menit.',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Hapus filter {dimension} adalah {value}',
   'Remove one to add it somewhere else.': 'Hapus satu untuk menambahkannya di tempat lain.',
   'Remove step {number}': 'Hapus langkah {number}',
+  'Remove target {number}': 'Hapus target {number}',
   'Remove test data': 'Hapus data uji',
   'Remove the {filter} filter': 'Hapus filter {filter}',
   'Remove {name}': 'Hapus {name}',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Menghapus kunjungan yang tercatat sebelum suatu hari. Pembayaran yang lebih lama tetap ada untuk pendapatan, tanpa detail pelanggan.',
   renewal: 'perpanjangan',
+  Reports: 'Laporan',
   Reset: 'Atur ulang',
   'Reset layout': 'Atur ulang tata letak',
   'Reset the overview?': 'Atur ulang ringkasan?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'Sesi',
   Settings: 'Pengaturan',
   'Settings saved': 'Pengaturan tersimpan',
+  'Share of page views measured (%)': 'Porsi tampilan halaman yang diukur (%)',
   'Show only this visitor': 'Tampilkan hanya pengunjung ini',
   'Show password': 'Tampilkan kata sandi',
   'Show {label} list': 'Tampilkan daftar {label}',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'Tablet',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Beri tag pada tautan yang Anda bagikan, agar kunjungan melaluinya dikreditkan ke kampanye yang tepat.',
+  Target: 'Target',
+  'Target {number}': 'Target {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Sepuluh situs berbeda selama dua bulan: kosong, sepi, baru diluncurkan, dijeda, toko yang ramai.',
   Term: 'Istilah',
@@ -539,7 +568,11 @@ export default {
   Theme: 'Tema',
   'Theme: {current}': 'Tema: {current}',
   'Theme: {current}. Switch to {next}': 'Tema: {current}. Beralih ke {next}',
+  'This month': 'Bulan ini',
+  'This quarter': 'Kuartal ini',
   'This site ({name})': 'Situs ini ({name})',
+  'This week': 'Minggu ini',
+  'Three in four page loads are at least this good.': 'Tiga dari empat pemuatan halaman setidaknya sebaik ini.',
   Time: 'Waktu',
   Timezone: 'Zona waktu',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'Sumber lalu lintas',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Anggap wajib untuk pengunjung UE: minta persetujuan sebelum pelacak berjalan, dan panggil analytik.consent() saat setuju.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Aktifkan Core Web Vitals di Pengaturan → Kode pelacakan untuk melihatnya di sini.',
   'Twelve sites with a month each, for the sites overview.':
     'Dua belas situs dengan masing-masing satu bulan, untuk ringkasan situs.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
@@ -603,6 +638,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Kunjungan per hari dari 0 sampai 100.000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Tunggu interaksi atau 3 detik di layar sebelum menghitung (menyaring bot)',
+  Week: 'Minggu',
   'What the tracker may store, and which visits are counted.':
     'Apa yang boleh disimpan pelacak, dan kunjungan mana yang dihitung.',
   'What {mode} mode means': 'Arti mode {mode}',

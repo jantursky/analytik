@@ -43,6 +43,13 @@ describe('the dashboard served in front of the app', () => {
     expect(await icon.text()).toContain('<svg')
   })
 
+  it('serves the opt-in vitals script next to the tracker', async () => {
+    const vitals = await get(withDashboard(app()), '/js/analytik-vitals.js')
+    expect(await vitals.text()).toContain('vitals')
+    expect(vitals.headers.get('content-type')).toBe('text/javascript; charset=utf-8')
+    expect(vitals.headers.get('cache-control')).toBe('public, max-age=86400')
+  })
+
   it('serves the tracker at /js/analytik.js, and still at the old /analytik.js, and leaves everything else to the app', async () => {
     const handler = withDashboard(app())
     const tracker = await get(handler, '/js/analytik.js')

@@ -506,12 +506,14 @@ export function Dashboard({
                 leading={<SiteTile site={site} />}
                 value={site.id}
                 options={[
-                  ...list.map((s) => ({
-                    value: s.id,
-                    label: s.name,
-                    description: s.domain,
-                    icon: <SiteTile site={s} />,
-                  })),
+                  ...[...list]
+                    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }))
+                    .map((s) => ({
+                      value: s.id,
+                      label: s.name,
+                      description: s.domain,
+                      icon: <SiteTile site={s} />,
+                    })),
                   {
                     value: NEW_SITE,
                     label: t('Add website…'),

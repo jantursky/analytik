@@ -1,6 +1,6 @@
 {
   "name": "analytik",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Privacy-first, cookieless web analytics you host yourself: a Hono server for Cloudflare Workers, Vercel, Bun and Node, D1, Postgres and SQLite storage, a tiny tracker, React bindings and an embeddable dashboard.",
   "license": "MIT",
   "author": {
@@ -98,6 +98,7 @@
       "default": "./dist/standalone.js"
     },
     "./analytik.js": "./dist/analytik.js",
+    "./analytik-vitals.js": "./dist/analytik-vitals.js",
     "./migrate": {
       "types": "./dist/migrate.d.ts",
       "default": "./dist/migrate.js"
@@ -145,7 +146,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:coverage": "vitest run --coverage",
     "test:browser": "vitest run --config vitest.browser.config.ts",
-    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./dashboard/styles.css",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./analytik-vitals.js ./dashboard/styles.css",
     "prepublishOnly": "bun run typecheck && bun run test && bun run test:browser && bun run build && bun run lint:package && bun run test:pack",
     "test:pack": "node scripts/pack-test.js",
     "size": "size-limit",

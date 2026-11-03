@@ -1,6 +1,7 @@
 import { t } from '../i18n'
 import { View } from '../ui/motion'
 import { BreakdownCard } from './Breakdown'
+import { Vitals } from './Vitals'
 
 export function Sources() {
   return (
@@ -18,6 +19,7 @@ export function Pages() {
   return (
     <View>
       <BreakdownCard title={t('Pages')} dimensions={['page', 'entry', 'exit']} limit={50} />
+      <Vitals />
     </View>
   )
 }

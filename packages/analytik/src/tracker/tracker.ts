@@ -31,6 +31,8 @@ if (script && !w.analytik?.track) {
     autoOutbound: flag('auto-outbound', true),
     autoTrackAttrs: flag('auto-track-attrs', true),
     pingInterval: attr('ping-interval') == null ? undefined : Number(attr('ping-interval')),
+    vitals: attr('vitals') == null ? undefined : Number(attr('vitals')),
+    vitalsSrc: src ? new URL('analytik-vitals.js', new URL(src, location.href)).href : undefined,
   })
   const queue = w.analytik?.q ?? []
   const analytik = toGlobal(engine)

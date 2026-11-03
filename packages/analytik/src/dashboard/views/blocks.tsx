@@ -14,6 +14,8 @@ import { BreakdownCard } from './Breakdown'
 import { Visitor } from './cells'
 import { exactMetric, formatMetric, METRICS, type MetricKey } from './metrics'
 import { SummaryBlock } from './SummaryBlock'
+import { GoalTargets } from './Targets'
+import { Vitals } from './Vitals'
 import { useOverview } from './useOverview'
 import { describeEvent } from './Realtime'
 
@@ -417,7 +419,18 @@ export const BLOCKS = {
     description: msg('Completed goals and custom events.'),
     category: 'Content',
     wide: false,
-    render: () => <BreakdownCard title={t('Goals')} dimensions={['goal', 'event']} limit={8} />,
+    render: () => (
+      <BreakdownCard title={t('Goals')} dimensions={['goal', 'event']} limit={8} before={<GoalTargets />} />
+    ),
+  },
+  vitals: {
+    name: msg('Core Web Vitals'),
+    description: msg(
+      'How fast pages load, respond and hold still for real visitors, rated for the site and each page.',
+    ),
+    category: 'Content',
+    wide: true,
+    render: () => <Vitals />,
   },
   kpis: {
     name: msg('Key numbers'),

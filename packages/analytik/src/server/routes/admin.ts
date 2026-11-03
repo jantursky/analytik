@@ -38,6 +38,8 @@ import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
 import { purgeBefore } from '../stats/purge'
+import { targetProgress } from '../stats/targets'
+import { vitalsResult } from '../stats/vitals'
 import {
   COMPARISONS,
   DIMENSIONS,
@@ -126,6 +128,7 @@ function pageParams(c: HonoContext): PageOptions {
 
 /** How long a CDN may keep a response served through a share link, so a popular link does not hit the database each time. */
 const SHARE_CACHE_SECONDS = 60
+const PRIVATE_CACHE_SECONDS = 60
 const SHARE_CACHE_LIVE_SECONDS = 10
 
 /**
@@ -276,6 +279,19 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   app.get('/sites/:id/bots', async (c) =>
     c.json(await botStats(ctx, c.get('site'), query(c), botFilters(new URL(c.req.url).searchParams))),
   )
+  // Targets count in their own period, not the toolbar's range, and move slowly, so the browser may keep the answer
+  // briefly. Admin only: a target is a business goal, so a share link never reads it.
+  app.get('/sites/:id/targets', async (c) => {
+    const result = await targetProgress(ctx, c.get('site'))
+    c.header('cache-control', `private, max-age=${PRIVATE_CACHE_SECONDS}`)
+    return c.json(result)
+  })
+  // Percentiles over a range are worth keeping for a minute: the same reports answer the same way.
+  app.get('/sites/:id/vitals', async (c) => {
+    const result = await vitalsResult(ctx, c.get('site'), query(c))
+    c.header('cache-control', `private, max-age=${PRIVATE_CACHE_SECONDS}`)
+    return c.json(result)
+  })
   app.get('/sites/:id/realtime', async (c) => c.json(await realtime(ctx, c.get('site'))))
   app.get('/sites/:id/sessions', async (c) => c.json(await sessions(ctx, c.get('site'), query(c), pageParams(c))))
   app.get('/sites/:id/sessions/:sid', async (c) => {

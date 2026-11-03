@@ -34,6 +34,7 @@ interface Payload {
   a: unknown
   c: unknown
   o: unknown
+  v: unknown
   m: PrivacyMode | undefined
 }
 
@@ -64,6 +65,7 @@ function parsePayload(raw: unknown): Payload | string {
     a: body.a,
     c: body.c,
     o: body.o,
+    v: body.v,
     m: MODES.has(body.m as PrivacyMode) ? (body.m as PrivacyMode) : undefined,
   }
 }
@@ -82,6 +84,22 @@ export function cleanProps(raw: unknown): Props | null {
     count++
   }
   return count > 0 ? props : null
+}
+
+/** Largest value kept for a metric: a page load that took a minute is a broken measurement, not a slow page. */
+const MAX_VITAL_MS = 60_000
+const MAX_CLS = 10
+
+/** The metrics of a vitals report that are numbers in range, rounded; null when none is. */
+export function cleanVitals(raw: unknown): { lcp: number | null; inp: number | null; cls: number | null } | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const { l, i, c } = raw as Record<string, unknown>
+  const within = (value: unknown, max: number): value is number =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max
+  const lcp = within(l, MAX_VITAL_MS) ? Math.round(l) : null
+  const inp = within(i, MAX_VITAL_MS) ? Math.round(i) : null
+  const cls = within(c, MAX_CLS) ? Math.round(c * 1000) / 1000 : null
+  return lcp === null && inp === null && cls === null ? null : { lcp, inp, cls }
 }
 
 function originAllowed(ctx: Context, site: SiteRecord, hostname: string): boolean {
@@ -321,6 +339,19 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   const path = pagePath(payload.url, ctx.keepQuery)
 
   if (payload.t === 'ping') {
+    // Vitals ride on the update sent when a page is left. A row holds only the path and the numbers, no visitor id,
+    // so it is the same in every privacy mode. A site that did not turn them on drops them.
+    const vitals = site.vitalsSample > 0 ? cleanVitals(payload.v) : null
+    if (vitals) {
+      await ctx.storage.run('INSERT INTO vitals (site_id, ts, path, lcp, inp, cls) VALUES (?, ?, ?, ?, ?, ?)', [
+        site.id,
+        now,
+        path,
+        vitals.lcp,
+        vitals.inp,
+        vitals.cls,
+      ])
+    }
     const ms = Math.max(0, Math.min(MAX_PING, Math.round(Number(payload.d) || 0)))
     if (visit.known) {
       const update = sessionUpdate(site.id, visit.sessionId, { duration: ms, seenAt: now })

@@ -29,6 +29,13 @@ export interface AnalytikOptions {
    * is a request. Default 240; 0 sends the time only when the page is hidden or left.
    */
   pingInterval?: number
+  /**
+   * Share of page views, in percent, that measure Core Web Vitals (LCP, INP, CLS) and send them with the update on
+   * leaving. Needs `vitalsSrc`, and the site's setting turned on. Default 0: nothing is measured or loaded.
+   */
+  vitals?: number
+  /** Address of `analytik-vitals.js`, loaded only for a sampled page view. Default next to `analytik.js`. */
+  vitalsSrc?: string
 }
 
 export interface RevenueOptions {

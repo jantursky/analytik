@@ -39,6 +39,21 @@ Each update is a request, which counts on hosts that bill per request, such as t
 
 Values under 30 count as 30. Settings → Tracking code in the dashboard has the same choice under **Activity updates** and writes it into the snippet.
 
+## Core Web Vitals
+
+A site can measure how fast its pages feel for real visitors: Largest Contentful Paint (LCP), Interaction to Next Paint (INP) and Cumulative Layout Shift (CLS). It is off by default. Turn it on in Settings → Tracking code, choose the share of page views to measure (10% by default), and paste the new snippet, which gains `data-vitals`:
+
+```html
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID" data-vitals="10"></script>
+```
+
+- **Nothing extra for everyone else.** `analytik.js` only decides, once per page view, whether this one is sampled. A sampled page view loads a second file, `analytik-vitals.js` (about 0.5 KB gzipped), which watches the three metrics. Without `data-vitals` that file is never requested.
+- **No extra requests.** The values travel with the update the tracker already sends when the visitor leaves the page, once per page load. A page left before a second of reading time has no update, so it has no vitals either.
+- **Privacy.** A report is the page path and up to three numbers. No visitor or session id is stored with it, in any privacy mode.
+- **Where the file comes from.** `analytik/standalone` serves it at `/js/analytik-vitals.js`, next to the tracker. If you host `analytik.js` yourself, copy `analytik/analytik-vitals.js` into the same folder; the tracker looks for it beside itself.
+
+A browser that cannot measure a metric leaves it out, and the dashboard shows a dash. The numbers are in the Pages view of the dashboard, see [Core Web Vitals](/guides/funnels-and-goals#core-web-vitals).
+
 ## JavaScript API
 
 The script defines a global `analytik`. You can call it as a function, `analytik('track', 'signup')`, or use methods. Calls made before the script has loaded are queued in `analytik.q` and run when it does, so you do not need to wait for it.

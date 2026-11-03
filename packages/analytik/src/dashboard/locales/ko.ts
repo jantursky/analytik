@@ -6,6 +6,7 @@ export default {
   '(none)': '(없음)',
   ', filter by this': ', 이 항목으로 필터링',
   ', then the same kinds again': ', 이후 같은 종류 반복',
+  '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1~20개, 이름은 Test site …',
   '1 to 20; each takes the next kind of site.': '1~20개이며, 각각 다음 종류의 사이트가 됩니다.',
   '12-hour clock': '12시간제',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': '한가한 사이트의 한 달 치 데이터입니다.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     '새 키가 생성되고 현재 키는 즉시 작동을 멈춥니다. 이전 키를 계속 보내는 서버는 업데이트하기 전까지 거부됩니다.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    '목표가 한 주, 한 달 또는 한 분기 안에 달성해야 하는 숫자입니다. 개요의 목표 블록에 진행 상황이 표시됩니다.',
   'A paid keyword, shown as Keyword': '유료 키워드이며 키워드로 표시됩니다',
   'A payment as the dashboard will show it.': '대시보드에 표시될 결제 모습입니다.',
   'A quarter at 3,000 visits a day.': '하루 3,000회 방문 기준의 한 분기입니다.',
@@ -47,6 +50,7 @@ export default {
   'Add a block after {name}': '{name} 뒤에 블록 추가',
   'Add a block before {name}': '{name} 앞에 블록 추가',
   'Add a number': '숫자 추가',
+  'Add a target': '목표 수치 추가',
   'Add a website': '웹사이트 추가',
   'Add block': '블록 추가',
   'Add step': '단계 추가',
@@ -63,6 +67,7 @@ export default {
   'All browsers': '모든 브라우저',
   'All channels': '모든 채널',
   'All devices': '모든 기기',
+  'All pages': '모든 페이지',
   'All providers': '모든 제공업체',
   'All sites': '모든 사이트',
   'All types': '모든 유형',
@@ -125,6 +130,7 @@ export default {
   'Copy snippet': '스니펫 복사',
   'Copy URL': 'URL 복사',
   'Copy visitor id': '방문자 ID 복사',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": '웹사이트를 추가하지 못했습니다',
   "Couldn't delete the website": '웹사이트를 삭제하지 못했습니다',
   "Couldn't sign in": '로그인하지 못했습니다',
@@ -164,6 +170,8 @@ export default {
   'Dot groups, comma decimals': '점 구분, 쉼표 소수',
   'Download everything stored for this site, or re-run attribution.':
     '이 사이트에 저장된 모든 데이터를 내려받거나 기여도 분석을 다시 실행합니다.',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    '측정한 페이지뷰마다 데이터베이스에 행이 하나 추가되므로 비율이 낮을수록 쓰기가 줄어듭니다. 업데이트된 추적 코드를 페이지에 붙여 넣으세요.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     '사이트마다 다릅니다: 비어 있음, 한가함, 보통, 바쁨, 막 시작함, 일시 중지됨.',
   'Empty keeps everything.': '비워 두면 모두 보관합니다.',
@@ -205,11 +213,15 @@ export default {
   'Generating…': '생성 중…',
   'Globe view': '지구본 보기',
   'Goal name': '목표 이름',
+  'Goal targets': '목표 수치',
   'Goals and events': '목표 및 이벤트',
+  Good: '좋음',
   'Half width': '절반 너비',
   'Hide password': '비밀번호 숨기기',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     '모든 화면에서 수, 비율, 금액을 표기하는 방식입니다. 모든 관리자에게 저장됩니다.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    '실제 방문자에게 페이지가 얼마나 빠르게 로드되고, 반응하고, 안정적으로 유지되는지를 사이트와 페이지별로 평가합니다.',
   'How the site is named, where its events come from and how its reports are dated.':
     '사이트 이름, 이벤트가 들어오는 곳, 보고서의 날짜 기준을 정합니다.',
   'How to update': '업데이트 방법',
@@ -228,6 +240,8 @@ export default {
   'Light or dark for the whole dashboard. Saved for every admin.':
     '대시보드 전체의 라이트 또는 다크 테마입니다. 모든 관리자에게 저장됩니다.',
   'Live now': '지금 실시간',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    '실제 방문에서의 로딩, 반응성, 레이아웃 이동을 페이지뷰 일부에 대해 측정합니다. 값은 방문자가 페이지를 떠날 때 전송되는 업데이트와 함께 전송됩니다.',
   'Loading…': '불러오는 중…',
   'Log out': '로그아웃',
   'Looks like {example}': '예: {example}',
@@ -237,11 +251,14 @@ export default {
   'Make 1 to 20 sites.': '사이트를 1~20개 만듭니다.',
   'Many sites': '많은 사이트',
   'Map with no visitor locations': '방문자 위치가 없는 지도',
+  'Measure Core Web Vitals': 'Core Web Vitals 측정',
+  Month: '월',
   'Month first, in words': '월 먼저, 문자로',
   'Month, day, year': '월, 일, 년',
   'Move {name} earlier': '{name} 앞으로 이동',
   'Move {name} later': '{name} 뒤로 이동',
   'My website': '내 웹사이트',
+  'Needs work': '개선 필요',
   'New API key': '새 API 키',
   'New funnel': '새 퍼널',
   'New key created': '새 키를 만들었습니다',
@@ -257,8 +274,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     '아직 퍼널이 없습니다. 퍼널을 만들어 방문자가 어디서 이탈하는지 확인하세요.',
   'No matches': '일치하는 항목이 없습니다',
+  'No measurements in this period': '이 기간에 측정값이 없습니다',
   'No payments in this period': '이 기간에는 결제가 없습니다',
   'No sessions in this period': '이 기간에는 세션이 없습니다',
+  'No targets yet': '아직 목표 수치가 없습니다',
   'Nobody here right now': '지금은 아무도 없습니다',
   'Not set up': '설정되지 않음',
   'Nothing matches these filters': '이 필터와 일치하는 항목이 없습니다',
@@ -267,6 +286,7 @@ export default {
     '없음. 쿠키도, localStorage나 sessionStorage 기록도 없습니다.',
   'Number {number}': '숫자 {number}',
   'Numbers and money': '숫자와 금액',
+  'On pace for about {count} (an estimate)': '현재 속도라면 약 {count}(추정)',
   'On the overview': '개요에 표시',
   'On the visitor’s device': '방문자의 기기에 저장',
   'One site': '사이트 하나',
@@ -310,12 +330,15 @@ export default {
   'Payments and API': '결제 및 API',
   'Payments and refunds': '결제 및 환불',
   'Per site, weekends quieter; 0 for an empty site.': '사이트당 기준이며 주말은 더 한가합니다. 빈 사이트는 0입니다.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    '기간은 사이트의 시간대로 시작하며 주는 월요일에 시작합니다.',
   'Pick a date': '날짜 선택',
   'Pick one or more blocks to add {place}.': '{place} 추가할 블록을 하나 이상 선택하세요.',
   'Pick the first day': '첫 요일 선택',
   'Plans cost 9, 29 and 99 times this.': '요금제는 이 금액의 9배, 29배, 99배입니다.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     '결제 제공업체에 이 엔드포인트를 지정하고 서명 시크릿을 붙여 넣으세요. 결제는 그 결제로 이어진 방문과 매칭됩니다.',
+  Poor: '나쁨',
   'Previous month': '이전 달',
   'Previous page': '이전 페이지',
   'Previous period': '이전 기간',
@@ -323,6 +346,7 @@ export default {
   'Prices 10,000 times higher: revenue in the millions.': '가격이 10,000배 높아져 매출이 수백만 단위가 됩니다.',
   'Privacy and data collection': '개인정보 보호 및 데이터 수집',
   'Privacy mode': '개인정보 보호 모드',
+  Quarter: '분기',
   'Re-run payment attribution': '결제 기여도 재분석',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     '독자가 실시간 보기에 머물며, 매분 요청의 약 4분의 1이 발생합니다.',
@@ -335,6 +359,7 @@ export default {
   'Remove filter {dimension} is {value}': '필터 제거: {dimension}이(가) {value}',
   'Remove one to add it somewhere else.': '다른 곳에 추가하려면 하나를 제거하세요.',
   'Remove step {number}': '{number}단계 제거',
+  'Remove target {number}': '목표 수치 {number} 제거',
   'Remove test data': '테스트 데이터 제거',
   'Remove the {filter} filter': '{filter} 필터 제거',
   'Remove {name}': '{name} 제거',
@@ -342,6 +367,7 @@ export default {
     '사이트와 그에 기록된 모든 내용을 삭제합니다. 도메인과 관리자 비밀번호를 입력해야 합니다.',
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     '특정 날짜 이전에 기록된 방문을 삭제합니다. 그 이전 결제는 고객 정보 없이 매출용으로 유지됩니다.',
+  Reports: '보고',
   'Reset layout': '레이아웃 초기화',
   'Reset the overview?': '개요를 초기화할까요?',
   'Resume tracking': '추적 재개',
@@ -366,6 +392,7 @@ export default {
   'Search pages, sources, places, browsers': '페이지, 소스, 위치, 브라우저 검색',
   'Secret saved': '시크릿을 저장했습니다',
   'Settings saved': '설정을 저장했습니다',
+  'Share of page views measured (%)': '측정할 페이지뷰 비율(%)',
   'Show only this visitor': '이 방문자만 보기',
   'Show password': '비밀번호 표시',
   'Show {label} list': '{label} 목록 보기',
@@ -390,6 +417,8 @@ export default {
   'Summary and chart': '요약 및 차트',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     '공유하는 링크에 태그를 달아 해당 링크를 통한 방문이 올바른 캠페인에 반영되도록 하세요.',
+  Target: '목표 수치',
+  'Target {number}': '목표 수치 {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     '두 달 치의 서로 다른 사이트 10개입니다: 빈 사이트, 한가한 사이트, 막 시작한 사이트, 일시 중지된 사이트, 바쁜 쇼핑몰.',
   'Test data': '테스트 데이터',
@@ -417,7 +446,11 @@ export default {
     '엄격 모드의 해시에 탭 ID를 더해, 네트워크가 바뀌어도 하나의 방문으로 유지됩니다.',
   'Theme: {current}': '테마: {current}',
   'Theme: {current}. Switch to {next}': '테마: {current}. {next}(으)로 전환',
+  'This month': '이번 달',
+  'This quarter': '이번 분기',
   'This site ({name})': '이 사이트 ({name})',
+  'This week': '이번 주',
+  'Three in four page loads are at least this good.': '페이지 로드 4번 중 3번은 최소한 이 정도로 좋습니다.',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
     '시간대, 통화, 보관 기간은 {name}의 값으로 시작합니다. 나중에 사이트 설정에서 변경할 수 있습니다.',
   'Top pages, where visits start and end, and outbound links.':
@@ -433,6 +466,8 @@ export default {
   'Traffic sources': '트래픽 소스',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'EU 방문자에게는 필수로 간주하세요. 트래커가 실행되기 전에 동의를 구하고, 동의하면 analytik.consent()를 호출하세요.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    '여기에서 보려면 설정 → 추적 코드에서 Core Web Vitals를 켜세요.',
   'Twelve sites with a month each, for the sites overview.':
     '사이트 개요용으로, 한 달 치 데이터를 가진 사이트 12개입니다.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
@@ -466,6 +501,7 @@ export default {
   'Visits per day go from 0 to 100,000.': '일일 방문 수는 0에서 100,000까지입니다.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     '상호작용이 있거나 화면에 3초간 머문 뒤에 집계 (봇 걸러냄)',
+  Week: '주',
   'What the tracker may store, and which visits are counted.': '트래커가 저장할 수 있는 것과 집계할 방문을 정합니다.',
   'What {mode} mode means': '{mode} 모드란?',
   "What's new": '새로운 기능',

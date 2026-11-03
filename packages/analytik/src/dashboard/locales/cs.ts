@@ -6,6 +6,7 @@ export default {
   '(none)': '(žádné)',
   ', filter by this': ', filtrovat podle tohoto',
   ', then the same kinds again': ', poté znovu stejné druhy',
+  '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': '1 až 20, s názvem Test site …',
   '1 to 20; each takes the next kind of site.': '1 až 20; každý dostane další druh webu.',
   '12-hour clock': '12hodinový čas',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Měsíc klidného webu.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Vytvoří se nový klíč a stávající okamžitě přestane fungovat. Servery, které stále posílají starý klíč, budou odmítnuty, dokud je neaktualizujete.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Číslo, které má cíl dosáhnout za týden, měsíc nebo čtvrtletí. Blok Cíle v přehledu ukazuje postup.',
   'A paid keyword, shown as Keyword': 'Placené klíčové slovo, zobrazené jako Klíčové slovo',
   'A payment as the dashboard will show it.': 'Platba tak, jak ji zobrazí dashboard.',
   'A quarter at 3,000 visits a day.': 'Čtvrtletí s 3 000 návštěvami denně.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Přidat blok za {name}',
   'Add a block before {name}': 'Přidat blok před {name}',
   'Add a number': 'Přidat číslo',
+  'Add a target': 'Přidat cílovou hodnotu',
   'Add a website': 'Přidat web',
   'Add block': 'Přidat blok',
   'Add step': 'Přidat krok',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Všechny prohlížeče',
   'All channels': 'Všechny kanály',
   'All devices': 'Všechna zařízení',
+  'All pages': 'Všechny stránky',
   'All providers': 'Všichni poskytovatelé',
   'All sites': 'Všechny weby',
   'All types': 'Všechny typy',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Kopírovat kód',
   'Copy URL': 'Kopírovat URL',
   'Copy visitor id': 'Kopírovat ID návštěvníka',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Web se nepodařilo přidat',
   "Couldn't delete the website": 'Web se nepodařilo smazat',
   "Couldn't sign in": 'Přihlášení selhalo',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Stáhněte vše uložené pro tento web nebo znovu spusťte atribuci.',
   Duration: 'Trvání',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Každé změřené zobrazení stránky přidá do databáze jeden řádek, takže menší podíl stojí méně zápisů. Vložte aktualizovaný sledovací kód do svých stránek.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Každý web je jiný: prázdný, klidný, průměrný, rušný, právě spuštěný, pozastavený.',
   Email: 'E-mail',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'Glóbus',
   Goal: 'Cíl',
   'Goal name': 'Název cíle',
+  'Goal targets': 'Cílové hodnoty',
   Goals: 'Cíle',
   'Goals and events': 'Cíle a události',
+  Good: 'Dobré',
   'Half width': 'Poloviční šířka',
   'Hide password': 'Skrýt heslo',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Jak se píšou počty, poměry a částky ve všech zobrazeních. Uloženo pro každého správce.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Jak rychle se stránky načítají, reagují a drží pohromadě u skutečných návštěvníků, ohodnoceno pro web i pro každou stránku.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Jak se web jmenuje, odkud pocházejí jeho události a jak se datují reporty.',
   'How to update': 'Jak aktualizovat',
@@ -297,6 +309,8 @@ export default {
   Limits: 'Limity',
   Live: 'Naživo',
   'Live now': 'Právě teď',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Načítání, odezva a posun rozložení ze skutečných návštěv, pro podíl zobrazení stránek. Čísla se posílají s aktualizací, která se odešle, když návštěvník stránku opustí.',
   'Loading…': 'Načítám…',
   Location: 'Poloha',
   'Log out': 'Odhlásit se',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': 'Vytvořte 1 až 20 webů.',
   'Many sites': 'Mnoho webů',
   'Map with no visitor locations': 'Mapa bez poloh návštěvníků',
+  'Measure Core Web Vitals': 'Měřit Core Web Vitals',
   Medium: 'Médium',
   Mobile: 'Mobil',
   Mode: 'Režim',
+  Month: 'Měsíc',
   'Month first, in words': 'Nejdřív měsíc, slovy',
   'Month, day, year': 'Měsíc, den, rok',
   'Move {name} earlier': 'Posunout {name} dříve',
   'Move {name} later': 'Posunout {name} později',
   'My website': 'Můj web',
   Name: 'Název',
+  'Needs work': 'Potřebuje zlepšit',
   new: 'nové',
   'New API key': 'Nový API klíč',
   'New funnel': 'Nový trychtýř',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Zatím žádné trychtýře. Vytvořte jeden a uvidíte, kde návštěvníci odpadají.',
   'No matches': 'Žádné shody',
+  'No measurements in this period': 'V tomto období nejsou žádná měření',
   'No payments in this period': 'V tomto období nejsou žádné platby',
   'No sessions in this period': 'V tomto období nejsou žádné relace',
+  'No targets yet': 'Zatím žádné cílové hodnoty',
   'Nobody here right now': 'Právě tu nikdo není',
   'Not set up': 'Nenastaveno',
   'Nothing matches these filters': 'Těmto filtrům nic neodpovídá',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'Číslo {number}',
   Numbers: 'Čísla',
   'Numbers and money': 'Čísla a peníze',
+  'On pace for about {count} (an estimate)': 'Při současném tempu přibližně {count} (odhad)',
   'On the overview': 'Na přehledu',
   'On the visitor’s device': 'Na zařízení návštěvníka',
   'One site': 'Jeden web',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'Platby a API',
   'Payments and refunds': 'Platby a vrácení',
   'Per site, weekends quieter; 0 for an empty site.': 'Na web, o víkendech klidněji; 0 pro prázdný web.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Období začínají v časovém pásmu webu a týdny v pondělí.',
   Persistent: 'Trvalý',
   'Pick a date': 'Vybrat datum',
   'Pick one or more blocks to add {place}.': 'Vyberte jeden nebo více bloků k přidání {place}.',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Plány stojí 9násobek, 29násobek a 99násobek této částky.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Nasměrujte svého poskytovatele plateb na tento koncový bod a vložte jeho podpisový klíč. Platby se přiřadí k návštěvám, které k nim vedly.',
+  Poor: 'Špatné',
   Preset: 'Předvolba',
   Presets: 'Předvolby',
   Preview: 'Náhled',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'Režim soukromí',
   Prompt: 'Prompt',
   Provider: 'Poskytovatel',
+  Quarter: 'Čtvrtletí',
   'Re-run payment attribution': 'Znovu spustit atribuci plateb',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Čtenáři zůstávají v zobrazení naživo; přibližně čtvrtina požadavků oproti kontrole každou minutu.',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Odstranit filtr {dimension} je {value}',
   'Remove one to add it somewhere else.': 'Odstraňte jeden, abyste ho mohli přidat jinam.',
   'Remove step {number}': 'Odstranit krok {number}',
+  'Remove target {number}': 'Odstranit cílovou hodnotu {number}',
   'Remove test data': 'Odstranit testovací data',
   'Remove the {filter} filter': 'Odstranit filtr {filter}',
   'Remove {name}': 'Odstranit {name}',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Odstraní návštěvy zaznamenané před určitým dnem. Starší platby zůstanou v tržbách, bez údajů o zákazníkovi.',
   renewal: 'obnovení',
+  Reports: 'Hlášení',
   Reset: 'Obnovit původní',
   'Reset layout': 'Obnovit původní rozvržení',
   'Reset the overview?': 'Obnovit původní přehled?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'Relace',
   Settings: 'Nastavení',
   'Settings saved': 'Nastavení uloženo',
+  'Share of page views measured (%)': 'Podíl měřených zobrazení stránek (%)',
   'Show only this visitor': 'Zobrazit jen tohoto návštěvníka',
   'Show password': 'Zobrazit heslo',
   'Show {label} list': 'Zobrazit seznam: {label}',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'Tablet',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Označte odkazy, které sdílíte, aby se návštěvy přes ně připsaly správné kampani.',
+  Target: 'Cílová hodnota',
+  'Target {number}': 'Cílová hodnota {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Deset různých webů za dva měsíce: prázdný, klidný, právě spuštěný, pozastavený, rušný obchod.',
   Term: 'Výraz',
@@ -539,7 +568,11 @@ export default {
   Theme: 'Motiv',
   'Theme: {current}': 'Motiv: {current}',
   'Theme: {current}. Switch to {next}': 'Motiv: {current}. Přepnout na {next}',
+  'This month': 'Tento měsíc',
+  'This quarter': 'Toto čtvrtletí',
   'This site ({name})': 'Tento web ({name})',
+  'This week': 'Tento týden',
+  'Three in four page loads are at least this good.': 'Tři ze čtyř načtení stránek jsou alespoň takto dobrá.',
   Time: 'Čas',
   Timezone: 'Časové pásmo',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -562,6 +595,8 @@ export default {
   'Traffic sources': 'Zdroje návštěvnosti',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Pro návštěvníky z EU ji považujte za povinnou: požádejte o souhlas před spuštěním trackeru a při souhlasu zavolejte analytik.consent().',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Zapněte Core Web Vitals v Nastavení → Sledovací kód, aby se zobrazily tady.',
   'Twelve sites with a month each, for the sites overview.': 'Dvanáct webů po jednom měsíci, pro přehled webů.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
     'Dvě vlastní cookies: analytik_vid na rok a analytik_sid na 30 minut, obě s náhodnými ID.',
@@ -601,6 +636,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Počet návštěv denně je od 0 do 100 000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Před započítáním počkat na interakci nebo 3 sekundy na obrazovce (filtruje boty)',
+  Week: 'Týden',
   'What the tracker may store, and which visits are counted.': 'Co smí tracker ukládat a které návštěvy se počítají.',
   'What {mode} mode means': 'Co znamená režim {mode}',
   "What's new": 'Co je nového',

@@ -2,7 +2,7 @@ import { parseRange } from '../shared/cidr'
 import { sha256Hex } from '../shared/crypto'
 import { randomId } from '../shared/ids'
 import { isValidTimeZone } from '../shared/time'
-import type { PaymentProvider, PrivacyMode, Site } from '../shared/types'
+import type { GoalTarget, PaymentProvider, PrivacyMode, Site, TargetPeriod } from '../shared/types'
 import { cleanDomain } from '../shared/url'
 import { AnalytikError, type Context } from './context'
 
@@ -17,6 +17,8 @@ export const PROVIDERS: readonly PaymentProvider[] = [
   'gumroad',
 ]
 const MODES: readonly PrivacyMode[] = ['strict', 'enriched', 'persistent']
+export const TARGET_PERIODS: readonly TargetPeriod[] = ['week', 'month', 'quarter']
+export const MAX_TARGETS = 20
 
 /** A site as stored, including what never leaves the server. */
 export interface SiteRecord extends Site {
@@ -39,6 +41,8 @@ interface SiteRow {
   paused: number
   ignored_ips: string
   ignore_admins: number
+  targets: string
+  vitals_sample: number
   share_token: string | null
   created_at: number
 }
@@ -64,6 +68,8 @@ function toRecord(row: SiteRow): SiteRecord {
     paused: Boolean(row.paused),
     ignoreAdmins: Boolean(row.ignore_admins),
     ignoredIps: parseJson<string[]>(row.ignored_ips, []),
+    targets: parseJson<GoalTarget[]>(row.targets, []),
+    vitalsSample: row.vitals_sample,
     createdAt: row.created_at,
     apiKeyHash: row.api_key_hash,
     webhookSecrets: parseJson(row.webhook_secrets, {}),
@@ -126,6 +132,10 @@ export interface SiteInput {
   ignoredIps?: string[]
   /** Drop events from browsers holding an admin session (needs dashboard and tracker on one origin). */
   ignoreAdmins?: boolean
+  /** Targets for goals, at most 20; replaces the list. */
+  targets?: GoalTarget[]
+  /** Percent of page views, 0 to 100, that measure Core Web Vitals; 0 is off. */
+  vitalsSample?: number
   /** Set or (with null) remove a provider's webhook secret. */
   webhookSecrets?: Partial<Record<PaymentProvider, string | null>>
   /** true creates a new share token, null turns sharing off. */
@@ -187,6 +197,34 @@ function validate(input: Record<string, unknown>, current: SiteRecord | null): C
     if (typeof input.ignoreAdmins !== 'boolean') fail('ignoreAdmins must be a boolean')
     columns.ignore_admins = input.ignoreAdmins
   }
+  if (input.targets !== undefined) {
+    const list = input.targets
+    if (!Array.isArray(list) || list.length > MAX_TARGETS)
+      fail(`targets must be a list of up to ${MAX_TARGETS} targets`)
+    const seen = new Set<string>()
+    const targets = (list as unknown[]).map((item): GoalTarget => {
+      const { goal, target, period } = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
+      if (typeof goal !== 'string' || !goal.trim() || goal.trim().length > 100) {
+        fail('a target needs a goal name of up to 100 characters')
+      }
+      if (typeof target !== 'number' || !Number.isInteger(target) || target < 1 || target > 1_000_000_000) {
+        fail('a target must be a whole number from 1 to 1,000,000,000')
+      }
+      if (!TARGET_PERIODS.includes(period as TargetPeriod)) fail(`period must be one of ${TARGET_PERIODS.join(', ')}`)
+      const name = (goal as string).trim()
+      if (seen.has(`${name}\n${period as string}`)) fail(`${name} already has a ${period as string} target`)
+      seen.add(`${name}\n${period as string}`)
+      return { goal: name, target: target as number, period: period as TargetPeriod }
+    })
+    columns.targets = JSON.stringify(targets)
+  }
+  if (input.vitalsSample !== undefined) {
+    const sample = input.vitalsSample
+    if (typeof sample !== 'number' || !Number.isInteger(sample) || sample < 0 || sample > 100) {
+      fail('vitalsSample must be a whole number of percent from 0 to 100')
+    }
+    columns.vitals_sample = sample
+  }
   if (input.webhookSecrets !== undefined) {
     const secrets = input.webhookSecrets
     if (!secrets || typeof secrets !== 'object' || Array.isArray(secrets)) fail('webhookSecrets must be an object')
@@ -222,6 +260,7 @@ export async function createSite(
     paused: false,
     ignored_ips: '[]',
     ignore_admins: false,
+    targets: '[]',
     ...columns,
     api_key_hash: await hashApiKey(apiKey),
     share_token: input.shareToken === true ? randomId(24, ctx.random) : null,
@@ -269,6 +308,7 @@ export async function deleteSite(ctx: Context, id: string): Promise<void> {
       'bot_requests',
       'share_links',
       'annotations',
+      'vitals',
     ]
       .map((table) => ({ sql: `DELETE FROM ${table} WHERE site_id = ?`, params: [id] }))
       .concat({ sql: 'DELETE FROM sites WHERE id = ?', params: [id] }),

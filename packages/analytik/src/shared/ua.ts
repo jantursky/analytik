@@ -144,14 +144,47 @@ const BROWSER_RULES: Rule[] = [
   ['WebKit', /AppleWebKit/],
 ]
 
-/** iPads also claim `Mac OS X`, and Android and Chrome OS claim `Linux`, so they are tested first. */
+/**
+ * iPads also claim `Mac OS X`, and Android, Chrome OS, Tizen and the Linux distributions claim `Linux` (and many TVs
+ * and phones `Android`), so the specific systems are tested first.
+ */
 const OS_RULES: Rule[] = [
   ['iOS', /iPhone|iPod/],
   ['iPadOS', /iPad/],
+  ['Windows Phone', /Windows Phone/],
+  ['HarmonyOS', /HarmonyOS|OpenHarmony/],
+  ['KaiOS', /KAIOS/i],
+  ['Fire OS', /Kindle Fire|\bKF[A-Z]{2,}\b|\bAFT[A-Z]+\b/],
+  ['Android TV', /Android[^)]*(\bTV\b|BRAVIA)/],
   ['Android', /Android/],
+  ['Xbox', /Xbox/],
   ['Windows', /Windows/],
   ['Chrome OS', /CrOS/],
   ['Mac OS', /Macintosh|Mac OS X/],
+  ['PlayStation', /PlayStation/],
+  ['Nintendo', /Nintendo/],
+  ['Roku', /Roku/],
+  ['Tizen', /Tizen/],
+  ['webOS', /Web0S|webOS|hpwOS/i],
+  ['BlackBerry', /BlackBerry|BB10|RIM Tablet/],
+  ['Symbian', /Symbian|Series60/],
+  ['Sailfish OS', /Sailfish/],
+  ['Ubuntu', /Ubuntu/],
+  ['Debian', /Debian/],
+  ['Fedora', /Fedora/],
+  ['Linux Mint', /Linux Mint/],
+  ['openSUSE', /SUSE/i],
+  ['Red Hat', /Red ?Hat/],
+  ['CentOS', /CentOS/],
+  ['Gentoo', /Gentoo/],
+  ['Arch Linux', /Arch ?Linux/],
+  ['Manjaro', /Manjaro/],
+  ['Raspberry Pi OS', /Raspbian/],
+  ['Deepin', /Deepin/],
+  ['FreeBSD', /FreeBSD/],
+  ['OpenBSD', /OpenBSD/],
+  ['NetBSD', /NetBSD/],
+  ['Solaris', /SunOS|Solaris/],
   ['Linux', /Linux/],
 ]
 

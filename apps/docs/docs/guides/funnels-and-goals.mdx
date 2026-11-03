@@ -68,6 +68,27 @@ for (const step of result.steps) {
 }
 ```
 
+## Set a target for a goal
+
+A goal can have a target: a number to reach within a week, a month or a quarter. Add targets in Settings → Goals, or send `targets` when you update the site:
+
+```sh
+curl -X PATCH /api/sites/SITE_ID -H 'Content-Type: application/json' \
+  -d '{ "targets": [{ "goal": "signup", "target": 1000, "period": "month" }] }'
+```
+
+The Goals block on the overview then shows the count so far, the share of the target and, once a tenth of the period has passed, where the period is heading at the current pace (a straight-line estimate). A site can have up to 20 targets.
+
+Progress always covers the target's own period, in the site's time zone with weeks starting on Monday, whatever date range the dashboard shows. `GET /api/sites/SITE_ID/targets` returns it as `TargetsResult`, and `analytik.stats.targets(siteId)` does the same in code. All targets with the same period are counted with one query. Targets are admin only: shared dashboards do not show them.
+
+## Core Web Vitals
+
+The Pages view has a Core Web Vitals card: the 75th percentile of LCP, INP and CLS for the whole site and for the fifty pages with the most reports, each rated good, needs work or poor with Google's thresholds (LCP up to 2.5 s and over 4 s, INP up to 200 ms and over 500 ms, CLS up to 0.1 and over 0.25). Three in four page loads are at least as good as the number shown. It is also a block you can add to the overview.
+
+Measuring is opt-in per site and sampled; see [the tracker guide](/guides/tracker#core-web-vitals) for how to turn it on. `GET /api/sites/SITE_ID/vitals` returns the same numbers as `VitalsResult` for the dashboard's range, and `analytik.stats.vitals(siteId, query)` does it in code. The server reads the newest 20,000 reports of the range and ranks them in the database. Shared dashboards do not show the card, and the route is admin only.
+
+Reports follow the site's retention setting and are deleted with the site.
+
 ## Notes on accuracy
 
 In `strict` mode a visitor who changes network mid-funnel is counted as two visitors, and one of them drops out. Expect funnel completion to read a little lower than in `persistent` mode.

@@ -1804,6 +1804,26 @@ button.analytik-bar:hover {
   gap: 10px;
 }
 
+.analytik-bar-share {
+  flex: none;
+  color: var(--analytik-text-faint);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Hovering or focusing anywhere in the card shows every row's share of the whole. */
+.analytik-card:hover .analytik-bar-share,
+.analytik-card:focus-within .analytik-bar-share {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-bar-share {
+    transition: none;
+  }
+}
+
 .analytik-bar-change {
   flex: none;
   min-width: 52px;
@@ -4746,6 +4766,153 @@ tr:hover .analytik-row-button {
   border-radius: 6px;
   background: var(--analytik-series-1);
   transform-origin: left;
+}
+
+/* Core Web Vitals per page: a table of values, each with its rating written out. */
+.analytik-vitals-scroll {
+  overflow-x: auto;
+}
+
+.analytik-vitals {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytik-vitals :is(th, td) {
+  padding: 9px 12px 9px 0;
+  border-top: 1px solid var(--analytik-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.analytik-vitals thead th {
+  border-top: 0;
+  color: var(--analytik-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.analytik-vitals :is(th, td):first-child {
+  text-align: left;
+}
+
+.analytik-vitals abbr {
+  text-decoration: none;
+}
+
+.analytik-vital-page {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.analytik-vital-count {
+  color: var(--analytik-text-muted);
+}
+
+.analytik-vital-value {
+  display: block;
+  font-weight: 600;
+}
+
+.analytik-vital-rating {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.analytik-vitals [data-rating='good'] .analytik-vital-rating {
+  color: var(--analytik-success-text);
+}
+
+.analytik-vitals [data-rating='needs-work'] .analytik-vital-rating {
+  color: var(--analytik-caution);
+}
+
+.analytik-vitals [data-rating='poor'] .analytik-vital-rating {
+  color: var(--analytik-danger);
+}
+
+/* Progress to goal targets, above the goals breakdown. */
+.analytik-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--analytik-border);
+}
+
+.analytik-target {
+  display: grid;
+  gap: 6px;
+}
+
+.analytik-target-head,
+.analytik-target-figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.analytik-target-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytik-target-track {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--analytik-bg-muted);
+}
+
+.analytik-target-value {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: var(--analytik-series-1);
+  transform-origin: left;
+}
+
+.analytik-target-value[data-reached] {
+  background: var(--analytik-success);
+}
+
+.analytik-target-pace {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+/* Rows of the target list in Settings: goal, number and period side by side, wrapping on a phone. */
+.analytik-target-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.analytik-target-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .analytik-target-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .analytik-target-row > :first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .analytik-feed-list {

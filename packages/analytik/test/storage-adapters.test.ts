@@ -24,8 +24,10 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0005_notifications',
       '0006_share_links',
       '0007_annotations',
+      '0008_goal_targets',
+      '0009_vitals',
     ])
-    expect(first.version).toBe('0007_annotations')
+    expect(first.version).toBe('0009_vitals')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
@@ -37,6 +39,8 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0005_notifications',
       '0006_share_links',
       '0007_annotations',
+      '0008_goal_targets',
+      '0009_vitals',
     ])
   })
 
@@ -111,9 +115,38 @@ describe('0002_imported', () => {
       '0005_notifications',
       '0006_share_links',
       '0007_annotations',
+      '0008_goal_targets',
+      '0009_vitals',
     ])
     expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
     expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])
+    await storage.close?.()
+  })
+})
+
+describe('0008_goal_targets', () => {
+  it('leaves existing sites without targets', async () => {
+    const storage = memoryStorage()
+    await applyMigrations(storage, migrations.slice(0, 7))
+    await storage.run(
+      `INSERT INTO sites (id, name, domain, api_key_hash, created_at) VALUES ('s', 'S', 's.com', 'x', 1)`,
+    )
+    await applyMigrations(storage, migrations)
+    expect(await storage.query('SELECT targets FROM sites')).toEqual([{ targets: '[]' }])
+    await storage.close?.()
+  })
+})
+
+describe('0009_vitals', () => {
+  it('leaves existing sites with vitals off', async () => {
+    const storage = memoryStorage()
+    await applyMigrations(storage, migrations.slice(0, 8))
+    await storage.run(
+      `INSERT INTO sites (id, name, domain, api_key_hash, created_at) VALUES ('s', 'S', 's.com', 'x', 1)`,
+    )
+    await applyMigrations(storage, migrations)
+    expect(await storage.query('SELECT vitals_sample FROM sites')).toEqual([{ vitals_sample: 0 }])
+    expect(await storage.query('SELECT * FROM vitals')).toEqual([])
     await storage.close?.()
   })
 })

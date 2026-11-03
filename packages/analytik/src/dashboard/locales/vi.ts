@@ -6,6 +6,7 @@ export default {
   '(none)': '(không có)',
   ', filter by this': ', lọc theo mục này',
   ', then the same kinds again': ', sau đó lặp lại các loại tương tự',
+  '{count} of {target}': '{count} trên {target}',
   '1 to 20, named Test site …': '1 đến 20, đặt tên Test site …',
   '1 to 20; each takes the next kind of site.': '1 đến 20; mỗi trang nhận loại trang tiếp theo.',
   '12-hour clock': 'Đồng hồ 12 giờ',
@@ -25,6 +26,8 @@ export default {
   'A month of a quiet site.': 'Một tháng của trang ít hoạt động.',
   'A new key is created and the current one stops working at once. Servers that still send the old key are refused until you update them.':
     'Khóa mới được tạo và khóa hiện tại ngừng hoạt động ngay. Các máy chủ vẫn gửi khóa cũ sẽ bị từ chối cho đến khi bạn cập nhật.',
+  'A number a goal should reach in a week, month or quarter. The Goals block on the overview shows the progress.':
+    'Con số mà một mục tiêu cần đạt trong một tuần, một tháng hoặc một quý. Khối Mục tiêu trong tổng quan hiển thị tiến độ.',
   'A paid keyword, shown as Keyword': 'Từ khóa trả phí, hiển thị là Từ khóa',
   'A payment as the dashboard will show it.': 'Một khoản thanh toán như bảng điều khiển sẽ hiển thị.',
   'A quarter at 3,000 visits a day.': 'Một quý với 3.000 lượt truy cập mỗi ngày.',
@@ -48,6 +51,7 @@ export default {
   'Add a block after {name}': 'Thêm khối sau {name}',
   'Add a block before {name}': 'Thêm khối trước {name}',
   'Add a number': 'Thêm một số liệu',
+  'Add a target': 'Thêm chỉ tiêu',
   'Add a website': 'Thêm trang web',
   'Add block': 'Thêm khối',
   'Add step': 'Thêm bước',
@@ -65,6 +69,7 @@ export default {
   'All browsers': 'Tất cả trình duyệt',
   'All channels': 'Tất cả kênh',
   'All devices': 'Tất cả thiết bị',
+  'All pages': 'Tất cả trang',
   'All providers': 'Tất cả nhà cung cấp',
   'All sites': 'Tất cả trang',
   'All types': 'Tất cả loại',
@@ -155,6 +160,7 @@ export default {
   'Copy snippet': 'Sao chép đoạn mã',
   'Copy URL': 'Sao chép URL',
   'Copy visitor id': 'Sao chép ID khách truy cập',
+  'Core Web Vitals': 'Core Web Vitals',
   "Couldn't add the website": 'Không thể thêm trang web',
   "Couldn't delete the website": 'Không thể xóa trang web',
   "Couldn't sign in": 'Không thể đăng nhập',
@@ -214,6 +220,8 @@ export default {
   'Download everything stored for this site, or re-run attribution.':
     'Tải xuống mọi dữ liệu đã lưu của trang này, hoặc chạy lại ghi nhận nguồn.',
   Duration: 'Thời lượng',
+  'Each measured page view adds one row to your database, so a smaller share costs fewer writes. Paste the updated tracking snippet into your pages.':
+    'Mỗi lượt xem trang được đo sẽ thêm một dòng vào cơ sở dữ liệu của bạn, nên tỷ lệ nhỏ hơn tốn ít lượt ghi hơn. Hãy dán mã theo dõi đã cập nhật vào các trang của bạn.',
   'Each site differs: empty, quiet, average, busy, just launched, paused.':
     'Mỗi trang khác nhau: trống, ít hoạt động, trung bình, bận rộn, mới ra mắt, tạm dừng.',
   Email: 'Email',
@@ -267,12 +275,16 @@ export default {
   'Globe view': 'Chế độ quả địa cầu',
   Goal: 'Mục tiêu',
   'Goal name': 'Tên mục tiêu',
+  'Goal targets': 'Chỉ tiêu mục tiêu',
   Goals: 'Mục tiêu',
   'Goals and events': 'Mục tiêu và sự kiện',
+  Good: 'Tốt',
   'Half width': 'Nửa chiều rộng',
   'Hide password': 'Ẩn mật khẩu',
   'How counts, rates and amounts are written in every view. Saved for every admin.':
     'Cách viết số lượng, tỷ lệ và số tiền trong mọi chế độ xem. Được lưu cho mọi quản trị viên.',
+  'How fast pages load, respond and hold still for real visitors, rated for the site and each page.':
+    'Trang tải nhanh, phản hồi và giữ ổn định đến mức nào với khách truy cập thật, được đánh giá cho cả trang web và từng trang.',
   'How the site is named, where its events come from and how its reports are dated.':
     'Cách đặt tên trang, nguồn sự kiện và cách ghi ngày trong báo cáo.',
   'How to update': 'Cách cập nhật',
@@ -297,6 +309,8 @@ export default {
   Limits: 'Giới hạn',
   Live: 'Trực tiếp',
   'Live now': 'Ngay lúc này',
+  'Loading, responsiveness and layout shift from real visits, for a share of page views. The numbers travel with the update sent when a visitor leaves a page.':
+    'Tải trang, độ phản hồi và dịch chuyển bố cục từ các lượt truy cập thật, cho một tỷ lệ lượt xem trang. Các con số được gửi cùng bản cập nhật khi khách rời khỏi trang.',
   'Loading…': 'Đang tải…',
   Location: 'Vị trí',
   'Log out': 'Đăng xuất',
@@ -307,15 +321,18 @@ export default {
   'Make 1 to 20 sites.': 'Tạo 1 đến 20 trang.',
   'Many sites': 'Nhiều trang',
   'Map with no visitor locations': 'Bản đồ không có vị trí khách truy cập',
+  'Measure Core Web Vitals': 'Đo Core Web Vitals',
   Medium: 'Trung bình',
   Mobile: 'Di động',
   Mode: 'Chế độ',
+  Month: 'Tháng',
   'Month first, in words': 'Tháng trước, bằng chữ',
   'Month, day, year': 'Tháng, ngày, năm',
   'Move {name} earlier': 'Chuyển {name} lên trước',
   'Move {name} later': 'Chuyển {name} xuống sau',
   'My website': 'Trang web của tôi',
   Name: 'Tên',
+  'Needs work': 'Cần cải thiện',
   new: 'mới',
   'New API key': 'Khóa API mới',
   'New funnel': 'Phễu mới',
@@ -332,8 +349,10 @@ export default {
   'No funnels yet. Create one to see where visitors drop off.':
     'Chưa có phễu nào. Hãy tạo một phễu để xem khách truy cập rời đi ở đâu.',
   'No matches': 'Không có kết quả',
+  'No measurements in this period': 'Không có số đo nào trong giai đoạn này',
   'No payments in this period': 'Không có thanh toán nào trong kỳ này',
   'No sessions in this period': 'Không có phiên nào trong kỳ này',
+  'No targets yet': 'Chưa có chỉ tiêu',
   'Nobody here right now': 'Hiện không có ai',
   'Not set up': 'Chưa thiết lập',
   'Nothing matches these filters': 'Không có gì khớp với các bộ lọc này',
@@ -343,6 +362,7 @@ export default {
   'Number {number}': 'Số {number}',
   Numbers: 'Số liệu',
   'Numbers and money': 'Số liệu và tiền',
+  'On pace for about {count} (an estimate)': 'Với tốc độ hiện tại, khoảng {count} (ước tính)',
   'On the overview': 'Trong tổng quan',
   'On the visitor’s device': 'Trên thiết bị của khách truy cập',
   'One site': 'Một trang',
@@ -398,6 +418,8 @@ export default {
   'Payments and API': 'Thanh toán và API',
   'Payments and refunds': 'Thanh toán và hoàn tiền',
   'Per site, weekends quieter; 0 for an empty site.': 'Theo từng trang, cuối tuần ít hơn; 0 cho trang trống.',
+  "Periods start in the site's time zone, and weeks on Monday.":
+    'Các khoảng thời gian bắt đầu theo múi giờ của trang, và tuần bắt đầu từ thứ Hai.',
   Persistent: 'Lâu dài',
   'Pick a date': 'Chọn ngày',
   'Pick one or more blocks to add {place}.': 'Chọn một hoặc nhiều khối để thêm {place}.',
@@ -405,6 +427,7 @@ export default {
   'Plans cost 9, 29 and 99 times this.': 'Các gói có giá gấp 9, 29 và 99 lần mức này.',
   'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.':
     'Trỏ nhà cung cấp thanh toán của bạn tới điểm cuối và dán khóa ký của họ. Thanh toán được ghép với các lượt truy cập dẫn đến chúng.',
+  Poor: 'Kém',
   Preset: 'Mẫu có sẵn',
   Presets: 'Mẫu có sẵn',
   Preview: 'Xem trước',
@@ -418,6 +441,7 @@ export default {
   'Privacy mode': 'Chế độ quyền riêng tư',
   Prompt: 'Lời nhắc',
   Provider: 'Nhà cung cấp',
+  Quarter: 'Quý',
   'Re-run payment attribution': 'Chạy lại ghi nhận nguồn thanh toán',
   'Readers stay in the live view; about a quarter of the requests of every minute.':
     'Người đọc vẫn ở chế độ xem trực tiếp; khoảng một phần tư số yêu cầu của mỗi phút.',
@@ -438,6 +462,7 @@ export default {
   'Remove filter {dimension} is {value}': 'Xóa bộ lọc {dimension} là {value}',
   'Remove one to add it somewhere else.': 'Hãy xóa một mục để thêm vào chỗ khác.',
   'Remove step {number}': 'Xóa bước {number}',
+  'Remove target {number}': 'Xóa chỉ tiêu {number}',
   'Remove test data': 'Xóa dữ liệu thử nghiệm',
   'Remove the {filter} filter': 'Xóa bộ lọc {filter}',
   'Remove {name}': 'Xóa {name}',
@@ -446,6 +471,7 @@ export default {
   'Removes the visits recorded before a day. Older payments stay for revenue, without customer details.':
     'Xóa các lượt truy cập được ghi trước một ngày. Thanh toán cũ hơn vẫn được giữ cho doanh thu, không kèm thông tin khách hàng.',
   renewal: 'gia hạn',
+  Reports: 'Báo cáo',
   Reset: 'Đặt lại',
   'Reset layout': 'Đặt lại bố cục',
   'Reset the overview?': 'Đặt lại tổng quan?',
@@ -476,6 +502,7 @@ export default {
   Sessions: 'Phiên',
   Settings: 'Cài đặt',
   'Settings saved': 'Đã lưu cài đặt',
+  'Share of page views measured (%)': 'Tỷ lệ lượt xem trang được đo (%)',
   'Show only this visitor': 'Chỉ hiện khách truy cập này',
   'Show password': 'Hiện mật khẩu',
   'Show {label} list': 'Hiện danh sách {label}',
@@ -510,6 +537,8 @@ export default {
   Tablet: 'Máy tính bảng',
   'Tag the links you share, so visits through them are credited to the right campaign.':
     'Gắn thẻ các liên kết bạn chia sẻ để các lượt truy cập qua chúng được ghi cho đúng chiến dịch.',
+  Target: 'Chỉ tiêu',
+  'Target {number}': 'Chỉ tiêu {number}',
   'Ten different sites over two months: empty, quiet, just launched, paused, a busy shop.':
     'Mười trang khác nhau trong hai tháng: trống, ít hoạt động, mới ra mắt, tạm dừng, một cửa hàng bận rộn.',
   Term: 'Cụm từ',
@@ -540,7 +569,11 @@ export default {
   Theme: 'Giao diện',
   'Theme: {current}': 'Giao diện: {current}',
   'Theme: {current}. Switch to {next}': 'Giao diện: {current}. Chuyển sang {next}',
+  'This month': 'Tháng này',
+  'This quarter': 'Quý này',
   'This site ({name})': 'Trang này ({name})',
+  'This week': 'Tuần này',
+  'Three in four page loads are at least this good.': 'Ba trên bốn lượt tải trang ít nhất cũng tốt như vậy.',
   Time: 'Thời gian',
   Timezone: 'Múi giờ',
   "Timezone, currency and retention start as on {name}. You can change them later in the site's settings.":
@@ -563,6 +596,8 @@ export default {
   'Traffic sources': 'Nguồn lưu lượng',
   'Treat it as required for EU visitors: ask before the tracker runs, and call analytik.consent() on agreement.':
     'Hãy coi đây là bắt buộc với khách truy cập EU: hỏi trước khi trình theo dõi chạy, và gọi analytik.consent() khi họ đồng ý.',
+  'Turn on Core Web Vitals in Settings → Tracking code to see them here.':
+    'Bật Core Web Vitals trong Cài đặt → Mã theo dõi để xem chúng ở đây.',
   'Twelve sites with a month each, for the sites overview.':
     'Mười hai trang, mỗi trang một tháng, cho phần tổng quan các trang.',
   'Two first-party cookies: analytik_vid for a year and analytik_sid for 30 minutes, both random ids.':
@@ -603,6 +638,7 @@ export default {
   'Visits per day go from 0 to 100,000.': 'Lượt truy cập mỗi ngày từ 0 đến 100.000.',
   'Wait for an interaction or 3 seconds on screen before counting (filters bots)':
     'Chờ tương tác hoặc 3 giây trên màn hình trước khi đếm (lọc bot)',
+  Week: 'Tuần',
   'What the tracker may store, and which visits are counted.':
     'Những gì trình theo dõi được lưu, và những lượt truy cập nào được tính.',
   'What {mode} mode means': 'Chế độ {mode} nghĩa là gì',

@@ -34,6 +34,33 @@ export type Dimension =
 
 export type Props = Record<string, string | number | boolean | null>
 
+/** How long a goal target runs; each period starts in the site's time zone (weeks on Monday). */
+export type TargetPeriod = 'week' | 'month' | 'quarter'
+
+/** "1,000 `signup` goals a month": the number a goal should reach within one period. */
+export interface GoalTarget {
+  goal: string
+  target: number
+  period: TargetPeriod
+}
+
+/** One target with the count so far in its current period. */
+export interface TargetProgress extends GoalTarget {
+  /** Goals recorded since the period began. */
+  count: number
+  /** Unix ms, `[start, end)` of the current period in the site's time zone. */
+  start: number
+  end: number
+  /** Where the period would end at the current pace; null until a tenth of the period has passed. */
+  projection: number | null
+}
+
+export interface TargetsResult {
+  /** Unix ms the counts were taken. */
+  now: number
+  targets: TargetProgress[]
+}
+
 export interface Site {
   id: string
   name: string
@@ -49,11 +76,41 @@ export interface Site {
   ignoredIps: string[]
   /** Events from browsers with an admin session are dropped (same-origin setups only). */
   ignoreAdmins: boolean
+  /** Targets for goals, at most 20. */
+  targets: GoalTarget[]
+  /** Share of page views, in percent, that measure Core Web Vitals; 0 turns it off. */
+  vitalsSample: number
   createdAt: number
   /** Which payment providers have a webhook secret configured. Secrets themselves are never returned. */
   webhooks?: Record<PaymentProvider, boolean>
   /** Token for the public read-only dashboard link, or null when sharing is off. */
   shareToken?: string | null
+}
+
+/** Core Web Vitals of one page load: Largest Contentful Paint and Interaction to Next Paint in ms, Cumulative Layout Shift as a score. */
+export interface Vitals {
+  l?: number
+  i?: number
+  c?: number
+}
+
+export type VitalMetric = 'lcp' | 'inp' | 'cls'
+
+/** The 75th percentile of each metric over some reports; null when none of them measured it. */
+export interface VitalValues {
+  /** Reports that carry any metric. */
+  samples: number
+  lcp: number | null
+  inp: number | null
+  cls: number | null
+}
+
+/** Core Web Vitals of a range: the whole site and its pages with the most reports. */
+export interface VitalsResult {
+  /** Whether the site measures them at all. */
+  enabled: boolean
+  total: VitalValues
+  pages: (VitalValues & { path: string })[]
 }
 
 /** What the tracker posts to `POST {basePath}/event`. Without `m` the server treats the event as `strict`. */
@@ -72,6 +129,8 @@ export interface TrackerPayload {
   c?: string
   o?: string
   m?: PrivacyMode
+  /** Core Web Vitals, sent once with the update on leaving a page when the site measures them. */
+  v?: Vitals
 }
 
 export interface PaymentInput {

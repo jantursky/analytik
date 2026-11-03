@@ -62,11 +62,52 @@ interface Site {
   ignoredIps: string[]
   /** Events from browsers holding an admin session are dropped; needs dashboard and tracker on one origin. */
   ignoreAdmins: boolean
+  /** Targets for goals, at most 20. */
+  targets: GoalTarget[]
+  /** Percent of page views, 0 to 100, that measure Core Web Vitals; 0 turns it off. */
+  vitalsSample: number
   createdAt: number // Unix milliseconds
   /** Which providers have a webhook secret configured. Secrets are never returned. */
   webhooks?: Record<PaymentProvider, boolean>
   /** Token for the read-only share link, or null when sharing is off. */
   shareToken?: string | null
+}
+```
+
+```ts
+type TargetPeriod = 'week' | 'month' | 'quarter'
+
+interface GoalTarget {
+  goal: string
+  target: number // a whole number
+  period: TargetPeriod
+}
+
+interface TargetProgress extends GoalTarget {
+  count: number // goals since the period began
+  start: number // Unix milliseconds, [start, end) in the site's time zone
+  end: number
+  projection: number | null // null until a tenth of the period has passed
+}
+
+interface TargetsResult {
+  now: number
+  targets: TargetProgress[]
+}
+```
+
+```ts
+interface VitalValues {
+  samples: number // reports that carry any metric
+  lcp: number | null // 75th percentile, milliseconds
+  inp: number | null // milliseconds
+  cls: number | null // a score
+}
+
+interface VitalsResult {
+  enabled: boolean // whether the site measures them
+  total: VitalValues
+  pages: (VitalValues & { path: string })[] // up to 50, most reports first
 }
 ```
 

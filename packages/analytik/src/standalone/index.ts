@@ -81,6 +81,10 @@ export function withDashboard<A extends unknown[]>(
         if (pathname === '/js/analytik.js' || pathname === '/analytik.js') {
           return asset(assets.tracker, 'text/javascript; charset=utf-8', 'public, max-age=86400')
         }
+        // Loaded by the tracker only for sites that turned on Core Web Vitals.
+        if (pathname === '/js/analytik-vitals.js') {
+          return asset(assets.vitals, 'text/javascript; charset=utf-8', 'public, max-age=86400')
+        }
         const match = /^\/_analytik\/([0-9a-f]{12})\.(js|css)$/.exec(pathname)
         if (match) {
           const [js, css] = await names
