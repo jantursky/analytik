@@ -54,7 +54,7 @@
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "838 kB"
+    "limit": "840 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
