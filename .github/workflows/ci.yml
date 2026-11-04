@@ -3,7 +3,11 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      ['apps/menubar/**', '.github/workflows/menubar.yml', '.github/dependabot.yml', '.github/ISSUE_TEMPLATE/**']
   pull_request:
+    paths-ignore:
+      ['apps/menubar/**', '.github/workflows/menubar.yml', '.github/dependabot.yml', '.github/ISSUE_TEMPLATE/**']
 
 concurrency:
   group: ci-${{ github.ref }}

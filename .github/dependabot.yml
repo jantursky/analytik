@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A new commit on main would otherwise rebase every open pull request and rerun all its checks each time.
+    rebase-strategy: disabled
+    open-pull-requests-limit: 3
     groups:
       # The framework the server and the React bindings are built on.
       hono:
