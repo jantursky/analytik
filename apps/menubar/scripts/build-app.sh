@@ -53,7 +53,11 @@ if [ -z "$IDENTITY" ] && [ -z "${CI:-}" ]; then
 fi
 if [ -n "$IDENTITY" ]; then
   echo "Signing with identity $IDENTITY"
-  codesign --force --deep --sign "$IDENTITY" "$APP"
+  case "$IDENTITY" in
+    # A Developer ID signature needs the hardened runtime and a timestamp to be notarised.
+    *"Developer ID"*) codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" "$APP" ;;
+    *) codesign --force --deep --sign "$IDENTITY" "$APP" ;;
+  esac
 else
   codesign --force --deep --sign - "$APP"
 fi

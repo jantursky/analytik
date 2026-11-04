@@ -25,11 +25,44 @@ jobs:
       - uses: actions/checkout@v7
       - name: Test
         run: swift test
+      - name: Import the signing certificate
+        id: signing
+        env:
+          CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          # Without the secrets (pull requests from forks) the app is signed ad-hoc.
+          if [ -z "$CERT_P12" ]; then exit 0; fi
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+          rm "$RUNNER_TEMP/cert.p12"
+          echo "identity=Developer ID Application: Apptiary s.r.o. (WC32T3GA27)" >> "$GITHUB_OUTPUT"
       - name: Build the app
+        env:
+          CODESIGN_IDENTITY: ${{ steps.signing.outputs.identity }}
         run: |
           VERSION=0.0.0-dev
           if [[ "$GITHUB_REF" == refs/tags/menubar-v* ]]; then VERSION="${GITHUB_REF_NAME#menubar-v}"; fi
           scripts/build-app.sh "$VERSION"
+      - name: Notarise
+        if: startsWith(github.ref, 'refs/tags/menubar-v') && steps.signing.outputs.identity != ''
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          if [ -z "$NOTARY_APPLE_ID" ]; then echo "No notarisation credentials: skipped"; exit 0; fi
+          ZIP="$(ls dist/*.zip)"
+          xcrun notarytool submit "$ZIP" --apple-id "$NOTARY_APPLE_ID" --team-id WC32T3GA27 --password "$NOTARY_PASSWORD" --wait
+          xcrun stapler staple "dist/Analytik Menu Bar.app"
+          rm "$ZIP"
+          (cd dist && ditto -c -k --keepParent "Analytik Menu Bar.app" "$(basename "$ZIP")")
       - name: Publish the release
         if: startsWith(github.ref, 'refs/tags/menubar-v')
         env:
