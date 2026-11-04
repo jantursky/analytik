@@ -9,7 +9,9 @@ export default {
   'Copy Mac app link': 'Salin tautan untuk aplikasi Mac',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Untuk aplikasi bilah menu Mac, pilih tampilan Ringkasan dan Langsung. Tautan untuk aplikasi Mac berisi alamat server, ID situs, dan token: salin lalu tempel ke aplikasi.',
+  'Copy command': 'Salin perintah',
   'Get the Mac app': 'Unduh aplikasi Mac',
+  'Install command': 'Perintah instalasi',
   'Mac app link': 'Tautan untuk aplikasi Mac',
   '{count} of {target}': '{count} dari {target}',
   '1 to 20, named Test site …': '1 sampai 20, bernama Test site …',

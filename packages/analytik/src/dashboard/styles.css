@@ -5818,3 +5818,16 @@ tr:hover .analytik-row-button {
     transform: rotate(360deg);
   }
 }
+
+.analytik-mac-app {
+  align-items: center;
+}
+
+.analytik-mac-app img {
+  flex: none;
+}
+
+.analytik-mac-app .analytik-input {
+  flex: 0 1 190px;
+  min-width: 0;
+}

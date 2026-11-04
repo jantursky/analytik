@@ -5,9 +5,11 @@ import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatDateTime } from '../format'
 import { msg, t } from '../i18n'
+import macAppIcon from '../mac-app-icon'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Status, useOutcome } from '../ui'
 import { Select } from '../ui/select'
 
+const MAC_APP_COMMAND = 'npx analytik menubar'
 const MAC_APP_GUIDE = 'https://analytik-docs.vercel.app/guides/mac-menu-bar#install'
 
 const VIEW_LABELS: Record<ShareView, string> = {
@@ -109,11 +111,20 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
           {t('Create link')}
         </button>
       </Actions>
-      <p className="analytik-field-hint">
-        <a href={MAC_APP_GUIDE} target="_blank" rel="noopener">
+      <div className="analytik-row analytik-mac-app">
+        <a className="analytik-button" href={MAC_APP_GUIDE} target="_blank" rel="noopener">
+          <img src={macAppIcon} alt="" width={20} height={20} />
           {t('Get the Mac app')}
         </a>
-      </p>
+        <input
+          className="analytik-input analytik-mono"
+          readOnly
+          value={MAC_APP_COMMAND}
+          aria-label={t('Install command')}
+          onFocus={(e) => e.currentTarget.select()}
+        />
+        <CopyButton text={MAC_APP_COMMAND} label={t('Copy command')} />
+      </div>
       {created && (
         <div className="analytik-share-created" role="status">
           <p>{t('Copy the link now. For safety it is not shown again.')}</p>

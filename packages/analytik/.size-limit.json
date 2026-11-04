@@ -29,7 +29,7 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "553 kB"
+    "limit": "556 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
@@ -53,14 +53,14 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "15.5 kB"
+    "limit": "15.6 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "902 kB"
+    "limit": "906 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
