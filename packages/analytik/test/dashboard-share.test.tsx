@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard, type DashboardView } from '../src/dashboard/index'
 import { fakeApi } from './dashboard-fixtures'
-import './dashboard-helpers'
+import { choose, selectTrigger } from './dashboard-helpers'
 import { byText, click, fill, render, settled, submit } from './react-render'
 
 const TOKEN = 'good-token-1234567890abcdef'
@@ -105,8 +105,14 @@ describe('Settings → Sharing', () => {
     const { container, api } = await sharing()
     expect(container.textContent).toContain('No share links yet.')
     await fill(container.querySelector('.analytik-field input'), 'Board')
-    await click(byText(container, 'Sessions', '.analytik-check'))
-    await click(byText(container, 'Bots', '.analytik-check'))
+    await click(byText(container, 'All views', 'button.analytik-date-trigger'))
+    await settled()
+    const boxes = [...document.querySelectorAll<HTMLInputElement>('.analytik-multi-list input')]
+    expect(boxes).toHaveLength(9)
+    await click(boxes[5]) // Sessions
+    await click(boxes[6]) // Bots
+    await settled()
+    expect(byText(document.body, '2 views', 'button.analytik-date-trigger')).toBeDefined()
     await submit(container.querySelector('form'))
     await settled()
     expect(api.find('POST', '/sites/site_1/share-links')[0]?.body).toEqual({
@@ -115,20 +121,8 @@ describe('Settings → Sharing', () => {
     })
     const created = container.querySelector<HTMLInputElement>('.analytik-share-created input')
     expect(created?.value).toBe(`${location.origin}/?site=site_1&share=new-token-1234567890abcdefghij`)
-    const mac = container.querySelector<HTMLInputElement>('.analytik-share-created input[aria-label="Mac app link"]')
-    const link = new URL(mac?.value ?? '')
-    expect(link.protocol).toBe('analytik:')
-    expect(link.host).toBe('connect')
-    expect(link.searchParams.get('server')).toBe(`${location.origin}/api`)
-    expect(link.searchParams.get('site')).toBe('site_1')
-    expect(link.searchParams.get('token')).toBe('new-token-1234567890abcdefghij')
-    expect(link.searchParams.get('name')).toBe('Example')
-    expect(link.searchParams.get('dashboard')).toBe(
-      `${location.origin}/?site=site_1&share=new-token-1234567890abcdefghij`,
-    )
-    expect(container.querySelector('.analytik-share-created')?.textContent).toContain(
-      'choose the Overview and Live views',
-    )
+    // A shared link is opened in a browser: no Mac app link beside it.
+    expect(container.querySelector('.analytik-share-created input[aria-label="Mac app link"]')).toBeNull()
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Board')
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Sessions, Bots')
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Active')
@@ -144,8 +138,33 @@ describe('Settings → Sharing', () => {
     expect(write).toHaveBeenCalledWith(expect.stringContaining('share=new-token-'))
   })
 
+  it('makes a Mac app link with the two views the app reads', async () => {
+    const { container, api } = await sharing()
+    await choose(selectTrigger(container, 'Link for'), 'Mac menu bar app')
+    // The app's views are fixed, so there is nothing to choose.
+    expect(byText(container, 'All views', 'button.analytik-date-trigger')).toBeUndefined()
+    await submit(container.querySelector('form'))
+    await settled()
+    expect(api.find('POST', '/sites/site_1/share-links')[0]?.body).toEqual({
+      label: '',
+      views: ['overview', 'realtime'],
+    })
+    const mac = container.querySelector<HTMLInputElement>('.analytik-share-created input[aria-label="Mac app link"]')
+    const link = new URL(mac?.value ?? '')
+    expect(link.protocol).toBe('analytik:')
+    expect(link.host).toBe('connect')
+    expect(link.searchParams.get('server')).toBe(`${location.origin}/api`)
+    expect(link.searchParams.get('site')).toBe('site_1')
+    expect(link.searchParams.get('token')).toBe('new-token-1234567890abcdefghij')
+    expect(link.searchParams.get('name')).toBe('Example')
+    expect(link.searchParams.get('dashboard')).toBe(
+      `${location.origin}/?site=site_1&share=new-token-1234567890abcdefghij`,
+    )
+  })
+
   it('copies the Mac app link', async () => {
     const { container } = await sharing()
+    await choose(selectTrigger(container, 'Link for'), 'Mac menu bar app')
     await submit(container.querySelector('form'))
     await settled()
     const write = vi.fn(() => Promise.resolve())

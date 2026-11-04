@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', filter berdasarkan ini',
   ', then the same kinds again': ', lalu jenis yang sama lagi',
   'Copy Mac app link': 'Salin tautan untuk aplikasi Mac',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Untuk aplikasi bilah menu Mac, pilih tampilan Ringkasan dan Langsung. Tautan untuk aplikasi Mac berisi alamat server, ID situs, dan token: salin lalu tempel ke aplikasi.',
   'Copy command': 'Salin perintah',
   'Get the Mac app': 'Unduh aplikasi Mac',
   'Install command': 'Perintah instalasi',
@@ -906,7 +904,6 @@ export default {
   'Export failed': 'Ekspor gagal',
   'Export PNG': 'Ekspor PNG',
   'Launched on Product Hunt': 'Peluncuran di Product Hunt',
-  'Leave all unchecked to show every view.': 'Biarkan semua tidak dicentang untuk menampilkan semua tampilan.',
   'Link created': 'Tautan dibuat',
   'Link revoked': 'Tautan dicabut',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -951,10 +948,13 @@ export default {
   'Applied to all sites': 'Diterapkan ke semua situs',
   Basics: 'Dasar',
   'Share links for several sites': 'Tautan berbagi untuk beberapa situs',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Membuat tautan hanya-baca untuk tiap situs yang dipilih dan satu teks yang menambahkan semuanya ke aplikasi bilah menu Mac. Tautan menampilkan Ringkasan dan Langsung, yang hanya dibaca aplikasi.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# situs}}',
   'Select all': 'Pilih semua',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Tempel ini di aplikasi pada Mac mana pun untuk menambahkan semua situs sekaligus. Isinya token, jadi jaga kerahasiaannya.',
+  'Link for': 'Tautan untuk',
+  'Mac menu bar app': 'Aplikasi bilah menu Mac',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, other {# tampilan}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Membuat tautan hanya-baca untuk setiap situs yang dipilih. Untuk aplikasi bilah menu Mac, satu teks menambahkan semuanya.',
 } satisfies Messages

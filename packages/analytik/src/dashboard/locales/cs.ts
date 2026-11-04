@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', filtrovat podle tohoto',
   ', then the same kinds again': ', poté znovu stejné druhy',
   'Copy Mac app link': 'Kopírovat odkaz pro aplikaci na Macu',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Pro aplikaci v liště menu na Macu zvolte zobrazení Přehled a Živě. Odkaz pro aplikaci na Macu obsahuje adresu serveru, ID webu a token: zkopírujte ho a vložte do aplikace.',
   'Copy command': 'Kopírovat příkaz',
   'Get the Mac app': 'Stáhnout aplikaci pro Mac',
   'Install command': 'Příkaz k instalaci',
@@ -914,7 +912,6 @@ export default {
   'Export failed': 'Export se nezdařil',
   'Export PNG': 'Exportovat PNG',
   'Launched on Product Hunt': 'Spuštění na Product Hunt',
-  'Leave all unchecked to show every view.': 'Když nic nezaškrtnete, zobrazí se všechna zobrazení.',
   'Link created': 'Odkaz byl vytvořen',
   'Link revoked': 'Odkaz byl zrušen',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -958,10 +955,14 @@ export default {
   'Applied to all sites': 'Použito na všechny weby',
   Basics: 'Základ',
   'Share links for several sites': 'Sdílené odkazy pro více webů',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Vytvoří odkaz jen pro čtení pro každý vybraný web a jeden text, který je všechny přidá do aplikace v liště nabídek na Macu. Odkazy ukazují Přehled a Živě, což je vše, co aplikace čte.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# web} few {# weby} other {# webů}}',
   'Select all': 'Vybrat vše',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Vložte to do aplikace na libovolném Macu a přidají se všechny tyto weby najednou. Obsahuje tokeny, proto to držte v soukromí.',
+  'Link for': 'Odkaz pro',
+  'Mac menu bar app': 'Aplikace v liště menu na Macu',
+  '{count, plural, one {# view} other {# views}}':
+    '{count, plural, one {# zobrazení} few {# zobrazení} other {# zobrazení}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Vytvoří odkaz jen pro čtení pro každý vybraný web. Pro aplikaci v liště menu na Macu je tu navíc jeden text, který je přidá všechny.',
 } satisfies Messages

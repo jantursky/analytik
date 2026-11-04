@@ -7,8 +7,6 @@ export default {
   ', filter by this': '，按此筛选',
   ', then the same kinds again': '，之后重复相同类型',
   'Copy Mac app link': '复制 Mac 应用链接',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Mac 菜单栏应用请选择“概览”和“实时”视图。Mac 应用链接包含服务器地址、站点 ID 和令牌：复制后粘贴到应用中即可。',
   'Copy command': '复制命令',
   'Get the Mac app': '获取 Mac 应用',
   'Install command': '安装命令',
@@ -884,7 +882,6 @@ export default {
   'Export failed': '导出失败',
   'Export PNG': '导出 PNG',
   'Launched on Product Hunt': '在 Product Hunt 上线',
-  'Leave all unchecked to show every view.': '全部不勾选则显示所有视图。',
   'Link created': '链接已创建',
   'Link revoked': '链接已撤销',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -927,10 +924,13 @@ export default {
   'Applied to all sites': '已应用到所有网站',
   Basics: '基础',
   'Share links for several sites': '多个网站的分享链接',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    '为所选的每个网站创建只读链接，并生成一段文本，一次把它们全部添加到 Mac 菜单栏应用。链接显示概览和实时，这也是应用读取的全部内容。',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# 个网站}}',
   'Select all': '全选',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     '把它粘贴到任何 Mac 上的应用，即可一次添加所有这些网站。其中包含令牌，请保密。',
+  'Link for': '链接用途',
+  'Mac menu bar app': 'Mac 菜单栏应用',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, other {# 个视图}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    '为你选择的每个网站创建只读链接。对于 Mac 菜单栏应用，一段文本即可全部添加。',
 } satisfies Messages

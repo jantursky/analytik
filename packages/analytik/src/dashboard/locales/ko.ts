@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', 이 항목으로 필터링',
   ', then the same kinds again': ', 이후 같은 종류 반복',
   'Copy Mac app link': 'Mac 앱용 링크 복사',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Mac 메뉴 막대 앱에는 개요와 실시간 보기를 선택하세요. Mac 앱용 링크에는 서버 주소, 사이트 ID, 토큰이 모두 들어 있습니다. 복사해서 앱에 붙여넣으세요.',
   'Copy command': '명령어 복사',
   'Get the Mac app': 'Mac 앱 받기',
   'Install command': '설치 명령어',
@@ -901,7 +899,6 @@ export default {
   'Export failed': '내보내기 실패',
   'Export PNG': 'PNG 내보내기',
   'Launched on Product Hunt': 'Product Hunt 출시',
-  'Leave all unchecked to show every view.': '아무것도 선택하지 않으면 모든 보기가 표시됩니다.',
   'Link created': '링크를 만들었습니다',
   'Link revoked': '링크를 취소했습니다',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -946,10 +943,13 @@ export default {
   'Applied to all sites': '모든 사이트에 적용했습니다',
   Basics: '기본',
   'Share links for several sites': '여러 사이트의 공유 링크',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    '선택한 각 사이트의 읽기 전용 링크와, 모두를 Mac 메뉴 막대 앱에 추가하는 텍스트 하나를 만듭니다. 링크는 개요와 라이브를 보여 주며 앱이 읽는 것은 이것뿐입니다.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, other {사이트 #개}}',
   'Select all': '모두 선택',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     '어느 Mac의 앱에든 붙여 넣으면 이 사이트들이 한꺼번에 추가됩니다. 토큰이 들어 있으니 비공개로 보관하세요.',
+  'Link for': '링크 용도',
+  'Mac menu bar app': 'Mac 메뉴 막대 앱',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, other {보기 #개}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    '선택한 각 사이트의 읽기 전용 링크를 만듭니다. Mac 메뉴 막대 앱용으로는 모두 한 번에 추가하는 텍스트 하나도 만듭니다.',
 } satisfies Messages

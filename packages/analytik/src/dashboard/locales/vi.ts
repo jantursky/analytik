@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', lọc theo mục này',
   ', then the same kinds again': ', sau đó lặp lại các loại tương tự',
   'Copy Mac app link': 'Sao chép liên kết cho ứng dụng Mac',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Với ứng dụng trên thanh menu Mac, hãy chọn chế độ xem Tổng quan và Trực tiếp. Liên kết cho ứng dụng Mac chứa địa chỉ máy chủ, ID trang web và mã thông báo: hãy sao chép rồi dán vào ứng dụng.',
   'Copy command': 'Sao chép lệnh',
   'Get the Mac app': 'Tải ứng dụng Mac',
   'Install command': 'Lệnh cài đặt',
@@ -909,7 +907,6 @@ export default {
   'Export failed': 'Xuất thất bại',
   'Export PNG': 'Xuất PNG',
   'Launched on Product Hunt': 'Ra mắt trên Product Hunt',
-  'Leave all unchecked to show every view.': 'Để trống tất cả để hiển thị mọi chế độ xem.',
   'Link created': 'Đã tạo liên kết',
   'Link revoked': 'Đã thu hồi liên kết',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -953,10 +950,13 @@ export default {
   'Applied to all sites': 'Đã áp dụng cho mọi trang web',
   Basics: 'Cơ bản',
   'Share links for several sites': 'Liên kết chia sẻ cho nhiều trang web',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Tạo liên kết chỉ đọc cho từng trang web đã chọn và một văn bản để thêm tất cả vào ứng dụng thanh menu Mac. Liên kết hiển thị Tổng quan và Trực tiếp, đó là tất cả những gì ứng dụng đọc.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# trang web}}',
   'Select all': 'Chọn tất cả',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Dán vào ứng dụng trên bất kỳ máy Mac nào để thêm tất cả các trang web này cùng lúc. Nó chứa mã token nên hãy giữ riêng tư.',
+  'Link for': 'Liên kết dành cho',
+  'Mac menu bar app': 'Ứng dụng thanh menu Mac',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, other {# chế độ xem}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Tạo liên kết chỉ đọc cho mỗi trang web bạn chọn. Với ứng dụng thanh menu Mac, một đoạn văn bản thêm tất cả chúng.',
 } satisfies Messages

@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', buna göre filtrele',
   ', then the same kinds again': ', sonra aynı türler yeniden',
   'Copy Mac app link': 'Mac uygulaması bağlantısını kopyala',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Mac menü çubuğu uygulaması için Genel Bakış ve Canlı görünümlerini seçin. Mac uygulaması bağlantısı sunucu adresini, site kimliğini ve belirteci içerir: kopyalayıp uygulamaya yapıştırın.',
   'Copy command': 'Komutu kopyala',
   'Get the Mac app': 'Mac uygulamasını indir',
   'Install command': 'Kurulum komutu',
@@ -912,7 +910,6 @@ export default {
   'Export failed': 'Dışa aktarma başarısız oldu',
   'Export PNG': 'PNG olarak dışa aktar',
   'Launched on Product Hunt': "Product Hunt'ta lansman",
-  'Leave all unchecked to show every view.': 'Hiçbirini işaretlemezseniz tüm görünümler gösterilir.',
   'Link created': 'Bağlantı oluşturuldu',
   'Link revoked': 'Bağlantı iptal edildi',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -957,10 +954,13 @@ export default {
   'Applied to all sites': 'Tüm sitelere uygulandı',
   Basics: 'Temel',
   'Share links for several sites': 'Birden çok site için paylaşım bağlantıları',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Seçilen her site için salt okunur bir bağlantı ve hepsini Mac menü çubuğu uygulamasına ekleyen tek bir metin oluşturur. Bağlantılar Genel Bakış ve Canlı’yı gösterir; uygulama yalnızca bunları okur.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# site} other {# site}}',
   'Select all': 'Tümünü seç',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Tüm bu siteleri tek seferde eklemek için bunu herhangi bir Mac’teki uygulamaya yapıştırın. Belirteçleri içerir, bu yüzden gizli tutun.',
+  'Link for': 'Bağlantı amacı',
+  'Mac menu bar app': 'Mac menü çubuğu uygulaması',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, one {# görünüm} other {# görünüm}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Seçtiğiniz her site için salt okunur bir bağlantı oluşturur. Mac menü çubuğu uygulaması için tek bir metin hepsini ekler.',
 } satisfies Messages

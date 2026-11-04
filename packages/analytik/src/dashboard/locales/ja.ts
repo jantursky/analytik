@@ -7,8 +7,6 @@ export default {
   ', filter by this': '、これで絞り込む',
   ', then the same kinds again': '、その後は同じ種類を繰り返します',
   'Copy Mac app link': 'Mac アプリ用リンクをコピー',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Mac のメニューバーアプリには、「概要」と「ライブ」のビューを選んでください。Mac アプリ用リンクにはサーバーのアドレス、サイト ID、トークンがすべて含まれています。コピーしてアプリに貼り付けてください。',
   'Copy command': 'コマンドをコピー',
   'Get the Mac app': 'Mac アプリを入手',
   'Install command': 'インストールコマンド',
@@ -906,7 +904,6 @@ export default {
   'Export failed': 'エクスポートに失敗しました',
   'Export PNG': 'PNGをエクスポート',
   'Launched on Product Hunt': 'Product Huntでローンチ',
-  'Leave all unchecked to show every view.': '何もチェックしないと、すべてのビューが表示されます。',
   'Link created': 'リンクを作成しました',
   'Link revoked': 'リンクを無効にしました',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -952,10 +949,13 @@ export default {
   'Applied to all sites': 'すべてのサイトに適用しました',
   Basics: '基本',
   'Share links for several sites': '複数サイトの共有リンク',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    '選んだサイトごとに閲覧専用リンクを作り、すべてをMacメニューバーアプリに追加する1つのテキストも作ります。リンクは概要とライブを表示し、アプリが読むのはそれだけです。',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# サイト}}',
   'Select all': 'すべて選択',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'どのMacのアプリにも貼り付ければ、これらのサイトをまとめて追加できます。トークンが含まれるため、非公開にしてください。',
+  'Link for': 'リンクの用途',
+  'Mac menu bar app': 'Mac メニューバーアプリ',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, other {# 件のビュー}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    '選んだ各サイトの読み取り専用リンクを作成します。Mac メニューバーアプリ用には、すべてをまとめて追加する 1 つのテキストも作成します。',
 } satisfies Messages

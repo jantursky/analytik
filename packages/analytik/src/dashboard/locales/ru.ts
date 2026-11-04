@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', фильтровать по этому',
   ', then the same kinds again': ', затем снова те же виды',
   'Copy Mac app link': 'Скопировать ссылку для приложения на Mac',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Для приложения в строке меню Mac выберите разделы «Обзор» и «Онлайн». Ссылка для приложения на Mac содержит адрес сервера, идентификатор сайта и токен: скопируйте её и вставьте в приложение.',
   'Copy command': 'Копировать команду',
   'Get the Mac app': 'Скачать приложение для Mac',
   'Install command': 'Команда установки',
@@ -916,7 +914,6 @@ export default {
   'Export failed': 'Не удалось выполнить экспорт',
   'Export PNG': 'Экспорт в PNG',
   'Launched on Product Hunt': 'Запуск на Product Hunt',
-  'Leave all unchecked to show every view.': 'Если ничего не отмечено, показываются все разделы.',
   'Link created': 'Ссылка создана',
   'Link revoked': 'Ссылка отозвана',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -961,11 +958,15 @@ export default {
   'Applied to all sites': 'Применено ко всем сайтам',
   Basics: 'Основное',
   'Share links for several sites': 'Ссылки для доступа к нескольким сайтам',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Создаёт ссылку только для чтения для каждого выбранного сайта и один текст, который добавляет их все в приложение в строке меню Mac. Ссылки показывают Обзор и Live — это всё, что читает приложение.',
   '{count, plural, one {# site} other {# sites}}':
     '{count, plural, one {# сайт} few {# сайта} many {# сайтов} other {# сайта}}',
   'Select all': 'Выбрать все',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Вставьте это в приложение на любом Mac, чтобы добавить все эти сайты сразу. Здесь есть токены, поэтому храните текст в тайне.',
+  'Link for': 'Ссылка для',
+  'Mac menu bar app': 'Приложение в строке меню Mac',
+  '{count, plural, one {# view} other {# views}}':
+    '{count, plural, one {# раздел} few {# раздела} many {# разделов} other {# раздела}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Создаёт ссылку только для чтения для каждого выбранного сайта. Для приложения в строке меню Mac один текст добавляет их все.',
 } satisfies Messages

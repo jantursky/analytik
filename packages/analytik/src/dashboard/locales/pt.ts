@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', filtrar por este',
   ', then the same kinds again': ', depois os mesmos tipos novamente',
   'Copy Mac app link': 'Copiar link para o app do Mac',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Para o app da barra de menus do Mac, escolha as vistas Visão geral e Ao vivo. O link para o app do Mac contém o endereço do servidor, o id do site e o token: copie-o e cole-o no app.',
   'Copy command': 'Copiar comando',
   'Get the Mac app': 'Baixar o app do Mac',
   'Install command': 'Comando de instalação',
@@ -913,7 +911,6 @@ export default {
   'Export failed': 'Falha na exportação',
   'Export PNG': 'Exportar PNG',
   'Launched on Product Hunt': 'Lançamento no Product Hunt',
-  'Leave all unchecked to show every view.': 'Deixe tudo desmarcado para mostrar todas as visualizações.',
   'Link created': 'Link criado',
   'Link revoked': 'Link revogado',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -957,10 +954,13 @@ export default {
   'Applied to all sites': 'Aplicado a todos os sites',
   Basics: 'Básico',
   'Share links for several sites': 'Links de compartilhamento para vários sites',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Cria um link somente leitura para cada site escolhido e um texto que adiciona todos ao app da barra de menus do Mac. Os links mostram Visão geral e Ao vivo, tudo o que o app lê.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# site} other {# sites}}',
   'Select all': 'Selecionar tudo',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Cole isto no app de qualquer Mac para adicionar todos esses sites de uma vez. Contém os tokens, então mantenha em privado.',
+  'Link for': 'Link para',
+  'Mac menu bar app': 'App da barra de menus do Mac',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, one {# visualização} other {# visualizações}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Cria um link somente leitura para cada site escolhido. Para o app da barra de menus do Mac, um único texto adiciona todos.',
 } satisfies Messages

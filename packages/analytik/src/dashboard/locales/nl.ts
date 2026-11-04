@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', filter hierop',
   ', then the same kinds again': ', daarna opnieuw dezelfde soorten',
   'Copy Mac app link': 'Link voor de Mac-app kopiëren',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Kies voor de Mac-menubalkapp de weergaven Overzicht en Live. De link voor de Mac-app bevat het serveradres, de site-id en het token: kopieer hem en plak hem in de app.',
   'Copy command': 'Opdracht kopiëren',
   'Get the Mac app': 'Mac-app downloaden',
   'Install command': 'Installatieopdracht',
@@ -914,7 +912,6 @@ export default {
   'Export failed': 'Exporteren mislukt',
   'Export PNG': 'PNG exporteren',
   'Launched on Product Hunt': 'Lancering op Product Hunt',
-  'Leave all unchecked to show every view.': 'Laat alles uitgevinkt om alle weergaven te tonen.',
   'Link created': 'Link gemaakt',
   'Link revoked': 'Link ingetrokken',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -958,10 +955,13 @@ export default {
   'Applied to all sites': 'Toegepast op alle sites',
   Basics: 'Basis',
   'Share links for several sites': 'Deellinks voor meerdere sites',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'Maakt een alleen-lezen link voor elke gekozen site en één tekst die ze allemaal toevoegt aan de Mac-menubalk-app. De links tonen Overzicht en Live, meer leest de app niet.',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# site} other {# sites}}',
   'Select all': 'Alles selecteren',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'Plak dit in de app op een willekeurige Mac om al deze sites in één keer toe te voegen. Het bevat de tokens, dus houd het privé.',
+  'Link for': 'Link voor',
+  'Mac menu bar app': 'Mac-menubalk-app',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, one {# weergave} other {# weergaven}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'Maakt een alleen-lezen link voor elke gekozen site. Voor de Mac-menubalk-app voegt één tekst ze allemaal toe.',
 } satisfies Messages

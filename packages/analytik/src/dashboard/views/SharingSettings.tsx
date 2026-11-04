@@ -7,6 +7,7 @@ import { formatDateTime } from '../format'
 import { msg, t } from '../i18n'
 import macAppIcon from '../mac-app-icon'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Status, useOutcome } from '../ui'
+import { MultiSelect } from '../ui/multi-select'
 import { Select } from '../ui/select'
 
 const MAC_APP_COMMAND = 'npx analytik menubar'
@@ -29,6 +30,37 @@ export const EXPIRIES = [
   { value: '30', label: msg('After 30 days') },
   { value: '90', label: msg('After 90 days') },
 ]
+
+/** What a link is made for: the Mac menu bar app reads two views and gets a link of its own, a shared link is opened in a browser. */
+export type LinkPurpose = 'general' | 'mac'
+
+export const LINK_PURPOSES: { value: LinkPurpose; label: string }[] = [
+  { value: 'general', label: msg('Share link') },
+  { value: 'mac', label: msg('Mac menu bar app') },
+]
+
+/** The views the Mac menu bar app reads. */
+export const MAC_APP_VIEWS: readonly ShareView[] = ['overview', 'realtime']
+
+/** The views a link shows, chosen in a dropdown; none chosen means every view. */
+export function ViewsSelect({ views, onChange }: { views: ShareView[]; onChange: (views: ShareView[]) => void }) {
+  const [only] = views
+  const summary =
+    views.length === 0 || views.length === SHARE_VIEWS.length
+      ? t('All views')
+      : only && views.length === 1
+        ? t(VIEW_LABELS[only])
+        : t('{count, plural, one {# view} other {# views}}', { count: views.length })
+  return (
+    <MultiSelect
+      label={t('Views the link shows')}
+      options={SHARE_VIEWS.map((view) => ({ value: view, label: t(VIEW_LABELS[view]) }))}
+      chosen={views}
+      onChange={(values) => onChange(values as ShareView[])}
+      summary={summary}
+    />
+  )
+}
 
 /** The address that opens the dashboard read-only: this page, with the site and the token. */
 export function shareAddress(siteId: string, token: string): string {
@@ -59,22 +91,21 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
   const { client, site, apiUrl } = useDashboard()
   const [label, setLabel] = useState('')
   const [views, setViews] = useState<ShareView[]>([])
+  const [purpose, setPurpose] = useState<LinkPurpose>('general')
   const [expires, setExpires] = useState('')
-  const [created, setCreated] = useState<{ address: string; mac: string }>()
+  const [created, setCreated] = useState<{ address: string; mac: string; purpose: LinkPurpose }>()
   const [outcome, run] = useOutcome()
-  const toggle = (view: ShareView): void =>
-    setViews(views.includes(view) ? views.filter((v) => v !== view) : [...views, view])
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
     run(
       client
         .createShareLink(site.id, {
           label: label.trim(),
-          views,
+          views: purpose === 'mac' ? [...MAC_APP_VIEWS] : views,
           ...(expires && { expiresInDays: Number(expires) }),
         })
         .then(({ token }) => {
-          setCreated({ address: shareAddress(site.id, token), mac: macAppLink(apiUrl, site, token) })
+          setCreated({ address: shareAddress(site.id, token), mac: macAppLink(apiUrl, site, token), purpose })
           setLabel('')
           onCreated()
         }),
@@ -94,29 +125,15 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
           onChange={setExpires}
         />
       </div>
-      <fieldset className="analytik-fieldset">
-        <legend className="analytik-field-label">{t('Views the link shows')}</legend>
-        <p className="analytik-field-hint">{t('Leave all unchecked to show every view.')}</p>
-        <div className="analytik-checks">
-          <label className="analytik-check">
-            <input
-              type="checkbox"
-              checked={views.length === SHARE_VIEWS.length}
-              ref={(input) => {
-                if (input) input.indeterminate = views.length > 0 && views.length < SHARE_VIEWS.length
-              }}
-              onChange={() => setViews(views.length === SHARE_VIEWS.length ? [] : [...SHARE_VIEWS])}
-            />
-            <strong>{t('Select all')}</strong>
-          </label>
-          {SHARE_VIEWS.map((view) => (
-            <label key={view} className="analytik-check">
-              <input type="checkbox" checked={views.includes(view)} onChange={() => toggle(view)} />
-              {t(VIEW_LABELS[view])}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <div className="analytik-row">
+        <Select
+          label={t('Link for')}
+          value={purpose}
+          options={LINK_PURPOSES.map((o) => ({ ...o, label: t(o.label) }))}
+          onChange={setPurpose}
+        />
+        {purpose === 'general' && <ViewsSelect views={views} onChange={setViews} />}
+      </div>
       <Actions outcome={outcome}>
         <button type="submit" className="analytik-button" data-variant="primary">
           {t('Create link')}
@@ -143,26 +160,14 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
             <input
               className="analytik-input analytik-mono"
               readOnly
-              value={created.address}
-              aria-label={t('Share link')}
+              value={created.purpose === 'mac' ? created.mac : created.address}
+              aria-label={created.purpose === 'mac' ? t('Mac app link') : t('Share link')}
               onFocus={(e) => e.currentTarget.select()}
             />
-            <CopyButton text={created.address} label={t('Copy link')} />
-          </div>
-          <p>
-            {t(
-              'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.',
-            )}
-          </p>
-          <div className="analytik-row">
-            <input
-              className="analytik-input analytik-mono"
-              readOnly
-              value={created.mac}
-              aria-label={t('Mac app link')}
-              onFocus={(e) => e.currentTarget.select()}
+            <CopyButton
+              text={created.purpose === 'mac' ? created.mac : created.address}
+              label={created.purpose === 'mac' ? t('Copy Mac app link') : t('Copy link')}
             />
-            <CopyButton text={created.mac} label={t('Copy Mac app link')} />
           </div>
         </div>
       )}

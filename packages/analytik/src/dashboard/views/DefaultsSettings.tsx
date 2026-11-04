@@ -1,18 +1,25 @@
-import { type SubmitEvent, useId, useState } from 'react'
+import { type SubmitEvent, useState } from 'react'
 
-import type { DefaultsGroup, GoalTarget, PrivacyMode, Site, SiteDefaults, TargetPeriod } from '../../shared/types'
+import type {
+  DefaultsGroup,
+  GoalTarget,
+  PrivacyMode,
+  ShareView,
+  Site,
+  SiteDefaults,
+  TargetPeriod,
+} from '../../shared/types'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { msg, t } from '../i18n'
-import { Icon } from '../icons'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Status, useOutcome } from '../ui'
-import { Popover } from '../ui/popover'
+import { MultiSelect } from '../ui/multi-select'
 import { CurrencySelect } from '../ui/currency'
 import { Select, type SelectOption } from '../ui/select'
 import { Switch } from '../ui/switch'
 import { TimeZoneSelect } from '../ui/timezone'
 import { MODE_INFO } from './privacy-modes'
-import { EXPIRIES, shareAddress } from './SharingSettings'
+import { EXPIRIES, LINK_PURPOSES, type LinkPurpose, MAC_APP_VIEWS, shareAddress, ViewsSelect } from './SharingSettings'
 
 const MAX_TARGETS = 20
 const DEFAULT_VITALS_SAMPLE = 10
@@ -263,55 +270,20 @@ function SiteMultiSelect({
   chosen: string[]
   onChange: (ids: string[]) => void
 }) {
-  const [open, setOpen] = useState(false)
-  const labelId = useId()
-  const all = chosen.length === sites.length
-  const toggle = (id: string): void => onChange(chosen.includes(id) ? chosen.filter((c) => c !== id) : [...chosen, id])
   const summary =
-    all && sites.length > 1
+    chosen.length === sites.length && sites.length > 1
       ? t('All sites')
       : chosen.length === 1
         ? (sites.find((s) => s.id === chosen[0])?.name ?? '')
         : t('{count, plural, one {# site} other {# sites}}', { count: chosen.length })
   return (
-    <div className="analytik-field">
-      <span className="analytik-field-label" id={labelId}>
-        {t('Sites')}
-      </span>
-      <Popover
-        open={open}
-        onOpenChange={setOpen}
-        label={t('Sites')}
-        className="analytik-date-popup"
-        trigger={
-          <button
-            type="button"
-            className="analytik-input analytik-date-trigger"
-            style={{ justifyContent: 'space-between' }}
-            aria-labelledby={labelId}
-          >
-            <span>{summary}</span>
-            <Icon name="down" />
-          </button>
-        }
-      >
-        <div
-          className="analytik-checks analytik-multi-list"
-          style={{ flexDirection: 'column', flexWrap: 'nowrap', maxHeight: 260, overflowY: 'auto' }}
-        >
-          <label className="analytik-check">
-            <input type="checkbox" checked={all} onChange={() => onChange(all ? [] : sites.map((s) => s.id))} />
-            <strong>{t('Select all')}</strong>
-          </label>
-          {sites.map((site) => (
-            <label key={site.id} className="analytik-check">
-              <input type="checkbox" checked={chosen.includes(site.id)} onChange={() => toggle(site.id)} />
-              {site.name}
-            </label>
-          ))}
-        </div>
-      </Popover>
-    </div>
+    <MultiSelect
+      label={t('Sites')}
+      options={sites.map((site) => ({ value: site.id, label: site.name }))}
+      chosen={chosen}
+      onChange={onChange}
+      summary={summary}
+    />
   )
 }
 
@@ -331,7 +303,7 @@ interface CreatedLink {
 
 // The links made last, kept in memory only: the server holds just a hash of each token, so once they are gone from
 // here they cannot be shown again. They survive a switch to another settings page, not a reload.
-let lastCreated: CreatedLink[] = []
+let lastCreated: { links: CreatedLink[]; purpose: LinkPurpose } = { links: [], purpose: 'mac' }
 
 /** Read-only links for several sites at once, and one text that adds them all to the Mac menu bar app. */
 function SharedLinksCard({ sites }: { sites: Site[] }) {
@@ -339,7 +311,10 @@ function SharedLinksCard({ sites }: { sites: Site[] }) {
   const [chosen, setChosen] = useState<string[]>(() => sites.map((s) => s.id))
   const [label, setLabel] = useState('')
   const [expires, setExpires] = useState('')
-  const [created, setCreated] = useState<CreatedLink[]>(lastCreated)
+  const [purpose, setPurpose] = useState<LinkPurpose>(lastCreated.purpose)
+  const [views, setViews] = useState<ShareView[]>([])
+  const [made, setMade] = useState(lastCreated)
+  const created = made.links
   const [outcome, run] = useOutcome()
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
@@ -351,14 +326,14 @@ function SharedLinksCard({ sites }: { sites: Site[] }) {
           client
             .createShareLink(site.id, {
               label: label.trim(),
-              views: ['overview', 'realtime'],
+              views: purpose === 'mac' ? [...MAC_APP_VIEWS] : views,
               ...(expires && { expiresInDays: Number(expires) }),
             })
             .then(({ token }): CreatedLink => ({ site, token, address: shareAddress(site.id, token) })),
         ),
       ).then((links) => {
-        lastCreated = links
-        setCreated(links)
+        lastCreated = { links, purpose }
+        setMade(lastCreated)
       }),
       t('Link created'),
     )
@@ -378,11 +353,20 @@ function SharedLinksCard({ sites }: { sites: Site[] }) {
     <Card
       title={t('Share links for several sites')}
       description={t(
-        'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.',
+        'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.',
       )}
     >
       <form className="analytik-form" onSubmit={submit}>
         <SiteMultiSelect sites={sites} chosen={chosen} onChange={setChosen} />
+        <div className="analytik-row">
+          <Select
+            label={t('Link for')}
+            value={purpose}
+            options={LINK_PURPOSES.map((o) => ({ ...o, label: t(o.label) }))}
+            onChange={setPurpose}
+          />
+          {purpose === 'general' && <ViewsSelect views={views} onChange={setViews} />}
+        </div>
         <div className="analytik-row">
           <Field label={t('Name')} hint={t('Who the link is for, so you know which to revoke.')}>
             <input className="analytik-input" value={label} maxLength={80} onChange={(e) => setLabel(e.target.value)} />
@@ -415,21 +399,25 @@ function SharedLinksCard({ sites }: { sites: Site[] }) {
               <CopyButton text={address} label={t('Copy link')} />
             </div>
           ))}
-          <p>
-            {t(
-              'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.',
-            )}
-          </p>
-          <div className="analytik-row">
-            <input
-              className="analytik-input analytik-mono"
-              readOnly
-              value={bundle}
-              aria-label={t('Mac app link')}
-              onFocus={(e) => e.currentTarget.select()}
-            />
-            <CopyButton text={bundle} label={t('Copy Mac app link')} />
-          </div>
+          {made.purpose === 'mac' && (
+            <>
+              <p>
+                {t(
+                  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.',
+                )}
+              </p>
+              <div className="analytik-row">
+                <input
+                  className="analytik-input analytik-mono"
+                  readOnly
+                  value={bundle}
+                  aria-label={t('Mac app link')}
+                  onFocus={(e) => e.currentTarget.select()}
+                />
+                <CopyButton text={bundle} label={t('Copy Mac app link')} />
+              </div>
+            </>
+          )}
         </div>
       )}
     </Card>

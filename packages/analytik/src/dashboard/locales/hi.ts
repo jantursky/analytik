@@ -7,8 +7,6 @@ export default {
   ', filter by this': ', इससे फ़िल्टर करें',
   ', then the same kinds again': ', फिर वही प्रकार दोबारा',
   'Copy Mac app link': 'Mac ऐप का लिंक कॉपी करें',
-  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
-    'Mac मेन्यू बार ऐप के लिए ओवरव्यू और लाइव व्यू चुनें। Mac ऐप के लिंक में सर्वर का पता, साइट आईडी और टोकन होता है: उसे कॉपी करके ऐप में पेस्ट करें।',
   'Copy command': 'कमांड कॉपी करें',
   'Get the Mac app': 'Mac ऐप डाउनलोड करें',
   'Install command': 'इंस्टॉल कमांड',
@@ -908,7 +906,6 @@ export default {
   'Export failed': 'निर्यात विफल रहा',
   'Export PNG': 'PNG निर्यात करें',
   'Launched on Product Hunt': 'Product Hunt पर लॉन्च',
-  'Leave all unchecked to show every view.': 'कुछ भी न चुनने पर सभी व्यू दिखेंगे।',
   'Link created': 'लिंक बन गया',
   'Link revoked': 'लिंक रद्द किया गया',
   'Make a link that shows this site read-only to anyone who has it: no sign-in, no settings, no other sites. The page that opens it must show the analytik dashboard.':
@@ -952,10 +949,13 @@ export default {
   'Applied to all sites': 'सभी साइटों पर लागू किया गया',
   Basics: 'बुनियादी',
   'Share links for several sites': 'कई साइटों के लिए शेयर लिंक',
-  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
-    'चुनी गई हर साइट के लिए एक रीड-ओनली लिंक और एक टेक्स्ट बनाता है जो उन सभी को Mac मेनू बार ऐप में जोड़ देता है। लिंक ओवरव्यू और लाइव दिखाते हैं, ऐप बस यही पढ़ता है।',
   '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# साइट} other {# साइटें}}',
   'Select all': 'सभी चुनें',
   'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
     'इसे किसी भी Mac के ऐप में चिपकाएँ ताकि ये सभी साइटें एक साथ जुड़ जाएँ। इसमें टोकन हैं, इसलिए इसे निजी रखें।',
+  'Link for': 'इसके लिए लिंक',
+  'Mac menu bar app': 'Mac मेन्यू बार ऐप',
+  '{count, plural, one {# view} other {# views}}': '{count, plural, one {# व्यू} other {# व्यू}}',
+  'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
+    'आपके चुने हर साइट के लिए केवल-पढ़ने वाला लिंक बनाता है। Mac मेन्यू बार ऐप के लिए एक ही टेक्स्ट उन सभी को जोड़ देता है।',
 } satisfies Messages
