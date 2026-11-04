@@ -47,6 +47,7 @@ final class AppModel {
   static let shared = AppModel()
 
   let connections = ConnectionStore()
+  let updater = AppUpdater()
   private(set) var list: [Connection] = []
   private(set) var stores: [String: StatsStore] = [:]
   private var clients: [String: StatsClient] = [:]
@@ -75,6 +76,13 @@ final class AppModel {
   init() {
     reload()
     screen = list.isEmpty ? .connect : .stats
+    // A check every hour wakes up, and does something only when the last one is old enough.
+    Task { [weak self] in
+      while !Task.isCancelled {
+        if let self { await self.updater.checkIfDue(enabled: self.settings.checkForUpdates) }
+        try? await Task.sleep(for: .seconds(3600))
+      }
+    }
     if let shortcut = settings.shortcut { HotKey.shared.register(shortcut) { StatusItem.open() } }
     let center = NSWorkspace.shared.notificationCenter
     observers.append(
@@ -179,9 +187,16 @@ final class AppModel {
     for event in events { Notifier.send(event) }
   }
 
+  /// The release to tell the user about: not one they chose to skip.
+  var pendingUpdate: AppUpdate? {
+    guard settings.checkForUpdates, let update = updater.available, update.version != settings.skippedVersion else { return nil }
+    return update
+  }
+
   func setPopoverOpen(_ open: Bool) {
     popoverOpen = open
     updateOpenness()
+    if open { Task { await updater.checkIfDue(enabled: settings.checkForUpdates) } }
   }
 
   /// A link arrived: show the connect form with it, and try to open the popover so the user sees it.

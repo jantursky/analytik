@@ -57,6 +57,7 @@ private struct StatsScreen: View {
   var body: some View {
     let status = model.selectedStore?.status ?? .notSetUp
     VStack(spacing: 0) {
+      if let update = model.pendingUpdate { UpdateBanner(model: model, update: update) }
       header(status)
       if model.settings.visibleSections.count > 1 { tabs }
       ScrollView {
@@ -332,7 +333,12 @@ private struct StatsScreen: View {
         symbol: model.settings.paused ? "play.fill" : "pause.fill",
         help: model.settings.paused ? "Resume updates" : "Pause updates", active: model.settings.paused
       ) { model.settings.paused.toggle() }
-      IconButton(symbol: "gearshape", help: "Settings") { model.screen = .settings }
+      IconButton(symbol: "gearshape", help: model.pendingUpdate == nil ? "Settings" : "Settings: an update is available") {
+        model.screen = .settings
+      }
+      .overlay(alignment: .topTrailing) {
+        if model.pendingUpdate != nil { Circle().fill(p.primary).frame(width: 7, height: 7).offset(x: -3, y: 3) }
+      }
       IconButton(symbol: "arrow.up.right.square", help: "Open the dashboard in the browser") { model.openDashboard() }
       Spacer()
       if model.settings.paused {
@@ -687,5 +693,46 @@ struct WindowObserver: NSViewRepresentable {
       let visible = window.isKeyWindow
       Task { @MainActor in onChange?(visible) }
     }
+  }
+}
+
+// MARK: - Updates
+
+/// A strip above the header when a newer version of the app exists: update now, or leave this version alone.
+private struct UpdateBanner: View {
+  let model: AppModel
+  let update: AppUpdate
+  @Environment(\.palette) private var p
+
+  var body: some View {
+    let updater = model.updater
+    HStack(spacing: 10) {
+      Image(systemName: "arrow.down.circle.fill").foregroundStyle(p.accentText)
+      VStack(alignment: .leading, spacing: 1) {
+        Text("Version \(update.version) is available").font(Typeface.ui(13, .semibold))
+        if case .failed(let message) = updater.phase {
+          Text(message).font(Typeface.ui(12)).foregroundStyle(p.caution).fixedSize(horizontal: false, vertical: true)
+        } else if updater.phase == .downloading {
+          Text("Updating, the app opens again in a moment").font(Typeface.ui(12)).foregroundStyle(p.textMuted)
+        }
+      }
+      Spacer(minLength: 8)
+      if updater.phase == .downloading {
+        ProgressView().controlSize(.small)
+      } else {
+        if case .failed = updater.phase {
+          AppButton(title: "Release page", compact: true) { NSWorkspace.shared.open(update.page) }
+        } else {
+          AppButton(title: "Update", variant: .primary, compact: true) { Task { await updater.install() } }
+        }
+        IconButton(symbol: "xmark", help: "Skip this version") { model.settings.skippedVersion = update.version }
+      }
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 9)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(p.accentSoft)
+    .overlay(alignment: .bottom) { Rectangle().fill(p.border).frame(height: 1) }
+    .transition(.opacity)
   }
 }

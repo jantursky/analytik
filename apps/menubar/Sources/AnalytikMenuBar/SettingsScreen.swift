@@ -349,6 +349,17 @@ struct SettingsScreen: View {
         SwitchControl(title: "Open with the read-only link", isOn: Bindable(model).settings.dashboardWithShareLink)
       }
       RowDivider()
+      SettingRow(symbol: "arrow.down.circle", title: "Check for updates", subtitle: updateStatus) {
+        HStack(spacing: 8) {
+          AppButton(title: model.updater.checking ? "Checking…" : "Check now", compact: true) {
+            model.settings.skippedVersion = nil
+            Task { await model.updater.check() }
+          }
+          .disabled(model.updater.checking)
+          SwitchControl(title: "Check for updates", isOn: Bindable(model).settings.checkForUpdates)
+        }
+      }
+      RowDivider()
       SettingRow(symbol: "power", title: "Open at login") {
         SwitchControl(title: "Open at login", isOn: $launchAtLogin)
       }
@@ -362,6 +373,13 @@ struct SettingsScreen: View {
         }
       }
     }
+  }
+
+  private var updateStatus: String {
+    let version = "Version \(AppUpdater.currentVersion)"
+    if model.updater.checking { return "\(version) · checking" }
+    if let update = model.updater.available { return "\(version) · \(update.version) is available" }
+    return model.updater.lastChecked == nil ? version : "\(version) · up to date"
   }
 
   private var backup: some View {

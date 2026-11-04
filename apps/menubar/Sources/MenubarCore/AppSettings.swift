@@ -58,6 +58,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
   /// Open the dashboard in the browser with the read-only link; off opens the plain address of the site, for whoever is
   /// signed in there.
   public var dashboardWithShareLink = false
+  /// Look for a newer release of the app now and then, and say so in the popover.
+  public var checkForUpdates = true
+  /// A version the user chose not to be told about again.
+  public var skippedVersion: String?
   public var alerts = AlertRules()
   /// Opens the popover from any app.
   public var shortcut: Shortcut?
@@ -137,6 +141,8 @@ extension AppSettings {
       ? (try values.decodeIfPresent(Int.self, forKey: .headlinePerRow) ?? 0) : 0
     menuBarDot = try values.decodeIfPresent(Bool.self, forKey: .menuBarDot) ?? menuBarDot
     dashboardWithShareLink = try values.decodeIfPresent(Bool.self, forKey: .dashboardWithShareLink) ?? dashboardWithShareLink
+    checkForUpdates = try values.decodeIfPresent(Bool.self, forKey: .checkForUpdates) ?? checkForUpdates
+    skippedVersion = try values.decodeIfPresent(String.self, forKey: .skippedVersion)
     alerts = try values.decodeIfPresent(AlertRules.self, forKey: .alerts) ?? alerts
     shortcut = try values.decodeIfPresent(Shortcut.self, forKey: .shortcut)
   }
