@@ -33,7 +33,14 @@
     "screenshots": "node scripts/screenshots.js",
     "menubar:build": "apps/menubar/scripts/build-app.sh",
     "menubar:test": "cd apps/menubar && swift test",
-    "menubar:install": "apps/menubar/scripts/install-app.sh"
+    "menubar:install": "apps/menubar/scripts/install-app.sh",
+    "release:check": "node scripts/release.js check",
+    "release": "node scripts/release.js tag",
+    "release:npm": "node scripts/release.js publish",
+    "release:menubar": "node scripts/release.js menubar",
+    "deploy": "node scripts/release.js deploy all",
+    "deploy:demo": "node scripts/release.js deploy demo",
+    "deploy:docs": "node scripts/release.js deploy docs"
   },
   "devDependencies": {
     "@eslint/js": "^10",

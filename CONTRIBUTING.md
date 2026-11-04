@@ -64,6 +64,19 @@ CI runs all of them on every pull request, plus the server tests on Postgres and
 - Breaking changes need a new major version and an entry under **Changed**.
 - Schema changes are new migration files in each dialect folder they affect. Don't edit a migration that has shipped.
 
+## Releasing and deploying
+
+Bump `version` in `packages/analytik/package.json`, move the `## [Unreleased]` entries under the new version in the
+changelog, commit and push, then:
+
+- `bun run release:check` verifies the state (clean `main`, changelog section, version not on npm) and runs every check.
+- `bun run release` does the same, then tags the version and pushes it. CI publishes to npm with provenance and creates the GitHub release.
+- `bun run release:npm` publishes to npm from this machine instead (needs `npm login`; no provenance). Tag the version afterwards.
+- `bun run release:menubar 0.1.0` tags `menubar-v0.1.0`; CI builds the Mac app and creates its GitHub release.
+- `bun run deploy`, `deploy:demo` and `deploy:docs` deploy to Vercel production (needs `vercel login`). Pushing to `main` also deploys them.
+
+Add `--dry-run` to see what would be pushed, published or deployed (`bun run release -- --dry-run`) and `--skip-checks` to verify the state only.
+
 ## License
 
 By contributing you agree that your contributions are licensed under the MIT license.
