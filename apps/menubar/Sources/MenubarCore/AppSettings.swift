@@ -55,6 +55,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
   public var headlinePerRow = 0
   /// A coloured dot on the menu bar icon while visitors are below the previous period.
   public var menuBarDot = false
+  /// Open the dashboard in the browser with the read-only link; off opens the plain address of the site, for whoever is
+  /// signed in there.
+  public var dashboardWithShareLink = false
   public var alerts = AlertRules()
   /// Opens the popover from any app.
   public var shortcut: Shortcut?
@@ -133,6 +136,7 @@ extension AppSettings {
     headlinePerRow = [0, 2, 3, 4].contains(try values.decodeIfPresent(Int.self, forKey: .headlinePerRow) ?? 0)
       ? (try values.decodeIfPresent(Int.self, forKey: .headlinePerRow) ?? 0) : 0
     menuBarDot = try values.decodeIfPresent(Bool.self, forKey: .menuBarDot) ?? menuBarDot
+    dashboardWithShareLink = try values.decodeIfPresent(Bool.self, forKey: .dashboardWithShareLink) ?? dashboardWithShareLink
     alerts = try values.decodeIfPresent(AlertRules.self, forKey: .alerts) ?? alerts
     shortcut = try values.decodeIfPresent(Shortcut.self, forKey: .shortcut)
   }

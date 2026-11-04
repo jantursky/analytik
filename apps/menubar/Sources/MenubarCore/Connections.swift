@@ -60,12 +60,25 @@ public struct Connection: Codable, Identifiable, Equatable, Sendable, Hashable {
 
   /// The address that opens the dashboard read-only. A stored one wins; otherwise the server's origin with the site and
   /// token, which is where the dashboard is when it is served next to the API.
-  public func dashboard(token: String) -> URL? {
-    if let dashboardURL, let url = URL(string: dashboardURL), ["http", "https"].contains(url.scheme) { return url }
-    guard var parts = URLComponents(string: serverURL), parts.host != nil else { return nil }
-    parts.path = "/"
-    parts.queryItems = [URLQueryItem(name: "site", value: siteId), URLQueryItem(name: "share", value: token)]
-    parts.fragment = nil
+  /// With `withShare: false` the read-only token is left out, so the address opens the site as whoever is signed in to
+  /// the dashboard in the browser, with the owner's full access.
+  public func dashboard(token: String, withShare: Bool = true) -> URL? {
+    var parts: URLComponents
+    if let dashboardURL, let url = URL(string: dashboardURL), ["http", "https"].contains(url.scheme),
+      let stored = URLComponents(url: url, resolvingAgainstBaseURL: false)
+    {
+      parts = stored
+    } else {
+      guard let origin = URLComponents(string: serverURL), origin.host != nil else { return nil }
+      parts = origin
+      parts.path = "/"
+      parts.queryItems = [URLQueryItem(name: "site", value: siteId), URLQueryItem(name: "share", value: token)]
+      parts.fragment = nil
+    }
+    if !withShare {
+      let rest = (parts.queryItems ?? []).filter { $0.name != "share" }
+      parts.queryItems = rest.isEmpty ? nil : rest
+    }
     return parts.url
   }
 

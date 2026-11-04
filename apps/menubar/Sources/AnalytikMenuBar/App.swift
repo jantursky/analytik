@@ -55,6 +55,8 @@ final class AppModel {
   var tab: PanelSection = .overview
   /// The last rows read for each site and dimension, so a tab keeps its numbers while it refreshes.
   private(set) var breakdowns: [String: [PageRow]] = [:]
+  /// The lists asked for at least once, whether or not they came back.
+  private var attempted: Set<String> = []
   var screen: Screen = .stats
   /// A link that arrived (clipboard, paste or address) and fills the connect form.
   var prefill: ConnectionLink?
@@ -193,10 +195,18 @@ final class AppModel {
   func loadTab() async {
     guard let connection = selected, let client = clients[connection.id], !settings.paused else { return }
     for block in tab.blocks {
+      let key = "\(connection.id)|\(block.dimension)"
       if let rows = try? await client.breakdown(block.dimension, limit: settings.rows, range: settings.range) {
-        breakdowns["\(connection.id)|\(block.dimension)"] = rows
+        breakdowns[key] = rows
       }
+      attempted.insert(key)
     }
+  }
+
+  /// Whether a list has been asked for yet, so a tab can show that it is loading instead of "Nothing yet".
+  func isLoading(_ dimension: String) -> Bool {
+    guard let connection = selected else { return false }
+    return !attempted.contains("\(connection.id)|\(dimension)")
   }
 
   func rows(for dimension: String) -> [PageRow] {
@@ -204,7 +214,6 @@ final class AppModel {
     return breakdowns["\(connection.id)|\(dimension)"] ?? []
   }
 
-  /// Opens the dashboard of a site in the browser, with the share link so it needs no sign-in.
   /// Every connected site with its token as one piece of text for another Mac.
   func sitesText() -> String { SiteBundle.encode(list.map { ($0, connections.token(for: $0)) }) }
 
@@ -245,9 +254,11 @@ final class AppModel {
     return true
   }
 
+  /// Opens the dashboard of a site in the browser: the plain address of the site, or with the read-only link when the
+  /// setting asks for it.
   func openDashboard(_ connection: Connection? = nil) {
     guard let connection = connection ?? selected,
-      let url = connection.dashboard(token: connections.token(for: connection))
+      let url = connection.dashboard(token: connections.token(for: connection), withShare: settings.dashboardWithShareLink)
     else { return }
     NSWorkspace.shared.open(url)
   }

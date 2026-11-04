@@ -9,6 +9,7 @@ struct SettingsScreen: View {
   @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
   @State private var launchError: String?
   @State private var confirming: String?
+  @State private var allSites = false
   @State private var backupNote: String?
 
   var body: some View {
@@ -34,10 +35,30 @@ struct SettingsScreen: View {
 
   // MARK: Sites
 
+  /// Up to this many sites are listed; more fold away so a long list doesn't push the other settings off screen.
+  private static let foldedSites = 3
+
   private var sites: some View {
-    SettingsGroup(title: "Sites") {
-      ForEach(model.list) { connection in
+    let shown = allSites ? model.list : Array(model.list.prefix(Self.foldedSites))
+    return SettingsGroup(title: "Sites") {
+      ForEach(shown) { connection in
         siteRow(connection)
+        RowDivider()
+      }
+      if model.list.count > Self.foldedSites {
+        Button { withAnimation(Motion.ease) { allSites.toggle() } } label: {
+          HStack(spacing: 6) {
+            Text(allSites ? "Show fewer" : "Show all \(model.list.count) sites").font(Typeface.ui(13, .medium))
+            Image(systemName: "chevron.down").font(.system(size: 9, weight: .bold)).rotationEffect(.degrees(allSites ? 180 : 0))
+            Spacer()
+          }
+          .foregroundStyle(p.textMuted)
+          .padding(.horizontal, 12)
+          .frame(minHeight: 38)
+          .contentShape(Rectangle())
+          .hoverRow()
+        }
+        .buttonStyle(.plain)
         RowDivider()
       }
       AddSiteRow { model.prefill = nil; model.screen = .connect }
@@ -319,6 +340,13 @@ struct SettingsScreen: View {
     SettingsGroup(title: "General", footer: launchError) {
       SettingRow(symbol: "keyboard", title: "Open with a shortcut", subtitle: "Works in every app") {
         ShortcutRecorder(shortcut: Bindable(model).settings.shortcut)
+      }
+      RowDivider()
+      SettingRow(
+        symbol: "arrow.up.right.square", title: "Open with the read-only link",
+        subtitle: "Off: the site's own address, as you are signed in there"
+      ) {
+        SwitchControl(title: "Open with the read-only link", isOn: Bindable(model).settings.dashboardWithShareLink)
       }
       RowDivider()
       SettingRow(symbol: "power", title: "Open at login") {

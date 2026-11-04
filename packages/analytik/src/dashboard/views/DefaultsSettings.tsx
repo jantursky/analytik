@@ -329,13 +329,17 @@ interface CreatedLink {
   token: string
 }
 
+// The links made last, kept in memory only: the server holds just a hash of each token, so once they are gone from
+// here they cannot be shown again. They survive a switch to another settings page, not a reload.
+let lastCreated: CreatedLink[] = []
+
 /** Read-only links for several sites at once, and one text that adds them all to the Mac menu bar app. */
 function SharedLinksCard({ sites }: { sites: Site[] }) {
   const { client, apiUrl } = useDashboard()
   const [chosen, setChosen] = useState<string[]>(() => sites.map((s) => s.id))
   const [label, setLabel] = useState('')
   const [expires, setExpires] = useState('')
-  const [created, setCreated] = useState<CreatedLink[]>([])
+  const [created, setCreated] = useState<CreatedLink[]>(lastCreated)
   const [outcome, run] = useOutcome()
   const submit = (event: SubmitEvent): void => {
     event.preventDefault()
@@ -352,7 +356,10 @@ function SharedLinksCard({ sites }: { sites: Site[] }) {
             })
             .then(({ token }): CreatedLink => ({ site, token, address: shareAddress(site.id, token) })),
         ),
-      ).then(setCreated),
+      ).then((links) => {
+        lastCreated = links
+        setCreated(links)
+      }),
       t('Link created'),
     )
   }

@@ -108,6 +108,15 @@ struct DashboardLinkTests {
     #expect(connection.dashboard(token: "tok")?.absoluteString == "http://localhost:5173/?site=demo&share=tok")
   }
 
+  @Test func withoutTheShareTokenItOpensTheSiteAsWhoeverIsSignedIn() {
+    let stored = Connection(name: "n", serverURL: "https://api.test/api", siteId: "s", dashboardURL: "https://app.test/?site=s&share=t")
+    #expect(stored.dashboard(token: "t", withShare: false)?.absoluteString == "https://app.test/?site=s")
+    let derived = Connection(name: "n", serverURL: "http://localhost:5173/api", siteId: "demo")
+    #expect(derived.dashboard(token: "tok", withShare: false)?.absoluteString == "http://localhost:5173/?site=demo")
+    let bare = Connection(name: "n", serverURL: "https://api.test", siteId: "s", dashboardURL: "https://app.test/")
+    #expect(bare.dashboard(token: "t", withShare: false)?.absoluteString == "https://app.test/")
+  }
+
   @Test func aBrokenStoredAddressFallsBack() {
     let connection = Connection(name: "n", serverURL: "https://a.test/api", siteId: "s", dashboardURL: "javascript:alert(1)")
     #expect(connection.dashboard(token: "t")?.absoluteString == "https://a.test/?site=s&share=t")

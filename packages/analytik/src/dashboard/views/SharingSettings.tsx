@@ -98,6 +98,17 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
         <legend className="analytik-field-label">{t('Views the link shows')}</legend>
         <p className="analytik-field-hint">{t('Leave all unchecked to show every view.')}</p>
         <div className="analytik-checks">
+          <label className="analytik-check">
+            <input
+              type="checkbox"
+              checked={views.length === SHARE_VIEWS.length}
+              ref={(input) => {
+                if (input) input.indeterminate = views.length > 0 && views.length < SHARE_VIEWS.length
+              }}
+              onChange={() => setViews(views.length === SHARE_VIEWS.length ? [] : [...SHARE_VIEWS])}
+            />
+            <strong>{t('Select all')}</strong>
+          </label>
           {SHARE_VIEWS.map((view) => (
             <label key={view} className="analytik-check">
               <input type="checkbox" checked={views.includes(view)} onChange={() => toggle(view)} />

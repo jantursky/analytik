@@ -20,15 +20,19 @@ struct PopoverView: View {
     min(model.settings.windowHeight.points, Double((NSScreen.main?.visibleFrame.height ?? 900) - 40))
   }
 
+  private static let screenChange = AnyTransition.opacity.combined(with: .scale(scale: 0.98))
+
   var body: some View {
     let palette = scheme == .dark ? Palette.dark : Palette.light
-    Group {
+    ZStack {
+      // Each screen fades in and out as the one before it leaves.
       switch model.screen {
-      case .stats: StatsScreen(model: model)
-      case .settings: SettingsScreen(model: model)
-      case .connect: ConnectScreen(model: model)
+      case .stats: StatsScreen(model: model).transition(Self.screenChange)
+      case .settings: SettingsScreen(model: model).transition(Self.screenChange)
+      case .connect: ConnectScreen(model: model).transition(Self.screenChange)
       }
     }
+    .animation(Motion.ease, value: model.screen)
     .frame(width: model.settings.windowWidth.points, height: windowHeight)
     .coordinateSpace(name: "popover")
     .overlay(alignment: .topLeading) { DropdownLayer(host: DropdownHost.shared, width: model.settings.windowWidth.points) }
@@ -304,7 +308,9 @@ private struct StatsScreen: View {
       RankedList(title: "Top pages", dimension: "page", rows: snapshot.topPages, compactNumbers: model.settings.compactNumbers)
     } else {
       ForEach(model.tab.blocks, id: \.dimension) { block in
-        RankedList(title: block.title, dimension: block.dimension, rows: model.rows(for: block.dimension), compactNumbers: model.settings.compactNumbers)
+        RankedList(
+          title: block.title, dimension: block.dimension, rows: model.rows(for: block.dimension),
+          compactNumbers: model.settings.compactNumbers, loading: model.isLoading(block.dimension))
       }
     }
   }
@@ -419,6 +425,8 @@ private struct RankedList: View {
   let dimension: String
   let rows: [PageRow]
   var compactNumbers = true
+  /// The list hasn't been read yet: a spinner instead of "Nothing yet".
+  var loading = false
 
   var body: some View {
     let top = Double(rows.map(\.visitors).max() ?? 1)
@@ -429,7 +437,9 @@ private struct RankedList: View {
         Text("Visitors").font(Typeface.ui(12, .medium)).foregroundStyle(p.textMuted)
       }
       .padding(.bottom, 2)
-      if rows.isEmpty {
+      if rows.isEmpty && loading {
+        ProgressView().controlSize(.small).frame(maxWidth: .infinity, minHeight: 60)
+      } else if rows.isEmpty {
         Text("Nothing yet").font(Typeface.ui(13)).foregroundStyle(p.textMuted).padding(.vertical, 4)
       }
       VStack(spacing: 2) {
