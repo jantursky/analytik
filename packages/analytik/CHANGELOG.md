@@ -6,9 +6,11 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.17.0]
+
 ### Added
 
-- `analytik menubar` installs the Mac menu bar app; Settings → Sharing links to its install guide.
+- `analytik menubar` installs the Mac menu bar app; Settings → Sharing shows the command and a Get the Mac app button.
 
 ## [1.16.0]
 
