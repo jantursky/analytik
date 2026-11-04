@@ -17,7 +17,7 @@
   "dependencies": {
     "analytik": "workspace:*",
     "blume": "^2.2.6",
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

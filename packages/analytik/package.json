@@ -205,7 +205,7 @@
     "@vitest/coverage-v8": "5.0.5",
     "circle-flags": "^2.8.3",
     "happy-dom": "^21.0.4",
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "motion": "^14.6.0",
     "pg": "^8.23.1",
     "postgres": "^3.4.9",

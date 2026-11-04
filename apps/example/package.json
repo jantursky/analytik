@@ -14,7 +14,7 @@
     "@fontsource-variable/figtree": "^5.3.0",
     "@fontsource/geist-mono": "^5.3.0",
     "analytik": "workspace:*",
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "simple-icons": "^16.36.0"
