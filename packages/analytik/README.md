@@ -62,8 +62,6 @@ bun add analytik hono
 </p>
 
 ```sh
-brew install --cask jantursky/tap/analytik-menubar
-# or
 npx analytik menubar
 ```
 

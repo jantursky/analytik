@@ -38,21 +38,3 @@ jobs:
         run: |
           gh release create "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --title "Menu bar app ${TAG#menubar-v}" \
             --notes "Mac menu bar app. Not notarised yet: right-click, Open the first time." --prerelease
-      - name: Update the Homebrew cask
-        # Needs a fine-grained token with contents:write on jantursky/homebrew-tap, saved as HOMEBREW_TAP_TOKEN.
-        if: startsWith(github.ref, 'refs/tags/menubar-v') && env.TAP_TOKEN != ''
-        env:
-          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          TAG: ${{ github.ref_name }}
-        run: |
-          VERSION="${TAG#menubar-v}"
-          SHA="$(shasum -a 256 dist/Analytik-Menu-Bar-$VERSION.zip | cut -d' ' -f1)"
-          git clone "https://x-access-token:${TAP_TOKEN}@github.com/jantursky/homebrew-tap.git" "$RUNNER_TEMP/tap"
-          mkdir -p "$RUNNER_TEMP/tap/Casks"
-          sed -e "s/@VERSION@/$VERSION/" -e "s/@SHA256@/$SHA/" homebrew/analytik-menubar.rb.in > "$RUNNER_TEMP/tap/Casks/analytik-menubar.rb"
-          cd "$RUNNER_TEMP/tap"
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git add Casks/analytik-menubar.rb
-          git commit -m "analytik-menubar $VERSION"
-          git push
