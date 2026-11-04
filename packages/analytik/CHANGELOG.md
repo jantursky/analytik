@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.18.0]
+
+### Added
+
+- Share links are made for the Mac menu bar app or as a shared link with a dropdown of views, in Settings → Sharing and Defaults; Select all included.
+
+### Changed
+
+- Share links may read the site icon, so the Mac app shows it.
+- The links made in Defaults stay while you switch settings pages.
+
 ## [1.17.0]
 
 ### Added
