@@ -1,8 +1,9 @@
 name: Release
 
 # Pushing a version tag, `1.1.0` or `v1.1.0`, creates the GitHub release with the
-# matching CHANGELOG section, then runs every check and publishes that version to npm
-# with provenance. The two jobs are independent: a failed publish still leaves the
+# matching CHANGELOG section, then publishes that version to npm with provenance. The
+# checks are not run twice: when CI passed on the tagged commit its result is reused,
+# otherwise (a failed or missing CI run) every check runs here before publishing. The two jobs are independent: a failed publish still leaves the
 # GitHub release. Run it by hand with a tag to release a tag pushed earlier.
 on:
   push:
@@ -55,6 +56,8 @@ jobs:
     environment: npm
     permissions:
       contents: read
+      # Reads the CI result of the tagged commit.
+      actions: read
       # npm trusted publishing and provenance use the workflow's OIDC token.
       id-token: write
     steps:
@@ -84,20 +87,43 @@ jobs:
           fi
       - if: steps.check.outputs.publish == 'true'
         run: bun install --frozen-lockfile
-      - if: steps.check.outputs.publish == 'true'
-        run: bunx playwright install --with-deps chromium firefox webkit
-      # The lint rules read the library's built types, so it is built first, as in ci.yml.
+      # The lint rules read the library's built types, so it is built first, as in ci.yml. The package needs it too.
       - if: steps.check.outputs.publish == 'true'
         run: bun run build:lib
-      - if: steps.check.outputs.publish == 'true'
+      - name: Reuse the CI result of this commit
+        id: ci
+        if: steps.check.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          passed=false
+          # CI may still be running (up to 45 minutes) or not started yet (up to 3 minutes).
+          for i in $(seq 1 90); do
+            run=$(gh run list --workflow ci.yml --commit "$sha" --event push --limit 1 --json status,conclusion --jq '.[0] // empty | "\(.status) \(.conclusion)"')
+            echo "CI for $sha: ${run:-none}"
+            if [ -z "$run" ]; then
+              [ "$i" -ge 6 ] && break
+            else
+              case "$run" in
+                "completed success") passed=true; break ;;
+                completed*) break ;;
+              esac
+            fi
+            sleep 30
+          done
+          echo "passed=$passed" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
+        run: bunx playwright install --with-deps chromium firefox webkit
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
         run: bun run check
-      - if: steps.check.outputs.publish == 'true'
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
         run: bun run build
-      - if: steps.check.outputs.publish == 'true'
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
         run: bun run lint:package
-      - if: steps.check.outputs.publish == 'true'
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
         run: bun run test:pack
-      - if: steps.check.outputs.publish == 'true'
+      - if: steps.check.outputs.publish == 'true' && steps.ci.outputs.passed != 'true'
         run: bun run test:e2e
       - name: Publish to npm
         if: steps.check.outputs.publish == 'true'
