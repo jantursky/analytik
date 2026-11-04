@@ -47,7 +47,7 @@ The demo also shows [how each privacy mode works](https://analytik.vercel.app/#p
 - **Two more modes when you need them.** `enriched` adds a per-tab id after the visitor consents. `persistent` uses first-party cookies like most analytics tools do, and should be treated as needing consent in the EU.
 - **Revenue.** A payments API with refunds, optional Stripe, Dodo, Lemon Squeezy, Paddle, Polar, Razorpay, Creem and Gumroad webhook adapters, and attribution to the visit that brought the buyer.
 - **Goals, funnels, campaigns, realtime**, JSON and CSV export, retention, share links (read-only, named, with expiry and revoke), notes on charts, CSV and PNG export.
-- **A Mac menu bar app.** Visitors online next to an icon, today's numbers and a chart one click away, for one or several sites, read with a revocable share link. See the [guide](https://analytik-docs.vercel.app/guides/mac-menu-bar).
+- **A Mac menu bar app.** Visitors online next to an icon, today's numbers and a chart one click away, for one or several sites, read with a revocable share link. Install it with `brew install --cask jantursky/tap/analytik-menubar` or `npx analytik menubar`; see the [guide](https://analytik-docs.vercel.app/guides/mac-menu-bar#install).
 - **Bring your history.** Import the visits and events of Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 or PostHog from Settings or with `analytik import`. A repeated import adds nothing, and an import can be removed without touching what Analytik tracked.
 - **One server, three databases.** It runs on D1, Postgres and SQLite, and the tests run every case against each of them.
 
@@ -56,6 +56,21 @@ The demo also shows [how each privacy mode works](https://analytik.vercel.app/#p
 ```sh
 bun add analytik hono
 ```
+
+## Mac menu bar app
+
+<p>
+  <img src=".github/assets/mac-app-icon.png" alt="The Analytik Menu Bar app icon" width="96" align="left">
+  Visitors online next to an icon in the menu bar, today's numbers and a chart one click away, for one or several sites. It reads with a revocable share link and needs macOS 14 or later.
+</p>
+
+```sh
+brew install --cask jantursky/tap/analytik-menubar
+# or
+npx analytik menubar
+```
+
+Or download the zip from the [releases](https://github.com/jantursky/analytik/releases?q=menubar). More in the [guide](https://analytik-docs.vercel.app/guides/mac-menu-bar#install).
 
 ## A server in a dozen lines
 

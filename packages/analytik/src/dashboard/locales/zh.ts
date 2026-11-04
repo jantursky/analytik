@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': '复制 Mac 应用链接',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Mac 菜单栏应用请选择“概览”和“实时”视图。Mac 应用链接包含服务器地址、站点 ID 和令牌：复制后粘贴到应用中即可。',
+  'Get the Mac app': '获取 Mac 应用',
   'Mac app link': 'Mac 应用链接',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 到 20 个，命名为 Test site …',

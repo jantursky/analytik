@@ -1,9 +1,13 @@
 import { spawnSync } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import pkg from '../package.json'
 import { upgradeProject } from './create/upgrade'
 import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo } from './create'
+import { installMenubar, type MenubarIo, MENUBAR_APP, MENUBAR_REPO } from './create/menubar'
 import { openStorage, seedDemo } from './migrate'
 import { importFiles } from './migrate/import'
 import { IMPORT_SOURCES, isImportSource } from './shared/import/types'
@@ -23,6 +27,7 @@ Commands:
   seed --db <url> [--days 30] [--seed 1]   Fill a database with demo data
   import --from umami|simple-analytics|matomo|goatcounter|ga4|posthog --file <path>... --site <id> --db <url>
                                            Add the history of another analytics tool to a site
+  menubar [--dir <folder>] [--no-open]     Install the Mac menu bar app (macOS 14 or later) into Applications
   doctor [--db <url>] [--url <deployment>] Check the runtime, database and a deployment
 
 Databases: postgres://user:pass@host/db, sqlite:<path>, a .db file path or :memory:
@@ -204,6 +209,40 @@ async function doctor(db: string | undefined, url: string | undefined): Promise<
   return ok
 }
 
+const menubarIo: MenubarIo = {
+  platform: process.platform,
+  releases: async () => {
+    const response = await fetch(`https://api.github.com/repos/${MENUBAR_REPO}/releases?per_page=30`, {
+      headers: { accept: 'application/vnd.github+json', 'user-agent': 'analytik-cli' },
+    })
+    if (!response.ok) throw new Error(`GitHub answered ${response.status}`)
+    return (await response.json()) as Awaited<ReturnType<MenubarIo['releases']>>
+  },
+  download: async (url) => {
+    const response = await fetch(url, { headers: { 'user-agent': 'analytik-cli' } })
+    if (!response.ok) throw new Error(`Download failed: ${response.status}`)
+    const file = join(mkdtempSync(join(tmpdir(), 'analytik-menubar-')), 'app.zip')
+    writeFileSync(file, Buffer.from(await response.arrayBuffer()))
+    return file
+  },
+  unzip: (zip) => {
+    const out = join(dirname(zip), 'unpacked')
+    if (spawnSync('ditto', ['-x', '-k', zip, out], { stdio: 'inherit' }).status !== 0) throw new Error('Unzip failed')
+    return out
+  },
+  install: (unpacked, dir) => {
+    const target = join(dir, MENUBAR_APP)
+    spawnSync('osascript', ['-e', 'tell application "Analytik Menu Bar" to quit'], { stdio: 'ignore' })
+    rmSync(target, { recursive: true, force: true })
+    if (spawnSync('ditto', [join(unpacked, MENUBAR_APP), target], { stdio: 'inherit' }).status !== 0) {
+      throw new Error(`Could not copy the app into ${dir}`)
+    }
+    return target
+  },
+  open: (app) => void spawnSync('open', [app], { stdio: 'ignore' }),
+  log: (message) => console.log(message),
+}
+
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -224,6 +263,8 @@ async function main(argv: string[]): Promise<number> {
       name: { type: 'string' },
       password: { type: 'string' },
       'no-deploy': { type: 'boolean' },
+      'no-open': { type: 'boolean' },
+      dir: { type: 'string' },
     },
   })
   const [command] = positionals
@@ -329,6 +370,10 @@ async function main(argv: string[]): Promise<number> {
         for (const row of skipped.slice(0, 10)) console.log(`    ${row.file} row ${row.row}: ${row.reason}`)
         if (skipped.length > 10) console.log(`    and ${skipped.length - 10} more`)
       }
+      return 0
+    }
+    case 'menubar': {
+      await installMenubar(menubarIo, { dir: values.dir, open: values['no-open'] !== true })
       return 0
     }
     case 'doctor':

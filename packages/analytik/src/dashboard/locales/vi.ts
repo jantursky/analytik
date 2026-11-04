@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Sao chép liên kết cho ứng dụng Mac',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Với ứng dụng trên thanh menu Mac, hãy chọn chế độ xem Tổng quan và Trực tiếp. Liên kết cho ứng dụng Mac chứa địa chỉ máy chủ, ID trang web và mã thông báo: hãy sao chép rồi dán vào ứng dụng.',
+  'Get the Mac app': 'Tải ứng dụng Mac',
   'Mac app link': 'Liên kết cho ứng dụng Mac',
   '{count} of {target}': '{count} trên {target}',
   '1 to 20, named Test site …': '1 đến 20, đặt tên Test site …',

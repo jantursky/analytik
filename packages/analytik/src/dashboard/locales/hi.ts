@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Mac ऐप का लिंक कॉपी करें',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Mac मेन्यू बार ऐप के लिए ओवरव्यू और लाइव व्यू चुनें। Mac ऐप के लिंक में सर्वर का पता, साइट आईडी और टोकन होता है: उसे कॉपी करके ऐप में पेस्ट करें।',
+  'Get the Mac app': 'Mac ऐप डाउनलोड करें',
   'Mac app link': 'Mac ऐप का लिंक',
   '{count} of {target}': '{target} में से {count}',
   '1 to 20, named Test site …': '1 से 20, नाम Test site …',

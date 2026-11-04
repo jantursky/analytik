@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Mac 앱용 링크 복사',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Mac 메뉴 막대 앱에는 개요와 실시간 보기를 선택하세요. Mac 앱용 링크에는 서버 주소, 사이트 ID, 토큰이 모두 들어 있습니다. 복사해서 앱에 붙여넣으세요.',
+  'Get the Mac app': 'Mac 앱 받기',
   'Mac app link': 'Mac 앱용 링크',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1~20개, 이름은 Test site …',

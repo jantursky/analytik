@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Mac uygulaması bağlantısını kopyala',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Mac menü çubuğu uygulaması için Genel Bakış ve Canlı görünümlerini seçin. Mac uygulaması bağlantısı sunucu adresini, site kimliğini ve belirteci içerir: kopyalayıp uygulamaya yapıştırın.',
+  'Get the Mac app': 'Mac uygulamasını indir',
   'Mac app link': 'Mac uygulaması bağlantısı',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 ile 20 arası, adı Test site …',

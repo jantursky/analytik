@@ -8,6 +8,8 @@ import { msg, t } from '../i18n'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Status, useOutcome } from '../ui'
 import { Select } from '../ui/select'
 
+const MAC_APP_GUIDE = 'https://analytik-docs.vercel.app/guides/mac-menu-bar#install'
+
 const VIEW_LABELS: Record<ShareView, string> = {
   overview: msg('Overview'),
   sources: msg('Acquisition'),
@@ -107,6 +109,11 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
           {t('Create link')}
         </button>
       </Actions>
+      <p className="analytik-field-hint">
+        <a href={MAC_APP_GUIDE} target="_blank" rel="noopener">
+          {t('Get the Mac app')}
+        </a>
+      </p>
       {created && (
         <div className="analytik-share-created" role="status">
           <p>{t('Copy the link now. For safety it is not shown again.')}</p>

@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Kopírovať odkaz pre aplikáciu na Macu',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Pre aplikáciu v lište menu na Macu zvoľte zobrazenia Prehľad a Naživo. Odkaz pre aplikáciu na Macu obsahuje adresu servera, ID webu a token: skopírujte ho a vložte do aplikácie.',
+  'Get the Mac app': 'Stiahnuť aplikáciu pre Mac',
   'Mac app link': 'Odkaz pre aplikáciu na Macu',
   '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': '1 až 20, s názvom Test site …',

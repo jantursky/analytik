@@ -54,6 +54,21 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
 bun add analytik hono
 ```
 
+## Mac menu bar app
+
+<p>
+  <img src="https://raw.githubusercontent.com/jantursky/analytik/main/.github/assets/mac-app-icon.png" alt="The Analytik Menu Bar app icon" width="96" align="left">
+  Visitors online next to an icon in the menu bar, today's numbers and a chart one click away, for one or several sites. It reads with a revocable share link and needs macOS 14 or later.
+</p>
+
+```sh
+brew install --cask jantursky/tap/analytik-menubar
+# or
+npx analytik menubar
+```
+
+Or download the zip from the [releases](https://github.com/jantursky/analytik/releases?q=menubar). More in the [guide](https://analytik-docs.vercel.app/guides/mac-menu-bar#install).
+
 ## A server in a dozen lines
 
 ```ts sample

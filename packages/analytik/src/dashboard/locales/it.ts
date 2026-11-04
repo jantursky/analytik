@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': "Copia il link per l'app Mac",
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     "Per l'app della barra dei menu del Mac, scegli le viste Panoramica e Live. Il link per l'app Mac contiene l'indirizzo del server, l'ID del sito e il token: copialo e incollalo nell'app.",
+  'Get the Mac app': "Scarica l'app Mac",
   'Mac app link': "Link per l'app Mac",
   '{count} of {target}': '{count} su {target}',
   '1 to 20, named Test site …': 'Da 1 a 20, chiamati Test site …',

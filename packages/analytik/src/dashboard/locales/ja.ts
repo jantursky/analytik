@@ -9,6 +9,7 @@ export default {
   'Copy Mac app link': 'Mac アプリ用リンクをコピー',
   'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
     'Mac のメニューバーアプリには、「概要」と「ライブ」のビューを選んでください。Mac アプリ用リンクにはサーバーのアドレス、サイト ID、トークンがすべて含まれています。コピーしてアプリに貼り付けてください。',
+  'Get the Mac app': 'Mac アプリを入手',
   'Mac app link': 'Mac アプリ用リンク',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1〜20 件、名前は Test site …',
