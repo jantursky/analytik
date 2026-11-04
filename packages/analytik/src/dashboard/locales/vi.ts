@@ -6,6 +6,10 @@ export default {
   '(none)': '(không có)',
   ', filter by this': ', lọc theo mục này',
   ', then the same kinds again': ', sau đó lặp lại các loại tương tự',
+  'Copy Mac app link': 'Sao chép liên kết cho ứng dụng Mac',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Với ứng dụng trên thanh menu Mac, hãy chọn chế độ xem Tổng quan và Trực tiếp. Liên kết cho ứng dụng Mac chứa địa chỉ máy chủ, ID trang web và mã thông báo: hãy sao chép rồi dán vào ứng dụng.',
+  'Mac app link': 'Liên kết cho ứng dụng Mac',
   '{count} of {target}': '{count} trên {target}',
   '1 to 20, named Test site …': '1 đến 20, đặt tên Test site …',
   '1 to 20; each takes the next kind of site.': '1 đến 20; mỗi trang nhận loại trang tiếp theo.',
@@ -927,4 +931,29 @@ export default {
   'Who the link is for, so you know which to revoke.': 'Liên kết dành cho ai, để bạn biết nên thu hồi cái nào.',
   Active: 'Đang hoạt động',
   'No funnels yet.': 'Chưa có phễu nào.',
+  'Got an idea?': 'Bạn có ý tưởng?',
+  'Add provider': 'Thêm nhà cung cấp',
+  'No payment provider yet. Add the one you use.': 'Chưa có nhà cung cấp thanh toán. Hãy thêm nhà cung cấp bạn dùng.',
+  'Remove {provider}?': 'Xóa {provider}?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Khóa ký bị xóa và các khoản thanh toán từ nhà cung cấp này không còn được ghi nhận.',
+  'Provider removed': 'Đã xóa nhà cung cấp',
+  'Pause tracking?': 'Tạm dừng theo dõi?',
+  Defaults: 'Mặc định',
+  'Defaults for all sites': 'Mặc định cho mọi trang web',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Trang web mới bắt đầu với các giá trị này. “Áp dụng cho mọi trang web” sao chép một thẻ sang các trang web đã có.',
+  'Apply to all sites': 'Áp dụng cho mọi trang web',
+  'Apply to all sites?': 'Áp dụng cho mọi trang web?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Mỗi trang web nhận giá trị của thẻ này và mất giá trị riêng. Không thể hoàn tác.',
+  'Applied to all sites': 'Đã áp dụng cho mọi trang web',
+  Basics: 'Cơ bản',
+  'Share links for several sites': 'Liên kết chia sẻ cho nhiều trang web',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Tạo liên kết chỉ đọc cho từng trang web đã chọn và một văn bản để thêm tất cả vào ứng dụng thanh menu Mac. Liên kết hiển thị Tổng quan và Trực tiếp, đó là tất cả những gì ứng dụng đọc.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# trang web}}',
+  'Select all': 'Chọn tất cả',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Dán vào ứng dụng trên bất kỳ máy Mac nào để thêm tất cả các trang web này cùng lúc. Nó chứa mã token nên hãy giữ riêng tư.',
 } satisfies Messages

@@ -6,6 +6,10 @@ export default {
   '(none)': '(geen)',
   ', filter by this': ', filter hierop',
   ', then the same kinds again': ', daarna opnieuw dezelfde soorten',
+  'Copy Mac app link': 'Link voor de Mac-app kopiëren',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Kies voor de Mac-menubalkapp de weergaven Overzicht en Live. De link voor de Mac-app bevat het serveradres, de site-id en het token: kopieer hem en plak hem in de app.',
+  'Mac app link': 'Link voor de Mac-app',
   '{count} of {target}': '{count} van {target}',
   '1 to 20, named Test site …': '1 tot 20, genaamd Test site …',
   '1 to 20; each takes the next kind of site.': '1 tot 20; elk krijgt de volgende soort site.',
@@ -932,4 +936,29 @@ export default {
   'Who the link is for, so you know which to revoke.': 'Voor wie de link is, zodat je weet welke je moet intrekken.',
   Active: 'Actief',
   'No funnels yet.': 'Nog geen funnels.',
+  'Got an idea?': 'Heb je een idee?',
+  'Add provider': 'Aanbieder toevoegen',
+  'No payment provider yet. Add the one you use.': 'Nog geen betalingsaanbieder. Voeg degene toe die je gebruikt.',
+  'Remove {provider}?': '{provider} verwijderen?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Het ondertekeningsgeheim wordt verwijderd en betalingen van deze aanbieder worden niet meer vastgelegd.',
+  'Provider removed': 'Aanbieder verwijderd',
+  'Pause tracking?': 'Tracking pauzeren?',
+  Defaults: 'Standaardwaarden',
+  'Defaults for all sites': 'Standaardwaarden voor alle sites',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Nieuwe sites starten met deze waarden. “Toepassen op alle sites” kopieert een kaart naar de bestaande sites.',
+  'Apply to all sites': 'Toepassen op alle sites',
+  'Apply to all sites?': 'Toepassen op alle sites?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Elke site krijgt de waarden van deze kaart en verliest zijn eigen waarden. Dit kan niet ongedaan worden gemaakt.',
+  'Applied to all sites': 'Toegepast op alle sites',
+  Basics: 'Basis',
+  'Share links for several sites': 'Deellinks voor meerdere sites',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Maakt een alleen-lezen link voor elke gekozen site en één tekst die ze allemaal toevoegt aan de Mac-menubalk-app. De links tonen Overzicht en Live, meer leest de app niet.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# site} other {# sites}}',
+  'Select all': 'Alles selecteren',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Plak dit in de app op een willekeurige Mac om al deze sites in één keer toe te voegen. Het bevat de tokens, dus houd het privé.',
 } satisfies Messages

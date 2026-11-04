@@ -16,6 +16,23 @@ export const rise: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
 }
 
+/**
+ * Like `rise`, for a long list: each item waits for its place in the first eight, and every later one enters with the
+ * eighth, so a long list is on screen as fast as a short one. Give the item `custom={index}` and the list its own
+ * `variants={hold}`, so the view's stagger does not add up over the whole list.
+ */
+export const riseAt: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: EASE, delay: Math.min(index, 8) * 0.04 },
+  }),
+}
+
+/** A list that lets its items time their own entrance. */
+export const hold: Variants = { hidden: {}, show: {} }
+
 /** A dashboard view: fades in its cards in turn and fades out when another view replaces it. */
 export function View({ children }: { children: ReactNode }) {
   return (

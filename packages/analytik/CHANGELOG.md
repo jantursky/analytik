@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [1.16.0]
+
+### Added
+
+- Settings → Sharing shows a Mac app link next to a new share link, for the Mac menu bar app in `apps/menubar`.
+- A "Got an idea?" link under the dashboard opens a new GitHub issue.
+- Settings → Defaults sets timezone, currency, privacy, retention and tracking once for new sites, and applies a card to every site after confirming.
+- Pausing tracking asks for confirmation.
+- Settings → Defaults creates read-only share links for several sites at once, with one text that adds them all to the Mac app.
+
+### Changed
+
+- Settings → Payments and API lists only the payment providers you added; add and remove them in place.
+
+### Fixed
+
+- The site name in a shared dashboard's toolbar is as tall as the other controls.
+
 ## [1.15.0]
 
 ### Added

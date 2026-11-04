@@ -1,0 +1,64 @@
+---
+title: Mac menu bar app
+description: See today's visitors, pageviews, revenue and a chart, and who is online, from the macOS menu bar, for one or several sites, with a read-only share link.
+---
+
+A small macOS app puts a number next to an icon in the menu bar: the visitors online now, by default. Click the icon for today's visitors, pageviews and revenue against yesterday, a chart of today by hour, and the top pages. It needs macOS 14 or later, and it can connect several sites, also on different servers.
+
+The app only reads. It signs in with a [share link](/guides/dashboard-embedding#share-links), so it never holds your admin password and you can end its access at any time.
+
+## Connect a site
+
+1. Open **Settings → Sharing** for the site and create a link. Choose the **Overview** and **Live** views: that is all the app reads.
+2. When the link is created, two links are shown, once. Copy the **Mac app link**. It holds the three things the app needs: the server address, the site id and the token.
+3. Click the app's icon. If the Mac app link is on the clipboard the app offers it, otherwise paste it into the first field. The form fills itself.
+4. Press **Test connection**, then **Connect**. The token is stored in the Keychain; the address and site id in the app's preferences.
+
+If you only have the dashboard link (`…?site=<id>&share=<token>`), paste that instead: the app takes the site and the token and guesses the server as the dashboard's address plus `/api`. Correct it if your routes are mounted elsewhere. You can also type the three values.
+
+Open **Settings → Add site** to connect another one. The site name at the top of the popover switches between them.
+
+## What it shows
+
+| State          | Menu bar | Popover                                                         |
+| -------------- | -------- | --------------------------------------------------------------- |
+| Working        | `7`      | Today against yesterday, chart, top pages, visitors online      |
+| Paused         | `⏸`      | The last numbers; nothing is requested                          |
+| Offline        | `–`      | The last numbers, with how old they are, and a short notice     |
+| Access refused | `–`      | The link is revoked, expired or for another site: add a new one |
+| Server error   | `–`      | The last numbers if there are any, and the error code           |
+| Not set up     | `–`      | The connection form                                             |
+
+Today is the calendar day in the site's time zone.
+
+## Open the dashboard
+
+The arrow button in the footer, **Open dashboard in browser** in the site menu and the button in the settings open the dashboard of the selected site. The Mac app link carries the dashboard address, so it opens read-only without signing in. Without one the app uses the server's own address.
+
+## Settings
+
+The gear in the popover opens the settings. They apply to every site.
+
+- **Window**: width (compact, regular, wide, extra wide) and height. More tabs and rows scroll inside the window instead of making it bigger.
+- **Display**: density, short numbers (12.3K) or every digit, whether to show the change, and the chart style (area, line or bars; revenue is always bars).
+- **Numbers**: the period (today, last 7 days, last 30 days; the change is against the period of the same length before), how many numbers sit in a row (auto, 2, 3 or 4), and which numbers head the popover: visitors, pageviews, revenue, bounce rate, visit duration, orders and conversion. Drag them into the order you want.
+- **Menu bar**: show or hide the icon, show visitors online, visitors today, revenue today, or the icon only, and a dot on the icon while visitors are below the same time yesterday. With several sites, add them all up instead of showing the selected one. Revenue is only added up when the sites share a currency; otherwise the online count is shown.
+- **Tabs**, the rows in lists, and the **chart** (show it, plot visitors, pageviews or revenue). Hover shows a value; a click pins it.
+- **Updates**: refresh every 30 seconds, 1, 5 or 15 minutes. While the popover is open it refreshes every 10 seconds, which matches how long the server lets a CDN keep shared answers. **Pause updates** stops all requests until you resume.
+- **Alerts**: a notification when visitors rise or fall by 25, 50, 100 or 200 percent against the same time yesterday (only once yesterday had 20 visitors by then), or when the server has not answered for 5 to 60 minutes. Each comes once until things are normal again; macOS asks for permission when you switch on the first one.
+- **General**: a global shortcut that opens the popover (it needs ⌘, ⌥ or ⌃), and open at login (the app has to be in Applications).
+- **Backup** copies all sites as text for another Mac and exports or imports the settings as a file.
+
+The app also pauses while the Mac sleeps and slows down after errors. Sites are added and removed in the **Sites** list at the top.
+
+To stop an app reading, revoke its link in **Settings → Sharing**.
+
+## Install from the repository
+
+```sh
+bun run menubar:install
+```
+
+This builds the app and installs it in `~/Applications`. A running copy is quit and the new one opens. It needs Xcode 16 or later. `bun run menubar:build` only builds, into `apps/menubar/dist`, and `bun run menubar:test` runs the app's tests.
+
+Releases are published on GitHub under tags named `menubar-v*`, separate from the npm package. The first builds are not notarised: right-click the app, choose **Open**, then **Open** again.

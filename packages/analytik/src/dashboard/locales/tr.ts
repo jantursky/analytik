@@ -6,6 +6,10 @@ export default {
   '(none)': '(yok)',
   ', filter by this': ', buna göre filtrele',
   ', then the same kinds again': ', sonra aynı türler yeniden',
+  'Copy Mac app link': 'Mac uygulaması bağlantısını kopyala',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Mac menü çubuğu uygulaması için Genel Bakış ve Canlı görünümlerini seçin. Mac uygulaması bağlantısı sunucu adresini, site kimliğini ve belirteci içerir: kopyalayıp uygulamaya yapıştırın.',
+  'Mac app link': 'Mac uygulaması bağlantısı',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 ile 20 arası, adı Test site …',
   '1 to 20; each takes the next kind of site.': '1 ile 20 arası; her biri sıradaki site türünü alır.',
@@ -931,4 +935,29 @@ export default {
     'Bağlantının kimin için olduğu, hangisini iptal edeceğinizi bilmeniz için.',
   Active: 'Etkin',
   'No funnels yet.': 'Henüz huni yok.',
+  'Got an idea?': 'Bir fikriniz mi var?',
+  'Add provider': 'Sağlayıcı ekle',
+  'No payment provider yet. Add the one you use.': 'Henüz ödeme sağlayıcısı yok. Kullandığınızı ekleyin.',
+  'Remove {provider}?': '{provider} kaldırılsın mı?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'İmza sırrı silinir ve bu sağlayıcıdan gelen ödemeler artık kaydedilmez.',
+  'Provider removed': 'Sağlayıcı kaldırıldı',
+  'Pause tracking?': 'Takip duraklatılsın mı?',
+  Defaults: 'Varsayılanlar',
+  'Defaults for all sites': 'Tüm siteler için varsayılanlar',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Yeni siteler bu değerlerle başlar. “Tüm sitelere uygula” bir kartı mevcut sitelere kopyalar.',
+  'Apply to all sites': 'Tüm sitelere uygula',
+  'Apply to all sites?': 'Tüm sitelere uygulansın mı?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Her site bu kartın değerlerini alır ve kendi değerlerini kaybeder. Bu geri alınamaz.',
+  'Applied to all sites': 'Tüm sitelere uygulandı',
+  Basics: 'Temel',
+  'Share links for several sites': 'Birden çok site için paylaşım bağlantıları',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Seçilen her site için salt okunur bir bağlantı ve hepsini Mac menü çubuğu uygulamasına ekleyen tek bir metin oluşturur. Bağlantılar Genel Bakış ve Canlı’yı gösterir; uygulama yalnızca bunları okur.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# site} other {# site}}',
+  'Select all': 'Tümünü seç',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Tüm bu siteleri tek seferde eklemek için bunu herhangi bir Mac’teki uygulamaya yapıştırın. Belirteçleri içerir, bu yüzden gizli tutun.',
 } satisfies Messages

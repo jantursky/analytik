@@ -19,7 +19,7 @@ const VIEW_LABELS: Record<ShareView, string> = {
   realtime: msg('Live'),
 }
 
-const EXPIRIES = [
+export const EXPIRIES = [
   { value: '', label: msg('Never') },
   { value: '7', label: msg('After 7 days') },
   { value: '30', label: msg('After 30 days') },
@@ -36,12 +36,27 @@ export function shareAddress(siteId: string, token: string): string {
   return url.href
 }
 
+/**
+ * The address the Mac menu bar app reads: the server, the site, the token and the dashboard address in one piece, so
+ * the app can fill its form from a paste and open the dashboard. The dashboard address alone doesn't say where the API is.
+ */
+export function macAppLink(apiUrl: string, site: { id: string; name: string }, token: string): string {
+  const params = new URLSearchParams({
+    server: apiUrl,
+    site: site.id,
+    token,
+    name: site.name,
+    dashboard: shareAddress(site.id, token),
+  })
+  return `analytik://connect?${params.toString()}`
+}
+
 function NewLink({ onCreated }: { onCreated: () => void }) {
-  const { client, site } = useDashboard()
+  const { client, site, apiUrl } = useDashboard()
   const [label, setLabel] = useState('')
   const [views, setViews] = useState<ShareView[]>([])
   const [expires, setExpires] = useState('')
-  const [created, setCreated] = useState<string>()
+  const [created, setCreated] = useState<{ address: string; mac: string }>()
   const [outcome, run] = useOutcome()
   const toggle = (view: ShareView): void =>
     setViews(views.includes(view) ? views.filter((v) => v !== view) : [...views, view])
@@ -55,7 +70,7 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
           ...(expires && { expiresInDays: Number(expires) }),
         })
         .then(({ token }) => {
-          setCreated(shareAddress(site.id, token))
+          setCreated({ address: shareAddress(site.id, token), mac: macAppLink(apiUrl, site, token) })
           setLabel('')
           onCreated()
         }),
@@ -99,11 +114,26 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
             <input
               className="analytik-input analytik-mono"
               readOnly
-              value={created}
+              value={created.address}
               aria-label={t('Share link')}
               onFocus={(e) => e.currentTarget.select()}
             />
-            <CopyButton text={created} label={t('Copy link')} />
+            <CopyButton text={created.address} label={t('Copy link')} />
+          </div>
+          <p>
+            {t(
+              'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.',
+            )}
+          </p>
+          <div className="analytik-row">
+            <input
+              className="analytik-input analytik-mono"
+              readOnly
+              value={created.mac}
+              aria-label={t('Mac app link')}
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <CopyButton text={created.mac} label={t('Copy Mac app link')} />
           </div>
         </div>
       )}

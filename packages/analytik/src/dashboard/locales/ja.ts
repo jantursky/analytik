@@ -6,6 +6,10 @@ export default {
   '(none)': '(なし)',
   ', filter by this': '、これで絞り込む',
   ', then the same kinds again': '、その後は同じ種類を繰り返します',
+  'Copy Mac app link': 'Mac アプリ用リンクをコピー',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Mac のメニューバーアプリには、「概要」と「ライブ」のビューを選んでください。Mac アプリ用リンクにはサーバーのアドレス、サイト ID、トークンがすべて含まれています。コピーしてアプリに貼り付けてください。',
+  'Mac app link': 'Mac アプリ用リンク',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1〜20 件、名前は Test site …',
   '1 to 20; each takes the next kind of site.': '1〜20 件。それぞれ次の種類のサイトになります。',
@@ -925,4 +929,30 @@ export default {
     '誰のためのリンクかを記入しておくと、どれを無効にするか分かります。',
   Active: '有効',
   'No funnels yet.': 'ファネルはまだありません。',
+  'Got an idea?': 'アイデアはありますか？',
+  'Add provider': 'プロバイダーを追加',
+  'No payment provider yet. Add the one you use.':
+    '決済プロバイダーはまだありません。使っているものを追加してください。',
+  'Remove {provider}?': '{provider} を削除しますか？',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    '署名シークレットが削除され、このプロバイダーからの支払いは記録されなくなります。',
+  'Provider removed': 'プロバイダーを削除しました',
+  'Pause tracking?': 'トラッキングを一時停止しますか？',
+  Defaults: 'デフォルト',
+  'Defaults for all sites': 'すべてのサイトのデフォルト',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    '新しいサイトはこれらの値で始まります。「すべてのサイトに適用」は、カードの値を既存のサイトにコピーします。',
+  'Apply to all sites': 'すべてのサイトに適用',
+  'Apply to all sites?': 'すべてのサイトに適用しますか？',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    '各サイトはこのカードの値を受け取り、それぞれの値は置き換えられます。元に戻せません。',
+  'Applied to all sites': 'すべてのサイトに適用しました',
+  Basics: '基本',
+  'Share links for several sites': '複数サイトの共有リンク',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    '選んだサイトごとに閲覧専用リンクを作り、すべてをMacメニューバーアプリに追加する1つのテキストも作ります。リンクは概要とライブを表示し、アプリが読むのはそれだけです。',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# サイト}}',
+  'Select all': 'すべて選択',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'どのMacのアプリにも貼り付ければ、これらのサイトをまとめて追加できます。トークンが含まれるため、非公開にしてください。',
 } satisfies Messages

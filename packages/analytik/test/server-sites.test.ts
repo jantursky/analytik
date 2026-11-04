@@ -352,3 +352,69 @@ describe('dashboard preferences', () => {
     expect(await server.adminJson('/preferences')).toEqual({})
   })
 })
+
+describe('site defaults', () => {
+  it('starts with the built-in values and needs an admin', async () => {
+    expect(await server.adminJson('/site-defaults')).toEqual({
+      timezone: 'UTC',
+      currency: 'USD',
+      allowLocalhost: false,
+      privacyMode: 'strict',
+      retentionDays: null,
+      ignoredIps: [],
+      ignoreAdmins: false,
+      vitalsSample: 0,
+      targets: [],
+    })
+    expect((await server.request('/site-defaults')).status).toBe(401)
+    expect((await server.request('/site-defaults/apply', { method: 'POST', body: '{}' })).status).toBe(401)
+  })
+
+  it('gives a new site the saved defaults and keeps what the request sets', async () => {
+    await server.adminJson('/site-defaults', {
+      method: 'PUT',
+      json: { timezone: 'Europe/Bratislava', currency: 'EUR', retentionDays: 90, vitalsSample: 10 },
+    })
+    const { site } = await server.adminJson<{ site: Site }>('/sites', {
+      method: 'POST',
+      json: { domain: 'new.example.com', currency: 'CZK' },
+    })
+    expect(site).toMatchObject({ timezone: 'Europe/Bratislava', currency: 'CZK', retentionDays: 90, vitalsSample: 10 })
+  })
+
+  it('keeps the fields a save leaves out and refuses a bad value', async () => {
+    await server.adminJson('/site-defaults', { method: 'PUT', json: { currency: 'EUR' } })
+    await server.adminJson('/site-defaults', { method: 'PUT', json: { timezone: 'Europe/Prague' } })
+    expect(await server.adminJson('/site-defaults')).toMatchObject({ currency: 'EUR', timezone: 'Europe/Prague' })
+    for (const json of [{ timezone: 'Mars/Olympus' }, { retentionDays: 0 }, { privacyMode: 'loose' }]) {
+      expect((await server.admin('/site-defaults', { method: 'PUT', json })).status, JSON.stringify(json)).toBe(400)
+    }
+  })
+
+  it('copies the chosen groups onto every site and leaves the others alone', async () => {
+    const { site: first } = await server.createSite()
+    const { site: second } = await server.adminJson<{ site: Site }>('/sites', {
+      method: 'POST',
+      json: { domain: 'second.example.com', retentionDays: 7 },
+    })
+    await server.adminJson('/site-defaults', { method: 'PUT', json: { currency: 'EUR', retentionDays: 30 } })
+    const applied = await server.adminJson<{ updated: number }>('/site-defaults/apply', {
+      method: 'POST',
+      json: { groups: ['basics'] },
+    })
+    expect(applied).toEqual({ updated: 2 })
+    const sites = await server.adminJson<Site[]>('/sites')
+    expect(sites.find((s) => s.id === first.id)).toMatchObject({ currency: 'EUR', retentionDays: null })
+    expect(sites.find((s) => s.id === second.id)).toMatchObject({ currency: 'EUR', retentionDays: 7 })
+    await server.adminJson('/site-defaults/apply', { method: 'POST', json: { groups: ['privacy'] } })
+    expect((await server.adminJson<Site[]>('/sites')).map((s) => s.retentionDays)).toEqual([30, 30])
+  })
+
+  it('refuses an apply without a known group', async () => {
+    for (const json of [{}, { groups: [] }, { groups: ['nope'] }, { groups: 'basics' }]) {
+      expect((await server.admin('/site-defaults/apply', { method: 'POST', json })).status, JSON.stringify(json)).toBe(
+        400,
+      )
+    }
+  })
+})

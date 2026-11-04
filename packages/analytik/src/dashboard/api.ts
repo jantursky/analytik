@@ -23,6 +23,7 @@ import type {
   ShareLink,
   ShareView,
   Site,
+  SiteDefaults,
   SiteSummary,
   TargetsResult,
   VitalsResult,
@@ -30,6 +31,7 @@ import type {
   TestDataInput,
   TestDataResult,
   TimeseriesPoint,
+  DefaultsGroup,
 } from '../shared/types'
 import type { ImportRemoval, ImportResult, ImportSource, ImportSummary, ImportVisit } from '../shared/import/types'
 
@@ -47,7 +49,7 @@ export interface SiteInput {
 
 export type SitePatch = Partial<Omit<Site, 'id' | 'createdAt'>> & {
   /** Webhook signing secrets per provider; write-only. */
-  webhookSecrets?: Partial<Record<PaymentProvider, string>>
+  webhookSecrets?: Partial<Record<PaymentProvider, string | null>>
 }
 
 export interface EventRow {
@@ -151,6 +153,11 @@ export interface ApiClient {
   /** Creates the site and resolves to it; its API key is shown later in the settings by rotating it. */
   createSite(input: SiteInput): Promise<Site>
   updateSite(siteId: string, patch: SitePatch): Promise<Site>
+  /** What new sites start with. */
+  siteDefaults(): Promise<SiteDefaults>
+  saveSiteDefaults(patch: Partial<SiteDefaults>): Promise<SiteDefaults>
+  /** Copies the defaults of the chosen groups onto every site; resolves to how many sites there are. */
+  applySiteDefaults(groups: DefaultsGroup[]): Promise<{ updated: number }>
   /**
    * Deletes the site and all of its data. The server asks for proof: the site's domain typed out (`confirm`), and the
    * admin password unless admins sign in through `verify()`.
@@ -327,6 +334,9 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     revokeShareLink: (id, linkId) => write('DELETE', `${site(id)}/share-links/${encodeURIComponent(linkId)}`),
     createSite: (input) => write<{ site: Site }>('POST', '/sites', input).then((created) => created.site),
     updateSite: (id, patch) => write('PATCH', site(id), patch),
+    siteDefaults: () => get('/site-defaults'),
+    saveSiteDefaults: (patch) => write('PUT', '/site-defaults', patch),
+    applySiteDefaults: (groups) => write('POST', '/site-defaults/apply', { groups }),
     deleteSite: (id, proof) => write('DELETE', site(id), proof),
     rotateKey: (id) => write('POST', `${site(id)}/rotate-key`, {}),
     preferences: () => get('/preferences'),

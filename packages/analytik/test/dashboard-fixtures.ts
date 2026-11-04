@@ -195,6 +195,17 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         unknown
       >,
     },
+    siteDefaults: {
+      timezone: 'UTC',
+      currency: 'USD',
+      allowLocalhost: false,
+      privacyMode: 'strict',
+      retentionDays: null,
+      ignoredIps: [] as string[],
+      ignoreAdmins: false,
+      vitalsSample: 0,
+      targets: [] as unknown[],
+    } as Record<string, unknown>,
     emailError: null as string | null,
     login: 'password' as 'password' | 'custom',
   }
@@ -269,6 +280,12 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       )
       return { ok: true }
     },
+    'GET /site-defaults': () => state.siteDefaults,
+    'PUT /site-defaults': ({ body }) => {
+      state.siteDefaults = { ...state.siteDefaults, ...(body as Record<string, unknown>) }
+      return state.siteDefaults
+    },
+    'POST /site-defaults/apply': () => ({ updated: state.sites.length }),
     'GET /email': () => state.email,
     'PUT /email': ({ body }) => {
       state.email.settings = { ...state.email.settings, ...(body as Record<string, unknown>) }

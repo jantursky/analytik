@@ -6,6 +6,10 @@ export default {
   '(none)': '(없음)',
   ', filter by this': ', 이 항목으로 필터링',
   ', then the same kinds again': ', 이후 같은 종류 반복',
+  'Copy Mac app link': 'Mac 앱용 링크 복사',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Mac 메뉴 막대 앱에는 개요와 실시간 보기를 선택하세요. Mac 앱용 링크에는 서버 주소, 사이트 ID, 토큰이 모두 들어 있습니다. 복사해서 앱에 붙여넣으세요.',
+  'Mac app link': 'Mac 앱용 링크',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1~20개, 이름은 Test site …',
   '1 to 20; each takes the next kind of site.': '1~20개이며, 각각 다음 종류의 사이트가 됩니다.',
@@ -920,4 +924,29 @@ export default {
     '누구를 위한 링크인지 적어 두면 어떤 것을 취소할지 알 수 있습니다.',
   Active: '활성',
   'No funnels yet.': '아직 퍼널이 없습니다.',
+  'Got an idea?': '아이디어가 있나요?',
+  'Add provider': '제공업체 추가',
+  'No payment provider yet. Add the one you use.': '아직 결제 제공업체가 없습니다. 사용 중인 업체를 추가하세요.',
+  'Remove {provider}?': '{provider}을(를) 삭제할까요?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    '서명 시크릿이 삭제되며 이 업체의 결제는 더 이상 기록되지 않습니다.',
+  'Provider removed': '제공업체를 삭제했습니다',
+  'Pause tracking?': '추적을 일시중지할까요?',
+  Defaults: '기본값',
+  'Defaults for all sites': '모든 사이트의 기본값',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    '새 사이트는 이 값으로 시작합니다. “모든 사이트에 적용”은 카드의 값을 기존 사이트에 복사합니다.',
+  'Apply to all sites': '모든 사이트에 적용',
+  'Apply to all sites?': '모든 사이트에 적용할까요?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    '모든 사이트가 이 카드의 값을 받고 자신의 값은 대체됩니다. 되돌릴 수 없습니다.',
+  'Applied to all sites': '모든 사이트에 적용했습니다',
+  Basics: '기본',
+  'Share links for several sites': '여러 사이트의 공유 링크',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    '선택한 각 사이트의 읽기 전용 링크와, 모두를 Mac 메뉴 막대 앱에 추가하는 텍스트 하나를 만듭니다. 링크는 개요와 라이브를 보여 주며 앱이 읽는 것은 이것뿐입니다.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, other {사이트 #개}}',
+  'Select all': '모두 선택',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    '어느 Mac의 앱에든 붙여 넣으면 이 사이트들이 한꺼번에 추가됩니다. 토큰이 들어 있으니 비공개로 보관하세요.',
 } satisfies Messages

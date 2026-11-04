@@ -6,6 +6,10 @@ export default {
   '(none)': '(keine)',
   ', filter by this': ', danach filtern',
   ', then the same kinds again': ', danach wieder dieselben Arten',
+  'Copy Mac app link': 'Link für die Mac-App kopieren',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Wähle für die Mac-App in der Menüleiste die Ansichten Übersicht und Live. Der Link für die Mac-App enthält die Serveradresse, die Website-ID und das Token: Kopiere ihn und füge ihn in die App ein.',
+  'Mac app link': 'Link für die Mac-App',
   '{count} of {target}': '{count} von {target}',
   '1 to 20, named Test site …': '1 bis 20, benannt Test site …',
   '1 to 20; each takes the next kind of site.': '1 bis 20; jede erhält die nächste Art von Website.',
@@ -935,4 +939,29 @@ export default {
     'Für wen der Link ist, damit du weißt, welchen du widerrufen musst.',
   Active: 'Aktiv',
   'No funnels yet.': 'Noch keine Trichter.',
+  'Got an idea?': 'Haben Sie eine Idee?',
+  'Add provider': 'Anbieter hinzufügen',
+  'No payment provider yet. Add the one you use.': 'Noch kein Zahlungsanbieter. Fügen Sie den hinzu, den Sie nutzen.',
+  'Remove {provider}?': '{provider} entfernen?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Das Signing-Secret wird gelöscht, und Zahlungen von diesem Anbieter werden nicht mehr erfasst.',
+  'Provider removed': 'Anbieter entfernt',
+  'Pause tracking?': 'Tracking pausieren?',
+  Defaults: 'Standardwerte',
+  'Defaults for all sites': 'Standardwerte für alle Websites',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Neue Websites starten mit diesen Werten. „Auf alle Websites anwenden“ kopiert eine Karte auf die vorhandenen Websites.',
+  'Apply to all sites': 'Auf alle Websites anwenden',
+  'Apply to all sites?': 'Auf alle Websites anwenden?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Jede Website erhält die Werte dieser Karte und verliert ihre eigenen. Das lässt sich nicht rückgängig machen.',
+  'Applied to all sites': 'Auf alle Websites angewendet',
+  Basics: 'Grundlagen',
+  'Share links for several sites': 'Freigabelinks für mehrere Websites',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Erstellt für jede gewählte Website einen Nur-Lese-Link und einen Text, der alle in die Mac-Menüleisten-App aufnimmt. Die Links zeigen Übersicht und Live, mehr liest die App nicht.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# Website} other {# Websites}}',
+  'Select all': 'Alle auswählen',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Fügen Sie das in die App auf einem beliebigen Mac ein, um alle diese Websites auf einmal hinzuzufügen. Es enthält die Tokens, halten Sie es also privat.',
 } satisfies Messages

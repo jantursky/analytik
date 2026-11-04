@@ -7,10 +7,10 @@ import type { ExportFormat } from '../api'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { msg, t } from '../i18n'
+import { Icon, type IconName } from '../icons'
 import { DomainField } from '../Login'
 import { Logo } from '../logo'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
-import { Tooltip } from '../ui/tooltip'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Notice, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
 import { DatePicker } from '../ui/date-picker'
@@ -18,15 +18,16 @@ import { stagger, View } from '../ui/motion'
 import { Select, type SelectOption } from '../ui/select'
 import { Switch } from '../ui/switch'
 import { TimeZoneSelect } from '../ui/timezone'
-import { Icon, type IconName } from '../icons'
+import { Tooltip } from '../ui/tooltip'
 import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
+import { DefaultsSettings } from './DefaultsSettings'
 import { EmailSettings } from './EmailSettings'
-import { SharingSettings } from './SharingSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { ImportedData } from './ImportData'
 import { IntegrationPrompt } from './IntegrationPrompt'
 import { MODE_INFO } from './privacy-modes'
+import { SharingSettings } from './SharingSettings'
 import { SiteLifecycle } from './SiteActions'
 
 type SiteDraft = Omit<Site, 'id' | 'createdAt'>
@@ -648,7 +649,16 @@ const PROVIDERS: { value: PaymentProvider; label: string }[] = [
   { value: 'gumroad', label: 'Gumroad' },
 ]
 
-function Webhook({ provider, label }: { provider: PaymentProvider; label: string }) {
+function Webhook({
+  provider,
+  label,
+  onRemoved,
+}: {
+  provider: PaymentProvider
+  label: string
+  /** Called once the provider no longer needs a place in the list. */
+  onRemoved: () => void
+}) {
   const { client, site, apiUrl, onSiteChange } = useDashboard()
   const [secret, setSecret] = useState('')
   const [outcome, run] = useOutcome()
@@ -695,6 +705,26 @@ function Webhook({ provider, label }: { provider: PaymentProvider; label: string
       </div>
       <Actions outcome={outcome}>
         <CopyButton text={url} label={t('Copy URL')} />
+        {connected ? (
+          <ConfirmButton
+            label={t('Remove')}
+            title={t('Remove {provider}?', { provider: label })}
+            description={t('The signing secret is deleted, and payments from it are no longer recorded.')}
+            onConfirm={() =>
+              run(
+                client.updateSite(site.id, { webhookSecrets: { [provider]: null } }).then((updated) => {
+                  onSiteChange(updated)
+                  onRemoved()
+                }),
+                t('Provider removed'),
+              )
+            }
+          />
+        ) : (
+          <button type="button" className="analytik-button" onClick={onRemoved}>
+            {t('Remove')}
+          </button>
+        )}
         <button type="submit" className="analytik-button">
           {t('Save secret')}
         </button>
@@ -703,7 +733,19 @@ function Webhook({ provider, label }: { provider: PaymentProvider; label: string
   )
 }
 
+/** The providers with a saved secret, plus any added here; the rest are one choice away. */
 function PaymentWebhooks() {
+  const { site } = useDashboard()
+  const [added, setAdded] = useState<PaymentProvider[]>([])
+  const [choice, setChoice] = useState<PaymentProvider | ''>('')
+  const shown = PROVIDERS.filter((p) => (site.webhooks?.[p.value] ?? false) || added.includes(p.value))
+  const available = PROVIDERS.filter((p) => !shown.includes(p))
+  const picked = available.find((p) => p.value === choice) ?? available[0]
+  const add = (): void => {
+    if (!picked) return
+    setAdded((current) => [...current, picked.value])
+    setChoice('')
+  }
   return (
     <Card
       title={t('Payment webhooks')}
@@ -711,9 +753,49 @@ function PaymentWebhooks() {
         'Point your payment provider at the endpoint and paste its signing secret. Payments are matched to the visits that led to them.',
       )}
     >
-      {PROVIDERS.map((p) => (
-        <Webhook key={p.value} provider={p.value} label={p.label} />
-      ))}
+      <AnimatePresence initial={false}>
+        {shown.length === 0 && (
+          <motion.p
+            key="empty"
+            className="analytik-muted"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            {t('No payment provider yet. Add the one you use.')}
+          </motion.p>
+        )}
+        {shown.map((p) => (
+          <motion.div
+            key={p.value}
+            className="analytik-webhook-item"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Webhook
+              provider={p.value}
+              label={p.label}
+              onRemoved={() => setAdded((current) => current.filter((v) => v !== p.value))}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+      {picked && (
+        <div className="analytik-row analytik-webhook-add">
+          <Select
+            label={t('Provider')}
+            hideLabel
+            value={picked.value}
+            options={available.map((p) => ({ value: p.value, label: p.label, icon: <Logo name={p.label} /> }))}
+            onChange={setChoice}
+          />
+          <button type="button" className="analytik-button" onClick={add}>
+            <Icon name="plus" />
+            {t('Add provider')}
+          </button>
+        </div>
+      )}
     </Card>
   )
 }
@@ -838,7 +920,8 @@ const SECTIONS: readonly [Section, ...Section[]] = [
   { value: 'email', label: msg('Email'), icon: 'mail', content: EmailSettings },
   { value: 'appearance', label: msg('Appearance'), icon: 'theme', content: ThemeSettings },
   { value: 'formatting', label: msg('Formatting'), icon: 'format', content: FormatSettings },
-  { value: 'changelog', label: msg('Changelog'), icon: 'clock', content: Changelog, tone: 'meta' },
+  { value: 'defaults', label: msg('Defaults'), icon: 'sliders', content: DefaultsSettings, tone: 'meta' },
+  { value: 'changelog', label: msg('Changelog'), icon: 'clock', content: Changelog },
   { value: 'debug', label: msg('Debug'), icon: 'bug', content: DebugSettings, tone: 'debug' },
 ]
 
@@ -857,6 +940,7 @@ export type SettingsSection =
   | 'email'
   | 'appearance'
   | 'formatting'
+  | 'defaults'
   | 'changelog'
   | 'debug'
 

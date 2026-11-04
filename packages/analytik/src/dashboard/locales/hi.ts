@@ -6,6 +6,10 @@ export default {
   '(none)': '(कोई नहीं)',
   ', filter by this': ', इससे फ़िल्टर करें',
   ', then the same kinds again': ', फिर वही प्रकार दोबारा',
+  'Copy Mac app link': 'Mac ऐप का लिंक कॉपी करें',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Mac मेन्यू बार ऐप के लिए ओवरव्यू और लाइव व्यू चुनें। Mac ऐप के लिंक में सर्वर का पता, साइट आईडी और टोकन होता है: उसे कॉपी करके ऐप में पेस्ट करें।',
+  'Mac app link': 'Mac ऐप का लिंक',
   '{count} of {target}': '{target} में से {count}',
   '1 to 20, named Test site …': '1 से 20, नाम Test site …',
   '1 to 20; each takes the next kind of site.': '1 से 20; हर एक को अगले प्रकार की साइट मिलती है।',
@@ -926,4 +930,29 @@ export default {
   'Who the link is for, so you know which to revoke.': 'लिंक किसके लिए है, ताकि आप जान सकें कि कौन सा रद्द करना है।',
   Active: 'सक्रिय',
   'No funnels yet.': 'अभी कोई फ़नल नहीं है।',
+  'Got an idea?': 'कोई आइडिया है?',
+  'Add provider': 'प्रदाता जोड़ें',
+  'No payment provider yet. Add the one you use.': 'अभी कोई भुगतान प्रदाता नहीं है। जिसका उपयोग करते हैं उसे जोड़ें।',
+  'Remove {provider}?': '{provider} हटाएँ?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'साइनिंग सीक्रेट हटा दिया जाता है और इस प्रदाता के भुगतान अब दर्ज नहीं होते।',
+  'Provider removed': 'प्रदाता हटाया गया',
+  'Pause tracking?': 'ट्रैकिंग रोकें?',
+  Defaults: 'डिफ़ॉल्ट',
+  'Defaults for all sites': 'सभी साइटों के लिए डिफ़ॉल्ट',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'नई साइटें इन मानों से शुरू होती हैं। “सभी साइटों पर लागू करें” एक कार्ड को आपकी मौजूदा साइटों पर कॉपी करता है।',
+  'Apply to all sites': 'सभी साइटों पर लागू करें',
+  'Apply to all sites?': 'सभी साइटों पर लागू करें?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'हर साइट को इस कार्ड के मान मिलेंगे और उसके अपने मान बदल जाएँगे। इसे वापस नहीं किया जा सकता।',
+  'Applied to all sites': 'सभी साइटों पर लागू किया गया',
+  Basics: 'बुनियादी',
+  'Share links for several sites': 'कई साइटों के लिए शेयर लिंक',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'चुनी गई हर साइट के लिए एक रीड-ओनली लिंक और एक टेक्स्ट बनाता है जो उन सभी को Mac मेनू बार ऐप में जोड़ देता है। लिंक ओवरव्यू और लाइव दिखाते हैं, ऐप बस यही पढ़ता है।',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# साइट} other {# साइटें}}',
+  'Select all': 'सभी चुनें',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'इसे किसी भी Mac के ऐप में चिपकाएँ ताकि ये सभी साइटें एक साथ जुड़ जाएँ। इसमें टोकन हैं, इसलिए इसे निजी रखें।',
 } satisfies Messages

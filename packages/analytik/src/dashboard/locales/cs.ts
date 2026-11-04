@@ -6,6 +6,10 @@ export default {
   '(none)': '(žádné)',
   ', filter by this': ', filtrovat podle tohoto',
   ', then the same kinds again': ', poté znovu stejné druhy',
+  'Copy Mac app link': 'Kopírovat odkaz pro aplikaci na Macu',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Pro aplikaci v liště menu na Macu zvolte zobrazení Přehled a Živě. Odkaz pro aplikaci na Macu obsahuje adresu serveru, ID webu a token: zkopírujte ho a vložte do aplikace.',
+  'Mac app link': 'Odkaz pro aplikaci na Macu',
   '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': '1 až 20, s názvem Test site …',
   '1 to 20; each takes the next kind of site.': '1 až 20; každý dostane další druh webu.',
@@ -932,4 +936,29 @@ export default {
   'Who the link is for, so you know which to revoke.': 'Pro koho odkaz je, abyste věděli, který zrušit.',
   Active: 'Aktivní',
   'No funnels yet.': 'Zatím žádné trychtýře.',
+  'Got an idea?': 'Máte nápad?',
+  'Add provider': 'Přidat poskytovatele',
+  'No payment provider yet. Add the one you use.': 'Zatím žádný poskytovatel plateb. Přidejte toho, kterého používáte.',
+  'Remove {provider}?': 'Odebrat {provider}?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Podpisový klíč se smaže a platby od něj se už nezaznamenávají.',
+  'Provider removed': 'Poskytovatel odebrán',
+  'Pause tracking?': 'Pozastavit sledování?',
+  Defaults: 'Výchozí',
+  'Defaults for all sites': 'Výchozí pro všechny weby',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Nové weby začnou s těmito hodnotami. „Použít na všechny weby“ zkopíruje kartu na weby, které už máte.',
+  'Apply to all sites': 'Použít na všechny weby',
+  'Apply to all sites?': 'Použít na všechny weby?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Každý web dostane hodnoty z této karty a nahradí jimi své vlastní. Nelze to vrátit.',
+  'Applied to all sites': 'Použito na všechny weby',
+  Basics: 'Základ',
+  'Share links for several sites': 'Sdílené odkazy pro více webů',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Vytvoří odkaz jen pro čtení pro každý vybraný web a jeden text, který je všechny přidá do aplikace v liště nabídek na Macu. Odkazy ukazují Přehled a Živě, což je vše, co aplikace čte.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, one {# web} few {# weby} other {# webů}}',
+  'Select all': 'Vybrat vše',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Vložte to do aplikace na libovolném Macu a přidají se všechny tyto weby najednou. Obsahuje tokeny, proto to držte v soukromí.',
 } satisfies Messages

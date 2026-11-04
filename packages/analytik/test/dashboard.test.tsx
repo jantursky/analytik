@@ -1897,6 +1897,16 @@ describe('Settings', () => {
     await inDialog(container, 'Rotate key')
     expect(container.querySelector('[aria-label="New API key"]')?.textContent).toBe('ak_live_123')
 
+    // No provider is listed until one is added, and an added one can be taken out again.
+    expect(byText(container, 'No payment provider yet. Add the one you use.', 'p')).toBeDefined()
+    expect(byText(container, 'Stripe', 'h3')).toBeUndefined()
+    await click(byText(container, 'Add provider', 'button'))
+    await settled()
+    await click(byText(container, 'Remove', '.analytik-webhook button'))
+    await waitFor(() => byText(container, 'Stripe', 'h3') === undefined)
+    await click(byText(container, 'Add provider', 'button'))
+    await settled()
+
     const stripe = byText(container, 'Stripe', 'h3')?.closest('form')
     expect(stripe?.querySelector<HTMLInputElement>('input[readonly]')?.value).toBe(
       `${location.origin}/api/webhooks/stripe/site_1`,
@@ -2102,12 +2112,128 @@ describe('Settings', () => {
   })
 })
 
+describe('site defaults', () => {
+  it('saves the defaults of a card, and applies them to every site only after confirming', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Defaults')
+    expect(byText(container, 'Defaults for all sites', 'h2')).toBeDefined()
+    const retention = byLabel(container, 'Keep data for (days)')
+    await fill(retention, '45')
+    await submit(retention?.closest('form'))
+    await settled()
+    expect(api.find('PUT', '/site-defaults')[0]?.body).toMatchObject({ retentionDays: 45, privacyMode: 'strict' })
+    expect(byText(container, 'Settings saved', '[role="status"]')).toBeDefined()
+
+    await fill(byLabel(container, 'Ignored IP addresses'), '203.0.113.5')
+    await click(
+      switchFor(container, 'Ignore signed-in admins (only when this dashboard and the tracker are on one origin)'),
+    )
+    await submit(retention?.closest('form'))
+    await settled()
+    expect(api.find('PUT', '/site-defaults')[1]?.body).toMatchObject({
+      ignoredIps: ['203.0.113.5'],
+      ignoreAdmins: true,
+    })
+
+    const card = retention?.closest('form')
+    await click(byText(card as HTMLElement, 'Apply to all sites', 'button'))
+    await settled()
+    expect(byText(container, 'Apply to all sites?', '[role="dialog"] h2')).toBeDefined()
+    await inDialog(container, 'Cancel')
+    expect(api.find('POST', '/site-defaults/apply')).toHaveLength(0)
+    await click(byText(card as HTMLElement, 'Apply to all sites', 'button'))
+    await settled()
+    await inDialog(container, 'Apply to all sites')
+    expect(api.find('POST', '/site-defaults/apply')[0]?.body).toEqual({ groups: ['privacy'] })
+    expect(byText(container, 'Applied to all sites', '[role="status"]')).toBeDefined()
+  })
+
+  it('creates read-only links for the chosen sites and one text for the Mac app', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Defaults')
+    // Both sites start chosen; the dropdown narrows it to one.
+    const trigger = byText(container, 'All sites', 'button.analytik-date-trigger')
+    await click(trigger)
+    await settled()
+    const boxes = [...document.querySelectorAll<HTMLInputElement>('.analytik-multi-list input')]
+    expect(boxes).toHaveLength(3)
+    await click(boxes[2])
+    await settled()
+    expect(byText(document.body, 'Example', 'button.analytik-date-trigger')).toBeDefined()
+    await click(boxes[2])
+    await settled()
+    // "Select all" clears and selects everything.
+    await click(boxes[0])
+    await settled()
+    expect(byText(document.body, '0 sites', 'button.analytik-date-trigger')?.isConnected).toBe(true)
+    await click(boxes[0])
+    await settled()
+    await click(byText(document.body, 'All sites', 'button.analytik-date-trigger'))
+    await settled()
+    await click(byText(container, 'Create link', 'button'))
+    await settled()
+    expect(api.find('POST', '/sites/site_1/share-links')[0]?.body).toEqual({
+      label: '',
+      views: ['overview', 'realtime'],
+    })
+    expect(api.find('POST', '/sites/site_2/share-links')).toHaveLength(1)
+    const text = byLabel(container, 'Mac app link')?.value ?? ''
+    expect(text.startsWith('analytik-sites:')).toBe(true)
+    const json = atob(text.slice('analytik-sites:'.length).replaceAll('-', '+').replaceAll('_', '/'))
+    const sites = JSON.parse(json) as { name: string; siteId: string; token: string; serverURL: string }[]
+    expect(sites.map((x) => x.siteId)).toEqual(['site_1', 'site_2'])
+    expect(sites[0]).toMatchObject({ token: 'new-token-1234567890abcdefghij', serverURL: 'http://localhost:3000/api' })
+  })
+
+  it('adds and removes a default goal target', async () => {
+    const { container, api } = await open(fakeApi(), 'settings')
+    await section(container, 'Defaults')
+    await click(switchFor(container, 'Measure Core Web Vitals'))
+    await fill(byLabel(container, 'Share of page views measured (%)'), '25')
+    await click(byText(container, 'Add a target', 'button'))
+    await fill(byLabel(container, 'Goal name'), 'signup')
+    await fill(byLabel(container, 'Target'), '500')
+    await choose(selectTrigger(container, 'Period'), 'Week')
+    await submit(byLabel(container, 'Goal name')?.closest('form'))
+    await settled()
+    expect(api.find('PUT', '/site-defaults')[0]?.body).toMatchObject({
+      targets: [{ goal: 'signup', target: 500, period: 'week' }],
+      vitalsSample: 25,
+    })
+    await click(container.querySelector('[aria-label="Remove target 1"]'))
+    expect(byText(container, 'No targets yet', 'p')).toBeDefined()
+  })
+})
+
+describe('payment webhooks', () => {
+  it('removes a connected provider after confirming', async () => {
+    const api = fakeApi()
+    api.state.sites[0] = { ...api.state.sites[0]!, webhooks: { ...api.state.sites[0]!.webhooks!, stripe: true } }
+    const { container } = await open(api, 'settings')
+    await section(container, 'Payments and API')
+    expect(byText(container, 'Stripe', 'h3')).toBeDefined()
+    await click(byText(container, 'Remove', '.analytik-webhook button'))
+    await settled()
+    expect(byText(container, 'Remove Stripe?', '[role="dialog"] h2')).toBeDefined()
+    await inDialog(container, 'Remove')
+    expect(api.find('PATCH', '/sites/site_1')[0]?.body).toEqual({ webhookSecrets: { stripe: null } })
+    expect(byText(container, 'Provider removed', '[role="status"]')).toBeDefined()
+  })
+})
+
 describe('site lifecycle', () => {
   it('pauses and resumes tracking from the general settings', async () => {
     const { container, api } = await open(fakeApi(), 'settings')
     expect(container.querySelector('.analytik-tracking-state')?.textContent).toBe('Tracking is on')
     await click(byText(container, 'Pause tracking', 'button'))
     await settled()
+    // Pausing asks first; cancelling changes nothing.
+    expect(byText(container, 'Pause tracking?', '[role="dialog"] h2')).toBeDefined()
+    await inDialog(container, 'Cancel')
+    expect(api.find('PATCH', '/sites/site_1')).toHaveLength(0)
+    await click(byText(container, 'Pause tracking', 'button'))
+    await settled()
+    await inDialog(container, 'Pause tracking')
     expect(api.find('PATCH', '/sites/site_1')[0]?.body).toEqual({ paused: true })
     expect(container.querySelector('.analytik-tracking-state')?.textContent).toBe('Tracking is paused')
     expect(byText(container, 'Tracking paused', '[role="status"]')).toBeDefined()
@@ -2160,6 +2286,9 @@ describe('site lifecycle', () => {
     await click(container.querySelector('[aria-label="Actions for Other"]'))
     await settled()
     await press(byText(document.body, 'Pause tracking', '[role="menuitem"]'))
+    await settled()
+    expect(api.find('PATCH', '/sites/site_2')).toHaveLength(0)
+    await click(byText(document.body, 'Pause tracking', '[role="dialog"] button'))
     await settled()
     expect(api.find('PATCH', '/sites/site_2')[0]?.body).toEqual({ paused: true })
     expect(texts(container, '.analytik-site-item[data-paused] .analytik-site-name strong')).toEqual(['Other'])
@@ -2351,10 +2480,10 @@ describe('formatting and credits', () => {
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'sk' })
   })
 
-  it('lists the release notes in a Changelog section set apart from the site settings', async () => {
+  it('lists the release notes in a Changelog section, and sets Defaults apart from the site settings', async () => {
     const { container } = await open(fakeApi(), 'settings')
     const item = [...container.querySelectorAll('.analytik-settings-nav li')].find((li) =>
-      li.textContent.includes('Changelog'),
+      li.textContent.includes('Defaults'),
     )
     expect(item?.getAttribute('data-tone')).toBe('meta')
     await section(container, 'Changelog')
@@ -2433,7 +2562,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(13)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(14)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 
@@ -2442,6 +2571,7 @@ describe('formatting and credits', () => {
     const links = [...container.querySelectorAll<HTMLAnchorElement>('.analytik-credits a')]
     expect(links.map((a) => [a.textContent.trim(), a.href])).toEqual([
       ['Star on GitHub', 'https://github.com/jantursky/analytik'],
+      ['Got an idea?', 'https://github.com/jantursky/analytik/issues/new/choose'],
       ['Jan Tursky', 'https://jantursky.com/'],
     ])
     expect(links.every((a) => a.target === '_blank' && a.rel === 'noopener')).toBe(true)

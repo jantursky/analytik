@@ -6,6 +6,10 @@ export default {
   '(none)': '(нет)',
   ', filter by this': ', фильтровать по этому',
   ', then the same kinds again': ', затем снова те же виды',
+  'Copy Mac app link': 'Скопировать ссылку для приложения на Mac',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Для приложения в строке меню Mac выберите разделы «Обзор» и «Онлайн». Ссылка для приложения на Mac содержит адрес сервера, идентификатор сайта и токен: скопируйте её и вставьте в приложение.',
+  'Mac app link': 'Ссылка для приложения на Mac',
   '{count} of {target}': '{count} из {target}',
   '1 to 20, named Test site …': 'от 1 до 20, с названием Test site …',
   '1 to 20; each takes the next kind of site.': 'от 1 до 20; каждый получает следующий вид сайта.',
@@ -934,4 +938,31 @@ export default {
   'Who the link is for, so you know which to revoke.': 'Для кого эта ссылка, чтобы вы знали, какую отозвать.',
   Active: 'Активна',
   'No funnels yet.': 'Воронок пока нет.',
+  'Got an idea?': 'Есть идея?',
+  'Add provider': 'Добавить провайдера',
+  'No payment provider yet. Add the one you use.':
+    'Платёжных провайдеров пока нет. Добавьте того, которым пользуетесь.',
+  'Remove {provider}?': 'Удалить {provider}?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Секрет подписи будет удалён, а платежи этого провайдера больше не записываются.',
+  'Provider removed': 'Провайдер удалён',
+  'Pause tracking?': 'Приостановить отслеживание?',
+  Defaults: 'По умолчанию',
+  'Defaults for all sites': 'Значения по умолчанию для всех сайтов',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Новые сайты начинают с этих значений. «Применить ко всем сайтам» копирует карточку на уже существующие сайты.',
+  'Apply to all sites': 'Применить ко всем сайтам',
+  'Apply to all sites?': 'Применить ко всем сайтам?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Каждый сайт получит значения этой карточки и потеряет свои. Это нельзя отменить.',
+  'Applied to all sites': 'Применено ко всем сайтам',
+  Basics: 'Основное',
+  'Share links for several sites': 'Ссылки для доступа к нескольким сайтам',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Создаёт ссылку только для чтения для каждого выбранного сайта и один текст, который добавляет их все в приложение в строке меню Mac. Ссылки показывают Обзор и Live — это всё, что читает приложение.',
+  '{count, plural, one {# site} other {# sites}}':
+    '{count, plural, one {# сайт} few {# сайта} many {# сайтов} other {# сайта}}',
+  'Select all': 'Выбрать все',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Вставьте это в приложение на любом Mac, чтобы добавить все эти сайты сразу. Здесь есть токены, поэтому храните текст в тайне.',
 } satisfies Messages

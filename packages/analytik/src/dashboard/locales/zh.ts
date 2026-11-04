@@ -6,6 +6,10 @@ export default {
   '(none)': '（无）',
   ', filter by this': '，按此筛选',
   ', then the same kinds again': '，之后重复相同类型',
+  'Copy Mac app link': '复制 Mac 应用链接',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Mac 菜单栏应用请选择“概览”和“实时”视图。Mac 应用链接包含服务器地址、站点 ID 和令牌：复制后粘贴到应用中即可。',
+  'Mac app link': 'Mac 应用链接',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 到 20 个，命名为 Test site …',
   '1 to 20; each takes the next kind of site.': '1 到 20 个；每个依次采用下一种网站类型。',
@@ -901,4 +905,29 @@ export default {
   'Who the link is for, so you know which to revoke.': '链接是给谁的，方便你知道该撤销哪一个。',
   Active: '有效',
   'No funnels yet.': '还没有漏斗。',
+  'Got an idea?': '有想法吗？',
+  'Add provider': '添加提供商',
+  'No payment provider yet. Add the one you use.': '还没有支付提供商。请添加你使用的那个。',
+  'Remove {provider}?': '移除 {provider}？',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    '签名密钥将被删除，该提供商的付款不再记录。',
+  'Provider removed': '提供商已移除',
+  'Pause tracking?': '暂停跟踪？',
+  Defaults: '默认设置',
+  'Defaults for all sites': '所有网站的默认设置',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    '新网站从这些值开始。“应用到所有网站”会把一张卡片复制到已有的网站。',
+  'Apply to all sites': '应用到所有网站',
+  'Apply to all sites?': '应用到所有网站？',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    '每个网站都会得到此卡片的值，并替换它自己的值。此操作无法撤销。',
+  'Applied to all sites': '已应用到所有网站',
+  Basics: '基础',
+  'Share links for several sites': '多个网站的分享链接',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    '为所选的每个网站创建只读链接，并生成一段文本，一次把它们全部添加到 Mac 菜单栏应用。链接显示概览和实时，这也是应用读取的全部内容。',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# 个网站}}',
+  'Select all': '全选',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    '把它粘贴到任何 Mac 上的应用，即可一次添加所有这些网站。其中包含令牌，请保密。',
 } satisfies Messages

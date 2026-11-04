@@ -7,3 +7,6 @@ apps/docs/docs/_generated/
 test-results/
 playwright-report/
 packages/analytik/src/dashboard/flags-data.ts
+apps/menubar/.build/
+apps/menubar/.build-release/
+apps/menubar/dist/

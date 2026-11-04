@@ -22,13 +22,16 @@ import { getPreferences, savePreferences } from '../preferences'
 import { readText } from '../request'
 import {
   type SiteRecord,
+  applySiteDefaults,
   createSite,
   deleteSite,
   getSite,
+  getSiteDefaults,
   listSites,
   publicSite,
   requireSite,
   rotateApiKey,
+  saveSiteDefaults,
   updateSite,
 } from '../sites'
 import { events, payments, realtime, sessionDetail, sessions } from '../stats/activity'
@@ -237,6 +240,16 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     return c.json(
       await siteSummaries(ctx, await listSites(ctx), from, to, { bucket, compare: c.req.query('compare') === '1' }),
     )
+  })
+
+  // What new sites start with, and the button that copies it onto the existing ones.
+  app.use('/site-defaults', requireAdmin(ctx))
+  app.use('/site-defaults/*', requireAdmin(ctx))
+  app.get('/site-defaults', async (c) => c.json(await getSiteDefaults(ctx)))
+  app.put('/site-defaults', async (c) => c.json(await saveSiteDefaults(ctx, await body(c))))
+  app.post('/site-defaults/apply', async (c) => {
+    const { groups } = await body(c)
+    return c.json({ updated: await applySiteDefaults(ctx, groups) })
   })
 
   app.use('/sites', requireAdmin(ctx))

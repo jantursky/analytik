@@ -343,6 +343,7 @@ function TestDataGenerator() {
           aria-busy={busy || undefined}
           onClick={generate}
         >
+          {busy && <span className="analytik-spinner" aria-hidden="true" />}
           {busy ? t('Generating…') : t('Generate')}
         </button>
       </Actions>

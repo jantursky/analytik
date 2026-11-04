@@ -23,6 +23,9 @@ export function Credits() {
           <GitHubMark />
           <span>{t('Star on GitHub')}</span>
         </a>
+        <a className="analytik-credits-link" href={`${REPOSITORY}/issues/new/choose`} target="_blank" rel="noopener">
+          <span>{t('Got an idea?')}</span>
+        </a>
         <span className="analytik-credits-author">
           {t('Made by')}{' '}
           <a className="analytik-credits-link" href={AUTHOR} target="_blank" rel="noopener">

@@ -115,6 +115,20 @@ describe('Settings → Sharing', () => {
     })
     const created = container.querySelector<HTMLInputElement>('.analytik-share-created input')
     expect(created?.value).toBe(`${location.origin}/?site=site_1&share=new-token-1234567890abcdefghij`)
+    const mac = container.querySelector<HTMLInputElement>('.analytik-share-created input[aria-label="Mac app link"]')
+    const link = new URL(mac?.value ?? '')
+    expect(link.protocol).toBe('analytik:')
+    expect(link.host).toBe('connect')
+    expect(link.searchParams.get('server')).toBe(`${location.origin}/api`)
+    expect(link.searchParams.get('site')).toBe('site_1')
+    expect(link.searchParams.get('token')).toBe('new-token-1234567890abcdefghij')
+    expect(link.searchParams.get('name')).toBe('Example')
+    expect(link.searchParams.get('dashboard')).toBe(
+      `${location.origin}/?site=site_1&share=new-token-1234567890abcdefghij`,
+    )
+    expect(container.querySelector('.analytik-share-created')?.textContent).toContain(
+      'choose the Overview and Live views',
+    )
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Board')
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Sessions, Bots')
     expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Active')
@@ -128,6 +142,16 @@ describe('Settings → Sharing', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: write }, configurable: true })
     await click(byText(container, 'Copy link', 'button'))
     expect(write).toHaveBeenCalledWith(expect.stringContaining('share=new-token-'))
+  })
+
+  it('copies the Mac app link', async () => {
+    const { container } = await sharing()
+    await submit(container.querySelector('form'))
+    await settled()
+    const write = vi.fn(() => Promise.resolve())
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: write }, configurable: true })
+    await click(byText(container, 'Copy Mac app link', 'button'))
+    expect(write).toHaveBeenCalledWith(expect.stringMatching(/^analytik:\/\/connect\?server=.*&token=new-token-/))
   })
 
   it('revokes a link after asking', async () => {

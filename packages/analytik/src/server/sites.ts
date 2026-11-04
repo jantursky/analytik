@@ -2,7 +2,16 @@ import { parseRange } from '../shared/cidr'
 import { sha256Hex } from '../shared/crypto'
 import { randomId } from '../shared/ids'
 import { isValidTimeZone } from '../shared/time'
-import type { GoalTarget, PaymentProvider, PrivacyMode, Site, TargetPeriod } from '../shared/types'
+import {
+  DEFAULT_GROUPS,
+  type DefaultsGroup,
+  type GoalTarget,
+  type PaymentProvider,
+  type PrivacyMode,
+  type Site,
+  type SiteDefaults,
+  type TargetPeriod,
+} from '../shared/types'
 import { cleanDomain } from '../shared/url'
 import { AnalytikError, type Context } from './context'
 
@@ -241,12 +250,70 @@ function validate(input: Record<string, unknown>, current: SiteRecord | null): C
   return columns
 }
 
+const DEFAULTS_KEY = 'site-defaults'
+const DEFAULT_FIELDS: (keyof SiteDefaults)[] = Object.values(DEFAULT_GROUPS).flat()
+
+/** What a site starts with before anything is set: the built-in values, the privacy mode from the server options. */
+function builtInDefaults(ctx: Context): SiteDefaults {
+  return {
+    timezone: 'UTC',
+    currency: 'USD',
+    allowLocalhost: false,
+    privacyMode: ctx.defaultMode,
+    retentionDays: null,
+    ignoredIps: [],
+    ignoreAdmins: false,
+    vitalsSample: 0,
+    targets: [],
+  }
+}
+
+/** The defaults new sites start with: what was saved over the built-in values. */
+export async function getSiteDefaults(ctx: Context): Promise<SiteDefaults> {
+  const [row] = await ctx.storage.query<{ value: string }>('SELECT value FROM preferences WHERE key = ?', [
+    DEFAULTS_KEY,
+  ])
+  const saved = parseJson<Record<string, unknown>>(row?.value ?? '{}', {})
+  const defaults = builtInDefaults(ctx) as Record<string, unknown>
+  for (const field of DEFAULT_FIELDS) if (saved[field] !== undefined) defaults[field] = saved[field]
+  return defaults as unknown as SiteDefaults
+}
+
+/** Checks and stores the fields sent; the others keep their value. Same rules as for a site. */
+export async function saveSiteDefaults(ctx: Context, input: Record<string, unknown>): Promise<SiteDefaults> {
+  const next: Record<string, unknown> = { ...(await getSiteDefaults(ctx)) }
+  for (const field of DEFAULT_FIELDS) if (input[field] !== undefined) next[field] = input[field]
+  validate(next, null)
+  await ctx.storage.run(
+    `INSERT INTO preferences (key, value, updated_at) VALUES (?, ?, ?)
+     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    [DEFAULTS_KEY, JSON.stringify(next), ctx.now()],
+  )
+  return next as unknown as SiteDefaults
+}
+
+/** Copies the defaults of the chosen groups onto every site. Returns how many sites there are. */
+export async function applySiteDefaults(ctx: Context, groups: unknown): Promise<number> {
+  const chosen = Array.isArray(groups) ? groups : []
+  if (chosen.length === 0 || !chosen.every((g): g is DefaultsGroup => typeof g === 'string' && g in DEFAULT_GROUPS)) {
+    throw new AnalytikError(`groups must be a list of ${Object.keys(DEFAULT_GROUPS).join(', ')}`)
+  }
+  const defaults = (await getSiteDefaults(ctx)) as unknown as Record<string, unknown>
+  const patch = Object.fromEntries(
+    chosen.flatMap((group) => DEFAULT_GROUPS[group]).map((field) => [field, defaults[field]]),
+  )
+  const sites = await listSites(ctx)
+  for (const site of sites) await updateSite(ctx, site.id, patch)
+  return sites.length
+}
+
 export async function createSite(
   ctx: Context,
   input: Record<string, unknown>,
 ): Promise<{ site: SiteRecord; apiKey: string }> {
   if (input.domain === undefined) throw new AnalytikError('domain is required')
   const columns = validate(input, null)
+  const inherited = validate({ ...(await getSiteDefaults(ctx)) }, null)
   const apiKey = `ak_${randomId(32, ctx.random)}`
   const row = {
     id: randomId(12, ctx.random),
@@ -261,6 +328,7 @@ export async function createSite(
     ignored_ips: '[]',
     ignore_admins: false,
     targets: '[]',
+    ...inherited,
     ...columns,
     api_key_hash: await hashApiKey(apiKey),
     share_token: input.shareToken === true ? randomId(24, ctx.random) : null,

@@ -12,10 +12,10 @@ import { usePreferences } from '../preferences'
 import { Sparkline, type SparkDetail } from '../charts'
 import { DeltaBadge, Shortened, SiteTile } from '../ui'
 import { ActionMenu, MenuButton } from '../ui/menu'
-import { rise, View } from '../ui/motion'
+import { hold, riseAt, View } from '../ui/motion'
 import { Select } from '../ui/select'
 import { Tooltip } from '../ui/tooltip'
-import { DeleteSiteDialog, togglePaused } from './SiteActions'
+import { DeleteSiteDialog, PauseTrackingDialog, togglePaused } from './SiteActions'
 
 const HOUR = 3600000
 const DAY = 86400000
@@ -90,6 +90,7 @@ function sortSites(sites: Site[], summaries: Map<string, SiteSummary>, by: SortK
 }
 
 function SiteCard({
+  index,
   client,
   site,
   data,
@@ -99,6 +100,8 @@ function SiteCard({
   onOpen,
   onChange,
 }: {
+  /** Place in the list, for the entrance. */
+  index: number
   client: ApiClient
   site: Site
   data: SiteSummary | undefined
@@ -111,6 +114,8 @@ function SiteCard({
   onChange: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
+  const [pausing, setPausing] = useState(false)
+  const toggle = (): void => void togglePaused(client, site).then(onChange, onChange)
   const details = (values: number[], format: (value: number) => string): SparkDetail[] =>
     values.map((value, i) => {
       const at = trend.from + i * trend.step
@@ -124,7 +129,12 @@ function SiteCard({
   // Revenue only for sites that take payments: a provider is connected, or payments came in anyway (API, client).
   const takesPayments = Object.values(site.webhooks ?? {}).some(Boolean) || !!data?.orders
   return (
-    <motion.li variants={rise} className="analytik-site-item" data-paused={site.paused ? '' : undefined}>
+    <motion.li
+      variants={riseAt}
+      custom={index}
+      className="analytik-site-item"
+      data-paused={site.paused ? '' : undefined}
+    >
       <button type="button" className="analytik-card analytik-site-card" onClick={onOpen}>
         <span className="analytik-site-name">
           <SiteTile site={site} />
@@ -178,11 +188,12 @@ function SiteCard({
             label: site.paused ? t('Resume tracking') : t('Pause tracking'),
             icon: site.paused ? 'play' : 'pause',
             tone: site.paused ? 'success' : 'warning',
-            onSelect: () => void togglePaused(client, site).then(onChange, onChange),
+            onSelect: () => (site.paused ? toggle() : setPausing(true)),
           },
           { label: t('Delete website'), icon: 'trash', tone: 'danger', onSelect: () => setDeleting(true) },
         ]}
       />
+      <PauseTrackingDialog open={pausing} onOpenChange={setPausing} onConfirm={toggle} />
       <DeleteSiteDialog client={client} site={site} open={deleting} onOpenChange={setDeleting} onDeleted={onChange} />
     </motion.li>
   )
@@ -292,10 +303,11 @@ export function SitesOverview({
           )}
         </div>
       </div>
-      <ul className="analytik-site-grid" aria-label={t('Sites')}>
-        {sorted.map((site) => (
+      <motion.ul className="analytik-site-grid" aria-label={t('Sites')} variants={hold}>
+        {sorted.map((site, index) => (
           <SiteCard
             key={site.id}
+            index={index}
             client={client}
             site={site}
             data={summaries.get(site.id)}
@@ -306,7 +318,7 @@ export function SitesOverview({
             onChange={onChange}
           />
         ))}
-      </ul>
+      </motion.ul>
     </View>
   )
 }

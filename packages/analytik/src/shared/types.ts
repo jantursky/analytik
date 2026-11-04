@@ -87,6 +87,18 @@ export interface Site {
   shareToken?: string | null
 }
 
+/** The groups of site settings that can be set once for every site. */
+export const DEFAULT_GROUPS = {
+  basics: ['timezone', 'currency', 'allowLocalhost'],
+  privacy: ['privacyMode', 'retentionDays', 'ignoredIps', 'ignoreAdmins'],
+  tracking: ['vitalsSample', 'targets'],
+} as const
+
+export type DefaultsGroup = keyof typeof DEFAULT_GROUPS
+
+/** What a new site starts with, and what "apply to all sites" copies onto the existing ones. */
+export type SiteDefaults = Pick<Site, (typeof DEFAULT_GROUPS)[DefaultsGroup][number]>
+
 /** Core Web Vitals of one page load: Largest Contentful Paint and Interaction to Next Paint in ms, Cumulative Layout Shift as a score. */
 export interface Vitals {
   l?: number

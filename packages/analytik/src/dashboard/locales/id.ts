@@ -6,6 +6,10 @@ export default {
   '(none)': '(tidak ada)',
   ', filter by this': ', filter berdasarkan ini',
   ', then the same kinds again': ', lalu jenis yang sama lagi',
+  'Copy Mac app link': 'Salin tautan untuk aplikasi Mac',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Untuk aplikasi bilah menu Mac, pilih tampilan Ringkasan dan Langsung. Tautan untuk aplikasi Mac berisi alamat server, ID situs, dan token: salin lalu tempel ke aplikasi.',
+  'Mac app link': 'Tautan untuk aplikasi Mac',
   '{count} of {target}': '{count} dari {target}',
   '1 to 20, named Test site …': '1 sampai 20, bernama Test site …',
   '1 to 20; each takes the next kind of site.': '1 sampai 20; masing-masing mendapat jenis situs berikutnya.',
@@ -925,4 +929,29 @@ export default {
     'Untuk siapa tautan ini, agar Anda tahu mana yang harus dicabut.',
   Active: 'Aktif',
   'No funnels yet.': 'Belum ada funnel.',
+  'Got an idea?': 'Punya ide?',
+  'Add provider': 'Tambah penyedia',
+  'No payment provider yet. Add the one you use.': 'Belum ada penyedia pembayaran. Tambahkan yang Anda gunakan.',
+  'Remove {provider}?': 'Hapus {provider}?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Secret penandatanganan dihapus dan pembayaran dari penyedia ini tidak lagi dicatat.',
+  'Provider removed': 'Penyedia dihapus',
+  'Pause tracking?': 'Jeda pelacakan?',
+  Defaults: 'Default',
+  'Defaults for all sites': 'Default untuk semua situs',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Situs baru dimulai dengan nilai ini. “Terapkan ke semua situs” menyalin satu kartu ke situs yang sudah ada.',
+  'Apply to all sites': 'Terapkan ke semua situs',
+  'Apply to all sites?': 'Terapkan ke semua situs?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Setiap situs menerima nilai di kartu ini dan kehilangan nilainya sendiri. Ini tidak bisa dibatalkan.',
+  'Applied to all sites': 'Diterapkan ke semua situs',
+  Basics: 'Dasar',
+  'Share links for several sites': 'Tautan berbagi untuk beberapa situs',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Membuat tautan hanya-baca untuk tiap situs yang dipilih dan satu teks yang menambahkan semuanya ke aplikasi bilah menu Mac. Tautan menampilkan Ringkasan dan Langsung, yang hanya dibaca aplikasi.',
+  '{count, plural, one {# site} other {# sites}}': '{count, plural, other {# situs}}',
+  'Select all': 'Pilih semua',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Tempel ini di aplikasi pada Mac mana pun untuk menambahkan semua situs sekaligus. Isinya token, jadi jaga kerahasiaannya.',
 } satisfies Messages

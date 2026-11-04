@@ -6,6 +6,10 @@ export default {
   '(none)': '(brak)',
   ', filter by this': ', filtruj według tego',
   ', then the same kinds again': ', potem ponownie te same rodzaje',
+  'Copy Mac app link': 'Kopiuj link do aplikacji na Maca',
+  'For the Mac menu bar app, choose the Overview and Live views. The Mac app link holds the server address, the site id and the token: copy it and paste it into the app.':
+    'Dla aplikacji na pasku menu Maca wybierz widoki Przegląd i Na żywo. Link do aplikacji na Maca zawiera adres serwera, identyfikator witryny i token: skopiuj go i wklej do aplikacji.',
+  'Mac app link': 'Link do aplikacji na Maca',
   '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': 'Od 1 do 20, o nazwie Test site …',
   '1 to 20; each takes the next kind of site.': 'Od 1 do 20; każda dostaje kolejny rodzaj witryny.',
@@ -935,4 +939,30 @@ export default {
   'Who the link is for, so you know which to revoke.': 'Dla kogo jest link, żebyś wiedział, który unieważnić.',
   Active: 'Aktywny',
   'No funnels yet.': 'Brak lejków.',
+  'Got an idea?': 'Masz pomysł?',
+  'Add provider': 'Dodaj dostawcę',
+  'No payment provider yet. Add the one you use.': 'Brak dostawcy płatności. Dodaj tego, którego używasz.',
+  'Remove {provider}?': 'Usunąć {provider}?',
+  'The signing secret is deleted, and payments from it are no longer recorded.':
+    'Klucz podpisu zostanie usunięty, a płatności od tego dostawcy nie będą już zapisywane.',
+  'Provider removed': 'Dostawca usunięty',
+  'Pause tracking?': 'Wstrzymać śledzenie?',
+  Defaults: 'Domyślne',
+  'Defaults for all sites': 'Domyślne dla wszystkich witryn',
+  'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.':
+    'Nowe witryny zaczynają od tych wartości. „Zastosuj do wszystkich witryn” kopiuje kartę na istniejące witryny.',
+  'Apply to all sites': 'Zastosuj do wszystkich witryn',
+  'Apply to all sites?': 'Zastosować do wszystkich witryn?',
+  'Every site gets the values on this card, replacing its own. This cannot be undone.':
+    'Każda witryna dostanie wartości z tej karty i straci własne. Tego nie można cofnąć.',
+  'Applied to all sites': 'Zastosowano do wszystkich witryn',
+  Basics: 'Podstawy',
+  'Share links for several sites': 'Linki udostępniania dla wielu witryn',
+  'Create a read-only link for each site you choose, and one text that adds them all to the Mac menu bar app. The links show Overview and Live, which is all the app reads.':
+    'Tworzy link tylko do odczytu dla każdej wybranej witryny oraz jeden tekst, który dodaje je wszystkie do aplikacji na pasku menu Maca. Linki pokazują Przegląd i Na żywo, tylko to czyta aplikacja.',
+  '{count, plural, one {# site} other {# sites}}':
+    '{count, plural, one {# witryna} few {# witryny} many {# witryn} other {# witryny}}',
+  'Select all': 'Zaznacz wszystko',
+  'Paste this into the Mac app on any Mac to add all these sites at once. It holds the tokens, so keep it private.':
+    'Wklej to w aplikacji na dowolnym Macu, aby dodać wszystkie te witryny naraz. Zawiera tokeny, więc zachowaj to w tajemnicy.',
 } satisfies Messages

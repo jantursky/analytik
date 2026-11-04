@@ -2490,9 +2490,20 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   color: var(--analytik-text-muted);
 }
 
-.analytik-webhook + .analytik-webhook {
+/* Each provider sits in a wrapper that animates its height, so the rule between two sits inside the second one. */
+.analytik-webhook-item {
+  overflow: hidden;
+}
+
+.analytik-webhook-item + .analytik-webhook-item > .analytik-webhook {
+  margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid var(--analytik-border);
+}
+
+.analytik-webhook-add {
+  justify-content: flex-start;
+  margin-top: 16px;
 }
 
 .analytik-login {
@@ -5775,9 +5786,35 @@ tr:hover .analytik-row-button {
 }
 
 /* The site's name in the toolbar of a shared dashboard, where there is nothing to switch to. */
-.analytik-site-name {
+.analytik-site-name.analytik-switcher {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 0;
   cursor: default;
+}
+
+.analytik-site-name.analytik-switcher .analytik-tile {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* The checkbox list in the dropdown that picks several sites. */
+
+/* A small ring that turns inside a button while it works. */
+.analytik-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: analytik-spin 0.7s linear infinite;
+}
+
+@keyframes analytik-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

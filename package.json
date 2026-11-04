@@ -30,7 +30,10 @@
     "format:check": "prettier --check apps packages scripts design .github '*.{json,js,md,yml}'",
     "check": "node scripts/samples.js --check && bun run format:check && bun run lint && bun run typecheck && bun run test:coverage",
     "sync:samples": "node scripts/samples.js",
-    "screenshots": "node scripts/screenshots.js"
+    "screenshots": "node scripts/screenshots.js",
+    "menubar:build": "apps/menubar/scripts/build-app.sh",
+    "menubar:test": "cd apps/menubar && swift test",
+    "menubar:install": "apps/menubar/scripts/install-app.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10",

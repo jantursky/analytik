@@ -12,5 +12,6 @@ export default defineMeta({
     'dashboard-embedding',
     'funnels-and-goals',
     'importing-data',
+    'mac-menu-bar',
   ],
 })
