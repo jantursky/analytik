@@ -65,6 +65,19 @@ public struct PageRow: Decodable, Equatable, Sendable {
 public struct SiteInfo: Decodable, Equatable, Sendable {
   public let name: String
   public let timezone: String
+  /// The site's own host name, such as `shop.example.com`; older servers may not send it.
+  public let domain: String?
+}
+
+/// What tells a site apart in the site list: its host name and its icon.
+public struct SiteIdentity: Equatable, Sendable {
+  public let domain: String?
+  public let icon: Data?
+
+  public init(domain: String?, icon: Data?) {
+    self.domain = domain
+    self.icon = icon
+  }
 }
 
 /// One hour of today, from `GET /sites/:id/timeseries?interval=hour`.

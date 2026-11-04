@@ -50,6 +50,8 @@ final class AppModel {
   private(set) var list: [Connection] = []
   private(set) var stores: [String: StatsStore] = [:]
   private var clients: [String: StatsClient] = [:]
+  /// Each site's host name and icon, read once per connection for the site list.
+  private(set) var identities: [String: SiteIdentity] = [:]
   var tab: PanelSection = .overview
   /// The last rows read for each site and dimension, so a tab keeps its numbers while it refreshes.
   private(set) var breakdowns: [String: [PageRow]] = [:]
@@ -81,6 +83,13 @@ final class AppModel {
       center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
         MainActor.assumeIsolated { self?.stores.values.forEach { $0.resume() } }
       })
+  }
+
+  /// Where the site lives: its own host name, else the host of its dashboard or of its server.
+  func address(_ connection: Connection) -> String {
+    if let domain = identities[connection.id]?.domain, !domain.isEmpty { return domain }
+    let url = URL(string: connection.dashboardURL ?? "") ?? URL(string: connection.serverURL)
+    return url?.host() ?? connection.serverURL
   }
 
   var selected: Connection? { list.first { $0.id == settings.selectedId } ?? list.first }
@@ -118,6 +127,7 @@ final class AppModel {
         let client = StatsClient(credentials: credentials)
         nextClients[connection.id] = client
         let id = connection.id
+        Task { if let identity = await client.identity() { identities[id] = identity } }
         let options: @MainActor @Sendable () -> (range: TimeRange, chart: Bool, rows: Int, pace: Bool) = { [weak self] in
           let own = self?.settings ?? AppSettings()
           return (own.range, own.showChart, own.rows, own.alerts.isOn || own.menuBarDot)

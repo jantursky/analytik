@@ -123,6 +123,12 @@ private struct StatsScreen: View {
           .rotationEffect(.degrees(siteOpen ? 180 : 0))
       }
       .foregroundStyle(p.text)
+      // A bigger area to hit around the name and the arrow; the negative padding gives the layout its old size back.
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .contentShape(Rectangle())
+      .padding(.horizontal, -12)
+      .padding(.vertical, -10)
     }
     .buttonStyle(.plain)
   }
@@ -138,10 +144,10 @@ private struct StatsScreen: View {
               model.select(connection)
               close()
             } content: {
-              SiteTile(id: connection.id)
+              SiteTile(id: connection.id, icon: model.identities[connection.id]?.icon)
               VStack(alignment: .leading, spacing: 1) {
                 Text(connection.name).font(Typeface.ui(14, connection.id == model.selected?.id ? .bold : .medium)).lineLimit(1)
-                Text(Self.address(connection)).font(Typeface.ui(12)).foregroundStyle(p.textMuted).lineLimit(1)
+                Text(model.address(connection)).font(Typeface.ui(12)).foregroundStyle(p.textMuted).lineLimit(1)
               }
             }
           }
@@ -179,12 +185,6 @@ private struct StatsScreen: View {
   }
 
   private func close() { withAnimation(Motion.hover) { siteOpen = false } }
-
-  /// Where the site lives: the host of its dashboard, or of its server.
-  private static func address(_ connection: Connection) -> String {
-    let url = URL(string: connection.dashboardURL ?? "") ?? URL(string: connection.serverURL)
-    return url?.host() ?? connection.serverURL
-  }
 
   /// The period every number covers.
   private var rangeMenu: some View {
@@ -394,6 +394,8 @@ private struct TabButton: View {
         .padding(.horizontal, 8)
         .padding(.top, 9)
         .padding(.bottom, 10)
+        // The whole tab, not just its letters, takes the click.
+        .contentShape(Rectangle())
         .overlay(alignment: .bottom) {
           if selected {
             RoundedRectangle(cornerRadius: 2).fill(p.primary).frame(height: 2).matchedGeometryEffect(id: "tab", in: indicator)

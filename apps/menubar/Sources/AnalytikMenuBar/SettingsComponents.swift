@@ -245,6 +245,8 @@ struct SegmentedControl<Value: Hashable>: View {
           }
           .frame(maxWidth: .infinity, minHeight: 30)
           .foregroundStyle(selected ? p.text : p.textMuted)
+          // The whole segment takes the click, not just its text.
+          .contentShape(Rectangle())
           .background {
             if selected {
               RoundedRectangle(cornerRadius: Layout.radiusControl - 2)

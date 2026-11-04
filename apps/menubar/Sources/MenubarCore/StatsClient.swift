@@ -96,6 +96,35 @@ public actor StatsClient {
       ])
   }
 
+  /// The site's host name and icon, for the site list. The icon comes from the server's favicon route when the share
+  /// link may read it, otherwise from the site's own `/favicon.ico` (a plain request that carries no token). A missing
+  /// icon is just nil: the list then shows the analytik mark.
+  public func identity() async -> SiteIdentity? {
+    guard let info = try? await siteInfo() else { return nil }
+    let domain = info.domain?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    var viaServer = request("favicon")
+    viaServer.setValue("image/*", forHTTPHeaderField: "accept")
+    var icon = await image(viaServer)
+    if icon == nil, let host = domain, Self.isPublicHost(host), let url = URL(string: "https://\(host)/favicon.ico") {
+      var plain = URLRequest(url: url)
+      plain.timeoutInterval = 10
+      icon = await image(plain)
+    }
+    return SiteIdentity(domain: domain, icon: icon)
+  }
+
+  private func image(_ request: URLRequest) async -> Data? {
+    guard let (data, response) = try? await session.data(for: request), let http = response as? HTTPURLResponse,
+      http.statusCode == 200, !data.isEmpty, data.count <= 512_000
+    else { return nil }
+    return data
+  }
+
+  /// A public host name, not localhost or an IP address.
+  static func isPublicHost(_ host: String) -> Bool {
+    host.range(of: #"^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$"#, options: .regularExpression) != nil
+  }
+
   /// The site's name and time zone; asked once, because "today" depends on the zone.
   private func siteInfo() async throws -> SiteInfo {
     if let site { return site }

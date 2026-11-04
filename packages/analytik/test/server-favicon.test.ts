@@ -60,6 +60,23 @@ describe('site favicons', () => {
     expect((await server.admin(`/sites/${created.id}/favicon`)).status).toBe(404)
   })
 
+  it('is served to a share link, so an app that only holds the link can show the icon', async () => {
+    server = await testServer()
+    const { site: created } = await server.createSite({ domain: 'shop.example.com', shareToken: true })
+    site({
+      'https://shop.example.com/': () => page('<link rel="icon" href="/i.png">'),
+      'https://shop.example.com/i.png': () => image(),
+    })
+    const shared = await server.request(`/sites/${created.id}/favicon`, {
+      headers: { 'x-analytik-share': created.shareToken ?? '' },
+    })
+    expect(shared.status).toBe(200)
+    expect(new Uint8Array(await shared.arrayBuffer())).toEqual(PNG)
+    expect(
+      (await server.request(`/sites/${created.id}/favicon`, { headers: { 'x-analytik-share': 'wrong' } })).status,
+    ).toBe(401)
+  })
+
   it('falls back to /favicon.ico, takes a site-relative or protocol-relative link, and skips what is not an icon', async () => {
     const asked = site({
       'https://a.example.com/favicon.ico': () => image('application/octet-stream'),

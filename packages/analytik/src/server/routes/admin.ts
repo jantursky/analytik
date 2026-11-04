@@ -63,7 +63,7 @@ const EVENT_TYPES: readonly EventType[] = ['pageview', 'goal', 'outbound', 'iden
  * names and emails, so they stay admin-only, like settings, export and writes.
  */
 const SHAREABLE =
-  /^\/sites\/[^/]+\/(shared|overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
+  /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
   Variables: { site: SiteRecord; share: ShareLink | null }

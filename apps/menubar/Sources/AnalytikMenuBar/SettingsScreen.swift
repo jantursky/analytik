@@ -53,7 +53,7 @@ struct SettingsScreen: View {
         .background(p.accentSoft, in: Circle())
       VStack(alignment: .leading, spacing: 1) {
         Text(connection.name).font(Typeface.ui(14, .medium))
-        Text(URL(string: connection.serverURL)?.host() ?? connection.serverURL)
+        Text(model.address(connection))
           .font(Typeface.ui(12)).foregroundStyle(p.textMuted)
       }
       Spacer(minLength: 8)

@@ -133,4 +133,7 @@ const ROUTE_VIEWS: Record<string, readonly ShareView[]> = {
 
 /** Whether a link limited to `views` may read this stats route (`overview`, `sessions`, ...). */
 export const linkAllows = (views: readonly ShareView[], route: string): boolean =>
-  views.length === 0 || route === 'shared' || (ROUTE_VIEWS[route]?.some((v) => views.includes(v)) ?? false)
+  views.length === 0 ||
+  route === 'shared' ||
+  route === 'favicon' ||
+  (ROUTE_VIEWS[route]?.some((v) => views.includes(v)) ?? false)

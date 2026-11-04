@@ -141,11 +141,13 @@ struct RowIcon: View {
   }
 }
 
-/// A site's square in the site list: the analytik mark in a colour that depends on the site, so the sites tell apart at
-/// a glance.
+/// A site's square in the site list: its own icon, or the analytik mark in a colour that depends on the site, so the
+/// sites tell apart at a glance.
 struct SiteTile: View {
   @Environment(\.palette) private var p
   let id: String
+  /// The site's favicon as the server or the site sent it; nil, or data that is not an image, shows the mark.
+  var icon: Data?
   var size: CGFloat = 34
 
   private static let tints: [(body: Color, face: Color)] = [
@@ -157,7 +159,13 @@ struct SiteTile: View {
   var body: some View {
     // A stable pick: the sum of the id's bytes, not `hashValue`, which changes with every launch.
     let index = id.utf8.reduce(0) { $0 &+ Int($1) } % Self.tints.count
-    BrandMark(tint: Self.tints[index])
+    Group {
+      if let icon, let image = NSImage(data: icon) {
+        Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
+      } else {
+        BrandMark(tint: Self.tints[index])
+      }
+    }
       .padding(size * 0.2)
       .frame(width: size, height: size)
       .background(p.bgSubtle, in: RoundedRectangle(cornerRadius: Layout.radiusControl + 2))

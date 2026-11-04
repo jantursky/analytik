@@ -72,6 +72,41 @@ private func ok(_ request: URLRequest) -> (Int, String) {
     #expect(query.contains(URLQueryItem(name: "compare", value: "previous")))
   }
 
+  @Test func theSiteListGetsTheDomainAndTheServersIcon() async throws {
+    FakeProtocol.reset { request in route(request) == "favicon" ? (200, "icon-bytes") : ok(request) }
+    let identity = await client().identity()
+    #expect(identity == SiteIdentity(domain: "shop.test", icon: Data("icon-bytes".utf8)))
+    let favicon = FakeProtocol.seen.first { route($0) == "favicon" }!
+    #expect(favicon.value(forHTTPHeaderField: "x-analytik-share") == Fixtures.credentials.token)
+  }
+
+  @Test func withoutTheServersIconTheSitesOwnFaviconIsAskedWithoutTheToken() async throws {
+    FakeProtocol.reset { request in
+      switch request.url!.host() {
+      case "shop.test": return (200, "own-icon")
+      default: return route(request) == "favicon" ? (404, "") : ok(request)
+      }
+    }
+    let identity = await client().identity()
+    #expect(identity?.icon == Data("own-icon".utf8))
+    let own = FakeProtocol.seen.first { $0.url!.host() == "shop.test" }!
+    #expect(own.url!.path == "/favicon.ico")
+    #expect(own.value(forHTTPHeaderField: "x-analytik-share") == nil)
+  }
+
+  @Test func aSiteWithoutAnIconStillGivesItsDomain() async throws {
+    FakeProtocol.reset { request in route(request) == "shared" ? (200, Fixtures.shared) : (404, "") }
+    let identity = await client().identity()
+    #expect(identity == SiteIdentity(domain: "shop.test", icon: nil))
+  }
+
+  @Test func onlyPublicHostNamesAreAskedForAnIcon() {
+    #expect(StatsClient.isPublicHost("shop.example.com"))
+    #expect(!StatsClient.isPublicHost("localhost"))
+    #expect(!StatsClient.isPublicHost("192.168.1.5"))
+    #expect(!StatsClient.isPublicHost("a.test/../x"))
+  }
+
   @Test func paceComparesTodayWithTheSameStretchOfYesterday() async throws {
     FakeProtocol.reset { request in
       guard route(request) == "timeseries" else { return ok(request) }
