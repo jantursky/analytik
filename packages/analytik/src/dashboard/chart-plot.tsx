@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   ComposedChart,
   Line,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   type TooltipContentProps,
@@ -527,6 +528,15 @@ export function SparkPlot({ values, details }: { values: number[]; details?: Spa
               <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
             </linearGradient>
           </defs>
+          <YAxis hide domain={[0, 'auto']} />
+          <ReferenceLine
+            y={0}
+            stroke="var(--analytik-border)"
+            strokeDasharray="3 3"
+            strokeWidth={1}
+            ifOverflow="visible"
+            zIndex={DefaultZIndexes.grid}
+          />
           {details && (
             <Tooltip
               cursor={shown ? { stroke: 'var(--analytik-border-strong)', strokeDasharray: '3 3' } : false}

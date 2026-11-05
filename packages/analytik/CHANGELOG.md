@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.19.0]
+
+### Changed
+
+- Site sparklines start at zero and show a faint dashed baseline for it.
+
 ## [1.18.0]
 
 ### Added
