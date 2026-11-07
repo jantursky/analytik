@@ -958,4 +958,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# व्यू} other {# व्यू}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'आपके चुने हर साइट के लिए केवल-पढ़ने वाला लिंक बनाता है। Mac मेन्यू बार ऐप के लिए एक ही टेक्स्ट उन सभी को जोड़ देता है।',
+  '{page}, step {step}: {count} sessions': '{page}, चरण {step}: {count} सत्र',
+  'Based on the {count} newest sessions of the period.': 'अवधि के सबसे नए {count} सत्रों पर आधारित।',
+  Exit: 'बाहर निकलना',
+  From: 'से',
+  Journeys: 'यात्राएँ',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'इस अवधि में किसी सत्र ने एक से अधिक पेज नहीं देखे, इसलिए दिखाने के लिए कोई पथ नहीं है।',
+  'Other pages': 'अन्य पेज',
+  'Showing the last 30 days of the range.': 'सीमा के पिछले 30 दिन दिखाए जा रहे हैं।',
+  'Step {step}': 'चरण {step}',
+  To: 'तक',
+  'Where sessions go after the first page, and where they end.':
+    'पहले पेज के बाद सत्र कहाँ जाते हैं और कहाँ समाप्त होते हैं।',
+  '{count} of {size} visitors': '{size} में से {count} आगंतुक',
+  Cohort: 'कोहॉर्ट',
+  'No new visitors in this period.': 'इस अवधि में कोई नया आगंतुक नहीं है।',
+  Retention: 'रिटेंशन',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'रिटेंशन के लिए आगंतुकों की कई दिनों में पहचान ज़रूरी है। इसे चालू करने के लिए सेटिंग्स में गोपनीयता मोड स्थायी चुनें।',
+  'Week {week}': 'सप्ताह {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'नए आगंतुकों के साप्ताहिक कोहॉर्ट और हर एक का वह हिस्सा जो बाद के सप्ताहों में लौटा।',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'सप्ताह सोमवार (UTC) से शुरू होते हैं। हर पंक्ति उस सप्ताह पहली बार दिखे आगंतुकों को ट्रैक करती है।',
 } satisfies Messages

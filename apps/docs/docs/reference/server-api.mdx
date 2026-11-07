@@ -146,6 +146,10 @@ console.log(refunds.total, refunds.items)
 
 `stats.vitals(siteId, query)` returns the 75th percentile of Core Web Vitals over the range as a `VitalsResult`.
 
+`stats.journeys(siteId, query)` returns the paths sessions take after the first page as a `JourneysResult`.
+
+`stats.retention(siteId, query)` returns weekly cohorts of new visitors and how many came back as a `RetentionResult`.
+
 ## Mounting
 
 On Cloudflare Workers, Bun and Vercel, export `analytik.app.fetch` or the app itself. On Node, use `@hono/node-server`. To nest it in an existing Hono app:

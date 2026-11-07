@@ -952,4 +952,27 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, other {보기 #개}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     '선택한 각 사이트의 읽기 전용 링크를 만듭니다. Mac 메뉴 막대 앱용으로는 모두 한 번에 추가하는 텍스트 하나도 만듭니다.',
+  '{page}, step {step}: {count} sessions': '{page}, {step}단계: 세션 {count}개',
+  'Based on the {count} newest sessions of the period.': '기간의 최신 세션 {count}개를 기준으로 합니다.',
+  Exit: '이탈',
+  From: '출발',
+  Journeys: '경로',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    '이 기간에 두 페이지 이상 본 세션이 없어 표시할 경로가 없습니다.',
+  'Other pages': '기타 페이지',
+  'Showing the last 30 days of the range.': '범위의 최근 30일을 표시합니다.',
+  'Step {step}': '{step}단계',
+  To: '도착',
+  'Where sessions go after the first page, and where they end.': '세션이 첫 페이지 이후 어디로 가고 어디서 끝나는지.',
+  '{count} of {size} visitors': '방문자 {size}명 중 {count}명',
+  Cohort: '코호트',
+  'No new visitors in this period.': '이 기간에는 새 방문자가 없습니다.',
+  Retention: '리텐션',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    '리텐션을 보려면 방문자를 여러 날에 걸쳐 식별할 수 있어야 합니다. 설정에서 개인정보 모드를 지속형으로 선택하면 켜집니다.',
+  'Week {week}': '{week}주차',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    '신규 방문자의 주간 코호트와 이후 몇 주 동안 다시 방문한 비율.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    '주는 월요일(UTC)에 시작합니다. 각 행은 그 주에 처음 확인된 방문자를 추적합니다.',
 } satisfies Messages

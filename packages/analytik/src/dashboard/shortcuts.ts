@@ -10,6 +10,8 @@ export const GO_KEYS: Record<string, DashboardView> = {
   p: 'pages',
   e: 'events',
   f: 'funnels',
+  j: 'journeys',
+  h: 'retention',
   r: 'revenue',
   s: 'sessions',
   l: 'realtime',

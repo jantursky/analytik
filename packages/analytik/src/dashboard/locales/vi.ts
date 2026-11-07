@@ -959,4 +959,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, other {# chế độ xem}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Tạo liên kết chỉ đọc cho mỗi trang web bạn chọn. Với ứng dụng thanh menu Mac, một đoạn văn bản thêm tất cả chúng.',
+  '{page}, step {step}: {count} sessions': '{page}, bước {step}: {count} phiên',
+  'Based on the {count} newest sessions of the period.': 'Dựa trên {count} phiên mới nhất của giai đoạn.',
+  Exit: 'Thoát',
+  From: 'Từ',
+  Journeys: 'Hành trình',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Không có phiên nào trong giai đoạn này xem nhiều hơn một trang, nên không có đường đi để hiển thị.',
+  'Other pages': 'Trang khác',
+  'Showing the last 30 days of the range.': 'Hiển thị 30 ngày gần nhất của khoảng.',
+  'Step {step}': 'Bước {step}',
+  To: 'Đến',
+  'Where sessions go after the first page, and where they end.':
+    'Các phiên đi đâu sau trang đầu tiên và kết thúc ở đâu.',
+  '{count} of {size} visitors': '{count} trên {size} khách truy cập',
+  Cohort: 'Nhóm theo tuần',
+  'No new visitors in this period.': 'Không có khách truy cập mới trong giai đoạn này.',
+  Retention: 'Giữ chân',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Giữ chân cần nhận ra khách truy cập qua nhiều ngày. Chọn chế độ riêng tư Lâu dài trong Cài đặt để bật.',
+  'Week {week}': 'Tuần {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Các nhóm theo tuần của khách truy cập mới và phần của mỗi nhóm quay lại trong những tuần sau.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Tuần bắt đầu vào thứ Hai (UTC). Mỗi hàng theo dõi khách truy cập được thấy lần đầu trong tuần đó.',
 } satisfies Messages

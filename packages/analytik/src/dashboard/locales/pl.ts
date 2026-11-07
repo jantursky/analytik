@@ -969,4 +969,28 @@ export default {
     '{count, plural, one {# widok} few {# widoki} many {# widoków} other {# widoku}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Tworzy link tylko do odczytu dla każdej wybranej witryny. Dla aplikacji na pasku menu Maca jeden tekst dodaje je wszystkie.',
+  '{page}, step {step}: {count} sessions': '{page}, krok {step}: {count} sesji',
+  'Based on the {count} newest sessions of the period.': 'Na podstawie {count} najnowszych sesji z okresu.',
+  Exit: 'Wyjście',
+  From: 'Z',
+  Journeys: 'Ścieżki',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Żadna sesja w tym okresie nie odwiedziła więcej niż jednej strony, więc nie ma ścieżki do pokazania.',
+  'Other pages': 'Inne strony',
+  'Showing the last 30 days of the range.': 'Pokazano ostatnie 30 dni zakresu.',
+  'Step {step}': 'Krok {step}',
+  To: 'Do',
+  'Where sessions go after the first page, and where they end.':
+    'Dokąd trafiają sesje po pierwszej stronie i gdzie się kończą.',
+  '{count} of {size} visitors': '{count} z {size} odwiedzających',
+  Cohort: 'Kohorta',
+  'No new visitors in this period.': 'W tym okresie nie ma nowych odwiedzających.',
+  Retention: 'Utrzymanie',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Utrzymanie wymaga rozpoznawania odwiedzających między dniami. Włącz je, wybierając w Ustawieniach tryb prywatności Trwały.',
+  'Week {week}': 'Tydzień {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Tygodniowe kohorty nowych odwiedzających i udział tych, którzy wrócili w kolejnych tygodniach.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Tygodnie zaczynają się w poniedziałek (UTC). Każdy wiersz śledzi odwiedzających zobaczonych po raz pierwszy w danym tygodniu.',
 } satisfies Messages

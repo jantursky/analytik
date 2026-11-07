@@ -957,4 +957,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, other {# tampilan}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Membuat tautan hanya-baca untuk setiap situs yang dipilih. Untuk aplikasi bilah menu Mac, satu teks menambahkan semuanya.',
+  '{page}, step {step}: {count} sessions': '{page}, langkah {step}: {count} sesi',
+  'Based on the {count} newest sessions of the period.': 'Berdasarkan {count} sesi terbaru pada periode.',
+  Exit: 'Keluar',
+  From: 'Dari',
+  Journeys: 'Perjalanan',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Tidak ada sesi pada periode ini yang melihat lebih dari satu halaman, jadi tidak ada jalur untuk ditampilkan.',
+  'Other pages': 'Halaman lain',
+  'Showing the last 30 days of the range.': 'Menampilkan 30 hari terakhir dari rentang.',
+  'Step {step}': 'Langkah {step}',
+  To: 'Ke',
+  'Where sessions go after the first page, and where they end.':
+    'Ke mana sesi pergi setelah halaman pertama dan di mana berakhir.',
+  '{count} of {size} visitors': '{count} dari {size} pengunjung',
+  Cohort: 'Kohort',
+  'No new visitors in this period.': 'Tidak ada pengunjung baru pada periode ini.',
+  Retention: 'Retensi',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Retensi memerlukan pengunjung yang dikenali lintas hari. Pilih mode privasi Persisten di Pengaturan untuk mengaktifkannya.',
+  'Week {week}': 'Minggu {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Kohort mingguan pengunjung baru dan bagian dari masing-masing yang kembali pada minggu-minggu berikutnya.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Minggu dimulai pada hari Senin (UTC). Setiap baris mengikuti pengunjung yang pertama kali terlihat pada minggu itu.',
 } satisfies Messages

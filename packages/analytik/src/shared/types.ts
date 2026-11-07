@@ -125,6 +125,57 @@ export interface VitalsResult {
   pages: (VitalValues & { path: string })[]
 }
 
+/** One weekly cohort: the visitors first seen in the week starting at `week`, and how many of them came back. */
+export interface RetentionCohort {
+  /** Start of the week (Monday, UTC) in epoch milliseconds. */
+  week: number
+  size: number
+  /** Visitors of the cohort active in the week `index` weeks after it began; index 0 is the cohort's own week. */
+  active: number[]
+}
+
+export interface RetentionResult {
+  /** False unless the site recognises visitors across days (the persistent privacy mode). */
+  available: boolean
+  privacyMode: PrivacyMode
+  from: number
+  to: number
+  cohorts: RetentionCohort[]
+}
+
+/** One stop in a journey: a page at a step, the rest of that step's pages grouped as "Other", or the end of a session. */
+export interface JourneyNode {
+  /** `step:path`, `step:*` for the grouped rest and `step:exit` for sessions that ended before this step. */
+  id: string
+  /** 1 to 4 for pages, one more than the last page for the exit. */
+  step: number
+  kind: 'page' | 'other' | 'exit'
+  /** The page path; null for the grouped rest and the exit. */
+  path: string | null
+  sessions: number
+}
+
+/** Sessions that went from one node to the next. */
+export interface JourneyLink {
+  from: string
+  to: string
+  sessions: number
+}
+
+/** How sessions move between pages: the most common first four pages, with where each path ends. */
+export interface JourneysResult {
+  /** The range actually read; a long range is cut to its last 30 days. */
+  from: number
+  to: number
+  capped: boolean
+  /** Sessions analysed, newest first, at most the server's cap. */
+  sessions: number
+  /** Of those, sessions that viewed more than one page. */
+  multiPage: number
+  nodes: JourneyNode[]
+  links: JourneyLink[]
+}
+
 /** What the tracker posts to `POST {basePath}/event`. Without `m` the server treats the event as `strict`. */
 export interface TrackerPayload {
   w: string

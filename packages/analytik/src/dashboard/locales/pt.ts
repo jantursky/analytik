@@ -963,4 +963,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# visualização} other {# visualizações}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Cria um link somente leitura para cada site escolhido. Para o app da barra de menus do Mac, um único texto adiciona todos.',
+  '{page}, step {step}: {count} sessions': '{page}, etapa {step}: {count} sessões',
+  'Based on the {count} newest sessions of the period.': 'Com base nas {count} sessões mais recentes do período.',
+  Exit: 'Saída',
+  From: 'De',
+  Journeys: 'Jornadas',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Nenhuma sessão deste período viu mais de uma página, por isso não há percurso para mostrar.',
+  'Other pages': 'Outras páginas',
+  'Showing the last 30 days of the range.': 'Mostrando os últimos 30 dias do intervalo.',
+  'Step {step}': 'Etapa {step}',
+  To: 'Para',
+  'Where sessions go after the first page, and where they end.':
+    'Para onde as sessões vão depois da primeira página e onde terminam.',
+  '{count} of {size} visitors': '{count} de {size} visitantes',
+  Cohort: 'Coorte',
+  'No new visitors in this period.': 'Não há novos visitantes neste período.',
+  Retention: 'Retenção',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'A retenção precisa reconhecer visitantes entre dias. Escolha o modo de privacidade Persistente nas Configurações para ativá-la.',
+  'Week {week}': 'Semana {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Coortes semanais de novos visitantes e a parte de cada uma que voltou nas semanas seguintes.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'As semanas começam na segunda-feira (UTC). Cada linha acompanha os visitantes vistos pela primeira vez naquela semana.',
 } satisfies Messages

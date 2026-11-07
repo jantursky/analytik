@@ -967,4 +967,27 @@ export default {
     '{count, plural, one {# zobrazenie} few {# zobrazenia} other {# zobrazení}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Vytvorí odkaz len na čítanie pre každý vybraný web. Pre aplikáciu v lište menu na Macu pridá všetky jeden text.',
+  '{page}, step {step}: {count} sessions': '{page}, krok {step}: {count} relácií',
+  'Based on the {count} newest sessions of the period.': 'Podľa {count} najnovších relácií obdobia.',
+  Exit: 'Odchod',
+  From: 'Z',
+  Journeys: 'Cesty',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Žiadna relácia v tomto období nezobrazila viac ako jednu stránku, takže niet cesty na zobrazenie.',
+  'Other pages': 'Ďalšie stránky',
+  'Showing the last 30 days of the range.': 'Zobrazuje sa posledných 30 dní z rozsahu.',
+  'Step {step}': 'Krok {step}',
+  To: 'Do',
+  'Where sessions go after the first page, and where they end.': 'Kam relácie idú po prvej stránke a kde končia.',
+  '{count} of {size} visitors': '{count} z {size} návštevníkov',
+  Cohort: 'Kohorta',
+  'No new visitors in this period.': 'V tomto období nie sú noví návštevníci.',
+  Retention: 'Udržanie',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Udržanie vyžaduje rozpoznať návštevníkov v rámci dní. Zapnete ho voľbou režimu súkromia Trvalý v Nastaveniach.',
+  'Week {week}': 'Týždeň {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Týždenné kohorty nových návštevníkov a podiel tých, ktorí sa v nasledujúcich týždňoch vrátili.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Týždne začínajú v pondelok (UTC). Každý riadok sleduje návštevníkov prvýkrát videných v ten týždeň.',
 } satisfies Messages

@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.20.0]
+
+### Added
+
+- Journeys view (where sessions go after the first page) and Retention view (weekly cohorts of new visitors, Persistent mode), both admin only.
+
 ## [1.19.0]
 
 ### Changed

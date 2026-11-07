@@ -967,4 +967,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# vista} other {# viste}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     "Crea un link di sola lettura per ogni sito scelto. Per l'app nella barra dei menu del Mac, un solo testo li aggiunge tutti.",
+  '{page}, step {step}: {count} sessions': '{page}, passo {step}: {count} sessioni',
+  'Based on the {count} newest sessions of the period.': 'Basato sulle {count} sessioni più recenti del periodo.',
+  Exit: 'Uscita',
+  From: 'Da',
+  Journeys: 'Percorsi',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Nessuna sessione di questo periodo ha visto più di una pagina, quindi non c’è alcun percorso da mostrare.',
+  'Other pages': 'Altre pagine',
+  'Showing the last 30 days of the range.': 'Mostrati gli ultimi 30 giorni dell’intervallo.',
+  'Step {step}': 'Passo {step}',
+  To: 'A',
+  'Where sessions go after the first page, and where they end.':
+    'Dove vanno le sessioni dopo la prima pagina e dove finiscono.',
+  '{count} of {size} visitors': '{count} visitatori su {size}',
+  Cohort: 'Coorte',
+  'No new visitors in this period.': 'Nessun nuovo visitatore in questo periodo.',
+  Retention: 'Fidelizzazione',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'La fidelizzazione richiede di riconoscere i visitatori tra giorni diversi. Scegli la modalità di privacy Persistente nelle Impostazioni per attivarla.',
+  'Week {week}': 'Settimana {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Coorti settimanali di nuovi visitatori e quota di ciascuna tornata nelle settimane successive.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Le settimane iniziano di lunedì (UTC). Ogni riga segue i visitatori visti per la prima volta quella settimana.',
 } satisfies Messages

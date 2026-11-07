@@ -969,4 +969,28 @@ export default {
     '{count, plural, one {# раздел} few {# раздела} many {# разделов} other {# раздела}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Создаёт ссылку только для чтения для каждого выбранного сайта. Для приложения в строке меню Mac один текст добавляет их все.',
+  '{page}, step {step}: {count} sessions': '{page}, шаг {step}: {count} сеансов',
+  'Based on the {count} newest sessions of the period.': 'На основе {count} самых новых сеансов периода.',
+  Exit: 'Выход',
+  From: 'Откуда',
+  Journeys: 'Пути',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Ни один сеанс за этот период не посмотрел больше одной страницы, поэтому показывать нечего.',
+  'Other pages': 'Другие страницы',
+  'Showing the last 30 days of the range.': 'Показаны последние 30 дней диапазона.',
+  'Step {step}': 'Шаг {step}',
+  To: 'Куда',
+  'Where sessions go after the first page, and where they end.':
+    'Куда уходят сеансы после первой страницы и где заканчиваются.',
+  '{count} of {size} visitors': '{count} из {size} посетителей',
+  Cohort: 'Когорта',
+  'No new visitors in this period.': 'В этом периоде нет новых посетителей.',
+  Retention: 'Удержание',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Для удержания посетителей нужно узнавать между днями. Включите его, выбрав в настройках режим приватности «Постоянный».',
+  'Week {week}': 'Неделя {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Недельные когорты новых посетителей и доля каждой, вернувшаяся в следующие недели.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Недели начинаются в понедельник (UTC). Каждая строка прослеживает посетителей, впервые замеченных на этой неделе.',
 } satisfies Messages

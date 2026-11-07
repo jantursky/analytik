@@ -1668,6 +1668,85 @@ button.analytik-stat[aria-pressed='true'] {
 }
 
 .analytik-bars,
+.analytik-journeys {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.analytik-journey-link {
+  stroke: var(--analytik-series-1);
+  stroke-opacity: 0.28;
+}
+
+.analytik-journey-bar {
+  fill: var(--analytik-primary);
+}
+
+.analytik-journey-node[data-kind='other'] .analytik-journey-bar,
+.analytik-journey-node[data-kind='exit'] .analytik-journey-bar {
+  fill: var(--analytik-text-faint);
+}
+
+.analytik-journey-node[role='button'] {
+  cursor: pointer;
+  outline: none;
+}
+
+.analytik-journey-node[role='button']:hover .analytik-journey-bar,
+.analytik-journey-node[role='button']:focus-visible .analytik-journey-bar {
+  stroke: var(--analytik-text);
+  stroke-width: 2;
+}
+
+.analytik-journey-label,
+.analytik-journey-step {
+  font-size: 12px;
+  fill: var(--analytik-text);
+}
+
+.analytik-journey-step {
+  fill: var(--analytik-text-muted);
+  font-weight: 600;
+}
+
+.analytik-retention-scroll {
+  overflow-x: auto;
+}
+
+.analytik-retention {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.analytik-retention th,
+.analytik-retention td {
+  padding: 6px 8px;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--analytik-text);
+}
+
+.analytik-retention thead th {
+  color: var(--analytik-text-muted);
+  font-weight: 600;
+}
+
+.analytik-retention tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+
+.analytik-retention-cell {
+  border-radius: 4px;
+  /* Shares scale up to 45% of the primary colour, so the text keeps its contrast in both themes. */
+  background: color-mix(in srgb, var(--analytik-primary) calc(var(--share) * 45%), var(--analytik-surface));
+}
+
 .analytik-funnel {
   display: flex;
   flex-direction: column;

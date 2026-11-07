@@ -970,4 +970,29 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# vue} other {# vues}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     "Crée un lien en lecture seule pour chaque site choisi. Pour l'app de la barre des menus Mac, un seul texte les ajoute tous.",
+  '{page}, step {step}: {count} sessions': '{page}, étape {step} : {count} sessions',
+  'Based on the {count} newest sessions of the period.':
+    'Basé sur les {count} sessions les plus récentes de la période.',
+  Exit: 'Sortie',
+  From: 'De',
+  Journeys: 'Parcours',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Aucune session de cette période n’a vu plus d’une page, donc il n’y a aucun parcours à afficher.',
+  'Other pages': 'Autres pages',
+  'Showing the last 30 days of the range.': 'Affichage des 30 derniers jours de la plage.',
+  'Step {step}': 'Étape {step}',
+  To: 'Vers',
+  'Where sessions go after the first page, and where they end.':
+    'Où vont les sessions après la première page, et où elles se terminent.',
+  '{count} of {size} visitors': '{count} visiteurs sur {size}',
+  Cohort: 'Cohorte',
+  'No new visitors in this period.': 'Aucun nouveau visiteur sur cette période.',
+  Retention: 'Rétention',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'La rétention suppose de reconnaître les visiteurs d’un jour à l’autre. Choisissez le mode de confidentialité Persistant dans les réglages pour l’activer.',
+  'Week {week}': 'Semaine {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Cohortes hebdomadaires de nouveaux visiteurs et part de chacune revenue les semaines suivantes.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Les semaines commencent le lundi (UTC). Chaque ligne suit les visiteurs vus pour la première fois cette semaine-là.',
 } satisfies Messages
