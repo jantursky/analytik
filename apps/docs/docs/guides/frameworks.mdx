@@ -1,0 +1,135 @@
+---
+title: Framework guides
+description: Mount the Analytik server in Next.js, Express, Nuxt, SvelteKit, Astro and Cloudflare Pages Functions, with the base path that has to match each framework's route.
+---
+
+The server is one web-standard handler: it takes a `Request` and returns a `Response`. Any framework that can pass a request to a function can host it. This page shows the route file for six of them. For Hono, Bun and Node on their own, see [Getting started](/getting-started).
+
+Tested with Next.js 16.4 (App Router), Express 5 with `@hono/node-server`, Nuxt 4.6, SvelteKit 3.1 (and 2.70), Astro 7.4 with `@astrojs/node`, and Cloudflare Pages Functions on Wrangler 4.158 with a local D1 database. Each route answered `/api/health`, returned the `not found (routes are under /api)` message for an unknown path, and accepted an admin login.
+
+## The base path rule
+
+The server answers under `basePath`, `/api` by default. The route in your framework must hand it the full request URL, and the two must agree: a route at `/api/...` goes with the default, a route at `/stats/...` needs `basePath: '/stats'`. When they disagree every call answers 404, and the message says which prefix the server expected: `not found (routes are under /api)`. See [Troubleshooting](/troubleshooting).
+
+## One shared file
+
+Create the server once and import it from the route. A serverless host starts the module again on a cold start, so use a pooled Postgres URL there, as in [Vercel and Supabase](/deploy/vercel-supabase). On a long-running server a SQLite file works.
+
+```ts analytik.ts
+import { createAnalytik } from 'analytik/server'
+import { postgresStorage } from 'analytik/storage/postgres'
+import postgres from 'postgres'
+
+export const analytik = createAnalytik({
+  storage: postgresStorage(postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 })),
+  admin: { password: process.env.ADMIN_PASSWORD!, secret: process.env.SESSION_SECRET! },
+})
+```
+
+Every snippet below imports `analytik` from this file and calls `analytik.app.fetch(request)`. Do not read the body before that call.
+
+## Next.js
+
+A catch-all route handler in the App Router. The folder `app/api/[[...path]]` matches the default `basePath`.
+
+```ts app/api/[[...path]]/route.ts
+import { analytik } from '@/analytik'
+
+const handler = (request: Request) => analytik.app.fetch(request)
+
+export { handler as GET, handler as POST, handler as PUT, handler as PATCH, handler as DELETE, handler as OPTIONS }
+```
+
+The server needs the Node.js runtime for Postgres or SQLite, which is the default. The dashboard and the tracker script are separate; see [React](/guides/react) for the Next.js provider.
+
+## Express
+
+Express needs the Node request turned into a web `Request`. `getRequestListener` from `@hono/node-server` does that. Use it without a mount path, because `app.use('/api', ...)` strips the prefix from `req.url` and the server would see `/` instead of `/api/...`. Put it before any body parser.
+
+```ts server.ts
+import { getRequestListener } from '@hono/node-server'
+import express from 'express'
+
+import { analytik } from './analytik'
+
+const listener = getRequestListener(analytik.app.fetch)
+const app = express()
+
+app.use((req, res, next) => (req.url.startsWith('/api') ? listener(req, res) : next()))
+app.use(express.json()) // your own routes
+
+app.listen(3000)
+```
+
+## Nuxt
+
+A server route in `server/routes`, which is not prefixed, so the file path is the whole path.
+
+```ts server/routes/api/[...path].ts
+import { analytik } from '~~/server/analytik'
+
+export default defineEventHandler((event) => analytik.app.fetch(toWebRequest(event)))
+```
+
+Nuxt 4.6 runs on h3 1, where `toWebRequest` exists. On h3 2 the event already holds the web request: use `event.req` instead of `toWebRequest(event)`.
+
+## SvelteKit
+
+A `+server.ts` with a `fallback` handler answers every method. The rest parameter folder `[...path]` matches `/api/*`. SvelteKit 3 replaced the `$lib` alias with `#lib`, which a new project maps in the `imports` field of `package.json`. On SvelteKit 2, import from `$lib/server/analytik` instead.
+
+```ts src/routes/api/[...path]/+server.ts
+import type { RequestHandler } from './$types'
+
+import { analytik } from '#lib/server/analytik'
+
+export const fallback: RequestHandler = ({ request }) => analytik.app.fetch(request)
+```
+
+## Astro
+
+An endpoint with the `ALL` export. The route must be rendered on demand, so it needs `output: 'server'` or `export const prerender = false`, and a server adapter.
+
+```ts src/pages/api/[...path].ts
+import type { APIRoute } from 'astro'
+
+import { analytik } from '../../analytik'
+
+export const prerender = false
+
+export const ALL: APIRoute = ({ request }) => analytik.app.fetch(request)
+```
+
+## Cloudflare Pages Functions
+
+A catch-all function under `functions/api`. Use D1 for storage and pass the bindings on as the environment, so the geo headers and `request.cf` reach the server.
+
+```ts functions/api/[[path]].ts
+import { createAnalytik, type Analytik } from 'analytik/server'
+import { d1Storage } from 'analytik/storage/d1'
+
+interface Env {
+  DB: D1Database
+  ADMIN_PASSWORD: string
+  SESSION_SECRET: string
+}
+
+let analytik: Analytik | undefined
+
+export const onRequest: PagesFunction<Env> = (context) => {
+  analytik ??= createAnalytik({
+    storage: d1Storage(context.env.DB),
+    admin: { password: context.env.ADMIN_PASSWORD, secret: context.env.SESSION_SECRET },
+  })
+  return analytik.app.fetch(context.request)
+}
+```
+
+Bind the D1 database as `DB` in the Pages project. Pending migrations apply on the first request. See [Cloudflare Workers and D1](/deploy/cloudflare-workers-d1) for the database.
+
+## Any other framework
+
+Pass the web `Request` to `analytik.app.fetch` and return its `Response`, with the route and `basePath` agreeing as above. If the framework gives you a Node request instead, convert it with `getRequestListener` as in the Express example.
+
+## Tracker script
+
+None of these routes serve `analytik.js`. Copy it from the package into your public folder, or load it from your own domain, as described in the [tracker guide](/guides/tracker), and point `data-api` at the route you made.

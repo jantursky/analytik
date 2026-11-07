@@ -18,7 +18,7 @@ import type { Storage } from './storage/types'
 const USAGE = `Usage: analytik <command> [options]
 
 Commands:
-  create [dir] [--target cloudflare|vercel] [--name <name>] [--no-deploy]
+  create [dir] [--target cloudflare|vercel] [--name <name>] [--password <pw>] [--no-deploy]
                                            Make a project that serves the dashboard; on Cloudflare, put it online
   upgrade [dir] [--no-deploy]              Update a project to the newest Analytik and deploy it
   init [--target worker|vercel|bun|node]   Print a server entry file to start from
@@ -139,9 +139,14 @@ function count(value: string | undefined, flag: string, fallback: number): numbe
   return number
 }
 
+/** The migration list of a storage dialect, or null for one the CLI does not know. */
+function migrationsFor(dialect: string | undefined): typeof migrations | null {
+  return dialect === 'sqlite' ? migrations : dialect === 'postgres' ? postgresMigrations : null
+}
+
 /** Every migration of a dialect plus the bookkeeping rows, so `createAnalytik()` won't run them again. */
 function schemaSql(dialect: string | undefined, now: number): string {
-  const list = dialect === 'sqlite' ? migrations : dialect === 'postgres' ? postgresMigrations : null
+  const list = migrationsFor(dialect)
   if (!list) throw new UsageError('--print-sql must be sqlite or postgres')
   const applied = list.map(
     ({ version }) =>
@@ -180,7 +185,7 @@ async function doctor(db: string | undefined, url: string | undefined): Promise<
       await withStorage(db, async (storage) => {
         await storage.query('SELECT 1 AS ok')
         report(true, `database reachable (${storage.dialect})`)
-        const latest = migrations.at(-1)?.version
+        const latest = (migrationsFor(storage.dialect) ?? migrations).at(-1)?.version
         const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations').catch(() => [])
         const current = rows
           .map((row) => row.version)

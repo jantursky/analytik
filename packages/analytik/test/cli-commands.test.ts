@@ -54,6 +54,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(help.code).toBe(0)
     expect(help.stdout).toContain('seed --db <url> [--days 30] [--seed 1]')
     expect(help.stdout).toContain('import --from umami|simple-analytics')
+    expect(help.stdout).toContain('[--password <pw>]')
+    expect(help.stdout).toContain('menubar [--dir <folder>]')
     expect((await cli()).stdout).toContain('Usage: analytik')
     expect((await cli('--version')).stdout.trim()).toBe(version)
   })

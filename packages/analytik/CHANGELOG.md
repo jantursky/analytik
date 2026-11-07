@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.21.0]
+
+### Changed
+
+- Dashboard header: a fade and an arrow show on the side where more views are hidden.
+- Setup help: the not-found reply names the base path, `/health` shows the failure to admins, `doctor` checks Postgres against its own migrations, and new framework and troubleshooting docs.
+
 ## [1.20.0]
 
 ### Added
