@@ -13,5 +13,6 @@ export default defineMeta({
     'funnels-and-goals',
     'importing-data',
     'mac-menu-bar',
+    'frameworks',
   ],
 })

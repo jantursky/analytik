@@ -9,6 +9,25 @@ The root export, `analytik`, contains types only. There is no runtime code in it
 import type { Overview, PaymentInput, PrivacyMode } from 'analytik'
 ```
 
+## Which import do I need
+
+The root holds types only. Everything with code in it has its own subpath, so a bundle only gets what it imports.
+
+| Import                                                                                                       | What it gives you                                                                    | Use it when                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `analytik`                                                                                                   | Types only (this page).                                                              | You type your own code against the API.                                                                                                   |
+| `analytik/server`                                                                                            | `createAnalytik()` and the server types.                                             | You run the server. See [Server API](/reference/server-api).                                                                              |
+| `analytik/client`                                                                                            | `createClient()` for the browser without React.                                      | You track from your own front end code. See [Tracker](/guides/tracker).                                                                   |
+| `analytik/react`                                                                                             | `AnalytikProvider`, `useAnalytik`, `useTrackPageviews`, `TrackClick`.                | You use React. See [React](/guides/react).                                                                                                |
+| `analytik/dashboard`, `analytik/dashboard/styles.css`                                                        | The `Dashboard` component, its parts and its stylesheet.                             | You embed the dashboard. See [Dashboard embedding](/guides/dashboard-embedding).                                                          |
+| `analytik/standalone`                                                                                        | `withDashboard()`, which wraps a fetch handler so it also serves the dashboard page. | The server should serve the dashboard from the same deployment.                                                                           |
+| `analytik/email`                                                                                             | Email senders for `email.send`.                                                      | You turn on owner emails. See [Email notifications](/guides/email-notifications).                                                         |
+| `analytik/migrate`                                                                                           | `openStorage()` and `seedDemo()`, the helpers the CLI uses.                          | You script a migration or fill a test database.                                                                                           |
+| `analytik/storage/d1`, `analytik/storage/postgres`, `analytik/storage/sqlite`, `analytik/storage/memory`     | One storage driver each.                                                             | You choose where the data lives. See [Storage](/reference/storage).                                                                       |
+| `analytik/adapters/stripe`, `/dodo`, `/lemonsqueezy`, `/paddle`, `/polar`, `/razorpay`, `/creem`, `/gumroad` | `verify()` and `toPayment()` for one provider's webhook.                             | You handle a webhook in your own code. The server's built-in webhook route already uses them, so for the normal setup you import nothing. |
+| `analytik/analytik.js`, `analytik/analytik-vitals.js`                                                        | The built tracker script and the Core Web Vitals file.                               | You serve the tracker from your own files. See [Tracker](/guides/tracker).                                                                |
+| `analytik/package.json`                                                                                      | The package manifest.                                                                | A tool needs to read the version.                                                                                                         |
+
 ## Unions
 
 ```ts

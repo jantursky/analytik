@@ -20,6 +20,8 @@ Send them to your server, or add them to a checkout link, right before the visit
 
 `attribution()` can return `null`: when the visitor has opted out, when the request fails, or in `strict` and `enriched` mode when the server has no session for the visitor yet, for example before the first pageview was sent. Handle that case and let the checkout go ahead without the ids; the payment is then matched by the other methods in [Attribution and payments](/concepts/attribution-and-payments).
 
+The provider adapters are already wired into the server's webhook route, so there is nothing to import from `analytik/adapters/*` for them: a provider needs a webhook URL and the signing secret saved on the site, and no code in your app.
+
 ## Generic API
 
 For anything else, such as a payment processor without an adapter, post to `POST /api/v1/payments` with the site's API key. The body is a `PaymentInput`. The call is idempotent on `(siteId, id)`.

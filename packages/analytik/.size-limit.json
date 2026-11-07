@@ -53,14 +53,14 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "15.8 kB"
+    "limit": "16 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "917 kB"
+    "limit": "918 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",

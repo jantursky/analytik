@@ -234,11 +234,87 @@
   height: 30px;
 }
 
-.analytik-header nav {
+.analytik-nav-wrap {
+  position: relative;
   flex: 1;
   min-width: 0;
+}
+
+.analytik-header nav {
   overflow-x: auto;
   scrollbar-width: none;
+}
+
+/* The side that hides more tabs fades out and shows an arrow that moves the list by a page. */
+.analytik-nav-fade {
+  position: absolute;
+  inset-block: 0;
+  z-index: 2;
+  width: 48px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+
+.analytik-nav-fade[data-side='start'] {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--analytik-surface) 25%, transparent);
+}
+
+.analytik-nav-fade[data-side='end'] {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--analytik-surface) 25%, transparent);
+}
+
+.analytik-nav-arrow {
+  position: absolute;
+  top: calc(50% - 2px);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--analytik-border);
+  border-radius: 50%;
+  background: var(--analytik-surface);
+  color: var(--analytik-text);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 150ms,
+    border-color 150ms;
+}
+
+.analytik-nav-arrow[data-side='start'] {
+  inset-inline-start: 2px;
+}
+
+.analytik-nav-arrow[data-side='end'] {
+  inset-inline-end: 2px;
+}
+
+.analytik-nav-arrow:hover {
+  border-color: var(--analytik-primary);
+}
+
+.analytik-nav-fade[data-on],
+.analytik-nav-arrow[data-on] {
+  opacity: 1;
+}
+
+.analytik-nav-arrow[data-on] {
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-nav-fade,
+  .analytik-nav-arrow {
+    transition: none;
+  }
 }
 
 .analytik-header ul {
@@ -5094,10 +5170,13 @@ tr:hover .analytik-row-button {
     margin-left: auto;
   }
 
-  .analytik-header nav {
+  .analytik-nav-wrap {
     order: 3;
     flex-basis: 100%;
     margin: 0 -16px;
+  }
+
+  .analytik-header nav {
     padding: 0 16px;
   }
 

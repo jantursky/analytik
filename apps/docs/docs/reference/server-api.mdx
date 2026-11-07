@@ -152,7 +152,7 @@ console.log(refunds.total, refunds.items)
 
 ## Mounting
 
-On Cloudflare Workers, Bun and Vercel, export `analytik.app.fetch` or the app itself. On Node, use `@hono/node-server`. To nest it in an existing Hono app:
+On Cloudflare Workers, Bun and Vercel, export `analytik.app.fetch` or the app itself. On Node, use `@hono/node-server`. For Next.js, Express, Nuxt, SvelteKit, Astro and Cloudflare Pages Functions, see the [framework guides](/guides/frameworks). To nest it in an existing Hono app:
 
 ```ts
 import { Hono } from 'hono'

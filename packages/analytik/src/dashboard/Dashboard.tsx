@@ -12,6 +12,7 @@ import { useResource } from './data'
 import { loadMessages, type Messages, msg, resolveLanguage, setLanguage, t } from './i18n'
 import { Icon } from './icons'
 import { LanguageSwitch } from './language-switch'
+import { NavScroll } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
@@ -651,7 +652,7 @@ export function Dashboard({
                     <span className="analytik-brand">
                       <BrandMark />
                     </span>
-                    <nav aria-label={t('Dashboard')}>
+                    <NavScroll label={t('Dashboard')} active={view}>
                       <ul>
                         {nav.map(({ value, label }) => (
                           <li key={value}>
@@ -673,7 +674,7 @@ export function Dashboard({
                           </li>
                         ))}
                       </ul>
-                    </nav>
+                    </NavScroll>
                   </div>
                   <div className="analytik-header-right">
                     {locale === undefined && <LanguageSwitch />}

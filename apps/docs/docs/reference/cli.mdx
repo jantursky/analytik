@@ -1,6 +1,6 @@
 ---
 title: CLI
-description: 'The Analytik command line: create, upgrade, init, migrate, seed and doctor.'
+description: 'The Analytik command line: create, upgrade, init, migrate, seed, import, menubar and doctor.'
 ---
 
 The package installs a binary named `analytik`. Run it with `npx analytik`, `bunx analytik`, or from your scripts.
@@ -85,6 +85,27 @@ npx analytik seed --db ./demo.db --days 30 --seed 1
 ```
 
 `--db` is required. `--days` (default 30) is how many days of data to generate and `--seed` (default 1) makes the data repeatable. The command prints the site id and API key it created.
+
+### import
+
+Adds the history of another analytics tool to a site: Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 or PostHog.
+
+```bash
+npx analytik import --from umami --file events.csv --file sessions.csv --file event-data.csv --site SITE_ID --db "$DATABASE_URL"
+```
+
+`--from` names the source, `--file` is repeated once per export file, `--site` is the id of an existing site and `--db` the database. The command applies pending migrations, reads every file, and only then writes, so a wrong file stores nothing. Running it twice adds nothing the second time. D1 cannot be reached from the command line; use the import in Settings. What each export must contain is in [Importing data](/guides/importing-data).
+
+### menubar
+
+Downloads the newest release of the [Mac menu bar app](/guides/mac-menu-bar), puts it into Applications and opens it. It needs macOS 14 or later.
+
+```bash
+npx analytik menubar
+npx analytik menubar --dir ~/Applications --no-open
+```
+
+`--dir` installs into another folder and `--no-open` does not start the app afterwards.
 
 ### doctor
 

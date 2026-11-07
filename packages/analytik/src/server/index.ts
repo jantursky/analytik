@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 
+import { adminMethod } from './auth'
 import { AnalytikError, createContext } from './context'
 import { runScheduled } from './email/notify'
 import { ingest } from './ingest'
@@ -39,15 +40,17 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
     console.error(error)
     return c.json({ error: 'internal error' }, 500)
   })
-  app.notFound((c) => c.json({ error: 'not found' }, 404))
+  app.notFound((c) => c.json({ error: `not found (routes are under ${ctx.basePath || '/'})` }, 404))
 
   app.get('/health', async (c) => {
     try {
       await ready()
       await ctx.storage.query('SELECT 1 AS ok')
       return c.json({ ok: true, dialect: ctx.storage.dialect })
-    } catch {
-      return c.json({ ok: false, dialect: ctx.storage.dialect }, 503)
+    } catch (error) {
+      // The message can name hosts or connection details: only admins and debug mode may see it.
+      const detail = ctx.debug || (await adminMethod(ctx, c)) ? { error: (error as Error).message } : {}
+      return c.json({ ok: false, dialect: ctx.storage.dialect, ...detail }, 503)
     }
   })
   app.use(async (c, next) => {

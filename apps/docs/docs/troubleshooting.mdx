@@ -1,0 +1,76 @@
+---
+title: Troubleshooting
+description: Fix a 401 from the dashboard, CORS errors, rejected origins, ignored localhost, an empty dashboard, a missing first pageview, shared visitors behind a proxy, a missing session secret and D1 migrations.
+---
+
+Find the symptom, check the cause, apply the fix. Run `npx analytik doctor --db <url> --url <deployment>` first: it checks the runtime, the database schema and the deployment's `/api/health` in one go (see the [CLI reference](/reference/cli#doctor)). A wrong `basePath` shows up as `not found (routes are under /api)` in the response body. Notes for upgrades are in the [changelog](/changelog).
+
+## The dashboard answers 401
+
+The API says `login required` when the request has no valid admin session.
+
+- **You are not signed in, or the session ended.** Sessions last 30 days. Sign in again. Changing `SESSION_SECRET` signs everyone out.
+- **The dashboard and the API are on different origins.** The session is an `HttpOnly`, `SameSite=Lax` cookie with the path set to `basePath`, so a page on another site does not send it. Serve the dashboard from the same origin as the API, or proxy the API through your site. A script that reads the data can sign in with `POST /api/auth/login` and send the returned token as `Authorization: Bearer <token>`.
+- **The path of the cookie does not match.** The cookie is only sent to `basePath` and below. If a proxy rewrites the prefix, keep the same `basePath` on both sides.
+- **`admin` is not set.** Without the `admin` option every admin route answers 401 with `admin login is not configured`.
+
+A `403 cross-origin request refused` on a save is the same family: a cookie-authenticated write must come from the same host as the API.
+
+## CORS errors in the browser console
+
+Only `POST /api/event` and `POST /api/attribution` send CORS headers, with any origin allowed, because the tracker runs on other people's pages. Every other route is meant for the same origin. If you see a CORS error on `/api/sites` or `/api/stats/...`, the dashboard is on another origin than the API. Move it to the same origin, or proxy the API.
+
+If the error is on `/api/event` itself, the request usually failed before the server answered: the URL is wrong, a proxy or CDN removed the CORS headers from the response, or an ad blocker stopped it. The tracker sends a simple `text/plain` request, so it needs no preflight. Code of your own that posts `application/json` does send an `OPTIONS` preflight, which the server answers with `204`, so a proxy must let it through. Open the Network tab and look at the status.
+
+## Events are rejected: origin not allowed for this site
+
+The server answers `403 origin not allowed for this site` when the page that sent the event is not on the site's domain. By default the hostname must be the domain you gave the site, or one of its subdomains. To accept more, set `allowedOrigins` to a list of hostnames (not full origins), or `'any'` to turn the check off. See [Allowed origins](/reference/server-api#allowed-origins). A staging domain or a preview URL is the usual cause.
+
+## Nothing arrives from localhost
+
+Events from `localhost` are dropped on purpose. Both sides must opt in: add `data-allow-localhost` to the script tag, and turn on **Accept events from localhost** in the site's Settings (`allowLocalhost`), or the server answers `403 origin not allowed for this site`. Setting `allowedOrigins` to `'any'` also lets the server accept them, but the tracker still needs `data-allow-localhost`. The tracker treats `localhost`, `127.0.0.1`, `[::1]`, `0.0.0.0`, `*.local` and `file://` pages as local. Remove the opt-ins again for production.
+
+## The dashboard is empty
+
+Work down the list. Each filtered event still gets a `202`, so scrapers learn nothing, which also means a `202` does not prove the event was stored.
+
+1. Is `data-site` the id of an existing site? An unknown id answers `404 site not found`.
+2. Did the tracker request go out? In the Network tab, look for `POST /api/event`. No request: an ad blocker, a Content Security Policy, a wrong script URL, or the wait described in the next section.
+3. Is the site paused? A paused site shows a **Paused** badge in the site list, and **Resume tracking** is in its menu. Paused sites drop events.
+4. Is your own visit ignored? The site's ignored IPs, the "Ignore this browser" link and "Ignore signed-in admins" all hide you. Test from a private window on a network that is not listed. Ignored IPs only match when the server can see the visitor's address, so behind a proxy they need the right `trustProxy` (see below). "Ignore signed-in admins" only works when the dashboard and the tracker are on one origin, because only then does the browser send the session cookie with the event.
+5. Does the visit look like a bot? The tracker switches itself off in an automated browser (`navigator.webdriver`) and sends nothing. The server answers `202` and drops any request whose user agent is empty or names a crawler, a headless browser or an HTTP client such as curl, so test with a real browser.
+6. Is the date range or a filter hiding the data? Try **Today** with no filters.
+
+## The first pageview does not show
+
+By default the tracker sends the first pageview only after the first interaction (pointer movement or press, scroll, touch or key press) or after 3 seconds of the page being visible. Goals and outbound clicks wait for the same moment. A test that loads a page and closes it at once sends nothing. Wait a few seconds, or set `data-require-interaction="false"` to send immediately. See [tracker attributes](/reference/tracker-attributes).
+
+## All visitors look the same, or all locations are wrong
+
+Behind a reverse proxy the server cannot see the visitor's address unless it is told which header to trust. `trustProxy: 'auto'` reads an address only on Cloudflare and Vercel. Anywhere else there is no IP, so in `strict` mode visitors with the same user agent collapse into one visitor, the site's ignored IPs cannot match, and rate limits (such as the login limit) are shared by everyone.
+
+- Behind Caddy, nginx or a load balancer that sets `X-Forwarded-For`: use `trustProxy: 'forwarded'`.
+- Behind a proxy with its own header: pass `clientIp: (request) => request.headers.get('x-real-ip')`.
+- Locations do not depend on `trustProxy`. They come from `geo`, which by default reads the Vercel geo headers and Cloudflare's country data. Elsewhere there is no location, so supply `geo` yourself.
+
+Only use `'forwarded'` when the proxy overwrites the header, or a visitor can pick their own address. See [Client IP and `trustProxy`](/reference/server-api#client-ip-and-trustproxy).
+
+## The server refuses to start: session secret
+
+`createAnalytik()` throws on purpose when the login would be unsafe:
+
+- `analytik: admin.password is empty. Set it (e.g. from ADMIN_PASSWORD).`
+- `analytik: admin.secret must be at least 32 characters (e.g. SESSION_SECRET from `openssl rand -hex 32`).`
+
+Set `ADMIN_PASSWORD` and `SESSION_SECRET` in the environment of the deployment, not only on your machine. On Cloudflare they are secrets (`wrangler secret put SESSION_SECRET`), on Vercel environment variables. A value that is set but empty also fails.
+
+## D1: no such table
+
+D1 cannot be reached from the command line, so `npx analytik migrate` does not work for it. The server applies pending migrations on its first request (`autoMigrate`, on by default). If you set `autoMigrate: false`, or the first request never reached the Worker, the tables are missing. Event and login requests answer `500 internal error` and the server log shows `no such table`. Either remove `autoMigrate: false`, or load the schema yourself:
+
+```bash
+npx analytik migrate --print-sql sqlite > analytik-schema.sql
+npx wrangler d1 execute analytik --remote --file analytik-schema.sql
+```
+
+With `autoMigrate` on, `/api/health` applies pending migrations, so a passing `npx analytik doctor --url https://your-deployment` means the schema is in place. With `autoMigrate: false`, `/api/health` only checks the connection and passes even when the tables are missing, so check the schema with `SELECT version FROM schema_migrations`. After an upgrade, the new migrations apply on the first request again when `autoMigrate` is on.
