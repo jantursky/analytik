@@ -967,4 +967,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# Ansicht} other {# Ansichten}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Erstellt für jede gewählte Website einen schreibgeschützten Link. Für die Mac-Menüleisten-App fügt ein einziger Text alle hinzu.',
+  '{page}, step {step}: {count} sessions': '{page}, Schritt {step}: {count} Sitzungen',
+  'Based on the {count} newest sessions of the period.': 'Basiert auf den {count} neuesten Sitzungen des Zeitraums.',
+  Exit: 'Ausstieg',
+  From: 'Von',
+  Journeys: 'Pfade',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Keine Sitzung in diesem Zeitraum hat mehr als eine Seite angesehen, daher gibt es keinen Pfad.',
+  'Other pages': 'Andere Seiten',
+  'Showing the last 30 days of the range.': 'Zeigt die letzten 30 Tage des Zeitraums.',
+  'Step {step}': 'Schritt {step}',
+  To: 'Nach',
+  'Where sessions go after the first page, and where they end.':
+    'Wohin Sitzungen nach der ersten Seite gehen und wo sie enden.',
+  '{count} of {size} visitors': '{count} von {size} Besuchern',
+  Cohort: 'Kohorte',
+  'No new visitors in this period.': 'In diesem Zeitraum gibt es keine neuen Besucher.',
+  Retention: 'Wiederkehr',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Die Wiederkehr braucht Besucher, die über Tage hinweg erkannt werden. Wählen Sie dafür in den Einstellungen den Datenschutzmodus Dauerhaft.',
+  'Week {week}': 'Woche {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Wöchentliche Kohorten neuer Besucher und der Anteil, der in den folgenden Wochen zurückkam.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Wochen beginnen am Montag (UTC). Jede Zeile verfolgt die Besucher, die in dieser Woche zum ersten Mal gesehen wurden.',
 } satisfies Messages

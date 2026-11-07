@@ -89,6 +89,22 @@ Measuring is opt-in per site and sampled; see [the tracker guide](/guides/tracke
 
 Reports follow the site's retention setting and are deleted with the site.
 
+## Journeys
+
+The Journeys view shows where sessions go after they land, as a flow of up to four steps: the most common next pages at each step, a bar for everything else, and where sessions end. Click a page, or focus it and press Enter, to filter the dashboard by it (step one filters by entry page, later steps by page viewed). A table with the same links is there for screen readers.
+
+Only sessions that viewed more than one page make a path. Reloading a page does not count as a step. Each step lists its eight biggest pages and groups the rest as "Other pages". The server reads the newest 5,000 sessions of the range, and the range is cut to its last 30 days; the view says so when either applies. The unit is sessions, so journeys work in every privacy mode.
+
+`GET /api/sites/SITE_ID/journeys` returns `JourneysResult` for the dashboard's range and filters, and `analytik.stats.journeys(siteId, query)` does it in code. The response may be cached for five minutes. Shared dashboards do not show the view, and the route is admin only.
+
+## Retention
+
+The Retention view shows weekly cohorts of new visitors: each row is the visitors first seen in one week, and each cell is the share of them who came back that many weeks later (week 0 is their own week, so it reads 100%). The values are written in the cells, and the colour only adds to them. At most the latest 12 cohorts of the range are shown, each followed for up to 12 weeks, and weeks run from Monday in UTC. Filters apply to each visitor's first session.
+
+It needs visitors to be recognised across days, so only sites in the `persistent` privacy mode have it. In `strict` and `enriched` mode the visitor id changes at least monthly, so the view explains how to turn it on instead of drawing a heatmap.
+
+`GET /api/sites/SITE_ID/retention` returns `RetentionResult`, and `analytik.stats.retention(siteId, query)` does the same in code. It is one aggregate query, kept by the browser for five minutes. Shared dashboards do not show the view, and the route is admin only.
+
 ## Notes on accuracy
 
 In `strict` mode a visitor who changes network mid-funnel is counted as two visitors, and one of them drops out. Expect funnel completion to read a little lower than in `persistent` mode.

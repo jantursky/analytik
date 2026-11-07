@@ -963,4 +963,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# görünüm} other {# görünüm}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Seçtiğiniz her site için salt okunur bir bağlantı oluşturur. Mac menü çubuğu uygulaması için tek bir metin hepsini ekler.',
+  '{page}, step {step}: {count} sessions': '{page}, adım {step}: {count} oturum',
+  'Based on the {count} newest sessions of the period.': 'Dönemin en yeni {count} oturumuna dayanır.',
+  Exit: 'Çıkış',
+  From: 'Nereden',
+  Journeys: 'Yolculuklar',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Bu dönemde hiçbir oturum birden fazla sayfa görüntülemedi, bu yüzden gösterilecek yol yok.',
+  'Other pages': 'Diğer sayfalar',
+  'Showing the last 30 days of the range.': 'Aralığın son 30 günü gösteriliyor.',
+  'Step {step}': 'Adım {step}',
+  To: 'Nereye',
+  'Where sessions go after the first page, and where they end.':
+    'Oturumlar ilk sayfadan sonra nereye gider ve nerede biter.',
+  '{count} of {size} visitors': '{size} ziyaretçiden {count}',
+  Cohort: 'Kohort',
+  'No new visitors in this period.': 'Bu dönemde yeni ziyaretçi yok.',
+  Retention: 'Elde tutma',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Elde tutma, ziyaretçilerin günler arasında tanınmasını gerektirir. Açmak için Ayarlar’da Kalıcı gizlilik modunu seçin.',
+  'Week {week}': 'Hafta {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Yeni ziyaretçilerin haftalık kohortları ve her birinin sonraki haftalarda geri dönen payı.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Haftalar pazartesi başlar (UTC). Her satır, o hafta ilk kez görülen ziyaretçileri izler.',
 } satisfies Messages

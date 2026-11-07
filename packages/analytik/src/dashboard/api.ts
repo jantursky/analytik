@@ -3,6 +3,7 @@ import type {
   BotFilters,
   BotStats,
   BreakdownRow,
+  DefaultsGroup,
   Dimension,
   EmailSettings,
   EmailState,
@@ -10,6 +11,8 @@ import type {
   Funnel,
   FunnelResult,
   FunnelStep,
+  JourneysResult,
+  RetentionResult,
   Overview,
   Page,
   Payment,
@@ -26,12 +29,11 @@ import type {
   SiteDefaults,
   SiteSummary,
   TargetsResult,
-  VitalsResult,
-  VersionInfo,
   TestDataInput,
   TestDataResult,
   TimeseriesPoint,
-  DefaultsGroup,
+  VersionInfo,
+  VitalsResult,
 } from '../shared/types'
 import type { ImportRemoval, ImportResult, ImportSource, ImportSummary, ImportVisit } from '../shared/import/types'
 
@@ -187,6 +189,8 @@ export interface ApiClient {
   targets(siteId: string): Promise<TargetsResult>
   /** The 75th percentile of Core Web Vitals for the site and its pages with the most reports. */
   vitals(siteId: string, query: Query): Promise<VitalsResult>
+  journeys(siteId: string, query: Query): Promise<JourneysResult>
+  retention(siteId: string, query: Query): Promise<RetentionResult>
   sessions(siteId: string, query: Query & Paging): Promise<Page<SessionSummary>>
   session(siteId: string, sessionId: string): Promise<SessionDetail>
   events(siteId: string, query: Query & Paging & { name?: string; type?: EventType }): Promise<Page<EventRow>>
@@ -360,6 +364,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     realtime: (id) => get(`${site(id)}/realtime`, undefined, true),
     targets: (id) => get(`${site(id)}/targets`),
     vitals: (id, query) => get(`${site(id)}/vitals`, queryParams(query)),
+    journeys: (id, query) => get(`${site(id)}/journeys`, queryParams(query)),
+    retention: (id, query) => get(`${site(id)}/retention`, queryParams(query)),
     sessions: (id, query) => get(`${site(id)}/sessions`, queryParams(query)),
     session: (id, sessionId) => get(`${site(id)}/sessions/${encodeURIComponent(sessionId)}`),
     events: (id, query) => get(`${site(id)}/events`, queryParams(query)),

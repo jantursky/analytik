@@ -958,4 +958,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, other {# 件のビュー}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     '選んだ各サイトの読み取り専用リンクを作成します。Mac メニューバーアプリ用には、すべてをまとめて追加する 1 つのテキストも作成します。',
+  '{page}, step {step}: {count} sessions': '{page}、ステップ {step}：{count} セッション',
+  'Based on the {count} newest sessions of the period.': '期間の最新 {count} セッションに基づきます。',
+  Exit: '離脱',
+  From: '移動元',
+  Journeys: '経路',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'この期間に複数のページを見たセッションがないため、表示する経路がありません。',
+  'Other pages': 'その他のページ',
+  'Showing the last 30 days of the range.': '範囲の直近 30 日を表示しています。',
+  'Step {step}': 'ステップ {step}',
+  To: '移動先',
+  'Where sessions go after the first page, and where they end.':
+    '最初のページの後にセッションがどこへ進み、どこで終わるか。',
+  '{count} of {size} visitors': '{size} 人中 {count} 人',
+  Cohort: 'コホート',
+  'No new visitors in this period.': 'この期間に新しい訪問者はいません。',
+  Retention: 'リテンション',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'リテンションには、日をまたいで訪問者を識別できることが必要です。設定でプライバシーモード「永続」を選ぶと有効になります。',
+  'Week {week}': '{week} 週目',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    '新規訪問者の週ごとのコホートと、その後の週に再訪した割合。',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    '週は月曜日（UTC）に始まります。各行は、その週に初めて確認された訪問者を追跡します。',
 } satisfies Messages

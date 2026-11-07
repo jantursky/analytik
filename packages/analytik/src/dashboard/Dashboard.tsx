@@ -41,6 +41,25 @@ import { SitesOverview } from './views/Sites'
 const ImportDialog = lazy(() => import('./views/ImportDialog').then((m) => ({ default: m.ImportDialog })))
 const Palette = lazy(() => import('./palette').then((m) => ({ default: m.Palette })))
 const ShortcutHelp = lazy(() => import('./palette').then((m) => ({ default: m.ShortcutHelp })))
+// The journey chart is the heaviest view and loads only when it is opened.
+const LazyJourneys = lazy(() => import('./views/Journeys').then((m) => ({ default: m.Journeys })))
+const LazyRetention = lazy(() => import('./views/Retention').then((m) => ({ default: m.Retention })))
+
+function JourneysView() {
+  return (
+    <Suspense fallback={<div className="analytik-chart-skeleton" />}>
+      <LazyJourneys />
+    </Suspense>
+  )
+}
+
+function RetentionView() {
+  return (
+    <Suspense fallback={<div className="analytik-chart-skeleton" />}>
+      <LazyRetention />
+    </Suspense>
+  )
+}
 
 export type DashboardView =
   | 'sites'
@@ -50,6 +69,8 @@ export type DashboardView =
   | 'events'
   | 'bots'
   | 'funnels'
+  | 'journeys'
+  | 'retention'
   | 'revenue'
   | 'sessions'
   | 'realtime'
@@ -64,6 +85,8 @@ const VIEWS: Record<SiteView, { label: string; component: ComponentType; ranged:
   events: { label: msg('Events'), component: Events, ranged: true },
   bots: { label: msg('Bots'), component: Bots, ranged: true },
   funnels: { label: msg('Funnels'), component: Funnels, ranged: true },
+  journeys: { label: msg('Journeys'), component: JourneysView, ranged: true },
+  retention: { label: msg('Retention'), component: RetentionView, ranged: true },
   revenue: { label: msg('Revenue'), component: Revenue, ranged: true },
   sessions: { label: msg('Sessions'), component: Sessions, ranged: true },
   realtime: { label: msg('Live'), component: Realtime, ranged: false },

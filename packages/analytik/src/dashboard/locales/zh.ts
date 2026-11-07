@@ -933,4 +933,27 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, other {# 个视图}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     '为你选择的每个网站创建只读链接。对于 Mac 菜单栏应用，一段文本即可全部添加。',
+  '{page}, step {step}: {count} sessions': '{page}，第 {step} 步：{count} 次会话',
+  'Based on the {count} newest sessions of the period.': '基于该时段最新的 {count} 次会话。',
+  Exit: '退出',
+  From: '来自',
+  Journeys: '路径',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    '此时段内没有会话浏览超过一个页面，因此没有可显示的路径。',
+  'Other pages': '其他页面',
+  'Showing the last 30 days of the range.': '显示该范围的最近 30 天。',
+  'Step {step}': '第 {step} 步',
+  To: '前往',
+  'Where sessions go after the first page, and where they end.': '会话在第一个页面之后去向哪里，又在哪里结束。',
+  '{count} of {size} visitors': '{size} 位访客中的 {count} 位',
+  Cohort: '群组',
+  'No new visitors in this period.': '此时段没有新访客。',
+  Retention: '留存',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    '留存需要跨天识别访客。请在设置中选择“持久”隐私模式来启用。',
+  'Week {week}': '第 {week} 周',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    '新访客的每周群组，以及其中在之后几周回访的比例。',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    '每周从周一开始（UTC）。每行跟踪当周首次出现的访客。',
 } satisfies Messages

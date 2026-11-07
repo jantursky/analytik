@@ -964,4 +964,28 @@ export default {
   '{count, plural, one {# view} other {# views}}': '{count, plural, one {# weergave} other {# weergaven}}',
   'Create a read-only link for each site you choose. For the Mac menu bar app, one text adds them all.':
     'Maakt een alleen-lezen link voor elke gekozen site. Voor de Mac-menubalk-app voegt één tekst ze allemaal toe.',
+  '{page}, step {step}: {count} sessions': '{page}, stap {step}: {count} sessies',
+  'Based on the {count} newest sessions of the period.': 'Gebaseerd op de {count} nieuwste sessies van de periode.',
+  Exit: 'Vertrek',
+  From: 'Van',
+  Journeys: 'Routes',
+  'No session in this period viewed more than one page, so there is no path to show.':
+    'Geen sessie in deze periode bekeek meer dan één pagina, dus er is geen route om te tonen.',
+  'Other pages': 'Andere pagina’s',
+  'Showing the last 30 days of the range.': 'De laatste 30 dagen van het bereik worden getoond.',
+  'Step {step}': 'Stap {step}',
+  To: 'Naar',
+  'Where sessions go after the first page, and where they end.':
+    'Waar sessies heen gaan na de eerste pagina en waar ze eindigen.',
+  '{count} of {size} visitors': '{count} van {size} bezoekers',
+  Cohort: 'Cohort',
+  'No new visitors in this period.': 'Geen nieuwe bezoekers in deze periode.',
+  Retention: 'Retentie',
+  'Retention needs visitors to be recognised across days. Choose the Persistent privacy mode in Settings to turn it on.':
+    'Retentie vraagt dat bezoekers van dag tot dag herkend worden. Kies in Instellingen de privacymodus Permanent om het aan te zetten.',
+  'Week {week}': 'Week {week}',
+  'Weekly cohorts of new visitors and the share of each that came back in the weeks after.':
+    'Wekelijkse cohorten van nieuwe bezoekers en het aandeel van elk dat in de weken erna terugkwam.',
+  'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
+    'Weken beginnen op maandag (UTC). Elke rij volgt de bezoekers die die week voor het eerst werden gezien.',
 } satisfies Messages

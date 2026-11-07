@@ -5,13 +5,13 @@ import type { EmailOptions, ScheduledResult } from './email/types'
 import type {
   BotFilters,
   BotStats,
-  TargetsResult,
-  VitalsResult,
   BreakdownRow,
   Dimension,
   EventRow,
   EventType,
   FunnelResult,
+  JourneysResult,
+  RetentionResult,
   Overview,
   Page,
   Payment,
@@ -22,7 +22,9 @@ import type {
   Realtime,
   SessionDetail,
   SessionSummary,
+  TargetsResult,
   TimeseriesPoint,
+  VitalsResult,
 } from '../shared/types'
 import type { Storage } from '../storage/types'
 
@@ -211,6 +213,9 @@ export interface StatsApi {
   targets(siteId: string): Promise<TargetsResult>
   /** The 75th percentile of Core Web Vitals over the range, for the site and its pages with the most reports. */
   vitals(siteId: string, query: Query): Promise<VitalsResult>
+  /** How sessions move between pages: the first four pages of the newest sessions, at most the last 30 days. */
+  journeys(siteId: string, query: Query): Promise<JourneysResult>
+  retention(siteId: string, query: Query): Promise<RetentionResult>
   /** Crawler traffic reported with `POST /v1/bots`, kept apart from visitors and revenue. */
   bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
 }
