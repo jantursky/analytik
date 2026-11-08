@@ -85,6 +85,39 @@ export interface Site {
   webhooks?: Record<PaymentProvider, boolean>
   /** Token for the public read-only dashboard link, or null when sharing is off. */
   shareToken?: string | null
+  /** The `theme-color` of the site's own page, as `#rrggbb`, taken over by a sync; null until then. */
+  color: string | null
+  /** The name came from the site's page, not from the admin. */
+  nameSynced: boolean
+  /** Hash of the icon the server stored for the site; null when it holds none. Changes when the icon does. */
+  iconHash: string | null
+}
+
+/** The details of a site that can be taken over from its own website. */
+export type SyncField = 'name' | 'color' | 'icon'
+
+/** Whether the page loads this server's tracker; `unknown` when it could not be read or the server's host is not known. */
+export type TrackerStatus = 'found' | 'not-found' | 'unknown'
+
+/** One detail of a site and what its page says; `changed` is false when they already agree. */
+export interface SyncChange {
+  field: SyncField
+  /** The stored value; for the icon its hash. */
+  current: string | null
+  /** What the page says; for the icon a `data:` URL. */
+  found: string | null
+  changed: boolean
+  /** Only for the name: it was typed by hand, so replacing it is the admin's call. */
+  manual?: boolean
+}
+
+/** What reading a site's own page found, against what is stored. */
+export interface SyncPreview {
+  /** Why nothing was read: a generated test site has no website to ask. */
+  skipped?: 'test-site'
+  reachable: boolean
+  tracker: TrackerStatus
+  changes: SyncChange[]
 }
 
 /** The groups of site settings that can be set once for every site. */

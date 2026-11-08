@@ -10,7 +10,7 @@ import { deleteTestSites, generateTestData } from '../debug'
 import { sendTest } from '../email/notify'
 import { getEmailSettings, saveEmailSettings } from '../email/settings'
 import { createAnnotation, deleteAnnotation, updateAnnotation } from '../annotations'
-import { siteFavicon } from '../favicon'
+import { applySync, previewSync, siteIcon } from '../site-sync'
 import type { ShareLink } from '../../shared/types'
 import { createShareLink, findShareLink, linkAllows, listShareLinks, revokeShareLink } from '../share'
 import { importVisits } from '../import/core'
@@ -278,13 +278,19 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
 
   // What a shared dashboard needs to start: the site's name, domain and formats, and which views the link shows.
   app.get('/sites/:id/shared', (c) => {
-    const { id, name, domain, timezone, currency, privacyMode, createdAt } = c.get('site')
+    const { id, name, domain, timezone, currency, privacyMode, createdAt, color, iconHash } = c.get('site')
     return c.json({
-      site: { id, name, domain, timezone, currency, privacyMode, createdAt },
+      site: { id, name, domain, timezone, currency, privacyMode, createdAt, color, iconHash },
       views: c.get('share')?.views ?? [],
     })
   })
-  app.get('/sites/:id/favicon', async (c) => (await siteFavicon(c.get('site').domain)) ?? c.body(null, 404))
+  app.get('/sites/:id/favicon', async (c) => (await siteIcon(ctx, c.get('site'), c.req.raw)) ?? c.body(null, 404))
+  // Reads the site's own page: the preview changes nothing, apply takes over the fields the caller lists.
+  app.post('/sites/:id/sync', async (c) => c.json(await previewSync(c.get('site'), c.req.raw)))
+  app.post('/sites/:id/sync/apply', async (c) => {
+    const { site, applied } = await applySync(ctx, c.get('site'), (await body(c)).fields, c.req.raw)
+    return c.json({ site: publicSite(site), applied })
+  })
   app.get('/sites/:id/overview', async (c) => c.json(await overview(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/timeseries', async (c) => c.json(await timeseries(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/breakdown', async (c) => {

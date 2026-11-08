@@ -26,6 +26,8 @@ export interface Context {
   salts: Map<string, string>
   /** When retention was last enforced per site, so it runs at most hourly per instance. */
   retentionRuns: Map<string, number>
+  /** When each site's icon was last fetched without anyone asking, so an unreachable site is not asked on every request. */
+  syncAttempts: Map<string, number>
 }
 
 /** Fails at startup instead of serving a login anyone can pass, or session cookies anyone can forge. */
@@ -61,6 +63,7 @@ export function createContext(options: CreateAnalytikOptions): Context {
     updateCheck: options.updateCheck !== false,
     salts: new Map(),
     retentionRuns: new Map(),
+    syncAttempts: new Map(),
   }
 }
 

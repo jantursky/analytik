@@ -27,6 +27,8 @@ import type {
   ShareView,
   Site,
   SiteDefaults,
+  SyncField,
+  SyncPreview,
   SiteSummary,
   TargetsResult,
   TestDataInput,
@@ -166,6 +168,10 @@ export interface ApiClient {
    */
   deleteSite(siteId: string, proof: { confirm: string; password?: string }): Promise<unknown>
   rotateKey(siteId: string): Promise<{ apiKey: string }>
+  /** Reads the site's own page and says what differs from what is stored. Changes nothing. */
+  previewSync(siteId: string): Promise<SyncPreview>
+  /** Takes over the chosen details from the site's page; resolves to the site and the details that were taken. */
+  applySync(siteId: string, fields: SyncField[]): Promise<{ site: Site; applied: SyncField[] }>
   /** The dashboard settings shared by every admin; `{}` before anything was saved. */
   preferences(): Promise<Record<string, unknown>>
   savePreferences(preferences: Record<string, unknown>): Promise<Record<string, unknown>>
@@ -317,7 +323,10 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     site: (id) => get(site(id)),
     sharedSite: (id) =>
       get<{
-        site: Pick<Site, 'id' | 'name' | 'domain' | 'timezone' | 'currency' | 'privacyMode' | 'createdAt'>
+        site: Pick<
+          Site,
+          'id' | 'name' | 'domain' | 'timezone' | 'currency' | 'privacyMode' | 'createdAt' | 'color' | 'iconHash'
+        >
         views: ShareView[]
       }>(`${site(id)}/shared`).then((shared) => ({
         // The link shows no settings, so the fields only an admin sees are filled with plain defaults.
@@ -329,6 +338,7 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
           ignoreAdmins: false,
           targets: [],
           vitalsSample: 0,
+          nameSynced: false,
           ...shared.site,
         },
         views: shared.views,
@@ -343,6 +353,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     applySiteDefaults: (groups) => write('POST', '/site-defaults/apply', { groups }),
     deleteSite: (id, proof) => write('DELETE', site(id), proof),
     rotateKey: (id) => write('POST', `${site(id)}/rotate-key`, {}),
+    previewSync: (id) => write('POST', `${site(id)}/sync`, {}),
+    applySync: (id, fields) => write('POST', `${site(id)}/sync/apply`, { fields }),
     preferences: () => get('/preferences'),
     savePreferences: (preferences) => write('PUT', '/preferences', preferences),
     email: () => get('/email'),

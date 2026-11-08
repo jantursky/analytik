@@ -682,6 +682,43 @@
   cursor: default;
 }
 
+/* A button whose request is under way: its icon turns until the answer is in. */
+.analytik-pill-icon[aria-busy='true'] {
+  cursor: progress;
+}
+
+.analytik-pill-icon[aria-busy='true'] .analytik-icon {
+  animation: analytik-spin 0.8s linear infinite;
+}
+
+/* The same turn for the icon inside a button that has words next to it. */
+.analytik-button-icon {
+  display: inline-grid;
+}
+
+.analytik-button-icon[data-busy] .analytik-icon {
+  animation: analytik-spin 0.8s linear infinite;
+}
+
+@keyframes analytik-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes analytik-pulse-fade {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytik-button-icon[data-busy] .analytik-icon,
+  .analytik-pill-icon[aria-busy='true'] .analytik-icon {
+    animation: analytik-pulse-fade 1.2s ease-in-out infinite;
+  }
+}
+
 .analytik-live-toggle[aria-pressed='true'] {
   border-color: var(--analytik-success);
 }
@@ -1319,8 +1356,14 @@ textarea.analytik-input {
   opacity: 1;
 }
 
+/* The colour a sync took over from the site's own page replaces the generated one. */
+.analytik-tile[data-color][data-hue] {
+  background: var(--analytik-tile-color);
+  color: var(--analytik-tile-ink);
+}
+
 /* Once the icon has loaded, the tile's own colour must not show at its rounded edges. */
-.analytik-tile[data-hue]:has(.analytik-favicon[data-loaded]) {
+.analytik-tile:is([data-hue], [data-color]):has(.analytik-favicon[data-loaded]) {
   background: var(--analytik-surface);
 }
 
@@ -5887,6 +5930,60 @@ tr:hover .analytik-row-button {
   gap: 8px;
   font-size: 14px;
   cursor: pointer;
+}
+
+.analytik-sync-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytik-sync-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--analytik-border);
+}
+
+.analytik-sync-field {
+  min-width: 64px;
+  font-weight: 600;
+}
+
+.analytik-sync-values {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--analytik-text-muted);
+}
+
+.analytik-sync-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: var(--analytik-surface);
+}
+
+.analytik-sync-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analytik-sync-swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--analytik-border);
+  border-radius: 4px;
 }
 
 .analytik-share-created {

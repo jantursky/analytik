@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.22.0]
+
+### Added
+
+- Sync from website: Settings reads the site's own page and takes over its name, icon and colour (you choose which), and says if the tracker is on the page; new sites fill themselves in.
+- The refresh button on All sites turns while it loads.
+
+### Changed
+
+- Site icons are stored by the server and shown from there; the standalone page no longer allows images from other hosts.
+
 ## [1.21.0]
 
 ### Changed

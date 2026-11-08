@@ -233,7 +233,12 @@ export function SitesOverview({
   const summary = useResource<SiteSummary[]>(requestKey('summary', period.value, to, sites.length), () =>
     client.summary({ from, to }, { series: period.series, compare: true, fresh: refreshed }),
   )
+  // What the page showed when Refresh was pressed; the request is under way until the answer or the error is a new one.
+  const [waiting, setWaiting] = useState<{ data: unknown; error: unknown }>()
+  const refreshing = !!waiting && summary.data === waiting.data && summary.error === waiting.error
   const refresh = (): void => {
+    if (refreshing) return
+    setWaiting({ data: summary.data, error: summary.error })
     setRefreshed(true)
     setNow(Math.floor(Date.now() / MINUTE) * MINUTE)
     summary.reload()
@@ -261,6 +266,7 @@ export function SitesOverview({
               type="button"
               className="analytik-pill-icon analytik-pill"
               aria-label={t('Refresh')}
+              aria-busy={refreshing}
               onClick={refresh}
             >
               <Icon name="refresh" />
