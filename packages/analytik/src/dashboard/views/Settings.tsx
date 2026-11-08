@@ -29,6 +29,7 @@ import { IntegrationPrompt } from './IntegrationPrompt'
 import { MODE_INFO } from './privacy-modes'
 import { SharingSettings } from './SharingSettings'
 import { SiteLifecycle } from './SiteActions'
+import { SiteSync } from './SiteSync'
 
 type SiteDraft = Omit<Site, 'id' | 'createdAt'>
 
@@ -874,6 +875,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     content: () => (
       <>
         <SiteSettings />
+        <SiteSync />
         <SiteLifecycle />
       </>
     ),

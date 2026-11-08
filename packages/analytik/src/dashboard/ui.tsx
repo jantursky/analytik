@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { createContext, type ReactNode, use, useEffect, useId, useState } from 'react'
+import { createContext, type CSSProperties, type ReactNode, use, useEffect, useId, useState } from 'react'
 
 import { isTestDomain } from '../shared/test-sites'
 import type { Delta, Site } from '../shared/types'
@@ -51,8 +51,11 @@ export function Card({
 
 const TILE_HUES = 5
 
+/** What a tile needs of a site; `color` and `iconHash` are what a sync took over from the site's own page. */
+export type TileSite = Pick<Site, 'name' | 'domain'> & { id?: string; color?: string | null; iconHash?: string | null }
+
 /** Where a site's icon comes from: `true` for its `/favicon.ico`, `false` for none, or a function returning a URL. */
-export type FaviconSource = boolean | ((site: Pick<Site, 'name' | 'domain'> & { id?: string }) => string | undefined)
+export type FaviconSource = boolean | ((site: TileSite) => string | undefined)
 
 export const FaviconsContext = createContext<FaviconSource>(true)
 
@@ -74,6 +77,14 @@ function rememberFailure(src: string): void {
   } catch {
     // Storage may be unavailable (private mode); the icon is then simply requested again next time.
   }
+}
+
+/** Dark or light text for a `#rrggbb` background, whichever reads better; undefined for anything that is not one. */
+function inkFor(color: string): string | undefined {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color)
+  if (!match) return undefined
+  const [r = 0, g = 0, b = 0] = match.slice(1).map((part) => Number.parseInt(part, 16))
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#101828' : '#ffffff'
 }
 
 /** A public host name, not localhost or an IP address, whose favicon is worth asking for. */
@@ -122,7 +133,7 @@ const TEST_MARKS: readonly (readonly [string, string])[] = [
  * A site's favicon over its initial on a tinted square; the initial stays when the site has no icon. Sites made by
  * the test data generator have no real domain to ask; they get the analytik mark in a colour pair of their own.
  */
-export function SiteTile({ site }: { site: Pick<Site, 'name' | 'domain'> & { id?: string } }) {
+export function SiteTile({ site }: { site: TileSite }) {
   const favicons = use(FaviconsContext)
   const text = site.name || site.domain
   let hash = 0
@@ -142,8 +153,15 @@ export function SiteTile({ site }: { site: Pick<Site, 'name' | 'domain'> & { id?
     const host = iconHost(site.domain)
     src = host && `https://${host}/favicon.ico`
   }
+  const ink = site.color ? inkFor(site.color) : undefined
   return (
-    <span className="analytik-tile" data-hue={hash % TILE_HUES} aria-hidden="true">
+    <span
+      className="analytik-tile"
+      data-hue={hash % TILE_HUES}
+      data-color={ink ? '' : undefined}
+      style={ink ? ({ '--analytik-tile-color': site.color, '--analytik-tile-ink': ink } as CSSProperties) : undefined}
+      aria-hidden="true"
+    >
       {text.charAt(0).toUpperCase()}
       {src && <Favicon key={src} src={src} />}
     </span>

@@ -53,6 +53,9 @@ interface SiteRow {
   targets: string
   vitals_sample: number
   share_token: string | null
+  color: string | null
+  name_synced: number
+  icon_hash: string | null
   created_at: number
 }
 
@@ -83,6 +86,9 @@ function toRecord(row: SiteRow): SiteRecord {
     apiKeyHash: row.api_key_hash,
     webhookSecrets: parseJson(row.webhook_secrets, {}),
     shareToken: row.share_token,
+    color: row.color,
+    nameSynced: Boolean(row.name_synced),
+    iconHash: row.icon_hash,
   }
 }
 
@@ -165,6 +171,8 @@ function validate(input: Record<string, unknown>, current: SiteRecord | null): C
   if (input.name !== undefined) {
     if (typeof input.name !== 'string' || !input.name.trim()) fail('name must be a non-empty string')
     columns.name = (input.name as string).trim().slice(0, 100)
+    // A name typed by hand is no longer the one the site's page gave.
+    columns.name_synced = false
   }
   if (input.timezone !== undefined) {
     if (typeof input.timezone !== 'string' || !isValidTimeZone(input.timezone)) fail('timezone must be an IANA name')
@@ -377,6 +385,7 @@ export async function deleteSite(ctx: Context, id: string): Promise<void> {
       'share_links',
       'annotations',
       'vitals',
+      'site_icons',
     ]
       .map((table) => ({ sql: `DELETE FROM ${table} WHERE site_id = ?`, params: [id] }))
       .concat({ sql: 'DELETE FROM sites WHERE id = ?', params: [id] }),

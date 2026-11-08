@@ -641,7 +641,7 @@ export function Dashboard({
                 readOnly
                   ? () => undefined
                   : favicons === true
-                    ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon`
+                    ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon${s.iconHash ? `?v=${s.iconHash}` : ''}`
                     : favicons
               }
             >

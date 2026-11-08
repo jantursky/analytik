@@ -26,8 +26,9 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0007_annotations',
       '0008_goal_targets',
       '0009_vitals',
+      '0010_site_sync',
     ])
-    expect(first.version).toBe('0009_vitals')
+    expect(first.version).toBe('0010_site_sync')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
@@ -41,6 +42,7 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0007_annotations',
       '0008_goal_targets',
       '0009_vitals',
+      '0010_site_sync',
     ])
   })
 
@@ -117,6 +119,7 @@ describe('0002_imported', () => {
       '0007_annotations',
       '0008_goal_targets',
       '0009_vitals',
+      '0010_site_sync',
     ])
     expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
     expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])

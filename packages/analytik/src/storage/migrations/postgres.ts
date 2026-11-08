@@ -8,6 +8,7 @@ import { shareLinks } from './0006_share_links'
 import { annotations } from './0007_annotations'
 import { goalTargets } from './0008_goal_targets'
 import { vitals } from './0009_vitals'
+import { siteSync } from './0010_site_sync'
 
 /** Postgres (Supabase, Neon or self-hosted), applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -20,4 +21,5 @@ export const migrations: readonly Migration[] = [
   { version: '0007_annotations', sql: annotations({ big: 'BIGINT' }) },
   { version: '0008_goal_targets', sql: goalTargets() },
   { version: '0009_vitals', sql: vitals({ big: 'BIGINT', real: 'DOUBLE PRECISION' }) },
+  { version: '0010_site_sync', sql: siteSync() },
 ]

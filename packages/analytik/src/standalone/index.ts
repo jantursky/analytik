@@ -23,9 +23,9 @@ const SECURITY = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'same-origin',
   'x-frame-options': 'DENY',
-  // The dashboard styles some elements inline; site favicons come from the tracked sites themselves.
+  // The dashboard styles some elements inline; site icons are served by the analytik server, never loaded from the sites.
   'content-security-policy':
-    "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'",
+    "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'",
 }
 
 /**

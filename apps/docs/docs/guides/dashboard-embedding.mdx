@@ -26,7 +26,9 @@ export function Admin() {
 <Dashboard api="/api" siteId="SITE_ID" />
 ```
 
-Site tiles show each site's `/favicon.ico`. The browser requests it from the site itself, never from a third-party icon service, and remembers for a week when a site has none. Pass `favicons={false}` to show the site's initial instead, or a function that returns the icon URL for a site (`undefined` keeps the initial).
+Site tiles show each site's icon, which the analytik server fetches from the site and keeps (its `<link rel="icon">`, then its web manifest, then `/favicon.ico`). The browser asks only your server, never the site or a third-party icon service. Pass `favicons={false}` to show the site's initial instead, or a function that returns the icon URL for a site (`undefined` keeps the initial).
+
+**Settings → General → Sync from website** reads the site's own home page and offers its name (`og:site_name`, else the title), icon and tile colour (`theme-color`), and says whether the page loads your tracker. Nothing changes until you tick the details to take over, and a name you typed yourself starts unticked. The server asks only public host names over https, follows at most three redirects (each one checked the same way), reads at most 200 kB of the page and 100 kB per icon, and skips generated test sites. A stored icon older than 30 days is fetched again the next time it is shown. When a website is added, the dashboard takes over its icon and colour, and its name if you left the name empty.
 
 The **Add a website** dialog asks for the domain, a name, the time zone, the revenue currency and, optionally, how many days to keep visits and events. Once the site is saved, the dashboard opens its settings on **Tracking code**, with the snippet to paste into the site.
 

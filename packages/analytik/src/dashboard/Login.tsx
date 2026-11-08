@@ -195,8 +195,16 @@ function SiteForm({
     setTouched(true)
     if (!clean) return
     setBusy(true)
+    const typed = name.trim()
     client
-      .createSite({ name: name.trim() || suggested || clean, domain: clean, timezone, currency, retentionDays: days })
+      .createSite({ name: typed || suggested || clean, domain: clean, timezone, currency, retentionDays: days })
+      // The site's own page names it and gives its icon and colour. A page that cannot be read does not fail the add.
+      .then((created) =>
+        client.applySync(created.id, typed ? ['icon', 'color'] : ['name', 'icon', 'color']).then(
+          ({ site }) => site,
+          () => created,
+        ),
+      )
       .then(onCreated, (e: unknown) => setError(message(e)))
       .finally(() => setBusy(false))
   }

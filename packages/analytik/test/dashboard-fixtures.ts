@@ -28,6 +28,9 @@ export const site: Site = {
   ignoreAdmins: false,
   targets: [],
   vitalsSample: 0,
+  color: null,
+  nameSynced: false,
+  iconHash: null,
   createdAt: Date.UTC(2026, 0, 1),
 }
 
@@ -207,6 +210,16 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       targets: [] as unknown[],
     } as Record<string, unknown>,
     emailError: null as string | null,
+    sync: {
+      reachable: true,
+      tracker: 'not-found',
+      changes: [
+        { field: 'name', current: 'Example', found: 'Example Shop', changed: true, manual: true },
+        { field: 'color', current: null, found: '#112233', changed: true },
+        { field: 'icon', current: null, found: 'data:image/png;base64,iVBORw0KGgo=', changed: true },
+      ],
+    } as Record<string, unknown>,
+    syncFails: false,
     login: 'password' as 'password' | 'custom',
   }
 
@@ -237,6 +250,20 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       const created = { ...site, ...(body as Partial<Site>), id: 'site_new' }
       state.sites = [...state.sites, created]
       return { site: created, apiKey: 'ak_live_new' }
+    },
+    'POST /sites/:id/sync': () => state.sync,
+    'POST /sites/:id/sync/apply': ({ path, body }) => {
+      const fields = (body as { fields: string[] }).fields
+      if (state.syncFails) return Response.json({ error: 'the website could not be read' }, { status: 502 })
+      const target = state.sites.find((s) => path.includes(`/${s.id}/`)) ?? site
+      const next = {
+        ...target,
+        name: fields.includes('name') ? 'Synced name' : target.name,
+        iconHash: 'abcd',
+        color: '#112233',
+      }
+      state.sites = state.sites.map((s) => (s === target ? next : s))
+      return { site: next, applied: fields }
     },
     'GET /preferences': () => state.preferences,
     'PUT /preferences': ({ body }) => {
