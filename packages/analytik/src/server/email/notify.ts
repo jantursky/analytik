@@ -96,9 +96,9 @@ const localDate = (at: number, timeZone: string): string =>
 async function siteSummary(ctx: Context, site: SiteRecord, from: number, to: number, tz: string) {
   const query = { from, to, tz }
   const [stats, sources, pages] = await Promise.all([
-    overview(ctx, site, toStatsQuery(site, { ...query, compare: 'previous' })),
-    breakdown(ctx, site, 'source', toStatsQuery(site, query), 500),
-    breakdown(ctx, site, 'page', toStatsQuery(site, query), 500),
+    overview(ctx, site, toStatsQuery(site, { ...query, compare: 'previous' }, ctx.storage.dialect)),
+    breakdown(ctx, site, 'source', toStatsQuery(site, query, ctx.storage.dialect), 500),
+    breakdown(ctx, site, 'page', toStatsQuery(site, query, ctx.storage.dialect), 500),
   ])
   return { name: site.name, domain: site.domain, overview: stats, sources, pages } satisfies SiteSummaryData
 }

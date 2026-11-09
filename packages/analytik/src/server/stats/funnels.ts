@@ -93,7 +93,7 @@ export async function funnelResult(
       params.push(step.match)
     }
   }
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   const rows = await ctx.storage.query<{ visitor_id: string; type: string; name: string | null; path: string | null }>(
     `SELECT e.visitor_id, e.type, e.name, e.path FROM events e
      JOIN sessions s ON s.site_id = e.site_id AND s.id = e.session_id

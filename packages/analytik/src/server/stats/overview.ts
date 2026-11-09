@@ -46,7 +46,7 @@ export function paymentsFrom(
   const where = `p.site_id = ? AND p.ts >= ? AND p.ts < ? AND p.currency ${other ? '<>' : '='} ?`
   const params = [site.id, from, to, site.currency]
   if (!hasFilters(query.filters)) return { sql: `payments p WHERE ${where}`, params }
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   return {
     sql: `payments p JOIN sessions s ON s.site_id = p.site_id AND s.id = p.session_id WHERE ${where}${filters.sql}`,
     params: [...params, ...filters.params],
@@ -297,7 +297,7 @@ function attachNotes(points: TimeseriesPoint[], notes: Annotation[]): Timeseries
 
 async function series(ctx: Context, site: SiteRecord, query: StatsQuery): Promise<TimeseriesPoint[]> {
   const buckets = bucketTable(query)
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   const money = paymentsFrom(site, query)
   const [traffic, payments] = await Promise.all([
     ctx.storage.query<TrafficRow>(

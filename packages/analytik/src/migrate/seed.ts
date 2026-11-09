@@ -3,6 +3,13 @@ import { sha256Hex } from '../shared/crypto'
 import { DAY, MINUTE, startOfBucket } from '../shared/time'
 import type { Statement, Storage } from '../storage/types'
 
+// Goal properties, so the property report of the demo has something to show.
+const PLAN_PROPS: Weighted<string> = [
+  ['{"plan":"free"}', 5],
+  ['{"plan":"pro"}', 3],
+  ['{"plan":"team"}', 1],
+]
+
 export interface SeedOptions {
   /** Same seed and `now` give the same data. Default 1. */
   seed?: number
@@ -205,20 +212,20 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
       while (pages.length < depth) pages.push(pick(NEXT))
 
       let ts = start
-      const events: [string, string | null, string, number][] = []
+      const events: [string, string | null, string, number, string?][] = []
       for (const path of pages) {
         events.push(['pageview', null, path, ts])
         ts += between(8, 150) * 1000
       }
       let goals = 0
       if (pages.includes('/signup') && random() < 0.5) {
-        events.push(['goal', 'signup', '/signup', ts])
+        events.push(['goal', 'signup', '/signup', ts, pick(PLAN_PROPS)])
         goals++
         ts += 5000
       }
       const checkout = pages.includes('/pricing') && random() < 0.25
       if (checkout) {
-        events.push(['goal', 'checkout', '/pricing', ts])
+        events.push(['goal', 'checkout', '/pricing', ts, pick(PLAN_PROPS)])
         events.push(['outbound', 'https://checkout.stripe.com/c/pay/cs_demo', '/pricing', ts + 500])
         goals++
         ts += 1000
@@ -263,7 +270,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
           place.lon,
         ],
       })
-      for (const [type, name, path, at] of events) {
+      for (const [type, name, path, at, props] of events) {
         if (at > now) continue
         counts.events++
         statements.push({
@@ -278,7 +285,7 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
             type,
             name,
             path,
-            null,
+            props ?? null,
           ],
         })
       }

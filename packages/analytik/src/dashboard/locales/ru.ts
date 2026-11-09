@@ -1011,4 +1011,6 @@ export default {
     'Недельные когорты новых посетителей и доля каждой, вернувшаяся в следующие недели.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Недели начинаются в понедельник (UTC). Каждая строка прослеживает посетителей, впервые замеченных на этой неделе.',
+  'Properties of “{name}”': 'Свойства цели «{name}»',
+  Other: 'Другие',
 } satisfies Messages

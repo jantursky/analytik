@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.23.0]
+
+### Added
+
+- Properties of a goal: break its events down by key and value in the Events view, and filter every view with `prop:<key>`.
+- `/event` limits one client to 300 events a minute per site (`rateLimit` option), answering 429 with `Retry-After`.
+
+### Changed
+
+- The retention purge runs after the response where the runtime allows it; migrations add three indexes (slower on very large tables).
+
 ## [1.22.0]
 
 ### Added

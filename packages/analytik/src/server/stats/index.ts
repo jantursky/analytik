@@ -5,6 +5,7 @@ import type { StatsApi } from '../types'
 import { events, payments, realtime, sessionDetail, sessions } from './activity'
 import { botStats } from './bots'
 import { breakdown } from './breakdown'
+import { properties } from './properties'
 import { EXPORT_TABLES, exportCsv, exportJson } from './export'
 import { funnelResult, getFunnel } from './funnels'
 import { overview, timeseries } from './overview'
@@ -23,55 +24,65 @@ export function createStatsApi(ctx: Context, ready: () => Promise<unknown>): Sta
   return {
     async overview(siteId, query) {
       const site = await load(siteId)
-      return overview(ctx, site, toStatsQuery(site, query))
+      return overview(ctx, site, toStatsQuery(site, query, ctx.storage.dialect))
     },
     async timeseries(siteId, query) {
       const site = await load(siteId)
-      return timeseries(ctx, site, toStatsQuery(site, query))
+      return timeseries(ctx, site, toStatsQuery(site, query, ctx.storage.dialect))
     },
     async breakdown(siteId, dimension, query, options = {}) {
       if (!isDimension(dimension)) throw new AnalytikError(`unknown dimension ${String(dimension)}`)
       const site = await load(siteId)
-      return breakdown(ctx, site, dimension, toStatsQuery(site, query), pageLimit(options.limit ?? 100))
+      return breakdown(
+        ctx,
+        site,
+        dimension,
+        toStatsQuery(site, query, ctx.storage.dialect),
+        pageLimit(options.limit ?? 100),
+      )
+    },
+    async properties(siteId, query, options) {
+      const site = await load(siteId)
+      return properties(ctx, site, toStatsQuery(site, query, ctx.storage.dialect), options)
     },
     async realtime(siteId) {
       return realtime(ctx, await load(siteId))
     },
     async sessions(siteId, query, options) {
       const site = await load(siteId)
-      return sessions(ctx, site, toStatsQuery(site, query), options)
+      return sessions(ctx, site, toStatsQuery(site, query, ctx.storage.dialect), options)
     },
     async session(siteId, sessionId) {
       return sessionDetail(ctx, await load(siteId), sessionId)
     },
     async events(siteId, query, options) {
       const site = await load(siteId)
-      return events(ctx, site, toStatsQuery(site, query), options)
+      return events(ctx, site, toStatsQuery(site, query, ctx.storage.dialect), options)
     },
     async funnel(siteId, funnelId, query) {
       const site = await load(siteId)
       const funnel = await getFunnel(ctx, siteId, funnelId)
-      return funnel ? funnelResult(ctx, site, funnel, toStatsQuery(site, query)) : null
+      return funnel ? funnelResult(ctx, site, funnel, toStatsQuery(site, query, ctx.storage.dialect)) : null
     },
     async payments(siteId, query, options) {
       const site = await load(siteId)
-      return payments(ctx, site, toStatsQuery(site, query), options)
+      return payments(ctx, site, toStatsQuery(site, query, ctx.storage.dialect), options)
     },
     async bots(siteId, query, filters = {}) {
       const site = await load(siteId)
-      return botStats(ctx, site, toStatsQuery(site, query), filters)
+      return botStats(ctx, site, toStatsQuery(site, query, ctx.storage.dialect), filters)
     },
     async vitals(siteId, query) {
       const site = await load(siteId)
-      return vitalsResult(ctx, site, toStatsQuery(site, query))
+      return vitalsResult(ctx, site, toStatsQuery(site, query, ctx.storage.dialect))
     },
     async journeys(siteId, query) {
       const site = await load(siteId)
-      return journeys(ctx, site, toStatsQuery(site, query))
+      return journeys(ctx, site, toStatsQuery(site, query, ctx.storage.dialect))
     },
     async retention(siteId, query) {
       const site = await load(siteId)
-      return retention(ctx, site, toStatsQuery(site, query))
+      return retention(ctx, site, toStatsQuery(site, query, ctx.storage.dialect))
     },
     async targets(siteId) {
       return targetProgress(ctx, await load(siteId))

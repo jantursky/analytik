@@ -1000,4 +1000,6 @@ export default {
     'नए आगंतुकों के साप्ताहिक कोहॉर्ट और हर एक का वह हिस्सा जो बाद के सप्ताहों में लौटा।',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'सप्ताह सोमवार (UTC) से शुरू होते हैं। हर पंक्ति उस सप्ताह पहली बार दिखे आगंतुकों को ट्रैक करती है।',
+  'Properties of “{name}”': '“{name}” की प्रॉपर्टी',
+  Other: 'अन्य',
 } satisfies Messages

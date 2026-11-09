@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DAY } from '../src/shared/time'
 import type { Site } from '../src/shared/types'
@@ -124,7 +124,8 @@ describe.each(storageKinds())('Core Web Vitals ingest on %s', (kind) => {
     server.advance(31 * DAY)
     // Retention runs on the next event, like it does for events and sessions.
     await leave({ l: 1000 }, '/new')
-    expect((await rows()).map((r) => r.path)).toEqual(['/new'])
+    // The purge runs after the response.
+    await vi.waitFor(async () => expect((await rows()).map((r) => r.path)).toEqual(['/new']))
   })
 
   it('goes with the purge route and with the deletion of the site', async () => {

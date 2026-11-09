@@ -1008,4 +1008,6 @@ export default {
     'Týždenné kohorty nových návštevníkov a podiel tých, ktorí sa v nasledujúcich týždňoch vrátili.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Týždne začínajú v pondelok (UTC). Každý riadok sleduje návštevníkov prvýkrát videných v ten týždeň.',
+  'Properties of “{name}”': 'Vlastnosti cieľa „{name}“',
+  Other: 'Ostatné',
 } satisfies Messages

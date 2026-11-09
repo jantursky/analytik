@@ -49,6 +49,9 @@ describe.each(storageKinds())('seedDemo on %s', (kind) => {
     )
     const funnel = await analytik.stats.funnel('demo', 'demo-signup-demo', query)
     expect(funnel?.steps[0]?.visitors).toBeGreaterThan(0)
+    // The demo's signups carry a plan, so the property report has something to show.
+    const plans = await analytik.stats.properties('demo', query, { name: 'signup', key: 'plan' })
+    expect(plans.values.map((row) => row.value)).toEqual(expect.arrayContaining(['free', 'pro']))
     const [{ n } = { n: 0 }] = await storage.query<{ n: number }>(
       'SELECT COUNT(*) AS n FROM sites WHERE api_key_hash <> ?',
       [''],

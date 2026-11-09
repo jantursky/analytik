@@ -1012,4 +1012,6 @@ export default {
     'Tygodniowe kohorty nowych odwiedzających i udział tych, którzy wrócili w kolejnych tygodniach.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Tygodnie zaczynają się w poniedziałek (UTC). Każdy wiersz śledzi odwiedzających zobaczonych po raz pierwszy w danym tygodniu.',
+  'Properties of “{name}”': 'Właściwości „{name}”',
+  Other: 'Inne',
 } satisfies Messages

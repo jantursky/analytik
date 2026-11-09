@@ -1,8 +1,10 @@
 import { fromBase64, toBase64Url } from '../../shared/crypto'
 import { DAY, clampInterval, isValidTimeZone, startOfBucket } from '../../shared/time'
-import { DIMENSIONS } from '../../shared/dimensions'
-import type { Comparison, Dimension, Filters, Interval, Page, Query } from '../../shared/types'
+import { DIMENSIONS, PROP_PREFIX, isFilterKey } from '../../shared/dimensions'
+import type { Comparison, Dimension, FilterKey, Filters, Interval, Page, Query } from '../../shared/types'
+import { jsonText } from '../../storage/sql/json'
 import { placeholders } from '../../storage/sql/statements'
+import type { Dialect } from '../../storage/types'
 import { AnalytikError, type Context } from '../context'
 import type { SiteRecord } from '../sites'
 import type { PageOptions } from '../types'
@@ -38,7 +40,7 @@ export const EVENT_DIMENSIONS: Partial<Record<Dimension, { type: string; column:
 }
 
 /** Filter values per dimension; several values for one dimension match any of them. */
-export type FilterValues = Partial<Record<Dimension, string[]>>
+export type FilterValues = Partial<Record<FilterKey, string[]>>
 
 export interface StatsQuery {
   from: number
@@ -46,6 +48,8 @@ export interface StatsQuery {
   interval: Interval
   tz: string
   filters: FilterValues
+  /** The storage's dialect, for the filters that read inside JSON. */
+  dialect: Dialect
   /** Set when the response should carry the comparison period too. */
   compare?: Comparison
 }
@@ -105,13 +109,27 @@ export function matchValues(column: string, values: string[]): Fragment {
 }
 
 /** ` AND ...` conditions restricting sessions `s` by the filters. */
-export function filterSql(filters: FilterValues): Fragment {
+export function filterSql(filters: FilterValues, dialect: Dialect): Fragment {
   const parts: string[] = []
   const params: unknown[] = []
-  for (const [dimension, values] of Object.entries(filters) as [Dimension, string[]][]) {
+  // A property filter and a goal or event filter must be met by the same event.
+  const names = (['goal', 'event'] as const).flatMap((dimension) => {
+    const values = filters[dimension]
+    return values && values.length > 0 ? [matchValues('fe.name', values)] : []
+  })
+  for (const [key, values] of Object.entries(filters) as [FilterKey, string[]][]) {
     if (values.length === 0) continue
-    const column = SESSION_COLUMNS[dimension]
-    const event = EVENT_DIMENSIONS[dimension]
+    if (key.startsWith(PROP_PREFIX)) {
+      const value = jsonText('fe.props', key.slice(PROP_PREFIX.length), dialect)
+      const same = names.map((name) => ` AND ${name.sql}`).join('')
+      parts.push(
+        `EXISTS (SELECT 1 FROM events fe WHERE fe.site_id = s.site_id AND fe.session_id = s.id AND fe.type = 'goal' AND ${value.sql} IN (${placeholders(values.length)})${same})`,
+      )
+      params.push(...value.params, ...values, ...names.flatMap((name) => name.params))
+      continue
+    }
+    const column = SESSION_COLUMNS[key as Dimension]
+    const event = EVENT_DIMENSIONS[key as Dimension]
     if (column) {
       const match = matchValues(`s.${column}`, values)
       parts.push(match.sql)
@@ -128,12 +146,12 @@ export function filterSql(filters: FilterValues): Fragment {
 }
 
 export function hasFilters(filters: FilterValues): boolean {
-  return Object.values(filters).some((values) => values.length > 0)
+  return Object.values(filters).some((values) => (values?.length ?? 0) > 0)
 }
 
 /** Sessions of the site that started in `[from, to)` and match the filters. */
 export function sessionWhere(siteId: string, query: StatsQuery, from = query.from, to = query.to): Fragment {
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   return {
     sql: `s.site_id = ? AND s.started_at >= ? AND s.started_at < ?${filters.sql}`,
     params: [siteId, from, to, ...filters.params],
@@ -141,7 +159,7 @@ export function sessionWhere(siteId: string, query: StatsQuery, from = query.fro
 }
 
 /** Turns the public `Query` into the validated internal form, defaulting to the site's timezone. */
-export function toStatsQuery(site: SiteRecord, query: Query): StatsQuery {
+export function toStatsQuery(site: SiteRecord, query: Query, dialect: Dialect): StatsQuery {
   const tz = query.tz ?? site.timezone
   if (!isValidTimeZone(tz)) throw new AnalytikError('tz must be an IANA time zone')
   if (!Number.isFinite(query.from) || !Number.isFinite(query.to) || query.from >= query.to) {
@@ -149,7 +167,7 @@ export function toStatsQuery(site: SiteRecord, query: Query): StatsQuery {
   }
   const filters: FilterValues = {}
   for (const [key, value] of Object.entries(query.filters ?? ({} satisfies Filters))) {
-    if (value !== undefined && isDimension(key)) filters[key] = [value]
+    if (value !== undefined && isFilterKey(key)) filters[key] = [value]
   }
   const compare = query.compare && COMPARISONS.includes(query.compare) ? query.compare : undefined
   return {
@@ -158,6 +176,7 @@ export function toStatsQuery(site: SiteRecord, query: Query): StatsQuery {
     interval: clampInterval(query.from, query.to, query.interval),
     tz,
     filters,
+    dialect,
     ...(compare && { compare }),
   }
 }

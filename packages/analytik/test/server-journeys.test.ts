@@ -119,10 +119,14 @@ describe.each(storageKinds())('journeys on %s', (kind) => {
 
   it('finds pageviews by session id, never by scanning the whole events table', async () => {
     await visit(['/', '/pricing'])
-    const query = toStatsQuery({ timezone: 'UTC' } as Parameters<typeof toStatsQuery>[0], {
-      from: DAY_START - DAY,
-      to: DAY_START + DAY,
-    })
+    const query = toStatsQuery(
+      { timezone: 'UTC' } as Parameters<typeof toStatsQuery>[0],
+      {
+        from: DAY_START - DAY,
+        to: DAY_START + DAY,
+      },
+      'sqlite',
+    )
     const { sql, params } = journeyPathsStatement(site.id, query)
     expect(JOURNEY_SESSION_CAP).toBe(5000)
     if (kind === 'postgres' || kind === 'pg') {

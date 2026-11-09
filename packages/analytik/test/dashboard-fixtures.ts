@@ -388,6 +388,26 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         })),
       }
     },
+    // A goal with two properties: plan (two values) and seats (more values than shown, so there is an Other row).
+    'GET /sites/:id/properties': ({ params }) => ({
+      name: params.name,
+      key: params.key ?? null,
+      keys: params.key
+        ? []
+        : [
+            { key: 'plan', events: 100 },
+            { key: 'seats', events: 60 },
+          ],
+      values: !params.key
+        ? []
+        : params.key === 'plan'
+          ? [
+              { value: 'pro', visitors: 60, events: 60 },
+              { value: 'free', visitors: 40, events: 40 },
+            ]
+          : [{ value: '5', visitors: 30, events: 30 }],
+      other: params.key === 'seats' ? { visitors: 12, events: 30 } : null,
+    }),
     'GET /sites/:id/vitals': () => state.vitals,
     'GET /sites/:id/realtime': () => realtime,
     'GET /sites/:id/sessions': ({ params }) =>

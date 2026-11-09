@@ -21,6 +21,7 @@ import type {
   PrivacyMode,
   Props,
   Query,
+  PropertiesResult,
   Realtime,
   SessionSummary,
   ShareLink,
@@ -190,6 +191,8 @@ export interface ApiClient {
   timeseries(siteId: string, query: Query): Promise<TimeseriesPoint[]>
   breakdown(siteId: string, dimension: Dimension, query: Query): Promise<BreakdownRow[]>
   bots(siteId: string, query: Query, filters?: BotFilters): Promise<BotStats>
+  /** The keys of a goal's custom properties, or with `key` the values of one. */
+  properties(siteId: string, query: Query, options: { name: string; key?: string }): Promise<PropertiesResult>
   realtime(siteId: string): Promise<Realtime>
   /** How far each goal target is in its own period, whatever range the dashboard shows. */
   targets(siteId: string): Promise<TargetsResult>
@@ -366,6 +369,7 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     overview: (id, query) => get(`${site(id)}/overview`, queryParams(query)),
     timeseries: (id, query) => get(`${site(id)}/timeseries`, queryParams(query)),
     breakdown: (id, dimension, query) => get(`${site(id)}/breakdown`, queryParams({ ...query, dimension })),
+    properties: (id, query, options) => get(`${site(id)}/properties`, queryParams({ ...query, ...options })),
     bots: (id, query, filters = {}) => {
       const params = queryParams(query)
       for (const name of ['crawler', 'category', 'page'] as const) {

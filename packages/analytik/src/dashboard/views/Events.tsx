@@ -8,6 +8,7 @@ import { formatDateTime } from '../format'
 import { msg, t } from '../i18n'
 import { View } from '../ui/motion'
 import { BreakdownCard } from './Breakdown'
+import { Properties } from './Properties'
 import { VisitorCell } from './cells'
 import { type Column, DataTable } from './DataTable'
 import { SessionDialog, shortId } from './Sessions'
@@ -53,6 +54,7 @@ export function Events() {
   return (
     <View>
       <BreakdownCard title={t('Goals and events')} dimensions={['goal', 'event', 'outbound']} limit={50} />
+      <Properties />
       <DataTable
         title={name ? t('“{name}” events', { name }) : t('Events')}
         columns={columns}

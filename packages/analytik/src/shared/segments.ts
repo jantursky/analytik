@@ -1,4 +1,4 @@
-import { DIMENSIONS } from './dimensions'
+import { DIMENSIONS, isFilterKey } from './dimensions'
 import type { Filters } from './types'
 
 /** A named set of filters an admin saved to apply again with one click. */
@@ -11,6 +11,9 @@ export interface Segment {
 export const MAX_SEGMENTS = 20
 export const MAX_SEGMENT_NAME = 60
 const MAX_VALUE = 500
+
+/** Property filters a segment may add to the dimension filters. */
+const MAX_PROP_FILTERS = 10
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -27,7 +30,7 @@ export function parseSegments(value: unknown): Segment[] {
       continue
     const filters: Filters = {}
     for (const [dimension, filter] of Object.entries(item.filters)) {
-      if ((DIMENSIONS as readonly string[]).includes(dimension) && typeof filter === 'string') {
+      if (isFilterKey(dimension) && typeof filter === 'string') {
         filters[dimension] = filter.slice(0, MAX_VALUE)
       }
     }
@@ -48,7 +51,7 @@ export function segmentsProblem(value: unknown): string | null {
     if (typeof item.name !== 'string' || !item.name.trim() || item.name.length > MAX_SEGMENT_NAME) {
       return `a segment name is 1 to ${MAX_SEGMENT_NAME} characters`
     }
-    if (!isRecord(item.filters) || Object.keys(item.filters).length > DIMENSIONS.length) {
+    if (!isRecord(item.filters) || Object.keys(item.filters).length > DIMENSIONS.length + MAX_PROP_FILTERS) {
       return 'a segment needs its filters'
     }
     for (const filter of Object.values(item.filters)) {

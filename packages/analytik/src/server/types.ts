@@ -19,6 +19,7 @@ import type {
   PaymentKind,
   PrivacyMode,
   Query,
+  PropertiesResult,
   Realtime,
   SessionDetail,
   SessionSummary,
@@ -94,6 +95,12 @@ export interface CreateAnalytikOptions {
    * Without an IP, strict-mode visitors are told apart by user agent only and rate limits are shared.
    */
   trustProxy?: TrustProxy
+  /**
+   * Events per minute accepted on `/event`, counted in memory by each server instance. `perClient` limits one IP on one
+   * site (default 300), `perSite` limits a whole site (default off). `false` turns a limit off. Over the limit the
+   * route answers 429 with `Retry-After`. Clients without a known IP are not limited per client.
+   */
+  rateLimit?: { perClient?: number | false; perSite?: number | false }
   /** Your own client IP lookup; overrides `trustProxy`. Return null when unknown. */
   clientIp?: (request: Request) => string | null
   /**
@@ -128,6 +135,11 @@ export interface IngestInput {
   doNotTrack?: boolean
   /** The request carries a valid admin session; the site's `ignoreAdmins` switch decides what that means. */
   admin?: boolean
+  /**
+   * Takes work that may finish after the response (the hourly retention purge), such as `waitUntil` on Workers.
+   * Without it, `ingest()` waits for the work.
+   */
+  defer?: (work: Promise<unknown>) => void
 }
 
 export type IngestFiltered = 'bot' | 'ignored-ip' | 'admin' | 'paused'
@@ -196,6 +208,11 @@ export interface StatsApi {
   overview(siteId: string, query: Query): Promise<Overview>
   timeseries(siteId: string, query: Query): Promise<TimeseriesPoint[]>
   breakdown(siteId: string, dimension: Dimension, query: Query, options?: { limit?: number }): Promise<BreakdownRow[]>
+  /**
+   * The custom properties of one goal's events: its keys, or with `key` the values of that key (at most 50, the rest
+   * as `other`). Goal events only.
+   */
+  properties(siteId: string, query: Query, options: { name: string; key?: string }): Promise<PropertiesResult>
   realtime(siteId: string): Promise<Realtime>
   sessions(siteId: string, query: Query, options?: PageOptions): Promise<Page<SessionSummary>>
   session(siteId: string, sessionId: string): Promise<SessionDetail | null>

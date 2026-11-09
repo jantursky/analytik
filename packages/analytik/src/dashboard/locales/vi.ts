@@ -1001,4 +1001,6 @@ export default {
     'Các nhóm theo tuần của khách truy cập mới và phần của mỗi nhóm quay lại trong những tuần sau.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Tuần bắt đầu vào thứ Hai (UTC). Mỗi hàng theo dõi khách truy cập được thấy lần đầu trong tuần đó.',
+  'Properties of “{name}”': 'Thuộc tính của “{name}”',
+  Other: 'Khác',
 } satisfies Messages

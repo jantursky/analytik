@@ -1005,4 +1005,6 @@ export default {
     'Yeni ziyaretçilerin haftalık kohortları ve her birinin sonraki haftalarda geri dönen payı.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Haftalar pazartesi başlar (UTC). Her satır, o hafta ilk kez görülen ziyaretçileri izler.',
+  'Properties of “{name}”': '“{name}” özellikleri',
+  Other: 'Diğer',
 } satisfies Messages

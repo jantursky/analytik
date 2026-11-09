@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DAY, MINUTE } from '../src/shared/time'
 import type { Site } from '../src/shared/types'
@@ -394,8 +394,9 @@ describe('page paths and retention', () => {
     await server.event({ w: site.id, ...page('/old') })
     server.advance(31 * DAY)
     await server.event({ w: site.id, ...page('/new') })
-    expect((await events()).map((row) => row.path)).toEqual(['/new'])
-    expect(await sessions()).toHaveLength(1)
+    // The purge runs after the response, so wait for it.
+    await vi.waitFor(async () => expect((await events()).map((row) => row.path)).toEqual(['/new']))
+    await vi.waitFor(async () => expect(await sessions()).toHaveLength(1))
     // Enforced at most hourly per instance: a minute later nothing runs, a month later it does.
     await server.storage.run('UPDATE events SET ts = ?', [START])
     server.advance(MINUTE)
@@ -403,7 +404,7 @@ describe('page paths and retention', () => {
     expect(await events()).toHaveLength(2)
     server.advance(31 * DAY)
     await server.event({ w: site.id, ...page('/newer') }, { 'user-agent': CHROME })
-    expect((await events()).map((row) => row.path)).toEqual(['/newer'])
+    await vi.waitFor(async () => expect((await events()).map((row) => row.path)).toEqual(['/newer']))
   })
 
   it('exposes ingest() for server code with the same validation', async () => {

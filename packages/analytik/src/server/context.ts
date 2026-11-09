@@ -3,6 +3,7 @@ import type { PrivacyMode } from '../shared/types'
 import type { Storage } from '../storage/types'
 import { clientIpFrom } from './request'
 import type { EmailOptions } from './email/types'
+import { createIngestLimiter, type IngestLimiter } from './ingest-limit'
 import type { AdminAuth, AllowedOrigins, CreateAnalytikOptions, Geo } from './types'
 
 /** Everything the handlers share; built once per `createAnalytik()`. */
@@ -28,6 +29,10 @@ export interface Context {
   retentionRuns: Map<string, number>
   /** When each site's icon was last fetched without anyone asking, so an unreachable site is not asked on every request. */
   syncAttempts: Map<string, number>
+  /** In-memory counters for `/event`; per instance by design. */
+  ingestLimit: IngestLimiter
+  /** Events per minute for one client of one site, and for one site; `false` turns a limit off. */
+  rateLimit: { perClient: number | false; perSite: number | false }
 }
 
 /** Fails at startup instead of serving a login anyone can pass, or session cookies anyone can forge. */
@@ -64,6 +69,8 @@ export function createContext(options: CreateAnalytikOptions): Context {
     salts: new Map(),
     retentionRuns: new Map(),
     syncAttempts: new Map(),
+    ingestLimit: createIngestLimiter(),
+    rateLimit: { perClient: options.rateLimit?.perClient ?? 300, perSite: options.rateLimit?.perSite ?? false },
   }
 }
 

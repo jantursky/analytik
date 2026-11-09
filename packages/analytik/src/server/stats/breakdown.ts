@@ -64,7 +64,7 @@ function merge(traffic: TrafficRow[], money: MoneyRow[], limit: number): Breakdo
 /** Session attributes: traffic by session start, revenue (site currency) from payments credited to those sessions. */
 async function bySession(ctx: Context, site: SiteRecord, column: string, query: StatsQuery, limit: number) {
   const where = sessionWhere(site.id, query)
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   const [traffic, money] = await Promise.all([
     ctx.storage.query<TrafficRow>(
       `SELECT s.${column} AS key, COUNT(DISTINCT s.visitor_id) AS visitors, COUNT(*) AS sessions,
@@ -86,7 +86,7 @@ async function bySession(ctx: Context, site: SiteRecord, column: string, query: 
 /** Pages, goals and outbound links: traffic from events, revenue from visitors who had a matching event. */
 async function byEvent(ctx: Context, site: SiteRecord, dimension: Dimension, query: StatsQuery, limit: number) {
   const { type, column } = EVENT_DIMENSIONS[dimension] as { type: string; column: string }
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   const base = `FROM events e JOIN sessions s ON s.site_id = e.site_id AND s.id = e.session_id
     WHERE e.site_id = ? AND e.type = ? AND e.ts >= ? AND e.ts < ?${filters.sql}`
   const params = [site.id, type, query.from, query.to, ...filters.params]

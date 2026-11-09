@@ -29,7 +29,7 @@ export function retentionStatement(
   firstWeek: number,
   lastWeek: number,
 ): { sql: string; params: unknown[] } {
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   // Week numbers are computed from constants written into the SQL, so every database types them as integers.
   const week = (column: string): string => `((${column} + ${MONDAY_SHIFT}) / ${WEEK})`
   return {

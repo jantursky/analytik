@@ -974,4 +974,6 @@ export default {
     '新访客的每周群组，以及其中在之后几周回访的比例。',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     '每周从周一开始（UTC）。每行跟踪当周首次出现的访客。',
+  'Properties of “{name}”': '“{name}”的属性',
+  Other: '其他',
 } satisfies Messages

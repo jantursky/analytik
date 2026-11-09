@@ -36,7 +36,10 @@ import {
 } from '../sites'
 import { events, payments, realtime, sessionDetail, sessions } from '../stats/activity'
 import { botFilters, botStats } from '../stats/bots'
+import { PROP_PREFIX, isFilterKey } from '../../shared/dimensions'
+import type { Dialect } from '../../storage/types'
 import { breakdown } from '../stats/breakdown'
+import { properties } from '../stats/properties'
 import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
@@ -65,7 +68,7 @@ const EVENT_TYPES: readonly EventType[] = ['pageview', 'goal', 'outbound', 'iden
  * names and emails, so they stay admin-only, like settings, export and writes.
  */
 const SHAREABLE =
-  /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
+  /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|properties|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
   Variables: { site: SiteRecord; share: ShareLink | null }
@@ -84,7 +87,7 @@ async function body(c: HonoContext, limit = BODY_LIMIT): Promise<Record<string, 
 }
 
 /** `from`, `to`, `interval`, `tz` and dimension filters from the query string. */
-export function statsQuery(url: URL, site: SiteRecord, now: number): StatsQuery {
+export function statsQuery(url: URL, site: SiteRecord, now: number, dialect: Dialect): StatsQuery {
   const params = url.searchParams
   const tz = params.get('tz') ?? site.timezone
   if (!isValidTimeZone(tz)) throw new AnalytikError('tz must be an IANA time zone')
@@ -101,6 +104,11 @@ export function statsQuery(url: URL, site: SiteRecord, now: number): StatsQuery 
     const values = params.getAll(dimension).map((value) => value.slice(0, 500))
     if (values.length > 0) filters[dimension] = values
   }
+  for (const key of new Set(params.keys())) {
+    if (key.startsWith(PROP_PREFIX) && isFilterKey(key)) {
+      filters[key] = params.getAll(key).map((value) => value.slice(0, 500))
+    }
+  }
   const compare = params.get('compare')
   return {
     from,
@@ -108,6 +116,7 @@ export function statsQuery(url: URL, site: SiteRecord, now: number): StatsQuery 
     interval: clampInterval(from, to, interval && INTERVALS.includes(interval) ? interval : undefined),
     tz,
     filters,
+    dialect,
     ...(compare && COMPARISONS.includes(compare as Comparison) && { compare: compare as Comparison }),
   }
 }
@@ -274,7 +283,8 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   })
   app.post('/sites/:id/rotate-key', async (c) => c.json({ apiKey: await rotateApiKey(ctx, c.get('site').id) }))
 
-  const query = (c: HonoContext<AdminEnv>) => statsQuery(new URL(c.req.url), c.get('site'), ctx.now())
+  const query = (c: HonoContext<AdminEnv>) =>
+    statsQuery(new URL(c.req.url), c.get('site'), ctx.now(), ctx.storage.dialect)
 
   // What a shared dashboard needs to start: the site's name, domain and formats, and which views the link shows.
   app.get('/sites/:id/shared', (c) => {
@@ -293,6 +303,12 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   })
   app.get('/sites/:id/overview', async (c) => c.json(await overview(ctx, c.get('site'), query(c))))
   app.get('/sites/:id/timeseries', async (c) => c.json(await timeseries(ctx, c.get('site'), query(c))))
+  // Properties of one goal's events: its keys, or the values of `key`.
+  app.get('/sites/:id/properties', async (c) => {
+    const key = c.req.query('key')
+    const name = c.req.query('name') ?? ''
+    return c.json(await properties(ctx, c.get('site'), query(c), { name, ...(key !== undefined && { key }) }))
+  })
   app.get('/sites/:id/breakdown', async (c) => {
     const dimension = c.req.query('dimension') ?? ''
     if (!isDimension(dimension)) throw new AnalytikError(`dimension must be one of ${DIMENSIONS.join(', ')}`)

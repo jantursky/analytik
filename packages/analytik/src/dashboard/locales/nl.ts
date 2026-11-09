@@ -1006,4 +1006,6 @@ export default {
     'Wekelijkse cohorten van nieuwe bezoekers en het aandeel van elk dat in de weken erna terugkwam.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Weken beginnen op maandag (UTC). Elke rij volgt de bezoekers die die week voor het eerst werden gezien.',
+  'Properties of “{name}”': 'Eigenschappen van “{name}”',
+  Other: 'Overig',
 } satisfies Messages

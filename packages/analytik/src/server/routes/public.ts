@@ -1,4 +1,4 @@
-import type { Hono } from 'hono'
+import type { Context as HonoContext, Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import * as dodo from '../../adapters/dodo'
@@ -62,6 +62,40 @@ async function readJson(request: Request, limit: number): Promise<unknown> {
 
 const bearer = (request: Request) => /^Bearer\s+(\S+)$/i.exec(request.headers.get('authorization') ?? '')?.[1]
 
+/** Counts one event against the per-client and per-site limits; returns the seconds to wait when one is passed. */
+function checkIngestLimit(ctx: Context, payload: unknown, ip: string | null): number | null {
+  const { perClient, perSite } = ctx.rateLimit
+  const w = (payload as { w?: unknown } | null)?.w
+  const site = typeof w === 'string' ? w.slice(0, 64) : ''
+  const now = ctx.now()
+  const waits: number[] = []
+  // Without a client address everyone would share one key, and one flood would block them all.
+  if (perClient !== false && ip) {
+    const wait = ctx.ingestLimit.hit(`c:${site}:${ip}`, perClient, now)
+    if (wait !== null) waits.push(wait)
+  }
+  if (perSite !== false) {
+    const wait = ctx.ingestLimit.hit(`s:${site}`, perSite, now)
+    if (wait !== null) waits.push(wait)
+  }
+  return waits.length ? Math.max(...waits) : null
+}
+
+/** Runs work after the response where the runtime has `waitUntil`, otherwise on its own with errors logged. */
+function deferrer(c: HonoContext): (work: Promise<unknown>) => void {
+  let waitUntil: ((work: Promise<unknown>) => void) | undefined
+  try {
+    // Hono's getter throws outside Cloudflare Workers.
+    waitUntil = c.executionCtx.waitUntil.bind(c.executionCtx)
+  } catch {
+    waitUntil = undefined
+  }
+  return (work) => {
+    const safe = work.catch((error: unknown) => console.error('analytik: background work failed', error))
+    if (waitUntil) waitUntil(safe)
+  }
+}
+
 /** Tracker, attribution, server-side API and payment webhooks. */
 export function publicRoutes(app: Hono, ctx: Context): void {
   const open = cors({ origin: '*', allowMethods: ['POST', 'OPTIONS'], maxAge: 86400 })
@@ -78,9 +112,15 @@ export function publicRoutes(app: Hono, ctx: Context): void {
       return c.json({ error: 'body must be JSON' }, 400)
     }
     const request = c.req.raw
+    const ip = ctx.clientIp(request)
+    const retryAfter = checkIngestLimit(ctx, payload, ip)
+    if (retryAfter !== null) {
+      return c.json({ error: 'too many requests' }, 429, { 'retry-after': String(retryAfter) })
+    }
     const result = await ingest(ctx, {
       payload,
-      ip: ctx.clientIp(request),
+      ip,
+      defer: deferrer(c),
       userAgent: c.req.header('user-agent') ?? null,
       origin: c.req.header('origin') ?? null,
       geo: await (ctx.geo ?? geoFromRequest)(request),

@@ -993,4 +993,6 @@ export default {
     '신규 방문자의 주간 코호트와 이후 몇 주 동안 다시 방문한 비율.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     '주는 월요일(UTC)에 시작합니다. 각 행은 그 주에 처음 확인된 방문자를 추적합니다.',
+  'Properties of “{name}”': '“{name}”의 속성',
+  Other: '기타',
 } satisfies Messages

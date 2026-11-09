@@ -286,10 +286,21 @@ function eventStatement(
 }
 
 /** Enforces the site's retention setting, at most once an hour per instance. */
-async function enforceRetention(ctx: Context, site: SiteRecord, now: number): Promise<void> {
+async function enforceRetention(
+  ctx: Context,
+  site: SiteRecord,
+  now: number,
+  defer?: IngestInput['defer'],
+): Promise<void> {
   if (!site.retentionDays || now - (ctx.retentionRuns.get(site.id) ?? 0) < HOUR) return
   ctx.retentionRuns.set(site.id, now)
-  await purgeBefore(ctx, site.id, now - site.retentionDays * DAY)
+  const purge = purgeBefore(ctx, site.id, now - site.retentionDays * DAY)
+  if (!defer) {
+    await purge
+    return
+  }
+  // The event is stored either way; a failed purge is tried again by the next hourly run.
+  defer(purge.catch((error: unknown) => console.error('analytik: retention purge failed', error)))
 }
 
 // Parsed lists by their text: an event costs one lookup, not a parse of up to 100 entries.
@@ -333,7 +344,7 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   const mode = effectiveMode(site.privacyMode, payload.m, doNotTrack)
   const visit = await resolveVisit(ctx, site, mode, payload, input, now)
   if (typeof visit === 'string') return { status: 400, error: visit }
-  await enforceRetention(ctx, site, now)
+  await enforceRetention(ctx, site, now, input.defer)
 
   const accepted: IngestResult = { status: 202, visitorId: visit.visitorId, sessionId: visit.sessionId }
   const path = pagePath(payload.url, ctx.keepQuery)

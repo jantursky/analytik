@@ -999,4 +999,6 @@ export default {
     'Kohort mingguan pengunjung baru dan bagian dari masing-masing yang kembali pada minggu-minggu berikutnya.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Minggu dimulai pada hari Senin (UTC). Setiap baris mengikuti pengunjung yang pertama kali terlihat pada minggu itu.',
+  'Properties of “{name}”': 'Properti “{name}”',
+  Other: 'Lainnya',
 } satisfies Messages

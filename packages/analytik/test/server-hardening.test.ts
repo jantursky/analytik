@@ -278,8 +278,11 @@ describe.each(storageKinds())('stats on %s', (kind) => {
       vid: 'visitor-0002',
       sid: 'session-0002',
     })
-    expect(await server!.rows("SELECT email, visitor_id FROM payments WHERE id = 'new'")).toEqual([
-      { email: null, visitor_id: null },
-    ])
+    // The purge runs after the response.
+    await vi.waitFor(async () =>
+      expect(await server!.rows("SELECT email, visitor_id FROM payments WHERE id = 'new'")).toEqual([
+        { email: null, visitor_id: null },
+      ]),
+    )
   })
 })

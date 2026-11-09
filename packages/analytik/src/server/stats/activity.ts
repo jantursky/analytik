@@ -267,7 +267,7 @@ export function events(
   query: StatsQuery,
   options: EventsOptions = {},
 ): Promise<Page<EventRow>> {
-  const filters = filterSql(query.filters)
+  const filters = filterSql(query.filters, query.dialect)
   let sql = `e.site_id = ? AND e.ts >= ? AND e.ts < ?${filters.sql}`
   const params: unknown[] = [site.id, query.from, query.to, ...filters.params]
   if (options.name) {

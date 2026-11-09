@@ -32,6 +32,26 @@ curl -X POST https://analytics.example.com/api/v1/goals \
 
 The Events view lists goals with counts, and `GET /api/sites/SITE_ID/breakdown?dimension=goal` gives the same as data. Break down a goal by `source` or `channel` to see which source converts.
 
+## Break down a goal by its properties
+
+Click a goal in the Events view, and a **Properties** card appears for it. It lists the goal's property keys (up to 20); pick a key and it shows the values with their visitors, the 50 most frequent and the rest as one line. A goal `signup` sent with `{ plan: "pro" }` or `{ plan: "free" }` therefore shows how many signups chose each plan. Clicking a value filters the whole dashboard to the visits where this goal had it, so you can see where the Pro signups came from.
+
+The filter is `prop:<key>`: `?f.prop%3Aplan=pro` in the dashboard address, `prop:plan=pro` in the HTTP API, and `{ 'prop:plan': 'pro' }` in `stats` filters. It works with every view, saved segments and shared dashboards. When a goal filter is set as well, the same goal event has to carry the value. Only goal events are read, never sign-ins, and keys may use 1 to 64 letters, digits, `_`, `.` and `-`; other keys are left out.
+
+Send values you would group by: a plan, a button, a currency. A value that is different every time, such as an order id, fills the list with single rows. Never send personal data in properties: they are stored as sent and shown to everyone who can read the dashboard or a share link.
+
+### Count missing pages
+
+To see which pages visitors fail to find, send a goal from your 404 page with the path as a property:
+
+```html
+<script>
+  analytik('track', 'not_found', { path: location.pathname })
+</script>
+```
+
+Click `not_found` in the Events view and pick the key `path`.
+
 ## Define a funnel
 
 A funnel is an ordered list of steps. Each step is a page path or a goal name. A page path may end in `*` to match everything below it.

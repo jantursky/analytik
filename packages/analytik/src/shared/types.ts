@@ -32,6 +32,9 @@ export type Dimension =
   | 'outbound'
   | 'goal'
 
+/** A filter key: a dimension, or a goal property written `prop:<key>`. */
+export type FilterKey = Dimension | `prop:${string}`
+
 export type Props = Record<string, string | number | boolean | null>
 
 /** How long a goal target runs; each period starts in the site's time zone (weeks on Monday). */
@@ -148,6 +151,17 @@ export interface VitalValues {
   lcp: number | null
   inp: number | null
   cls: number | null
+}
+
+/** Properties of one goal's events in a range: the keys, or the values of one key. */
+export interface PropertiesResult {
+  name: string
+  /** The key whose values are listed; null when the keys are. */
+  key: string | null
+  keys: { key: string; events: number }[]
+  values: { value: string; visitors: number; events: number }[]
+  /** The values beyond the cap, together; null when nothing was left out. */
+  other: { visitors: number; events: number } | null
 }
 
 /** Core Web Vitals of a range: the whole site and its pages with the most reports. */

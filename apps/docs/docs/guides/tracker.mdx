@@ -82,6 +82,8 @@ analytik.optOut()
 analytik.optIn()
 ```
 
+Properties of a goal can be broken down and filtered in the dashboard, see [Break down a goal by its properties](/guides/funnels-and-goals#break-down-a-goal-by-its-properties). Use values that repeat (a plan, a button) and never personal data such as emails or names, since properties are shown to everyone who can read the dashboard.
+
 Property values are strings, numbers, booleans or `null`, and the request body is limited to 8 KB. `revenue` events are stored as payments with provider `client` and the id `client:<orderId>`, and a verified payment for the same order from a webhook or your server replaces them; for real money, prefer a [webhook or server call](/guides/payments), since a browser can be tampered with.
 
 `attribution()` returns a promise, because in `strict` mode the server computes the ids. It resolves to `null` when the visitor has opted out, the request fails, or the server has no session for the visitor yet, so check the result before you use it. Before the script loads, use the queue directly:

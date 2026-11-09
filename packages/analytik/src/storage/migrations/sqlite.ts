@@ -9,6 +9,8 @@ import { annotations } from './0007_annotations'
 import { goalTargets } from './0008_goal_targets'
 import { vitals } from './0009_vitals'
 import { siteSync } from './0010_site_sync'
+import { hotIndexes } from './0011_hot_indexes'
+import { eventNameIndex } from './0012_event_name_index'
 
 /** SQLite and Cloudflare D1, applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -22,4 +24,6 @@ export const migrations: readonly Migration[] = [
   { version: '0008_goal_targets', sql: goalTargets() },
   { version: '0009_vitals', sql: vitals({ big: 'INTEGER', real: 'REAL' }) },
   { version: '0010_site_sync', sql: siteSync() },
+  { version: '0011_hot_indexes', sql: hotIndexes() },
+  { version: '0012_event_name_index', sql: eventNameIndex() },
 ]

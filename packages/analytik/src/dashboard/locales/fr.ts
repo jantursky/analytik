@@ -1013,4 +1013,6 @@ export default {
     'Cohortes hebdomadaires de nouveaux visiteurs et part de chacune revenue les semaines suivantes.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'Les semaines commencent le lundi (UTC). Chaque ligne suit les visiteurs vus pour la première fois cette semaine-là.',
+  'Properties of “{name}”': 'Propriétés de « {name} »',
+  Other: 'Autres',
 } satisfies Messages

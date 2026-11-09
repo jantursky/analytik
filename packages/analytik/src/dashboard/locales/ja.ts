@@ -1000,4 +1000,6 @@ export default {
     '新規訪問者の週ごとのコホートと、その後の週に再訪した割合。',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     '週は月曜日（UTC）に始まります。各行は、その週に初めて確認された訪問者を追跡します。',
+  'Properties of “{name}”': '「{name}」のプロパティ',
+  Other: 'その他',
 } satisfies Messages

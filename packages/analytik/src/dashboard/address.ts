@@ -1,4 +1,4 @@
-import { DIMENSIONS } from '../shared/dimensions'
+import { isFilterKey } from '../shared/dimensions'
 import type { Comparison, Filters, Interval } from '../shared/types'
 import { customRange, type DateRange, intervalFor, presetRange, RANGE_PRESETS, toDateInput } from './range'
 
@@ -58,7 +58,7 @@ export function readAddress(search: string, vocabulary: AddressVocabulary, now =
   const filters: Filters = {}
   for (const [key, value] of params) {
     const dimension = key.slice(FILTER.length)
-    if (key.startsWith(FILTER) && (DIMENSIONS as readonly string[]).includes(dimension)) filters[dimension] = value
+    if (key.startsWith(FILTER) && isFilterKey(dimension)) filters[dimension] = value
   }
   return {
     site: params.get('site') ?? undefined,

@@ -1005,4 +1005,6 @@ export default {
     'Coortes semanais de novos visitantes e a parte de cada uma que voltou nas semanas seguintes.',
   'Weeks start on Monday (UTC). Each row follows the visitors first seen that week.':
     'As semanas começam na segunda-feira (UTC). Cada linha acompanha os visitantes vistos pela primeira vez naquela semana.',
+  'Properties of “{name}”': 'Propriedades de “{name}”',
+  Other: 'Outros',
 } satisfies Messages
