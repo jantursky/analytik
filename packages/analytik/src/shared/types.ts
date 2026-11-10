@@ -164,6 +164,25 @@ export interface PropertiesResult {
   other: { visitors: number; events: number } | null
 }
 
+export const WEBHOOK_EVENTS = ['goal', 'payment'] as const
+export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number]
+/** `json` is the signed payload; `chat` is one line of text for Slack and Discord incoming webhooks. */
+export type WebhookFormat = 'json' | 'chat'
+
+/** An outbound webhook as an admin sees it. The address is shown as its host only, since chat addresses are secrets. */
+export interface Webhook {
+  id: string
+  siteId: string
+  host: string
+  events: WebhookEvent[]
+  format: WebhookFormat
+  paused: boolean
+  /** `ok`, `HTTP 500`, `timeout` or `error`: the outcome of the last delivery that differed from the one before. */
+  lastStatus: string | null
+  lastAt: number | null
+  createdAt: number
+}
+
 /** Core Web Vitals of a range: the whole site and its pages with the most reports. */
 export interface VitalsResult {
   /** Whether the site measures them at all. */

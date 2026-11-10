@@ -6,6 +6,19 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.24.0]
+
+### Added
+
+- Outgoing webhooks for goals and payments (signed JSON or a chat line), managed in Settings → Payments and API.
+- Server `hooks` option (`beforeIngest`, `onEvent`, `onPayment`) and `webhooks.fetch` to guard outgoing requests.
+- Share links work as a Stats API token: `Authorization: Bearer`, a header or in the address.
+- Journeys zooms and moves: buttons, Ctrl or ⌘ with the wheel, drag, and the keys +, -, 0 and arrows.
+
+### Fixed
+
+- The Events list loads with an ad blocker on (`/event-log`, `/events` still works); a blocked request says so.
+
 ## [1.23.0]
 
 ### Added

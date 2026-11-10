@@ -1,6 +1,7 @@
 // 16px stroke icons, decorative: the button around each one carries the accessible name.
 const PATHS = {
   plus: 'M8 3v10M3 8h10',
+  minus: 'M3 8h10',
   prev: 'M10 3 5 8l5 5',
   next: 'M6 3l5 5-5 5',
   down: 'M4 6l4 4 4-4',

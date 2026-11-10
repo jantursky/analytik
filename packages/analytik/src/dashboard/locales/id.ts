@@ -2,6 +2,26 @@ import type { Messages } from '../i18n'
 
 /** Indonesian. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Tambah webhook',
+  Address: 'Alamat',
+  'Chat message': 'Pesan obrolan',
+  'Copy secret': 'Salin rahasia',
+  'Copy the secret now. For safety it is not shown again.':
+    'Salin rahasia sekarang. Demi keamanan, rahasia tidak ditampilkan lagi.',
+  Format: 'Format',
+  'No webhooks yet.': 'Belum ada webhook.',
+  'Nothing is sent to it any more. This cannot be undone.':
+    'Tidak ada lagi yang dikirim ke sana. Tindakan ini tidak bisa dibatalkan.',
+  'Outgoing webhooks': 'Webhook keluar',
+  Pause: 'Jeda',
+  'Remove this webhook?': 'Hapus webhook ini?',
+  Resume: 'Lanjutkan',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Kirim pesan ke layanan lain, seperti Slack atau server Anda sendiri, saat target tercapai atau pembayaran masuk.',
+  'Send test': 'Kirim uji coba',
+  'Signed JSON': 'JSON bertanda tangan',
+  'Test sent': 'Uji coba terkirim',
+  'Webhook added': 'Webhook ditambahkan',
   '(exactly {exact})': '(tepatnya {exact})',
   '(none)': '(tidak ada)',
   ', filter by this': ', filter berdasarkan ini',
@@ -540,6 +560,12 @@ export default {
   Small: 'Kecil',
   Snippet: 'Cuplikan',
   'Something went wrong': 'Terjadi kesalahan',
+  'Zoom in': 'Perbesar',
+  'Zoom out': 'Perkecil',
+  'Reset zoom': 'Atur ulang zoom',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl atau ⌘ + gulir untuk zoom, seret untuk menggeser',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Permintaan tidak sampai. Jika kamu memakai pemblokir iklan, matikan untuk situs ini lalu muat ulang halaman.',
   'Sort sites by': 'Urutkan situs menurut',
   'Sound on new visits': 'Suara saat ada kunjungan baru',
   Source: 'Sumber',

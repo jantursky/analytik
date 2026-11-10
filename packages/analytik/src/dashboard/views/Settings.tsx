@@ -28,6 +28,7 @@ import { ImportedData } from './ImportData'
 import { IntegrationPrompt } from './IntegrationPrompt'
 import { MODE_INFO } from './privacy-modes'
 import { SharingSettings } from './SharingSettings'
+import { WebhookSettings } from './WebhookSettings'
 import { SiteLifecycle } from './SiteActions'
 import { SiteSync } from './SiteSync'
 
@@ -902,6 +903,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     content: () => (
       <>
         <PaymentWebhooks />
+        <WebhookSettings />
         <ApiKey />
       </>
     ),

@@ -11,6 +11,7 @@ import { vitals } from './0009_vitals'
 import { siteSync } from './0010_site_sync'
 import { hotIndexes } from './0011_hot_indexes'
 import { eventNameIndex } from './0012_event_name_index'
+import { outboundWebhooks } from './0013_outbound_webhooks'
 
 /** SQLite and Cloudflare D1, applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -26,4 +27,5 @@ export const migrations: readonly Migration[] = [
   { version: '0010_site_sync', sql: siteSync() },
   { version: '0011_hot_indexes', sql: hotIndexes() },
   { version: '0012_event_name_index', sql: eventNameIndex() },
+  { version: '0013_outbound_webhooks', sql: outboundWebhooks({ big: 'INTEGER' }) },
 ]

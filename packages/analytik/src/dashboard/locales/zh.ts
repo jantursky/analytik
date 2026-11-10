@@ -2,6 +2,24 @@ import type { Messages } from '../i18n'
 
 /** Chinese (Simplified). Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': '添加 Webhook',
+  Address: '地址',
+  'Chat message': '聊天消息',
+  'Copy secret': '复制密钥',
+  'Copy the secret now. For safety it is not shown again.': '请立即复制密钥。出于安全考虑，它不会再次显示。',
+  Format: '格式',
+  'No webhooks yet.': '还没有 Webhook。',
+  'Nothing is sent to it any more. This cannot be undone.': '之后不会再向它发送任何内容。此操作无法撤销。',
+  'Outgoing webhooks': '出站 Webhook',
+  Pause: '暂停',
+  'Remove this webhook?': '移除此 Webhook？',
+  Resume: '恢复',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    '达成目标或收到付款时，向 Slack 或您自己的服务器等其他服务发送消息。',
+  'Send test': '发送测试',
+  'Signed JSON': '签名 JSON',
+  'Test sent': '测试已发送',
+  'Webhook added': '已添加 Webhook',
   '(exactly {exact})': '（恰好 {exact}）',
   '(none)': '（无）',
   ', filter by this': '，按此筛选',
@@ -535,6 +553,12 @@ export default {
   Small: '小',
   Snippet: '代码片段',
   'Something went wrong': '出错了',
+  'Zoom in': '放大',
+  'Zoom out': '缩小',
+  'Reset zoom': '重置缩放',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': '按住 Ctrl 或 ⌘ 并滚动可缩放，拖动可移动',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    '请求未能送达。如果你使用了广告拦截器，请对本站关闭后重新加载页面。',
   'Sort sites by': '网站排序方式',
   'Sound on new visits': '新访问时播放提示音',
   Source: '来源',

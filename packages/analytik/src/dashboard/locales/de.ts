@@ -2,6 +2,26 @@ import type { Messages } from '../i18n'
 
 /** German. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Webhook hinzufügen',
+  Address: 'Adresse',
+  'Chat message': 'Chat-Nachricht',
+  'Copy secret': 'Geheimnis kopieren',
+  'Copy the secret now. For safety it is not shown again.':
+    'Kopieren Sie das Geheimnis jetzt. Aus Sicherheitsgründen wird es nicht noch einmal angezeigt.',
+  Format: 'Format',
+  'No webhooks yet.': 'Noch keine Webhooks.',
+  'Nothing is sent to it any more. This cannot be undone.':
+    'Es wird nichts mehr dorthin gesendet. Das lässt sich nicht rückgängig machen.',
+  'Outgoing webhooks': 'Ausgehende Webhooks',
+  Pause: 'Pausieren',
+  'Remove this webhook?': 'Diesen Webhook entfernen?',
+  Resume: 'Fortsetzen',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Senden Sie eine Nachricht an einen anderen Dienst, etwa Slack oder Ihren eigenen Server, wenn ein Ziel erreicht oder eine Zahlung verbucht wird.',
+  'Send test': 'Test senden',
+  'Signed JSON': 'Signiertes JSON',
+  'Test sent': 'Test gesendet',
+  'Webhook added': 'Webhook hinzugefügt',
   '(exactly {exact})': '(genau {exact})',
   '(none)': '(keine)',
   ', filter by this': ', danach filtern',
@@ -540,6 +560,12 @@ export default {
   Small: 'Klein',
   Snippet: 'Snippet',
   'Something went wrong': 'Etwas ist schiefgelaufen',
+  'Zoom in': 'Vergrößern',
+  'Zoom out': 'Verkleinern',
+  'Reset zoom': 'Zoom zurücksetzen',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Strg oder ⌘ + Scrollen zum Zoomen, Ziehen zum Verschieben',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Die Anfrage ist nicht durchgekommen. Falls du einen Werbeblocker nutzt, schalte ihn für diese Seite aus und lade neu.',
   'Sort sites by': 'Websites sortieren nach',
   'Sound on new visits': 'Ton bei neuen Besuchen',
   Source: 'Quelle',

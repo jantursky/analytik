@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { publicHost, readSite } from '../src/server/site-sync'
+import { publicHost } from '../src/server/public-host'
+import { readSite } from '../src/server/site-sync'
 import { storageKinds } from './helpers/databases'
 import { type TestServer, testServer } from './helpers/server'
 

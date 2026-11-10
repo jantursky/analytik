@@ -2,6 +2,26 @@ import type { Messages } from '../i18n'
 
 /** Hindi. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'वेबहुक जोड़ें',
+  Address: 'पता',
+  'Chat message': 'चैट संदेश',
+  'Copy secret': 'सीक्रेट कॉपी करें',
+  'Copy the secret now. For safety it is not shown again.':
+    'अभी सीक्रेट कॉपी कर लें। सुरक्षा के लिए यह दोबारा नहीं दिखाया जाएगा।',
+  Format: 'फ़ॉर्मैट',
+  'No webhooks yet.': 'अभी कोई वेबहुक नहीं।',
+  'Nothing is sent to it any more. This cannot be undone.':
+    'इसे अब कुछ नहीं भेजा जाएगा। इसे पूर्ववत नहीं किया जा सकता।',
+  'Outgoing webhooks': 'आउटगोइंग वेबहुक',
+  Pause: 'रोकें',
+  'Remove this webhook?': 'यह वेबहुक हटाएँ?',
+  Resume: 'फिर शुरू करें',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'लक्ष्य पूरा होने या भुगतान आने पर Slack या अपने सर्वर जैसी किसी दूसरी सेवा को संदेश भेजें।',
+  'Send test': 'टेस्ट भेजें',
+  'Signed JSON': 'हस्ताक्षरित JSON',
+  'Test sent': 'टेस्ट भेजा गया',
+  'Webhook added': 'वेबहुक जोड़ा गया',
   '(exactly {exact})': '(ठीक {exact})',
   '(none)': '(कोई नहीं)',
   ', filter by this': ', इससे फ़िल्टर करें',
@@ -540,6 +560,12 @@ export default {
   Small: 'छोटा',
   Snippet: 'स्निपेट',
   'Something went wrong': 'कुछ गड़बड़ हो गई',
+  'Zoom in': 'ज़ूम इन',
+  'Zoom out': 'ज़ूम आउट',
+  'Reset zoom': 'ज़ूम रीसेट करें',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'ज़ूम के लिए Ctrl या ⌘ + स्क्रोल, खिसकाने के लिए खींचें',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'अनुरोध पहुँच नहीं सका। अगर आप ऐड ब्लॉकर इस्तेमाल करते हैं, तो इस साइट के लिए उसे बंद करें और पेज दोबारा लोड करें।',
   'Sort sites by': 'साइटों को इसके अनुसार क्रमबद्ध करें',
   'Sound on new visits': 'नई विज़िट पर ध्वनि',
   Source: 'स्रोत',

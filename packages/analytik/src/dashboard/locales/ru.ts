@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Russian. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Добавить вебхук',
+  Address: 'Адрес',
+  'Chat message': 'Сообщение в чат',
+  'Copy secret': 'Скопировать секрет',
+  'Copy the secret now. For safety it is not shown again.':
+    'Скопируйте секрет сейчас. В целях безопасности он больше не будет показан.',
+  Format: 'Формат',
+  'No webhooks yet.': 'Вебхуков пока нет.',
+  'Nothing is sent to it any more. This cannot be undone.': 'Ему больше ничего не отправляется. Это нельзя отменить.',
+  'Outgoing webhooks': 'Исходящие вебхуки',
+  Pause: 'Приостановить',
+  'Remove this webhook?': 'Удалить этот вебхук?',
+  Resume: 'Возобновить',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Отправляйте сообщение в другой сервис, например Slack или свой сервер, когда достигнута цель или поступил платёж.',
+  'Send test': 'Отправить тест',
+  'Signed JSON': 'Подписанный JSON',
+  'Test sent': 'Тест отправлен',
+  'Webhook added': 'Вебхук добавлен',
   '(exactly {exact})': '(ровно {exact})',
   '(none)': '(нет)',
   ', filter by this': ', фильтровать по этому',
@@ -541,6 +560,12 @@ export default {
   Small: 'Малый',
   Snippet: 'Код',
   'Something went wrong': 'Что-то пошло не так',
+  'Zoom in': 'Увеличить',
+  'Zoom out': 'Уменьшить',
+  'Reset zoom': 'Сбросить масштаб',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl или ⌘ + прокрутка для масштаба, перетаскивайте для сдвига',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Запрос не прошёл. Если вы используете блокировщик рекламы, отключите его для этого сайта и перезагрузите страницу.',
   'Sort sites by': 'Сортировать сайты по',
   'Sound on new visits': 'Звук при новых визитах',
   Source: 'Источник',

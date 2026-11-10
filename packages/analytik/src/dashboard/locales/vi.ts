@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Vietnamese. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Thêm webhook',
+  Address: 'Địa chỉ',
+  'Chat message': 'Tin nhắn trò chuyện',
+  'Copy secret': 'Sao chép khóa bí mật',
+  'Copy the secret now. For safety it is not shown again.':
+    'Hãy sao chép khóa bí mật ngay. Vì an toàn, khóa sẽ không hiện lại.',
+  Format: 'Định dạng',
+  'No webhooks yet.': 'Chưa có webhook nào.',
+  'Nothing is sent to it any more. This cannot be undone.': 'Sẽ không gửi gì tới đó nữa. Không thể hoàn tác.',
+  'Outgoing webhooks': 'Webhook gửi đi',
+  Pause: 'Tạm dừng',
+  'Remove this webhook?': 'Xóa webhook này?',
+  Resume: 'Tiếp tục',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Gửi tin nhắn tới dịch vụ khác, như Slack hoặc máy chủ của bạn, khi đạt mục tiêu hoặc có thanh toán.',
+  'Send test': 'Gửi thử',
+  'Signed JSON': 'JSON có chữ ký',
+  'Test sent': 'Đã gửi thử',
+  'Webhook added': 'Đã thêm webhook',
   '(exactly {exact})': '(chính xác {exact})',
   '(none)': '(không có)',
   ', filter by this': ', lọc theo mục này',
@@ -540,6 +559,12 @@ export default {
   Small: 'Nhỏ',
   Snippet: 'Đoạn mã',
   'Something went wrong': 'Đã xảy ra lỗi',
+  'Zoom in': 'Phóng to',
+  'Zoom out': 'Thu nhỏ',
+  'Reset zoom': 'Đặt lại thu phóng',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl hoặc ⌘ + cuộn để thu phóng, kéo để di chuyển',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Yêu cầu không đến được nơi nhận. Nếu bạn dùng trình chặn quảng cáo, hãy tắt nó cho trang này rồi tải lại.',
   'Sort sites by': 'Sắp xếp trang theo',
   'Sound on new visits': 'Âm thanh khi có lượt truy cập mới',
   Source: 'Nguồn',

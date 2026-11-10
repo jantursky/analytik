@@ -101,6 +101,14 @@ describe('createApiClient', () => {
     expect(error).toMatchObject({ status: 500, message: 'HTTP 500' })
   })
 
+  it('tells the user to turn off an ad blocker when a request never gets an answer', async () => {
+    const client = createApiClient('/api', () => Promise.reject(new TypeError('Failed to fetch')))
+    const error = await client.site('site_1').catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toMatch(/ad blocker/)
+    expect((error as Error).cause).toBeInstanceOf(TypeError)
+  })
+
   it('shares identical reads and keeps them for a minute, until something is written', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     try {

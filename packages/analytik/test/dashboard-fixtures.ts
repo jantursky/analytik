@@ -8,6 +8,7 @@ import type {
   RealtimeVisit,
   SessionSummary,
   ShareLink,
+  Webhook,
   ShareView,
   Site,
   TimeseriesPoint,
@@ -178,6 +179,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     sites: [site, otherSite],
     funnels: [funnel],
     shareLinks: [] as ShareLink[],
+    webhooks: [] as Webhook[],
     /** What a link's token opens in the shared dashboard; a token not listed here is refused. */
     sharedViews: { 'good-token-1234567890abcdef': [] as ShareView[] } as Record<string, ShareView[]>,
     loggedIn: true,
@@ -307,6 +309,34 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       )
       return { ok: true }
     },
+    'GET /sites/:id/webhooks': () => state.webhooks,
+    'POST /sites/:id/webhooks': ({ body }) => {
+      const input = body as { url: string; events: Webhook['events']; format: Webhook['format'] }
+      const webhook: Webhook = {
+        id: `wh_${state.webhooks.length + 1}`,
+        siteId: 'site_1',
+        host: new URL(input.url).host,
+        events: input.events,
+        format: input.format,
+        paused: false,
+        lastStatus: null,
+        lastAt: null,
+        createdAt: Date.UTC(2026, 9, 26),
+      }
+      state.webhooks = [...state.webhooks, webhook]
+      return { webhook, secret: 'whsec_0123456789abcdef0123456789abcdef' }
+    },
+    'PATCH /sites/:id/webhooks/:wid': ({ path, body }) => {
+      state.webhooks = state.webhooks.map((w) =>
+        path.endsWith(`/${w.id}`) ? { ...w, ...(body as Partial<Webhook>) } : w,
+      )
+      return state.webhooks.find((w) => path.endsWith(`/${w.id}`))
+    },
+    'DELETE /sites/:id/webhooks/:wid': ({ path }) => {
+      state.webhooks = state.webhooks.filter((w) => !path.endsWith(`/${w.id}`))
+      return { ok: true }
+    },
+    'POST /sites/:id/webhooks/:wid/test': () => ({ ok: true, status: 'ok' }),
     'GET /site-defaults': () => state.siteDefaults,
     'PUT /site-defaults': ({ body }) => {
       state.siteDefaults = { ...state.siteDefaults, ...(body as Record<string, unknown>) }
@@ -439,7 +469,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         },
       ],
     }),
-    'GET /sites/:id/events': ({ params }) => ({
+    'GET /sites/:id/event-log': ({ params }) => ({
       items: [
         {
           id: 'e2',

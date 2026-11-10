@@ -9,6 +9,7 @@ export default defineMeta({
     'payments',
     'bot-traffic',
     'email-notifications',
+    'webhooks-and-api',
     'dashboard-embedding',
     'funnels-and-goals',
     'importing-data',

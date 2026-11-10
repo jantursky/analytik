@@ -29,8 +29,9 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0010_site_sync',
       '0011_hot_indexes',
       '0012_event_name_index',
+      '0013_outbound_webhooks',
     ])
-    expect(first.version).toBe('0012_event_name_index')
+    expect(first.version).toBe('0013_outbound_webhooks')
     const second = await storage.migrate()
     expect(second.applied).toEqual([])
     const rows = await storage.query<{ version: string }>('SELECT version FROM schema_migrations')
@@ -47,6 +48,7 @@ describe.each(storageKinds())('%s storage', (kind) => {
       '0010_site_sync',
       '0011_hot_indexes',
       '0012_event_name_index',
+      '0013_outbound_webhooks',
     ])
   })
 
@@ -126,6 +128,7 @@ describe('0002_imported', () => {
       '0010_site_sync',
       '0011_hot_indexes',
       '0012_event_name_index',
+      '0013_outbound_webhooks',
     ])
     expect(await storage.query('SELECT id, imported FROM sessions')).toEqual([{ id: 'a', imported: null }])
     expect(await storage.query('SELECT id, imported FROM events')).toEqual([{ id: 'e', imported: null }])

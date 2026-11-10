@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Czech. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Přidat webhook',
+  Address: 'Adresa',
+  'Chat message': 'Zpráva do chatu',
+  'Copy secret': 'Kopírovat tajný klíč',
+  'Copy the secret now. For safety it is not shown again.':
+    'Zkopírujte tajný klíč hned. Z bezpečnostních důvodů se znovu nezobrazí.',
+  Format: 'Formát',
+  'No webhooks yet.': 'Zatím žádné webhooky.',
+  'Nothing is sent to it any more. This cannot be undone.': 'Nic se na něj už nebude posílat. Nelze to vrátit zpět.',
+  'Outgoing webhooks': 'Odchozí webhooky',
+  Pause: 'Pozastavit',
+  'Remove this webhook?': 'Odebrat tento webhook?',
+  Resume: 'Obnovit',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Pošlete zprávu jiné službě, třeba Slacku nebo vlastnímu serveru, když se dosáhne cíle nebo přijde platba.',
+  'Send test': 'Poslat test',
+  'Signed JSON': 'Podepsaný JSON',
+  'Test sent': 'Test odeslán',
+  'Webhook added': 'Webhook přidán',
   '(exactly {exact})': '(přesně {exact})',
   '(none)': '(žádné)',
   ', filter by this': ', filtrovat podle tohoto',
@@ -540,6 +559,12 @@ export default {
   Small: 'Malý',
   Snippet: 'Kód',
   'Something went wrong': 'Něco se pokazilo',
+  'Zoom in': 'Přiblížit',
+  'Zoom out': 'Oddálit',
+  'Reset zoom': 'Obnovit přiblížení',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl nebo ⌘ + kolečko pro přiblížení, tažením posouváte',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Požadavek neprošel. Pokud používáte blokátor reklam, vypněte ho pro tuto stránku a načtěte ji znovu.',
   'Sort sites by': 'Seřadit weby podle',
   'Sound on new visits': 'Zvuk při nové návštěvě',
   Source: 'Zdroj',

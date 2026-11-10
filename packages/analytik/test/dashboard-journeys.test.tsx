@@ -65,6 +65,34 @@ describe('layoutFlow', () => {
 })
 
 describe('Journeys view', () => {
+  it('zooms with the buttons and the keys, and goes back to the whole diagram', async () => {
+    const { container } = await open()
+    const svg = await waitFor(() => container.querySelector('svg.analytik-journeys'))
+    const box = () => svg.getAttribute('viewBox')
+    const whole = box()
+    const button = (label: string) => container.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)
+    expect(button('Zoom out')?.disabled).toBe(true)
+    expect(button('Reset zoom')?.disabled).toBe(true)
+
+    await click(button('Zoom in'))
+    expect(box()).not.toBe(whole)
+    expect(svg.hasAttribute('data-zoomed')).toBe(true)
+    expect(button('Zoom out')?.disabled).toBe(false)
+
+    await click(button('Reset zoom'))
+    expect(box()).toBe(whole)
+    expect(svg.hasAttribute('data-zoomed')).toBe(false)
+
+    const frame = container.querySelector('.analytik-journey-frame')
+    await key(frame, '+')
+    expect(svg.hasAttribute('data-zoomed')).toBe(true)
+    await key(frame, '-')
+    expect(box()).toBe(whole)
+    await key(frame, '+')
+    await key(frame, '0')
+    expect(box()).toBe(whole)
+  })
+
   it('draws a labelled diagram and a table with the same links for screen readers', async () => {
     const { container } = await open()
     const svg = await waitFor(() => container.querySelector('svg.analytik-journeys'))

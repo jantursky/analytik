@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Korean. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': '웹훅 추가',
+  Address: '주소',
+  'Chat message': '채팅 메시지',
+  'Copy secret': '비밀 값 복사',
+  'Copy the secret now. For safety it is not shown again.':
+    '지금 비밀 값을 복사하세요. 보안을 위해 다시 표시되지 않습니다.',
+  Format: '형식',
+  'No webhooks yet.': '웹훅이 아직 없습니다.',
+  'Nothing is sent to it any more. This cannot be undone.': '더 이상 아무것도 전송되지 않습니다. 되돌릴 수 없습니다.',
+  'Outgoing webhooks': '발신 웹훅',
+  Pause: '일시중지',
+  'Remove this webhook?': '이 웹훅을 삭제할까요?',
+  Resume: '재개',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    '목표를 달성하거나 결제가 들어오면 Slack 또는 자체 서버 같은 다른 서비스로 메시지를 보냅니다.',
+  'Send test': '테스트 보내기',
+  'Signed JSON': '서명된 JSON',
+  'Test sent': '테스트를 보냈습니다',
+  'Webhook added': '웹훅을 추가했습니다',
   '(exactly {exact})': '(정확히 {exact})',
   '(none)': '(없음)',
   ', filter by this': ', 이 항목으로 필터링',
@@ -426,6 +445,12 @@ export default {
   'Signing secret': '서명 시크릿',
   'Site integration prompt': '사이트 연동 프롬프트',
   'Something went wrong': '문제가 발생했습니다',
+  'Zoom in': '확대',
+  'Zoom out': '축소',
+  'Reset zoom': '확대/축소 초기화',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl 또는 ⌘ + 스크롤로 확대/축소, 드래그로 이동',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    '요청이 전달되지 않았습니다. 광고 차단기를 사용 중이라면 이 사이트에서는 끄고 새로고침하세요.',
   'Sort sites by': '사이트 정렬 기준',
   'Sound on new visits': '새 방문 시 소리',
   'Source (required)': '소스 (필수)',

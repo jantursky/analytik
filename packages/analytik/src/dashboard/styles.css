@@ -6086,3 +6086,40 @@ tr:hover .analytik-row-button {
   flex: 0 1 190px;
   min-width: 0;
 }
+
+.analytik-journey-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.analytik-journey-tools .analytik-muted {
+  margin: 0 0 0 8px;
+  font-size: 12px;
+}
+
+.analytik-journey-tools .analytik-icon-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.analytik-journey-frame {
+  border-radius: var(--analytik-radius-control);
+}
+
+.analytik-journey-frame:focus-visible {
+  outline: 2px solid var(--analytik-primary);
+  outline-offset: 4px;
+}
+
+/* Zoomed in, the diagram is cut to its frame and dragged; at rest its labels may run past the edge. */
+.analytik-journeys[data-zoomed] {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.analytik-journeys[data-zoomed]:active {
+  cursor: grabbing;
+}

@@ -386,6 +386,7 @@ export async function deleteSite(ctx: Context, id: string): Promise<void> {
       'annotations',
       'vitals',
       'site_icons',
+      'outbound_webhooks',
     ]
       .map((table) => ({ sql: `DELETE FROM ${table} WHERE site_id = ?`, params: [id] }))
       .concat({ sql: 'DELETE FROM sites WHERE id = ?', params: [id] }),

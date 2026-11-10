@@ -1,0 +1,89 @@
+---
+title: Webhooks, hooks and the Stats API
+description: Read your numbers from scripts with a share link, get a signed message when a goal is reached or a payment arrives, and filter or react to events in your own server code.
+---
+
+Three ways to connect analytik to other things: read the numbers with a token, receive messages when something happens, and run your own code inside the server.
+
+## Stats API
+
+A share link is also an API token. Make one in **Settings → Sharing**, copy the token (it is shown once), and send it with any of the read routes. The token can be given three ways:
+
+```bash
+# In the address
+curl "https://analytics.example.com/api/sites/SITE_ID/overview?from=2026-10-01&to=2026-11-01&share=TOKEN"
+
+# As a header
+curl -H "x-analytik-share: TOKEN" \
+  "https://analytics.example.com/api/sites/SITE_ID/overview?from=2026-10-01&to=2026-11-01"
+
+# As a bearer token, which most tools and libraries know how to send
+curl -H "Authorization: Bearer TOKEN" \
+  "https://analytics.example.com/api/sites/SITE_ID/breakdown?dimension=source&from=2026-10-01&to=2026-11-01"
+```
+
+The token reads only what the link's views allow, never settings, payments or any write; a revoked or expired token answers 401. Answers sent for a bearer token or header are not cached publicly. See the [HTTP API](/reference/http-api#share-links) for the routes.
+
+## Outgoing webhooks
+
+**Settings → Payments and API → Outgoing webhooks** sends a message to another service when a goal is reached or a payment (or refund) is recorded. Add an address, choose the events and the format:
+
+- **Signed JSON** posts `{ delivery, site: { id, name, domain }, type, ... }`. A goal carries `name`, `path`, `props`, `ts` and `source`; a payment carries `id`, `kind`, `amount` (minor units), `currency`, `provider`, `ts` and `source`. Visitor and session ids, emails and names are never sent.
+- **Chat message** posts `{ "text": "...", "content": "..." }`, one line that Slack and Discord incoming webhooks show as is.
+
+Addresses must be `https` on port 443 and point at a public host: no credentials, IP addresses or internal names. A chat address is a secret, so the list shows only its host. At most 5 webhooks per site.
+
+Every signed request carries `x-analytik-delivery` (a unique id) and `x-analytik-signature: t=SECONDS,v1=HEX`, where `HEX` is the HMAC-SHA256 of `SECONDS.BODY` with the webhook's secret (`whsec_…`, shown once when you add it). Check it on your side:
+
+```ts
+import { createHmac, timingSafeEqual } from 'node:crypto'
+
+function verify(body: string, header: string, secret: string): boolean {
+  const parts = Object.fromEntries(header.split(',').map((p) => p.split('=')))
+  const expected = createHmac('sha256', secret).update(`${parts.t}.${body}`).digest('hex')
+  const fresh = Math.abs(Date.now() / 1000 - Number(parts.t)) < 300
+  return fresh && timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1 ?? ''))
+}
+```
+
+A delivery times out after 5 seconds, does not follow redirects, and is retried once after a second. A failing webhook never delays or fails the event or payment it reports. **Send test** sends one message without a retry. The list shows the outcome of the last delivery that differed from the one before.
+
+### Network safety
+
+The address is checked when it is added and again before each delivery, but the server does not resolve DNS itself, so a name that later points at a private address (DNS rebinding) is not caught. If your server can reach private networks, pass your own `fetch` that refuses them:
+
+```ts
+createAnalytik({
+  storage,
+  admin,
+  webhooks: { fetch: (input, init) => guardedFetch(input, init) },
+})
+```
+
+## Server hooks
+
+Pass `hooks` to `createAnalytik()` to run your own code around events. Each hook may be async, runs with a 1 second limit, and an error or timeout is logged and ignored: a hook never fails or delays ingest.
+
+```ts
+createAnalytik({
+  storage,
+  admin,
+  hooks: {
+    // Drop, change or keep an event before it is stored.
+    beforeIngest: (event) => {
+      if (event.path.startsWith('/internal')) return null
+      if (event.name === 'signup') return { ...event, props: { ...event.props, plan: 'free' } }
+    },
+    // After it was stored. Runs after the response is sent where the platform allows.
+    onEvent: async (event) => {
+      if (event.type === 'goal') await notify(event.name)
+    },
+    // After a new payment or refund. Not called again for a retried provider webhook.
+    onPayment: async (payment) => {
+      await bookkeeping(payment)
+    },
+  },
+})
+```
+
+`beforeIngest` returns `null` to drop the event (the tracker gets 202 with `filtered: "hook"`), a changed event to store that instead, or nothing to keep it. Only `name`, `path` and `props` can change, and they are cleaned like any client event. Pings and sign-ins are not hooked. See [Server API](/reference/server-api#hooks) for the types.

@@ -25,6 +25,9 @@ import type {
   Realtime,
   SessionSummary,
   ShareLink,
+  Webhook,
+  WebhookEvent,
+  WebhookFormat,
   ShareView,
   Site,
   SiteDefaults,
@@ -38,6 +41,7 @@ import type {
   VersionInfo,
   VitalsResult,
 } from '../shared/types'
+import { t } from './i18n'
 import type { ImportRemoval, ImportResult, ImportSource, ImportSummary, ImportVisit } from '../shared/import/types'
 
 export type Fetcher = (input: string, init?: RequestInit) => Promise<Response>
@@ -155,6 +159,17 @@ export interface ApiClient {
   createShareLink(siteId: string, input?: ShareLinkInput): Promise<{ link: ShareLink; token: string }>
   /** Ends a link at once. */
   revokeShareLink(siteId: string, linkId: string): Promise<unknown>
+  /** The site's outbound webhooks. Addresses are shown as their host only. */
+  webhooks(siteId: string): Promise<Webhook[]>
+  /** Adds a webhook. The signing secret comes back only now. */
+  createWebhook(
+    siteId: string,
+    input: { url: string; events: WebhookEvent[]; format: WebhookFormat },
+  ): Promise<{ webhook: Webhook; secret: string }>
+  updateWebhook(siteId: string, id: string, patch: { paused?: boolean }): Promise<Webhook>
+  deleteWebhook(siteId: string, id: string): Promise<unknown>
+  /** Sends a test notice and resolves to the outcome. */
+  testWebhook(siteId: string, id: string): Promise<{ status: string }>
   /** Creates the site and resolves to it; its API key is shown later in the settings by rotating it. */
   createSite(input: SiteInput): Promise<Site>
   updateSite(siteId: string, patch: SitePatch): Promise<Site>
@@ -263,12 +278,23 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
 
   async function request<T>(method: string, path: string, body?: unknown, params?: URLSearchParams): Promise<T> {
     const search = params?.size ? `?${params.toString()}` : ''
-    const response = await fetcher(base + path + search, {
-      method,
-      credentials: 'include',
-      headers: body === undefined ? { Accept: 'application/json' } : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
+    let response: Response
+    try {
+      response = await fetcher(base + path + search, {
+        method,
+        credentials: 'include',
+        headers: body === undefined ? { Accept: 'application/json' } : { 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+    } catch (cause) {
+      // The request never got an answer: offline, or an ad blocker or privacy extension cancelled it.
+      throw new Error(
+        t("The request didn't get through. If you use an ad blocker, turn it off for this site and reload."),
+        {
+          cause,
+        },
+      )
+    }
     const text = await response.text()
     let data: unknown
     try {
@@ -349,6 +375,11 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     shareLinks: (id) => get(`${site(id)}/share-links`),
     createShareLink: (id, input = {}) => write('POST', `${site(id)}/share-links`, input),
     revokeShareLink: (id, linkId) => write('DELETE', `${site(id)}/share-links/${encodeURIComponent(linkId)}`),
+    webhooks: (id) => get(`${site(id)}/webhooks`),
+    createWebhook: (id, input) => write('POST', `${site(id)}/webhooks`, input),
+    updateWebhook: (id, wid, patch) => write('PATCH', `${site(id)}/webhooks/${encodeURIComponent(wid)}`, patch),
+    deleteWebhook: (id, wid) => write('DELETE', `${site(id)}/webhooks/${encodeURIComponent(wid)}`),
+    testWebhook: (id, wid) => write('POST', `${site(id)}/webhooks/${encodeURIComponent(wid)}/test`, {}),
     createSite: (input) => write<{ site: Site }>('POST', '/sites', input).then((created) => created.site),
     updateSite: (id, patch) => write('PATCH', site(id), patch),
     siteDefaults: () => get('/site-defaults'),
@@ -384,7 +415,7 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     retention: (id, query) => get(`${site(id)}/retention`, queryParams(query)),
     sessions: (id, query) => get(`${site(id)}/sessions`, queryParams(query)),
     session: (id, sessionId) => get(`${site(id)}/sessions/${encodeURIComponent(sessionId)}`),
-    events: (id, query) => get(`${site(id)}/events`, queryParams(query)),
+    events: (id, query) => get(`${site(id)}/event-log`, queryParams(query)),
     createAnnotation: (id, input) => write('POST', `${site(id)}/annotations`, input),
     updateAnnotation: (id, noteId, patch) =>
       write('PATCH', `${site(id)}/annotations/${encodeURIComponent(noteId)}`, patch),

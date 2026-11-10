@@ -29,13 +29,13 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "576 kB"
+    "limit": "587 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
     "path": "dist/chunks/{sk,cs,de,es,fr,pt,pl,it,nl,ru,tr,ja,zh,ko,id,hi,vi}-*.js",
     "gzip": true,
-    "limit": "378 kB"
+    "limit": "388 kB"
   },
   {
     "name": "Country flags (a lazy chunk, loaded when the first country is shown)",
@@ -44,7 +44,7 @@
     "limit": "42 kB"
   },
   {
-    "name": "Command palette and shortcuts help, with the views and dialog it imports (a lazy chunk of about 3 kB itself, loaded the first time ⌘K or ? is pressed)",
+    "name": "Command palette and shortcuts help, with the views and dialog it imports (a lazy chunk of about 3 kB itself, loaded the first time \u2318K or ? is pressed)",
     "path": "dist/chunks/palette-*.js",
     "gzip": true,
     "limit": "10 kB"
@@ -53,21 +53,21 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "16.3 kB"
+    "limit": "16.4 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "928 kB"
+    "limit": "939 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "50.5 kB"
+    "limit": "52.1 kB"
   },
   {
     "name": "D1 storage",
@@ -101,6 +101,6 @@
     "path": "dist/migrate.js",
     "ignore": ["postgres"],
     "gzip": true,
-    "limit": "8.2 kB"
+    "limit": "8.25 kB"
   }
 ]

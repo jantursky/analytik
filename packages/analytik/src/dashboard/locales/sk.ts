@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Slovak. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Pridať webhook',
+  Address: 'Adresa',
+  'Chat message': 'Správa do chatu',
+  'Copy secret': 'Kopírovať tajný kľúč',
+  'Copy the secret now. For safety it is not shown again.':
+    'Skopírujte tajný kľúč hneď. Z bezpečnostných dôvodov sa už nezobrazí.',
+  Format: 'Formát',
+  'No webhooks yet.': 'Zatiaľ žiadne webhooky.',
+  'Nothing is sent to it any more. This cannot be undone.': 'Nič sa naň už nebude posielať. Nedá sa to vrátiť späť.',
+  'Outgoing webhooks': 'Odchádzajúce webhooky',
+  Pause: 'Pozastaviť',
+  'Remove this webhook?': 'Odstrániť tento webhook?',
+  Resume: 'Obnoviť',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Pošlite správu inej službe, napríklad Slacku alebo vlastnému serveru, keď sa dosiahne cieľ alebo príde platba.',
+  'Send test': 'Poslať test',
+  'Signed JSON': 'Podpísaný JSON',
+  'Test sent': 'Test odoslaný',
+  'Webhook added': 'Webhook pridaný',
   '(exactly {exact})': '(presne {exact})',
   '(none)': '(žiadne)',
   ', filter by this': ', filtrovať podľa tohto',
@@ -540,6 +559,12 @@ export default {
   Small: 'Malý',
   Snippet: 'Kód',
   'Something went wrong': 'Niečo sa pokazilo',
+  'Zoom in': 'Priblížiť',
+  'Zoom out': 'Oddialiť',
+  'Reset zoom': 'Obnoviť priblíženie',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl alebo ⌘ + koliesko pre priblíženie, ťahaním posúvate',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'Požiadavka neprešla. Ak používate blokátor reklám, vypnite ho pre túto stránku a načítajte ju znova.',
   'Sort sites by': 'Zoradiť weby podľa',
   'Sound on new visits': 'Zvuk pri novej návšteve',
   Source: 'Zdroj',

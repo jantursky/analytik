@@ -127,6 +127,7 @@ const ROUTE_VIEWS: Record<string, readonly ShareView[]> = {
   realtime: ['realtime', 'overview'],
   sessions: ['sessions'],
   events: ['events'],
+  'event-log': ['events'],
   properties: ['events'],
   bots: ['bots'],
   funnels: ['funnels'],

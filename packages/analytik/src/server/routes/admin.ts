@@ -40,6 +40,7 @@ import { PROP_PREFIX, isFilterKey } from '../../shared/dimensions'
 import type { Dialect } from '../../storage/types'
 import { breakdown } from '../stats/breakdown'
 import { properties } from '../stats/properties'
+import { createWebhook, deleteWebhook, listWebhooks, testWebhook, updateWebhook } from '../webhooks'
 import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
@@ -68,7 +69,7 @@ const EVENT_TYPES: readonly EventType[] = ['pageview', 'goal', 'outbound', 'iden
  * names and emails, so they stay admin-only, like settings, export and writes.
  */
 const SHAREABLE =
-  /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|properties|realtime|sessions|events|bots|funnels(\/[^/]+)?)$/
+  /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|properties|realtime|sessions|events|event-log|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
   Variables: { site: SiteRecord; share: ShareLink | null }
@@ -147,17 +148,21 @@ const JOURNEYS_CACHE_SECONDS = 300
 const SHARE_CACHE_LIVE_SECONDS = 10
 
 /**
- * Admin, or a GET carrying a share token on a read-only stats route. A link made in Settings is checked by its hash,
+ * Admin, or a GET carrying a share token (`?share=`, `x-analytik-share` or `Authorization: Bearer`) on a read-only stats
+ * route. A link made in Settings is checked by its hash,
  * against its site, its views, its expiry and revocation; the older site-wide `shareToken` still opens every shareable
  * route. Only responses to a link's token in the address are cached publicly: the address is the cache key, so the key
- * holds the token and one link's response never answers another request.
+ * holds the token and one link's response never answers another request. A token in a header is never cached publicly.
  */
 function siteAccess(ctx: Context): MiddlewareHandler<AdminEnv> {
   const admin = requireAdmin(ctx)
   return async (c, next) => {
     const id = c.req.param('id') ?? ''
     const fromAddress = c.req.query('share')
-    const share = fromAddress ?? c.req.header('x-analytik-share')
+    // An admin session token is never looked up as a link; any other Bearer value may be a link's token.
+    const bearer = /^Bearer\s+(\S+)$/i.exec(c.req.header('authorization') ?? '')?.[1]
+    const share =
+      fromAddress ?? c.req.header('x-analytik-share') ?? (bearer && !bearer.startsWith('admin.') ? bearer : undefined)
     const route = c.req.path.slice(ctx.basePath.length)
     if (share && c.req.method === 'GET' && SHAREABLE.test(route)) {
       const site = await getSite(ctx, id)
@@ -349,11 +354,14 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     if (!detail) throw new AnalytikError('session not found', 404)
     return c.json(detail)
   })
-  app.get('/sites/:id/events', async (c) => {
+  // `/event-log` is the same list under a name content blockers leave alone: some block any URL with `/events`.
+  const eventList = async (c: HonoContext<AdminEnv>) => {
     const type = c.req.query('type') as EventType | undefined
     if (type !== undefined && !EVENT_TYPES.includes(type)) throw new AnalytikError('unknown event type')
     return c.json(await events(ctx, c.get('site'), query(c), { ...pageParams(c), name: c.req.query('name'), type }))
-  })
+  }
+  app.get('/sites/:id/events', eventList)
+  app.get('/sites/:id/event-log', eventList)
 
   // Read-only links to this site's dashboard. Admin only: a link cannot list, create or revoke links.
   app.get('/sites/:id/share-links', async (c) => c.json(await listShareLinks(ctx, c.get('site').id)))
@@ -366,6 +374,23 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     }
     return c.json({ ok: true })
   })
+
+  // Webhooks for goals and payments. Admin only: a share link can neither read nor change them.
+  app.get('/sites/:id/webhooks', async (c) => c.json(await listWebhooks(ctx, c.get('site').id)))
+  app.post('/sites/:id/webhooks', async (c) => c.json(await createWebhook(ctx, c.get('site').id, await body(c)), 201))
+  app.patch('/sites/:id/webhooks/:wid', async (c) => {
+    const webhook = await updateWebhook(ctx, c.get('site').id, c.req.param('wid'), await body(c))
+    if (!webhook) throw new AnalytikError('webhook not found', 404)
+    return c.json(webhook)
+  })
+  app.delete('/sites/:id/webhooks/:wid', async (c) => {
+    if (!(await deleteWebhook(ctx, c.get('site').id, c.req.param('wid'))))
+      throw new AnalytikError('webhook not found', 404)
+    return c.json({ ok: true })
+  })
+  app.post('/sites/:id/webhooks/:wid/test', async (c) =>
+    c.json(await testWebhook(ctx, c.get('site'), c.req.param('wid'))),
+  )
 
   // Dated notes on the charts. They are read through the timeseries; a share link can read them but not change them.
   app.post('/sites/:id/annotations', async (c) =>

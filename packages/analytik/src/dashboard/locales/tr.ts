@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Turkish. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Webhook ekle',
+  Address: 'Adres',
+  'Chat message': 'Sohbet mesajı',
+  'Copy secret': 'Sırrı kopyala',
+  'Copy the secret now. For safety it is not shown again.':
+    'Sırrı şimdi kopyalayın. Güvenlik için bir daha gösterilmez.',
+  Format: 'Biçim',
+  'No webhooks yet.': 'Henüz webhook yok.',
+  'Nothing is sent to it any more. This cannot be undone.': 'Ona artık hiçbir şey gönderilmez. Bu geri alınamaz.',
+  'Outgoing webhooks': "Giden webhook'lar",
+  Pause: 'Duraklat',
+  'Remove this webhook?': 'Bu webhook kaldırılsın mı?',
+  Resume: 'Sürdür',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    'Bir hedefe ulaşıldığında veya ödeme geldiğinde Slack ya da kendi sunucunuz gibi başka bir hizmete mesaj gönderin.',
+  'Send test': 'Test gönder',
+  'Signed JSON': 'İmzalı JSON',
+  'Test sent': 'Test gönderildi',
+  'Webhook added': 'Webhook eklendi',
   '(exactly {exact})': '(tam olarak {exact})',
   '(none)': '(yok)',
   ', filter by this': ', buna göre filtrele',
@@ -540,6 +559,12 @@ export default {
   Small: 'Küçük',
   Snippet: 'Kod',
   'Something went wrong': 'Bir şeyler ters gitti',
+  'Zoom in': 'Yakınlaştır',
+  'Zoom out': 'Uzaklaştır',
+  'Reset zoom': 'Yakınlaştırmayı sıfırla',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Yakınlaştırmak için Ctrl veya ⌘ + kaydırma, taşımak için sürükle',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'İstek ulaşmadı. Reklam engelleyici kullanıyorsan bu site için kapat ve sayfayı yeniden yükle.',
   'Sort sites by': 'Siteleri sırala',
   'Sound on new visits': 'Yeni ziyaretlerde ses',
   Source: 'Kaynak',

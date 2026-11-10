@@ -162,7 +162,7 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     if (!site) throw new AnalytikError('invalid api key', 401)
     const body = await readJson(c.req.raw, API_LIMIT)
     if (!body || typeof body !== 'object') throw new AnalytikError('body must be a JSON object')
-    const { payment, duplicate } = await recordPayment(ctx, site, body as PaymentInput, 'api')
+    const { payment, duplicate } = await recordPayment(ctx, site, body as PaymentInput, 'api', deferrer(c))
     return c.json({ ok: true, duplicate, payment, attributed: payment.sessionId !== null })
   })
 
@@ -250,7 +250,7 @@ export function publicRoutes(app: Hono, ctx: Context): void {
     if (!input) return c.json({ ok: true, ignored: true })
     // One provider account can feed several sites, each with its own webhook; a site keeps only its own payments.
     if (await belongsElsewhere(ctx, site, input)) return c.json({ ok: true, ignored: true })
-    const { duplicate } = await recordPayment(ctx, site, input, provider)
+    const { duplicate } = await recordPayment(ctx, site, input, provider, deferrer(c))
     return c.json({ ok: true, duplicate })
   })
 }

@@ -12,7 +12,8 @@ import { recordPayment } from './payments'
 import { effectiveMode, strictVisitorId } from './privacy'
 import { purgeBefore } from './stats/purge'
 import { getSite, type SiteRecord } from './sites'
-import type { Geo, IngestInput, IngestResult } from './types'
+import { after, eventStored, runHook } from './hooks'
+import type { Geo, HookEvent, IngestInput, IngestResult } from './types'
 
 const TYPES: ReadonlySet<EventType> = new Set(['pageview', 'goal', 'outbound', 'ping', 'identify', 'revenue'])
 const MODES: ReadonlySet<PrivacyMode> = new Set(['strict', 'enriched', 'persistent'])
@@ -318,6 +319,27 @@ function ignoresIp(entries: readonly string[], ip: string): boolean {
   return match(ip)
 }
 
+const HOOKED: ReadonlySet<EventType> = new Set(['pageview', 'goal', 'outbound', 'revenue'])
+
+function hookEvent(site: SiteRecord, payload: Payload, path: string, ts: number): HookEvent {
+  return {
+    siteId: site.id,
+    type: payload.t as HookEvent['type'],
+    name: payload.t === 'pageview' ? null : (clip(payload.n, 500) ?? null),
+    path,
+    props: cleanProps(payload.p),
+    ts,
+  }
+}
+
+/** Takes the name, path and props a `beforeIngest` hook changed; they go through the same cleaning as client input. */
+function applyHookChanges(payload: Payload, changed: Partial<HookEvent>, path: string): string {
+  if (payload.t !== 'pageview' && 'name' in changed)
+    payload.n = typeof changed.name === 'string' ? changed.name : undefined
+  if ('props' in changed) payload.p = changed.props ?? undefined
+  return typeof changed.path === 'string' && changed.path.startsWith('/') ? changed.path.slice(0, 500) : path
+}
+
 /** Validates and stores one tracker event. Shared by `POST /event` and `analytik.ingest()`. */
 export async function ingest(ctx: Context, input: IngestInput): Promise<IngestResult> {
   const payload = parsePayload(input.payload)
@@ -340,6 +362,12 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   if (site.paused) return { status: 202, visitorId: null, sessionId: null, filtered: 'paused' }
 
   const now = ctx.now()
+  let path = pagePath(payload.url, ctx.keepQuery)
+  if (HOOKED.has(payload.t) && ctx.hooks.beforeIngest) {
+    const changed = await runHook('beforeIngest', ctx.hooks.beforeIngest, hookEvent(site, payload, path, now))
+    if (changed === null) return { status: 202, visitorId: null, sessionId: null, filtered: 'hook' }
+    if (changed && typeof changed === 'object') path = applyHookChanges(payload, changed, path)
+  }
   const doNotTrack = ctx.respectDoNotTrack && input.doNotTrack === true
   const mode = effectiveMode(site.privacyMode, payload.m, doNotTrack)
   const visit = await resolveVisit(ctx, site, mode, payload, input, now)
@@ -347,7 +375,6 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   await enforceRetention(ctx, site, now, input.defer)
 
   const accepted: IngestResult = { status: 202, visitorId: visit.visitorId, sessionId: visit.sessionId }
-  const path = pagePath(payload.url, ctx.keepQuery)
 
   if (payload.t === 'ping') {
     // Vitals ride on the update sent when a page is left. A row holds only the path and the numbers, no visitor id,
@@ -396,7 +423,19 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
   }
 
   const statements: Statement[] = visit.known ? [] : newSessionStatements(site, visit, payload, path, input, now)
+  // What the `onEvent` hook is told once the event is stored.
+  let hooked: Pick<HookEvent, 'name' | 'props'> | null = null
   const touch = sessionUpdate(site.id, visit.sessionId, { seenAt: now })
+  const stored = (type: HookEvent['type'], name: string | null, props: Props | null) => ({
+    siteId: site.id,
+    type,
+    name,
+    path,
+    props,
+    ts: now,
+    visitorId: visit.visitorId,
+    sessionId: visit.sessionId,
+  })
 
   switch (payload.t) {
     case 'pageview':
@@ -405,6 +444,7 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
         eventStatement(ctx, site, visit, now, 'pageview', null, path, null),
         ...claimStatements(site.id, visit.visitorId, payload.url, now),
       )
+      hooked = { name: null, props: null }
       break
     case 'goal': {
       const name = clip(payload.n, 100)
@@ -413,12 +453,14 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
         sessionUpdate(site.id, visit.sessionId, { goals: 1, seenAt: now }),
         eventStatement(ctx, site, visit, now, 'goal', name, path, cleanProps(payload.p)),
       )
+      hooked = { name, props: cleanProps(payload.p) }
       break
     }
     case 'outbound': {
       const target = clip(payload.n, 500)
       if (!target) return { status: 400, error: 'n (link target) is required' }
       statements.push(touch, eventStatement(ctx, site, visit, now, 'outbound', target, path, null))
+      hooked = { name: target, props: null }
       break
     }
     case 'revenue': {
@@ -430,6 +472,8 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
       const props = cleanProps(payload.p)
       statements.push(touch, eventStatement(ctx, site, visit, now, 'revenue', clip(payload.n, 100), path, props))
       await ctx.storage.batch(statements)
+      if (ctx.hooks.onEvent)
+        await after(input.defer, eventStored(ctx, site, stored('revenue', clip(payload.n, 100), props)))
       const orderId = clip(payload.o, 190)
       await recordPayment(
         ctx,
@@ -450,5 +494,8 @@ export async function ingest(ctx: Context, input: IngestInput): Promise<IngestRe
     }
   }
   await ctx.storage.batch(statements)
+  // Only a goal can reach webhooks; any other event is left alone unless a hook wants it.
+  if (ctx.hooks.onEvent || payload.t === 'goal')
+    await after(input.defer, eventStored(ctx, site, stored(payload.t, hooked.name, hooked.props)))
   return accepted
 }

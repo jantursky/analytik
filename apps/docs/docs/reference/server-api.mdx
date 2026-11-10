@@ -29,11 +29,33 @@ function createAnalytik(options: CreateAnalytikOptions): Analytik
 | `trustProxy`     | `'auto'`, `'cloudflare'`, `'vercel'`, `'forwarded'` or `false`              | `auto`                          | Where the client IP comes from. See below.                                                                                                                                                                       |
 | `rateLimit`      | `{ perClient?: number \| false; perSite?: number \| false }`                | `{ perClient: 300 }`            | Events a minute accepted on `/event`, per client IP and site, and per whole site. `false` turns a limit off. Counted in memory by each server instance; over the limit the route answers 429 with `Retry-After`. |
 | `clientIp`       | `(request: Request) => string \| null`                                      | from `trustProxy`               | Your own client IP lookup. Overrides `trustProxy`. Return `null` when the address is unknown.                                                                                                                    |
+| `hooks`          | `{ beforeIngest?, onEvent?, onPayment? }`                                   | none                            | Your code around events. See [Hooks](#hooks).                                                                                                                                                                    |
+| `webhooks`       | `{ fetch?: typeof fetch }`                                                  | global `fetch`                  | Replaces the `fetch` that sends [outgoing webhooks](/guides/webhooks-and-api#outgoing-webhooks), e.g. with one that refuses private addresses.                                                                   |
 | `updateCheck`    | `boolean`                                                                   | `true`                          | Lets `GET /version` ask the npm registry for the newest release (at most every six hours, from the server), so the dashboard can offer an update. `false` makes no request.                                      |
 | `email`          | `{ send, from, to?, url?, cronSecret? }`                                    | none                            | Turns on owner emails: payment alerts, a summary and a tracker-down alert, chosen in Settings → Email. `send` comes from `analytik/email`. See [Email notifications](/guides/email-notifications).               |
 | `debug`          | `boolean`                                                                   | `false`                         | Turns on the `/debug` admin routes and the dashboard's Debug settings, which fill the database with test data. Local and staging only.                                                                           |
 | `now`            | `() => number`                                                              | `Date.now`                      | Clock, for tests.                                                                                                                                                                                                |
 | `random`         | `(size: number) => Uint8Array`                                              | Web Crypto                      | Random source, for tests.                                                                                                                                                                                        |
+
+### Hooks
+
+```ts
+interface HookEvent {
+  siteId: string
+  type: 'pageview' | 'goal' | 'outbound' | 'revenue'
+  name: string | null
+  path: string
+  props: Props | null
+  ts: number
+}
+interface AnalytikHooks {
+  beforeIngest?(event: HookEvent): HookEvent | null | void | Promise<HookEvent | null | void>
+  onEvent?(event: HookEvent & { visitorId: string; sessionId: string }): void | Promise<void>
+  onPayment?(payment: Payment): void | Promise<void>
+}
+```
+
+`beforeIngest` runs before the write: `null` drops the event, a changed event (only `name`, `path` and `props`) is stored instead. `onEvent` and `onPayment` run after the write, through the platform's `waitUntil` where there is one. Each hook has 1 second; a throw or timeout is logged and ignored. See [the guide](/guides/webhooks-and-api#server-hooks).
 
 ### Admin
 

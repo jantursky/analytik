@@ -4,7 +4,7 @@ import type { Storage } from '../storage/types'
 import { clientIpFrom } from './request'
 import type { EmailOptions } from './email/types'
 import { createIngestLimiter, type IngestLimiter } from './ingest-limit'
-import type { AdminAuth, AllowedOrigins, CreateAnalytikOptions, Geo } from './types'
+import type { AdminAuth, AllowedOrigins, AnalytikHooks, CreateAnalytikOptions, Geo } from './types'
 
 /** Everything the handlers share; built once per `createAnalytik()`. */
 export interface Context {
@@ -31,6 +31,10 @@ export interface Context {
   syncAttempts: Map<string, number>
   /** In-memory counters for `/event`; per instance by design. */
   ingestLimit: IngestLimiter
+  /** Functions of the embedding code; empty when none is given. */
+  hooks: AnalytikHooks
+  /** The fetch outbound webhooks use. */
+  webhookFetch: typeof fetch
   /** Events per minute for one client of one site, and for one site; `false` turns a limit off. */
   rateLimit: { perClient: number | false; perSite: number | false }
 }
@@ -70,6 +74,8 @@ export function createContext(options: CreateAnalytikOptions): Context {
     retentionRuns: new Map(),
     syncAttempts: new Map(),
     ingestLimit: createIngestLimiter(),
+    hooks: options.hooks ?? {},
+    webhookFetch: options.webhooks?.fetch ?? ((input, init) => fetch(input, init)),
     rateLimit: { perClient: options.rateLimit?.perClient ?? 300, perSite: options.rateLimit?.perSite ?? false },
   }
 }

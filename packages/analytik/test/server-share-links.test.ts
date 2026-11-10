@@ -91,6 +91,69 @@ describe('share links', () => {
     expect(await status('funnels')).toBe(401)
   })
 
+  describe('as a Bearer token (the Stats API)', () => {
+    const bearer = (token: string) => ({ headers: { authorization: `Bearer ${token}` } })
+
+    it('reads every readable route, like the other two forms, and never caches publicly', async () => {
+      const { site } = await server.createSite()
+      const { token } = await create(site.id)
+      for (const path of [
+        'overview',
+        'timeseries',
+        'realtime',
+        'sessions',
+        'events',
+        'bots',
+        'funnels',
+        'breakdown?dimension=page',
+        'properties?name=signup',
+      ]) {
+        const response = await server.request(`/sites/${site.id}/${path}`, bearer(token))
+        expect(response.status, path).toBe(200)
+        expect(response.headers.get('cache-control'), path).not.toContain('public')
+      }
+      // The address form still caches publicly, the header forms do not.
+      const address = await server.request(`/sites/${site.id}/overview?share=${token}`)
+      expect(address.headers.get('cache-control')).toContain('public')
+    })
+
+    it('stops when the link is revoked, expired, for another site or limited to other views', async () => {
+      const { site } = await server.createSite()
+      const other = (await server.createSite({ domain: 'other.com' })).site
+      const { token } = await create(site.id, { expiresInDays: 1 })
+      const limited = (await create(site.id, { views: ['bots'] })).token
+      expect((await server.request(`/sites/${other.id}/overview`, bearer(token))).status).toBe(401)
+      expect((await server.request(`/sites/${site.id}/overview`, bearer(limited))).status).toBe(401)
+      expect((await server.request(`/sites/${site.id}/bots`, bearer(limited))).status).toBe(200)
+      server.advance(2 * DAY)
+      expect((await server.request(`/sites/${site.id}/overview`, bearer(token))).status).toBe(401)
+      const fresh = await create(site.id)
+      await server.admin(`/sites/${site.id}/share-links/${fresh.link.id}`, { method: 'DELETE' })
+      expect((await server.request(`/sites/${site.id}/overview`, bearer(fresh.token))).status).toBe(401)
+    })
+
+    it('never opens a write, settings, payments, export or session details', async () => {
+      const { site } = await server.createSite()
+      const { token } = await create(site.id)
+      const patch = await server.request(`/sites/${site.id}`, {
+        method: 'PATCH',
+        body: '{}',
+        ...bearer(token),
+      })
+      expect(patch.status).toBe(401)
+      for (const path of ['', '/payments', '/export', '/sessions/x', '/share-links', '/webhooks']) {
+        expect((await server.request(`/sites/${site.id}${path}`, bearer(token))).status, path).toBe(401)
+      }
+    })
+
+    it('leaves the admin Bearer token an admin token, never a link lookup', async () => {
+      const { site } = await server.createSite()
+      expect((await server.request(`/sites/${site.id}/overview`, bearer(server.token))).status).toBe(200)
+      expect((await server.request(`/sites/${site.id}`, bearer(server.token))).status).toBe(200)
+      expect((await server.request(`/sites/${site.id}/overview`, bearer('admin.1.forged'))).status).toBe(401)
+    })
+  })
+
   it('refuse a link whose stored views cannot be read', async () => {
     const { site } = await server.createSite()
     const { token } = await create(site.id, { views: ['bots'] })

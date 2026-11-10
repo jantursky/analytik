@@ -2,6 +2,25 @@ import type { Messages } from '../i18n'
 
 /** Japanese. Keys are the English texts; `bun run extract:messages` lists them. */
 export default {
+  'Add webhook': 'Webhook を追加',
+  Address: 'アドレス',
+  'Chat message': 'チャットメッセージ',
+  'Copy secret': 'シークレットをコピー',
+  'Copy the secret now. For safety it is not shown again.':
+    '今すぐシークレットをコピーしてください。安全のため、再表示されません。',
+  Format: '形式',
+  'No webhooks yet.': 'Webhook はまだありません。',
+  'Nothing is sent to it any more. This cannot be undone.': '今後は何も送信されません。この操作は元に戻せません。',
+  'Outgoing webhooks': '送信 Webhook',
+  Pause: '一時停止',
+  'Remove this webhook?': 'この Webhook を削除しますか？',
+  Resume: '再開',
+  'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
+    '目標を達成したときや支払いがあったときに、Slack や自分のサーバーなど別のサービスへメッセージを送ります。',
+  'Send test': 'テスト送信',
+  'Signed JSON': '署名付き JSON',
+  'Test sent': 'テストを送信しました',
+  'Webhook added': 'Webhook を追加しました',
   '(exactly {exact})': '(ちょうど {exact})',
   '(none)': '(なし)',
   ', filter by this': '、これで絞り込む',
@@ -541,6 +560,12 @@ export default {
   Small: '小',
   Snippet: 'スニペット',
   'Something went wrong': '問題が発生しました',
+  'Zoom in': '拡大',
+  'Zoom out': '縮小',
+  'Reset zoom': 'ズームをリセット',
+  'Ctrl or ⌘ + scroll to zoom, drag to move': 'Ctrl または ⌘ + スクロールでズーム、ドラッグで移動',
+  "The request didn't get through. If you use an ad blocker, turn it off for this site and reload.":
+    'リクエストが届きませんでした。広告ブロッカーを使っている場合は、このサイトでは無効にして再読み込みしてください。',
   'Sort sites by': 'サイトの並べ替え',
   'Sound on new visits': '新しい訪問時に音を鳴らす',
   Source: '参照元',

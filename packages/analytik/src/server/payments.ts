@@ -5,6 +5,7 @@ import type { Statement } from '../storage/types'
 import { type VisitMatch, attribute } from './attribution'
 import { AnalytikError, type Context } from './context'
 import { alertPayment } from './email/notify'
+import { after, paymentRecorded } from './hooks'
 import type { SiteRecord } from './sites'
 import type { RecordPaymentResult, RematchResult } from './types'
 
@@ -199,6 +200,7 @@ export async function recordPayment(
   site: SiteRecord,
   input: PaymentInput,
   provider: string,
+  defer?: (work: Promise<unknown>) => void,
 ): Promise<RecordPaymentResult> {
   const payment = normalizePayment(input, ctx.now())
   const existing = await findPayment(ctx, site.id, payment.id)
@@ -292,6 +294,8 @@ export async function recordPayment(
   }
   // A new payment (not a refund or a retry) may email the owner; this never fails the webhook.
   await alertPayment(ctx, site, recorded)
+  // Like the email, the hook is for payments the provider confirmed, not the browser's own revenue report.
+  if (provider !== 'client') await after(defer, paymentRecorded(ctx, site, recorded))
   return { payment: recorded, duplicate: false }
 }
 

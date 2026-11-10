@@ -15,6 +15,7 @@ import type {
   Overview,
   Page,
   Payment,
+  Props,
   PaymentInput,
   PaymentKind,
   PrivacyMode,
@@ -101,6 +102,14 @@ export interface CreateAnalytikOptions {
    * route answers 429 with `Retry-After`. Clients without a known IP are not limited per client.
    */
   rateLimit?: { perClient?: number | false; perSite?: number | false }
+  /**
+   * Functions of your own that see events and payments. `beforeIngest` runs before an event is stored and may drop or
+   * change it; `onEvent` and `onPayment` run after the write. A hook that throws or takes over a second is abandoned
+   * and never fails or delays ingest or a payment webhook.
+   */
+  hooks?: AnalytikHooks
+  /** Outbound webhooks: `fetch` replaces the global one, e.g. with one that refuses private addresses after DNS. */
+  webhooks?: { fetch?: typeof fetch }
   /** Your own client IP lookup; overrides `trustProxy`. Return null when unknown. */
   clientIp?: (request: Request) => string | null
   /**
@@ -122,6 +131,42 @@ export interface CreateAnalytikOptions {
 
 export type { EmailMessage, EmailOptions, EmailSend, EmailSettings, ScheduledResult } from './email/types'
 
+/** An event as the hooks see it. Pings and sign-ins are not hooked. */
+export interface HookEvent {
+  siteId: string
+  type: 'pageview' | 'goal' | 'outbound' | 'revenue'
+  /** The goal or link target; null for pageviews. */
+  name: string | null
+  /** The page path, with only the query keys the site keeps. */
+  path: string
+  props: Props | null
+  /** Unix milliseconds. */
+  ts: number
+}
+
+/** A stored event, for `onEvent`: the event plus the ids it was stored under. */
+export interface StoredHookEvent extends HookEvent {
+  visitorId: string
+  sessionId: string
+}
+
+export interface AnalytikHooks {
+  /**
+   * Before the event is stored. Return `null` to drop it, a changed event to store that instead (only `name`, `path`
+   * and `props` can change, and they are cleaned like any client event), or nothing to keep it.
+   */
+  // `void` lets a hook that returns nothing on some paths type-check.
+  /* eslint-disable @typescript-eslint/no-invalid-void-type */
+  beforeIngest?: (
+    event: HookEvent,
+  ) => HookEvent | null | undefined | void | Promise<HookEvent | null | undefined | void>
+  /* eslint-enable @typescript-eslint/no-invalid-void-type */
+  /** After an event was stored. */
+  onEvent?: (event: StoredHookEvent) => void | Promise<void>
+  /** After a new payment or refund was recorded; not for a retried webhook. */
+  onPayment?: (payment: Payment) => void | Promise<void>
+}
+
 export interface IngestInput {
   /** Untrusted tracker payload; validated like an HTTP request body. */
   payload: unknown
@@ -142,7 +187,7 @@ export interface IngestInput {
   defer?: (work: Promise<unknown>) => void
 }
 
-export type IngestFiltered = 'bot' | 'ignored-ip' | 'admin' | 'paused'
+export type IngestFiltered = 'bot' | 'ignored-ip' | 'admin' | 'paused' | 'hook'
 
 export type IngestResult =
   | { status: 202; visitorId: string | null; sessionId: string | null; filtered?: IngestFiltered }
