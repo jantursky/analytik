@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.25.0]
+
+### Added
+
+- API keys for scripts and tools: several keys, read or write, per site, with roll, disable, delete, expiry, limits and an activity log, each step behind the admin password; also served under `/v1`, with e-mail notices.
+
 ## [1.24.0]
 
 ### Added

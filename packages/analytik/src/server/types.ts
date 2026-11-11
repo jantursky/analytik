@@ -103,6 +103,14 @@ export interface CreateAnalytikOptions {
    */
   rateLimit?: { perClient?: number | false; perSite?: number | false }
   /**
+   * Limits for one API key: `perMinute` for all its requests (default 120) and `heavy` for the costly routes (journeys,
+   * retention, export, import, searching sessions; default 12). `false` turns a limit off. Over the limit the answer is 429
+   * with `Retry-After`. `store` says where requests are counted: `database` (default) is exact across servers, but writes
+   * to the database on every call; `memory` writes nothing and counts per server instance, which suits Cloudflare D1 and
+   * busy scripts.
+   */
+  keyRateLimit?: { perMinute?: number | false; heavy?: number | false; store?: 'database' | 'memory' }
+  /**
    * Functions of your own that see events and payments. `beforeIngest` runs before an event is stored and may drop or
    * change it; `onEvent` and `onPayment` run after the write. A hook that throws or takes over a second is abandoned
    * and never fails or delays ingest or a payment webhook.

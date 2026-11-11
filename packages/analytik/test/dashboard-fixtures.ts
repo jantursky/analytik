@@ -1,5 +1,7 @@
 import type { Fetcher } from '../src/dashboard/api'
 import type {
+  ApiKey,
+  ApiKeyEvent,
   BreakdownRow,
   Funnel,
   Overview,
@@ -167,6 +169,10 @@ export interface Recorded {
   body: unknown
 }
 
+/** The admin password the API key routes of the fake API accept. */
+export const API_KEY_PASSWORD = 'let-me-in'
+const wrongPassword = () => Response.json({ error: 'wrong password' }, { status: 403 })
+
 type Handler = (request: Recorded) => unknown
 
 /**
@@ -180,6 +186,8 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     funnels: [funnel],
     shareLinks: [] as ShareLink[],
     webhooks: [] as Webhook[],
+    apiKeys: [] as ApiKey[],
+    apiKeyEvents: [] as ApiKeyEvent[],
     /** What a link's token opens in the shared dashboard; a token not listed here is refused. */
     sharedViews: { 'good-token-1234567890abcdef': [] as ShareView[] } as Record<string, ShareView[]>,
     loggedIn: true,
@@ -195,10 +203,15 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     email: {
       configured: true,
       to: null as string | null,
-      settings: { to: '', payments: false, summary: 'off', hour: 8, down: false, timezone: 'UTC' } as Record<
-        string,
-        unknown
-      >,
+      settings: {
+        to: '',
+        payments: false,
+        summary: 'off',
+        hour: 8,
+        down: false,
+        timezone: 'UTC',
+        apiKeyAlerts: true,
+      } as Record<string, unknown>,
     },
     siteDefaults: {
       timezone: 'UTC',
@@ -307,6 +320,56 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
       state.shareLinks = state.shareLinks.map((l) =>
         path.endsWith(`/${l.id}`) ? { ...l, revokedAt: Date.UTC(2026, 9, 27) } : l,
       )
+      return { ok: true }
+    },
+    'GET /api-keys': () => state.apiKeys,
+    'GET /api-keys/events': () => state.apiKeyEvents,
+    'POST /api-keys': ({ body }) => {
+      const input = body as { label: string; scope: ApiKey['scope']; siteIds: string[]; password?: string }
+      if (state.login === 'password' && input.password !== API_KEY_PASSWORD) return wrongPassword()
+      const key: ApiKey = {
+        id: `ky_${state.apiKeys.length + 1}`,
+        label: input.label,
+        prefix: 'anl_AbCd',
+        scope: input.scope,
+        siteIds: input.siteIds,
+        createdAt: Date.UTC(2026, 9, 26),
+        expiresAt: null,
+        lastUsedAt: null,
+        disabledAt: null,
+        previousUntil: null,
+        state: 'active',
+      }
+      state.apiKeys = [key, ...state.apiKeys]
+      return Response.json({ key, secret: `anl_${'N'.repeat(43)}` }, { status: 201 })
+    },
+    'POST /api-keys/:id/roll': ({ path, body }) => {
+      if (state.login === 'password' && (body as { password?: string }).password !== API_KEY_PASSWORD) {
+        return wrongPassword()
+      }
+      const key = state.apiKeys.find((k) => path.includes(`/${k.id}/`))
+      return { key, secret: `anl_${'R'.repeat(43)}` }
+    },
+    'POST /api-keys/:id/disable': ({ path }) => {
+      state.apiKeys = state.apiKeys.map((k) =>
+        path.includes(`/${k.id}/`) ? { ...k, state: 'disabled', disabledAt: Date.UTC(2026, 9, 27) } : k,
+      )
+      return state.apiKeys.find((k) => path.includes(`/${k.id}/`))
+    },
+    'POST /api-keys/:id/enable': ({ path, body }) => {
+      if (state.login === 'password' && (body as { password?: string }).password !== API_KEY_PASSWORD) {
+        return wrongPassword()
+      }
+      state.apiKeys = state.apiKeys.map((k) =>
+        path.includes(`/${k.id}/`) ? { ...k, state: 'active', disabledAt: null } : k,
+      )
+      return state.apiKeys.find((k) => path.includes(`/${k.id}/`))
+    },
+    'DELETE /api-keys/:id': ({ path, body }) => {
+      if (state.login === 'password' && (body as { password?: string }).password !== API_KEY_PASSWORD) {
+        return wrongPassword()
+      }
+      state.apiKeys = state.apiKeys.filter((k) => !path.endsWith(`/${k.id}`))
       return { ok: true }
     },
     'GET /sites/:id/webhooks': () => state.webhooks,

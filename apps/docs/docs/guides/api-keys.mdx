@@ -1,0 +1,152 @@
+---
+title: API keys
+description: Let a script, a dashboard tool or an agent read your statistics with a key of its own that you can limit, roll, switch off and delete.
+---
+
+An API key is a password for one script or tool. You make as many as you like in **Settings → API keys**, give each a name, and can limit it to some sites, replace it without a gap, switch it off in one click or delete it. Everything a key can do goes through the same routes the dashboard uses, so the [HTTP API](/reference/http-api) reference lists the answers.
+
+## Which credential to use
+
+| Credential    | Looks like | Use it for                                                                                                    |
+| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
+| **API key**   | `anl_…`    | Your own scripts, BI tools and agents: all sites or chosen ones, payments, export, optionally changes.        |
+| Share link    | long token | Showing one site's numbers to someone else, read only and by view. See [Stats API](/guides/webhooks-and-api). |
+| Site API key  | `ak_…`     | A server reporting payments, goals, bots and notes **to** one site. It cannot read anything.                  |
+| Admin session | `admin.…`  | The dashboard itself. Do not give it to scripts: it lasts 30 days and does everything.                        |
+
+The site API key sends data in, an API key reads it out. They are different things and one never works as the other.
+
+## Make a key
+
+1. Open **Settings → API keys**.
+2. Give the key a name (say "Grafana"), choose **Read only** or **Read and write**, pick the sites (all of them by default) and an expiry.
+3. Press **Create key** and type the admin password.
+4. Copy the key. **It is shown once.** analytik stores only a hash, so a lost key cannot be recovered, only replaced.
+
+Creating, rolling, enabling and deleting a key always asks for the admin password, so a browser left open is not enough. **Disable** does not ask: if a key leaks, you can stop it at once. When you sign in through the `verify()` option there is no password, and the dialog only asks you to confirm.
+
+Short expiries and one key per tool limit the damage of a leak. If you have an e-mail sender set up, analytik also e-mails you whenever a key is created, rolled, disabled or deleted (switch it off in **Settings → Email**). The e-mail never contains the key.
+
+## Call the API
+
+Send the key as a bearer token. The stable address is `/v1` after your base path, so with the default `/api`:
+
+```bash
+curl -H "Authorization: Bearer anl_YOUR_KEY" \
+  "https://analytics.example.com/api/v1/whoami"
+```
+
+`whoami` tells you what the key may do and how many requests it has left:
+
+```json
+{
+  "kind": "key",
+  "id": "ky_k3m9x2a7p0qz",
+  "label": "Grafana",
+  "prefix": "anl_AbCd",
+  "scope": "read",
+  "siteIds": [],
+  "expiresAt": null,
+  "rateLimit": { "limit": 120, "remaining": 119, "reset": 1794412380 }
+}
+```
+
+The plain paths without `/v1` answer the same; examples here use `/v1`. A key is accepted only in the `Authorization` header, never in the address.
+
+### Read
+
+```bash
+BASE=https://analytics.example.com/api/v1
+KEY=anl_YOUR_KEY
+AUTH="Authorization: Bearer $KEY"
+
+# Your sites
+curl -H "$AUTH" "$BASE/sites"
+
+# Headline numbers
+curl -H "$AUTH" "$BASE/sites/SITE_ID/overview?from=2026-10-01&to=2026-11-01"
+
+# A chart's data, and a breakdown by source
+curl -H "$AUTH" "$BASE/sites/SITE_ID/timeseries?from=2026-10-01&to=2026-11-01&interval=day"
+curl -H "$AUTH" "$BASE/sites/SITE_ID/breakdown?dimension=source&from=2026-10-01&to=2026-11-01"
+
+# Lists, a page at a time (see Pagination below)
+curl -H "$AUTH" "$BASE/sites/SITE_ID/sessions?limit=50"
+curl -H "$AUTH" "$BASE/sites/SITE_ID/events?type=goal&name=signup"
+curl -H "$AUTH" "$BASE/sites/SITE_ID/payments?kind=payment"
+
+# Funnels and the rest
+curl -H "$AUTH" "$BASE/sites/SITE_ID/funnels"
+curl -H "$AUTH" "$BASE/sites/SITE_ID/targets"
+curl -H "$AUTH" "$BASE/sites/SITE_ID/vitals"
+
+# A full export
+curl -H "$AUTH" "$BASE/sites/SITE_ID/export?format=csv&table=events" -o events.csv
+```
+
+A read key can use every `GET` route of its sites, including the ones a share link cannot: payments, single sessions, export, targets, journeys, retention and vitals.
+
+### Change things (write keys)
+
+A **Read and write** key can also change what belongs to its sites:
+
+```bash
+# A dated note on the charts
+curl -X POST -H "$AUTH" -H "content-type: application/json" \
+  -d '{"date":"2026-11-02","text":"Launched the new pricing"}' \
+  "$BASE/sites/SITE_ID/annotations"
+
+# Rename a site
+curl -X PATCH -H "$AUTH" -H "content-type: application/json" \
+  -d '{"name":"Shop"}' "$BASE/sites/SITE_ID"
+```
+
+A write key may change the site's settings, notes, funnels, imports and payment matching. It can **never** delete a site, rotate a site's API key, manage webhooks, share links, e-mail or defaults, or touch API keys. Those stay with the signed-in admin.
+
+## Limits
+
+Each key may send **120 requests a minute**, and **12 a minute** to the costly routes (journeys, retention, export, import and searching sessions). Past a limit the answer is `429` with a `Retry-After` header. Every answer carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (Unix seconds). The server owner can change both limits, or switch them off, with the `keyRateLimit` option. Its `store` says where requests are counted: `database` (default) is exact across several servers but writes on every call, `memory` writes nothing and counts per server instance, which suits Cloudflare D1.
+
+Unknown keys are counted per address too: after 30 wrong keys in 15 minutes from one address the answer is `429`, so a key cannot be guessed.
+
+## Errors
+
+Every error is JSON, `{ "error": "..." }`.
+
+| Status | Meaning                                                                                                                               |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `401`  | No key, or one that cannot be used: unknown, disabled, expired, deleted or replaced. All look the same on purpose.                    |
+| `403`  | The key is valid but not allowed: it is read only, it belongs to other sites, or the route is closed to keys. The message says which. |
+| `400`  | The request is wrong (a bad date, an unknown dimension). Fix it, retrying will not help.                                              |
+| `404`  | The site or item does not exist.                                                                                                      |
+| `429`  | A limit was passed. Wait for `Retry-After` seconds.                                                                                   |
+| `5xx`  | A server problem. Retry with backoff.                                                                                                 |
+
+## Retry and backoff
+
+- Every `GET` is safe to repeat.
+- Retry only `429` and `5xx`. Never retry other `4xx`: the answer will not change.
+- On `429`, wait for `Retry-After` (seconds) before the next try. Without it, wait 1, 2, 4, 8 seconds and add a little random jitter, giving up after a handful of tries.
+- A refused write (`4xx`) changed nothing, so it is safe to send again once fixed. After a timeout, check before you repeat a write that adds something, such as a note: there is no idempotency key yet.
+- Watch `X-RateLimit-Remaining` and slow down before the limit instead of after it.
+
+## Pagination
+
+Sessions, events and payments answer `{ items, nextCursor, total }`. Pass `nextCursor` as `cursor` to get the next page, until it is `null`. See [Lists](/reference/http-api#lists).
+
+## Roll a key without downtime
+
+Press **Roll** next to a key and choose how long the old key keeps working: at once, or for 1 hour, 24 hours or 7 days. The key keeps its name, access, sites and expiry and gets a new secret.
+
+1. Roll with a grace period of 24 hours and copy the new key.
+2. Put the new key into the script or tool and deploy it.
+3. The old key stops by itself when the time is up. Roll again to end it sooner.
+
+## Keep keys safe
+
+- Keep keys on a server or in a secret store. **Never put one in a web page, a mobile app or a public repository**: every visitor could read it.
+- One key per tool, named after it, so you can switch off one without breaking the others.
+- Prefer **Read only** and the fewest sites. Give an expiry to keys you hand to a contractor.
+- Check **Key activity** under the list: it shows what happened to your keys and every call that was refused.
+- If a key may have leaked, press **Disable** first, then delete or roll it.
+- A key is a 256-bit random value that starts with `anl_`, so secret scanners can recognise it.

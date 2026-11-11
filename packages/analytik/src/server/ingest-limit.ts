@@ -12,6 +12,8 @@ interface Window {
 export interface IngestLimiter {
   /** Counts one request. Returns the seconds to wait when the limit is passed, otherwise null. */
   hit(key: string, limit: number, now: number): number | null
+  /** Counts one request and returns how many there were in the window, this one included, and when it ends. */
+  count(key: string, now: number): { count: number; resetsAt: number }
   readonly size: number
 }
 
@@ -26,7 +28,7 @@ export function createIngestLimiter(): IngestLimiter {
     get size() {
       return windows.size
     },
-    hit(key, limit, now) {
+    count(key, now) {
       let entry = windows.get(key)
       if (!entry || now - entry.start >= MINUTE) {
         if (!entry && windows.size >= LIMIT_ENTRIES) {
@@ -44,8 +46,11 @@ export function createIngestLimiter(): IngestLimiter {
         windows.set(key, entry)
       }
       entry.count += 1
-      if (entry.count <= limit) return null
-      return Math.max(1, Math.ceil((entry.start + MINUTE - now) / 1000))
+      return { count: entry.count, resetsAt: entry.start + MINUTE }
+    },
+    hit(key, limit, now) {
+      const { count, resetsAt } = this.count(key, now)
+      return count <= limit ? null : Math.max(1, Math.ceil((resetsAt - now) / 1000))
     },
   }
 }

@@ -37,6 +37,10 @@ export interface Context {
   webhookFetch: typeof fetch
   /** Events per minute for one client of one site, and for one site; `false` turns a limit off. */
   rateLimit: { perClient: number | false; perSite: number | false }
+  /** Requests per minute for one API key, and for its costly routes; `false` turns a limit off. */
+  keyRateLimit: { perMinute: number | false; heavy: number | false; store: 'database' | 'memory' }
+  /** Counters of API key requests when `keyRateLimit.store` is `memory`. */
+  keyLimit: IngestLimiter
 }
 
 /** Fails at startup instead of serving a login anyone can pass, or session cookies anyone can forge. */
@@ -77,6 +81,12 @@ export function createContext(options: CreateAnalytikOptions): Context {
     hooks: options.hooks ?? {},
     webhookFetch: options.webhooks?.fetch ?? ((input, init) => fetch(input, init)),
     rateLimit: { perClient: options.rateLimit?.perClient ?? 300, perSite: options.rateLimit?.perSite ?? false },
+    keyRateLimit: {
+      perMinute: options.keyRateLimit?.perMinute ?? 120,
+      heavy: options.keyRateLimit?.heavy ?? 12,
+      store: options.keyRateLimit?.store ?? 'database',
+    },
+    keyLimit: createIngestLimiter(),
   }
 }
 

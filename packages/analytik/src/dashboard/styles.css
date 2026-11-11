@@ -6002,9 +6002,15 @@ tr:hover .analytik-row-button {
   color: var(--analytik-text-muted);
 }
 
-.analytik-share-created .analytik-input {
+.analytik-share-created .analytik-input,
+.analytik-secret-row .analytik-input {
   flex: 1;
   min-width: 0;
+}
+
+.analytik-secret-row {
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .analytik-share-list {
@@ -6033,6 +6039,12 @@ tr:hover .analytik-row-button {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+}
+
+.analytik-share-list li > .analytik-key-actions {
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 8px;
 }
 
 .analytik-share-list li:not([data-active]) strong {

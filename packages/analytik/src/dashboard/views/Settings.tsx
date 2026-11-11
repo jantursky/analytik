@@ -22,6 +22,7 @@ import { Tooltip } from '../ui/tooltip'
 import { Changelog } from './Changelog'
 import { DebugSettings } from './DebugSettings'
 import { DefaultsSettings } from './DefaultsSettings'
+import { ApiKeysSettings } from './ApiKeysSettings'
 import { EmailSettings } from './EmailSettings'
 import { FormatSettings, ThemeSettings } from './FormatSettings'
 import { ImportedData } from './ImportData'
@@ -921,6 +922,7 @@ const SECTIONS: readonly [Section, ...Section[]] = [
     ),
   },
   { value: 'sharing', label: msg('Sharing'), icon: 'link', content: SharingSettings },
+  { value: 'api', label: msg('API keys'), icon: 'lock', content: ApiKeysSettings },
   { value: 'email', label: msg('Email'), icon: 'mail', content: EmailSettings },
   { value: 'appearance', label: msg('Appearance'), icon: 'theme', content: ThemeSettings },
   { value: 'formatting', label: msg('Formatting'), icon: 'format', content: FormatSettings },
@@ -941,6 +943,7 @@ export type SettingsSection =
   | 'payments'
   | 'data'
   | 'sharing'
+  | 'api'
   | 'email'
   | 'appearance'
   | 'formatting'

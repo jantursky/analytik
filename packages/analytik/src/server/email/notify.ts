@@ -1,5 +1,5 @@
 import { DAY, HOUR, startOfBucket, tzOffset } from '../../shared/time'
-import type { Payment } from '../../shared/types'
+import type { ApiKey, Payment } from '../../shared/types'
 import type { Context } from '../context'
 import { type SiteRecord, listSites } from '../sites'
 import { breakdown } from '../stats/breakdown'
@@ -10,6 +10,7 @@ import {
   type SummaryData,
   oneLine,
   renderDown,
+  renderKeyEvent,
   renderPayment,
   renderSummary,
   renderTest,
@@ -81,6 +82,45 @@ async function deliverPaymentAlert(ctx: Context, site: SiteRecord, payment: Paym
     await sendOnce(ctx, `payment:${site.id}:${payment.id}`, to, renderPayment(payment, site, source))
   } catch (error) {
     console.error('analytik: payment alert failed', error)
+  }
+}
+
+/**
+ * Emails the owner about an API key event. Never throws and never waits longer than a few seconds: a key action must not
+ * fail or hang over an email. Nothing is sent without a sender, a recipient or while the switch is off.
+ */
+export async function alertKeyEvent(
+  ctx: Context,
+  action: 'created' | 'rolled' | 'disabled' | 'deleted',
+  key: ApiKey,
+): Promise<void> {
+  if (!ctx.email) return
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, ALERT_TIMEOUT)
+  })
+  const deliver = async () => {
+    try {
+      const settings = await getEmailSettings(ctx)
+      const to = recipient(ctx, settings)
+      if (!settings.apiKeyAlerts || !to || !ctx.email) return
+      const content = renderKeyEvent({
+        action,
+        label: key.label,
+        prefix: key.prefix,
+        scope: key.scope,
+        sites: key.siteIds.length,
+        at: ctx.now(),
+      })
+      await ctx.email.send({ from: ctx.email.from, to, ...content })
+    } catch (error) {
+      console.error('analytik: API key alert failed', error)
+    }
+  }
+  try {
+    await Promise.race([deliver(), timeout])
+  } finally {
+    clearTimeout(timer)
   }
 }
 

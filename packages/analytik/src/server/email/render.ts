@@ -159,6 +159,36 @@ export function renderDown(
   }
 }
 
+export interface KeyEventData {
+  action: 'created' | 'rolled' | 'disabled' | 'deleted'
+  label: string
+  prefix: string
+  scope: string
+  /** Number of sites the key is limited to; 0 means all. */
+  sites: number
+  at: number
+}
+
+/** A notice about an API key. It names the key by label and prefix and never holds a secret. */
+export function renderKeyEvent(data: KeyEventData): { subject: string; text: string; html: string } {
+  const name = data.label === '' ? data.prefix : `${data.label} (${data.prefix}…)`
+  const lines = [
+    `Key: ${name}`,
+    `Scope: ${data.scope}`,
+    `Sites: ${data.sites === 0 ? 'all' : String(data.sites)}`,
+    `Time: ${new Date(data.at).toISOString()}`,
+    'If you did not do this, sign in, disable the key and change the admin password.',
+  ]
+  return {
+    subject: oneLine(`API key ${data.action}: ${data.label === '' ? data.prefix : data.label}`),
+    text: lines.join('\n'),
+    html: wrap(
+      `<h2 style="margin:0 0 8px">API key ${data.action}</h2>` +
+        lines.map((line) => `<p style="margin:2px 0">${escapeHtml(line)}</p>`).join('\n'),
+    ),
+  }
+}
+
 export function renderTest(): { subject: string; text: string; html: string } {
   const text = 'This is a test email from analytik. If you can read it, owner emails will reach you.'
   return { subject: 'analytik test email', text, html: wrap(`<p>${text}</p>`) }

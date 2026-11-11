@@ -1988,6 +1988,8 @@ describe('Settings', () => {
     expect(testButton().disabled).toBe(false)
     await click(switchFor(container, 'Email me when a payment arrives'))
     await click(switchFor(container, 'Email me when a site gets no events for 24 hours'))
+    // API key notices are on until switched off.
+    await click(switchFor(container, 'Email me when an API key is created, rolled, disabled or deleted'))
     // The time zone and hour only matter once there is a summary.
     expect(container.textContent).not.toContain('Send after')
     await choose(selectTrigger(container, 'Summary of all sites'), 'Every Monday')
@@ -2004,6 +2006,7 @@ describe('Settings', () => {
       to: 'me@example.com',
       payments: true,
       down: true,
+      apiKeyAlerts: false,
       summary: 'weekly',
       hour: 9,
     })
@@ -2562,7 +2565,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(14)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(15)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

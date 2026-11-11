@@ -55,6 +55,10 @@ Yes, from Umami, Simple Analytics, Matomo, GoatCounter, Google Analytics 4 and P
 
 A hosted multi-tenant service, Google sign-in and plan billing are out of scope. Also not available yet: an MCP server, a link shortener, A/B testing and session replay.
 
+## How do I read my numbers from a script?
+
+Make an [API key](/guides/api-keys) in **Settings → API keys** and send it as `Authorization: Bearer anl_...` to `/api/v1/sites/SITE_ID/overview`. A key can be limited to some sites, rolled without downtime and switched off in one click. For showing numbers to other people, a [share link](/guides/webhooks-and-api#stats-api) is simpler.
+
 ## Is the code open source?
 
 Yes, under the MIT license. See the repository for the source and issues.

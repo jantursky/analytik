@@ -24,6 +24,9 @@ import type {
   PropertiesResult,
   Realtime,
   SessionSummary,
+  ApiKey,
+  ApiKeyEvent,
+  ApiKeyScope,
   ShareLink,
   Webhook,
   WebhookEvent,
@@ -75,6 +78,16 @@ export interface EventRow {
 export interface SessionDetail {
   session: SessionSummary
   events: EventRow[]
+}
+
+/** What a new API key is made with. */
+export interface ApiKeyInput {
+  label?: string
+  scope?: ApiKeyScope
+  /** The sites the key may use; left out or empty means every site. */
+  siteIds?: string[]
+  /** The key stops working after this many days; left out means never. */
+  expiresInDays?: number | null
 }
 
 export interface ShareLinkInput {
@@ -159,6 +172,18 @@ export interface ApiClient {
   createShareLink(siteId: string, input?: ShareLinkInput): Promise<{ link: ShareLink; token: string }>
   /** Ends a link at once. */
   revokeShareLink(siteId: string, linkId: string): Promise<unknown>
+  /** The API keys, newest first, without their secrets. */
+  apiKeys(): Promise<ApiKey[]>
+  /** What happened to the keys, newest first. */
+  apiKeyEvents(): Promise<ApiKeyEvent[]>
+  /** Makes a key. The secret comes back only now. `password` is the admin password; admins verified another way omit it. */
+  createApiKey(input: ApiKeyInput, password?: string): Promise<{ key: ApiKey; secret: string }>
+  /** Gives a key a new secret; the old one works for `graceHours` more (0 stops it at once). */
+  rollApiKey(id: string, graceHours: number, password?: string): Promise<{ key: ApiKey; secret: string }>
+  /** Stops a key at once. Needs no password. */
+  disableApiKey(id: string): Promise<ApiKey>
+  enableApiKey(id: string, password?: string): Promise<ApiKey>
+  deleteApiKey(id: string, password?: string): Promise<unknown>
   /** The site's outbound webhooks. Addresses are shown as their host only. */
   webhooks(siteId: string): Promise<Webhook[]>
   /** Adds a webhook. The signing secret comes back only now. */
@@ -375,6 +400,14 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     shareLinks: (id) => get(`${site(id)}/share-links`),
     createShareLink: (id, input = {}) => write('POST', `${site(id)}/share-links`, input),
     revokeShareLink: (id, linkId) => write('DELETE', `${site(id)}/share-links/${encodeURIComponent(linkId)}`),
+    apiKeys: () => get('/api-keys'),
+    apiKeyEvents: () => get('/api-keys/events'),
+    createApiKey: (input, password) => write('POST', '/api-keys', { ...input, password }),
+    rollApiKey: (id, graceHours, password) =>
+      write('POST', `/api-keys/${encodeURIComponent(id)}/roll`, { graceHours, password }),
+    disableApiKey: (id) => write('POST', `/api-keys/${encodeURIComponent(id)}/disable`, {}),
+    enableApiKey: (id, password) => write('POST', `/api-keys/${encodeURIComponent(id)}/enable`, { password }),
+    deleteApiKey: (id, password) => write('DELETE', `/api-keys/${encodeURIComponent(id)}`, { password }),
     webhooks: (id) => get(`${site(id)}/webhooks`),
     createWebhook: (id, input) => write('POST', `${site(id)}/webhooks`, input),
     updateWebhook: (id, wid, patch) => write('PATCH', `${site(id)}/webhooks/${encodeURIComponent(wid)}`, patch),

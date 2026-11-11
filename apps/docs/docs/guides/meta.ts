@@ -10,6 +10,7 @@ export default defineMeta({
     'bot-traffic',
     'email-notifications',
     'webhooks-and-api',
+    'api-keys',
     'dashboard-embedding',
     'funnels-and-goals',
     'importing-data',

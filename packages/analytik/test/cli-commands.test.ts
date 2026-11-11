@@ -89,9 +89,9 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(migrate).toMatchObject({
       code: 0,
       stdout:
-        'Applied 0001_init, 0002_imported, 0003_ignore_admins, 0004_bot_requests, 0005_notifications, 0006_share_links, 0007_annotations, 0008_goal_targets, 0009_vitals, 0010_site_sync, 0011_hot_indexes, 0012_event_name_index, 0013_outbound_webhooks\n',
+        'Applied 0001_init, 0002_imported, 0003_ignore_admins, 0004_bot_requests, 0005_notifications, 0006_share_links, 0007_annotations, 0008_goal_targets, 0009_vitals, 0010_site_sync, 0011_hot_indexes, 0012_event_name_index, 0013_outbound_webhooks, 0014_api_keys\n',
     })
-    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0013_outbound_webhooks)\n')
+    expect((await cli('migrate', '--db', `sqlite:${db}`)).stdout).toBe('Already up to date (0014_api_keys)\n')
     const seed = await cli('seed', '--db', db, '--days', '2', '--seed', '5')
     expect(seed.code).toBe(0)
     expect(seed.stdout).toMatch(/Seeded site demo \(API key ak_demo0005\w+\)/)
@@ -99,7 +99,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(doctor.code).toBe(0)
     expect(doctor.stdout).toContain('✓ Bun')
     expect(doctor.stdout).toContain('✓ database reachable (sqlite)')
-    expect(doctor.stdout).toContain('✓ schema up to date (0013_outbound_webhooks)')
+    expect(doctor.stdout).toContain('✓ schema up to date (0014_api_keys)')
     expect(doctor.stdout).toContain(`✓ ${healthUrl}/api/health answered 200`)
 
     const storage = sqliteStorage(db)
@@ -227,6 +227,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
       { version: '0011_hot_indexes' },
       { version: '0012_event_name_index' },
       { version: '0013_outbound_webhooks' },
+      { version: '0014_api_keys' },
     ])
     expect(db.all("SELECT name FROM sqlite_master WHERE name = 'payments'", [])).toHaveLength(1)
     db.close()

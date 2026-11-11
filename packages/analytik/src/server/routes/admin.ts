@@ -3,7 +3,7 @@ import type { Context as HonoContext, Hono, MiddlewareHandler } from 'hono'
 import { timingSafeEqual } from '../../shared/crypto'
 import { DAY, HOUR, clampInterval, isValidTimeZone, parseDate } from '../../shared/time'
 import type { Comparison, EventType, Interval } from '../../shared/types'
-import { confirmDeletion, login, logout, me, requireAdmin } from '../auth'
+import { confirmDeletion, confirmPassword, login, logout, me, requireAdmin } from '../auth'
 import { isImportSource } from '../../shared/import/types'
 import { AnalytikError, type Context } from '../context'
 import { deleteTestSites, generateTestData } from '../debug'
@@ -11,7 +11,18 @@ import { sendTest } from '../email/notify'
 import { getEmailSettings, saveEmailSettings } from '../email/settings'
 import { createAnnotation, deleteAnnotation, updateAnnotation } from '../annotations'
 import { applySync, previewSync, siteIcon } from '../site-sync'
-import type { ShareLink } from '../../shared/types'
+import type { ApiKey, ShareLink } from '../../shared/types'
+import { alertKeyEvent } from '../email/notify'
+import {
+  createApiKey,
+  deleteApiKey,
+  listApiKeys,
+  listKeyEvents,
+  looksLikeKey,
+  rollApiKey,
+  setApiKeyDisabled,
+} from '../api-keys'
+import type { KeyRate } from '../key-access'
 import { createShareLink, findShareLink, linkAllows, listShareLinks, revokeShareLink } from '../share'
 import { importVisits } from '../import/core'
 import { listImports, removeImport } from '../import/manage'
@@ -72,7 +83,13 @@ const SHAREABLE =
   /^\/sites\/[^/]+\/(shared|favicon|overview|timeseries|breakdown|properties|realtime|sessions|events|event-log|bots|funnels(\/[^/]+)?)$/
 
 export interface AdminEnv {
-  Variables: { site: SiteRecord; share: ShareLink | null }
+  Variables: { site: SiteRecord; share: ShareLink | null; apiKey: ApiKey | null; keyRate: KeyRate | null }
+}
+
+/** The sites an API key may see; every site for an admin or a key without a site list. */
+const visibleSites = (c: HonoContext<AdminEnv>, sites: SiteRecord[]): SiteRecord[] => {
+  const ids = c.get('apiKey')?.siteIds ?? []
+  return ids.length === 0 ? sites : sites.filter((site) => ids.includes(site.id))
 }
 
 async function body(c: HonoContext, limit = BODY_LIMIT): Promise<Record<string, unknown>> {
@@ -162,7 +179,9 @@ function siteAccess(ctx: Context): MiddlewareHandler<AdminEnv> {
     // An admin session token is never looked up as a link; any other Bearer value may be a link's token.
     const bearer = /^Bearer\s+(\S+)$/i.exec(c.req.header('authorization') ?? '')?.[1]
     const share =
-      fromAddress ?? c.req.header('x-analytik-share') ?? (bearer && !bearer.startsWith('admin.') ? bearer : undefined)
+      fromAddress ??
+      c.req.header('x-analytik-share') ??
+      (bearer && !bearer.startsWith('admin.') && !looksLikeKey(bearer) ? bearer : undefined)
     const route = c.req.path.slice(ctx.basePath.length)
     if (share && c.req.method === 'GET' && SHAREABLE.test(route)) {
       const site = await getSite(ctx, id)
@@ -223,6 +242,51 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     return c.json({ ok: true, to })
   })
 
+  // Who is calling: the key's scope, sites, expiry and what is left of its limit, never its secret.
+  app.use('/whoami', requireAdmin(ctx))
+  app.get('/whoami', (c) => {
+    const key = c.get('apiKey')
+    if (!key) return c.json({ kind: 'admin' })
+    const { id, label, prefix, scope, siteIds, expiresAt } = key
+    return c.json({ kind: 'key', id, label, prefix, scope, siteIds, expiresAt, rateLimit: c.get('keyRate') })
+  })
+
+  // API keys. Admin only, and never through a key. Creating, rolling, enabling and deleting ask for the admin password;
+  // disabling does not, so a leaked key can be stopped at once.
+  app.use('/api-keys', requireAdmin(ctx))
+  app.use('/api-keys/*', requireAdmin(ctx))
+  app.get('/api-keys', async (c) => c.json(await listApiKeys(ctx)))
+  app.get('/api-keys/events', async (c) => c.json(await listKeyEvents(ctx)))
+  app.post('/api-keys', async (c) => {
+    const input = await body(c)
+    await confirmPassword(ctx, c, input.password)
+    const created = await createApiKey(ctx, input)
+    await alertKeyEvent(ctx, 'created', created.key)
+    return c.json(created, 201)
+  })
+  app.post('/api-keys/:id/roll', async (c) => {
+    const input = await body(c)
+    await confirmPassword(ctx, c, input.password)
+    const rolled = await rollApiKey(ctx, c.req.param('id'), input)
+    await alertKeyEvent(ctx, 'rolled', rolled.key)
+    return c.json(rolled)
+  })
+  app.post('/api-keys/:id/disable', async (c) => {
+    const key = await setApiKeyDisabled(ctx, c.req.param('id'), true)
+    await alertKeyEvent(ctx, 'disabled', key)
+    return c.json(key)
+  })
+  app.post('/api-keys/:id/enable', async (c) => {
+    await confirmPassword(ctx, c, (await body(c)).password)
+    return c.json(await setApiKeyDisabled(ctx, c.req.param('id'), false))
+  })
+  app.delete('/api-keys/:id', async (c) => {
+    await confirmPassword(ctx, c, (await body(c)).password)
+    const key = await deleteApiKey(ctx, c.req.param('id'))
+    await alertKeyEvent(ctx, 'deleted', key)
+    return c.json({ ok: true })
+  })
+
   app.use('/debug', requireAdmin(ctx))
   app.use('/debug/*', requireAdmin(ctx))
   app.get('/debug', (c) => c.json({ enabled: ctx.debug }))
@@ -255,7 +319,10 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     }
     const bucket = series === 'hour' ? HOUR : series === 'day' ? DAY : undefined
     return c.json(
-      await siteSummaries(ctx, await listSites(ctx), from, to, { bucket, compare: c.req.query('compare') === '1' }),
+      await siteSummaries(ctx, visibleSites(c, await listSites(ctx)), from, to, {
+        bucket,
+        compare: c.req.query('compare') === '1',
+      }),
     )
   })
 
@@ -273,7 +340,7 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
   app.use('/sites/:id', siteAccess(ctx))
   app.use('/sites/:id/*', siteAccess(ctx))
 
-  app.get('/sites', async (c) => c.json((await listSites(ctx)).map(publicSite)))
+  app.get('/sites', async (c) => c.json(visibleSites(c, await listSites(ctx)).map(publicSite)))
   app.post('/sites', async (c) => {
     const { site, apiKey } = await createSite(ctx, await body(c))
     return c.json({ site: publicSite(site), apiKey }, 201)

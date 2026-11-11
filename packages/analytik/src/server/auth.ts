@@ -4,6 +4,8 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { hmacSha256, timingSafeEqual, toBase64Url } from '../shared/crypto'
 import { DAY, MINUTE } from '../shared/time'
 import { AnalytikError, type Context } from './context'
+import { authorizeKey, bearerOf } from './key-access'
+import { looksLikeKey } from './api-keys'
 import { hashedKey } from './privacy'
 import { hit, reset } from './ratelimit'
 import type { AdminPasswordAuth } from './types'
@@ -49,6 +51,19 @@ export async function adminMethod(ctx: Context, c: HonoContext): Promise<AdminMe
  */
 export function requireAdmin(ctx: Context): MiddlewareHandler {
   return async (c, next) => {
+    // An API key is checked against its scope, sites and limits instead of being treated as an admin.
+    const secret = bearerOf(c)
+    if (secret && looksLikeKey(secret)) {
+      const { key, rate } = await authorizeKey(ctx, c, secret)
+      c.set('apiKey', key)
+      c.set('keyRate', rate)
+      await next()
+      // Whatever a route says about caching, an answer to a key is for that caller only.
+      c.res.headers.set('cache-control', 'no-store')
+      return
+    }
+    c.set('apiKey', null)
+    c.set('keyRate', null)
     const method = await adminMethod(ctx, c)
     if (!method) throw new AnalytikError('login required', 401)
     const origin = c.req.header('origin')
@@ -106,9 +121,25 @@ export async function me(ctx: Context, c: HonoContext): Promise<Response> {
 }
 
 /**
- * Asks for proof before a site is deleted, so a session left open isn't enough: the site's domain typed out, and the
- * admin password too unless admins sign in through the `verify()` option. Wrong passwords count toward the login limit.
+ * Asks for the admin password before a step that is hard to undo, so a session left open isn't enough. Skipped when
+ * admins sign in through the `verify()` option, which has no password. Wrong passwords count toward the login limit.
  */
+export async function confirmPassword(ctx: Context, c: HonoContext, password: unknown): Promise<void> {
+  const { admin } = ctx
+  if (!isPasswordAuth(admin)) return
+  const key = await hashedKey(ctx, 'login', ctx.clientIp(c.req.raw) ?? '')
+  if ((await hit(ctx, key, LOGIN_WINDOW)) > LOGIN_ATTEMPTS) {
+    throw new AnalytikError('too many wrong passwords, try again in 15 minutes', 429)
+  }
+  if (typeof password !== 'string' || !timingSafeEqual(password, admin.password)) {
+    // Not 401: the session is fine, and the dashboard signs out on a 401.
+    throw new AnalytikError('wrong password', 403)
+  }
+  // The right password ends the streak, like a successful sign-in, so a run of legitimate steps never locks the admin out.
+  await reset(ctx, key)
+}
+
+/** Asks for proof before a site is deleted: the site's domain typed out, and the admin password too. */
 export async function confirmDeletion(
   ctx: Context,
   c: HonoContext,
@@ -116,16 +147,7 @@ export async function confirmDeletion(
   input: Record<string, unknown>,
 ): Promise<void> {
   if (input.confirm !== domain) throw new AnalytikError(`type the site's domain (${domain}) to confirm`)
-  const { admin } = ctx
-  if (!isPasswordAuth(admin)) return
-  const key = await hashedKey(ctx, 'login', ctx.clientIp(c.req.raw) ?? '')
-  if ((await hit(ctx, key, LOGIN_WINDOW)) > LOGIN_ATTEMPTS) {
-    throw new AnalytikError('too many wrong passwords, try again in 15 minutes', 429)
-  }
-  if (typeof input.password !== 'string' || !timingSafeEqual(input.password, admin.password)) {
-    // Not 401: the session is fine, and the dashboard signs out on a 401.
-    throw new AnalytikError('wrong password', 403)
-  }
+  await confirmPassword(ctx, c, input.password)
 }
 
 /**

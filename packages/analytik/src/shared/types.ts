@@ -585,6 +585,8 @@ export interface EmailSettings {
   down: boolean
   /** IANA time zone the summary hour and period are read in. */
   timezone: string
+  /** Email when an API key is created, rolled, disabled or deleted. */
+  apiKeyAlerts: boolean
 }
 
 /** `GET /email`: the saved settings and whether the server has a sender to use them. */
@@ -607,6 +609,41 @@ export const SHARE_VIEWS = [
   'realtime',
 ] as const
 export type ShareView = (typeof SHARE_VIEWS)[number]
+
+/** What an API key may do: `read` is GET on stats and lists, `write` adds changes to a site's own data. */
+export const API_KEY_SCOPES = ['read', 'write'] as const
+export type ApiKeyScope = (typeof API_KEY_SCOPES)[number]
+
+/** An API key as listed. The secret is shown once, when the key is created or rolled, and is never stored. */
+export interface ApiKey {
+  id: string
+  label: string
+  /** The start of the secret, to tell keys apart in a list. */
+  prefix: string
+  scope: ApiKeyScope
+  /** Sites the key may use; empty means every site. */
+  siteIds: string[]
+  createdAt: number
+  expiresAt: number | null
+  lastUsedAt: number | null
+  disabledAt: number | null
+  /** While a rolled key's old secret still works, when it stops. */
+  previousUntil: number | null
+  state: 'active' | 'disabled' | 'expired'
+}
+
+export const API_KEY_EVENT_TYPES = ['created', 'rolled', 'disabled', 'enabled', 'deleted', 'denied'] as const
+export type ApiKeyEventType = (typeof API_KEY_EVENT_TYPES)[number]
+
+/** One line of the API key audit log. */
+export interface ApiKeyEvent {
+  id: string
+  at: number
+  keyId: string
+  label: string
+  type: ApiKeyEventType
+  detail: string
+}
 
 /** A read-only link to one site's dashboard. The token itself is shown once, when the link is created. */
 export interface ShareLink {
