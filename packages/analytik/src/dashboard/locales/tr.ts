@@ -1086,4 +1086,18 @@ export default {
   'Try it:': 'Deneyin:',
   'Used {when}': '{when} kullanıldı',
   'Your API key': 'API anahtarınız',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, one {# adres} other {# adres}}',
+  Addresses: 'Adresler',
+  'Addresses changed': 'Adresler değiştirildi',
+  'Allowed addresses': 'İzin verilen adresler',
+  'Any address': 'Herhangi bir adres',
+  'Change allowed addresses?': 'İzin verilen adresler değiştirilsin mi?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Her satıra bir adres veya aralık, örneğin 203.0.113.7 veya 203.0.113.0/24. Herhangi bir adrese izin vermek için boş bırakın.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Anahtarı yalnızca bu adresler kullanabilir. Boş liste herhangi bir adrese izin verir. Devam etmek için yönetici parolasını yazın.',
+  'Refused address': 'Reddedilen adres',
+  'Save addresses': 'Adresleri kaydet',
+  'This allows any address.': 'Bu, herhangi bir adrese izin verir.',
+  'Your address as the server sees it: {ip}': 'Sunucunun gördüğü adresiniz: {ip}',
 } satisfies Messages

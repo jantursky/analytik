@@ -1082,4 +1082,18 @@ export default {
   'Try it:': '試してみる:',
   'Used {when}': '使用日 {when}',
   'Your API key': 'あなたの API キー',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, other {# 件のアドレス}}',
+  Addresses: 'アドレス',
+  'Addresses changed': 'アドレスを変更しました',
+  'Allowed addresses': '許可するアドレス',
+  'Any address': 'すべてのアドレス',
+  'Change allowed addresses?': '許可するアドレスを変更しますか？',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    '1 行に 1 つのアドレスまたは範囲を入力します（例：203.0.113.7 や 203.0.113.0/24）。空のままにすると、すべてのアドレスを許可します。',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'このキーを使えるのはこれらのアドレスだけです。リストが空の場合は、どのアドレスでも使えます。続けるには管理者パスワードを入力してください。',
+  'Refused address': '拒否されたアドレス',
+  'Save addresses': 'アドレスを保存',
+  'This allows any address.': 'これにより、すべてのアドレスが許可されます。',
+  'Your address as the server sees it: {ip}': 'サーバーから見たあなたのアドレス: {ip}',
 } satisfies Messages

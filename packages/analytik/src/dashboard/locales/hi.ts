@@ -1083,4 +1083,18 @@ export default {
   'Try it:': 'आज़माएँ:',
   'Used {when}': '{when} को इस्तेमाल हुई',
   'Your API key': 'आपकी API कुंजी',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, one {# पता} other {# पते}}',
+  Addresses: 'पते',
+  'Addresses changed': 'पते बदले गए',
+  'Allowed addresses': 'अनुमत पते',
+  'Any address': 'कोई भी पता',
+  'Change allowed addresses?': 'अनुमत पते बदलें?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'हर पंक्ति में एक पता या रेंज, जैसे 203.0.113.7 या 203.0.113.0/24। किसी भी पते को अनुमति देने के लिए खाली छोड़ें।',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'केवल ये पते कुंजी का उपयोग कर सकते हैं। सूची खाली हो तो कोई भी पता इसका उपयोग कर सकता है। जारी रखने के लिए एडमिन पासवर्ड लिखें।',
+  'Refused address': 'अस्वीकृत पता',
+  'Save addresses': 'पते सहेजें',
+  'This allows any address.': 'इससे कोई भी पता अनुमत होगा।',
+  'Your address as the server sees it: {ip}': 'सर्वर को दिखने वाला आपका पता: {ip}',
 } satisfies Messages

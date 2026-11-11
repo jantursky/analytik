@@ -160,12 +160,14 @@ export function renderDown(
 }
 
 export interface KeyEventData {
-  action: 'created' | 'rolled' | 'disabled' | 'deleted'
+  action: 'created' | 'rolled' | 'disabled' | 'deleted' | 'allowlist_changed'
   label: string
   prefix: string
   scope: string
   /** Number of sites the key is limited to; 0 means all. */
   sites: number
+  /** Number of addresses and ranges the key is limited to; 0 means any address. */
+  addresses?: number
   at: number
 }
 
@@ -176,14 +178,17 @@ export function renderKeyEvent(data: KeyEventData): { subject: string; text: str
     `Key: ${name}`,
     `Scope: ${data.scope}`,
     `Sites: ${data.sites === 0 ? 'all' : String(data.sites)}`,
+    ...(data.addresses === undefined
+      ? []
+      : [`Allowed addresses: ${data.addresses === 0 ? 'any' : String(data.addresses)}`]),
     `Time: ${new Date(data.at).toISOString()}`,
     'If you did not do this, sign in, disable the key and change the admin password.',
   ]
   return {
-    subject: oneLine(`API key ${data.action}: ${data.label === '' ? data.prefix : data.label}`),
+    subject: oneLine(`API key ${data.action.replace('_', ' ')}: ${data.label === '' ? data.prefix : data.label}`),
     text: lines.join('\n'),
     html: wrap(
-      `<h2 style="margin:0 0 8px">API key ${data.action}</h2>` +
+      `<h2 style="margin:0 0 8px">API key ${data.action.replace('_', ' ')}</h2>` +
         lines.map((line) => `<p style="margin:2px 0">${escapeHtml(line)}</p>`).join('\n'),
     ),
   }

@@ -325,7 +325,13 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     'GET /api-keys': () => state.apiKeys,
     'GET /api-keys/events': () => state.apiKeyEvents,
     'POST /api-keys': ({ body }) => {
-      const input = body as { label: string; scope: ApiKey['scope']; siteIds: string[]; password?: string }
+      const input = body as {
+        label: string
+        scope: ApiKey['scope']
+        siteIds: string[]
+        ipAllowlist?: string[]
+        password?: string
+      }
       if (state.login === 'password' && input.password !== API_KEY_PASSWORD) return wrongPassword()
       const key: ApiKey = {
         id: `ky_${state.apiKeys.length + 1}`,
@@ -338,10 +344,19 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
         lastUsedAt: null,
         disabledAt: null,
         previousUntil: null,
+        ipAllowlist: input.ipAllowlist ?? [],
         state: 'active',
       }
       state.apiKeys = [key, ...state.apiKeys]
       return Response.json({ key, secret: `anl_${'N'.repeat(43)}` }, { status: 201 })
+    },
+    'PATCH /api-keys/:id': ({ path, body }) => {
+      const input = body as { ipAllowlist: string[]; password?: string }
+      if (state.login === 'password' && input.password !== API_KEY_PASSWORD) return wrongPassword()
+      state.apiKeys = state.apiKeys.map((k) =>
+        path.endsWith(`/${k.id}`) ? { ...k, ipAllowlist: input.ipAllowlist } : k,
+      )
+      return state.apiKeys.find((k) => path.endsWith(`/${k.id}`))
     },
     'POST /api-keys/:id/roll': ({ path, body }) => {
       if (state.login === 'password' && (body as { password?: string }).password !== API_KEY_PASSWORD) {

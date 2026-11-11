@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.26.0]
+
+### Added
+
+- An OpenAPI 3.1 document of the API key routes at `GET /v1/openapi.json`, and an optional IP address allow list per API key.
+
 ## [1.25.0]
 
 ### Added

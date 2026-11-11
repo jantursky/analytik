@@ -184,4 +184,105 @@ describe('API keys in the settings', () => {
     expect(container.textContent).toContain('Refused')
     expect(container.textContent).toContain('ky_1')
   })
+  it('creates a key limited to the listed addresses, in canonical form', async () => {
+    const { container, api } = await open()
+    await fill(byLabel(container, 'Allowed addresses'), '203.0.113.9/24\n2001:DB8::1')
+    await startCreate(container)
+    await confirm(API_KEY_PASSWORD, 'Create key')
+    await waitFor(secretInput)
+    expect(api.find('POST', '/api-keys')[0]?.body).toMatchObject({ ipAllowlist: ['203.0.113.0/24', '2001:db8::1'] })
+    await click(byText(document.body, 'Done', '[role="dialog"] button'))
+    await waitFor(() => container.querySelector('.analytik-share-list')?.textContent.includes('2 addresses'))
+  })
+
+  it('shows an invalid entry at once and does not ask for the password', async () => {
+    const { container, api } = await open()
+    const field = byLabel(container, 'Allowed addresses')
+    await fill(field, '10.0.0.1/33')
+    await waitFor(() => container.querySelector('.analytik-field-error')?.textContent.includes('10.0.0.1/33'))
+    expect(field?.getAttribute('aria-invalid')).toBe('true')
+    await fill(byLabel(container, 'Name'), 'Grafana')
+    await submit(byLabel(container, 'Name')?.closest('form'))
+    await settled()
+    expect(dialog()).toBeNull()
+    expect(api.find('POST', '/api-keys')).toHaveLength(0)
+  })
+
+  it('warns when the list allows any address, and shows the address the server sees', async () => {
+    const { container } = await open()
+    await waitFor(() => container.textContent.includes('Your address as the server sees it: 203.0.113.9'))
+    await fill(byLabel(container, 'Allowed addresses'), '0.0.0.0/0')
+    await waitFor(() => container.textContent.includes('This allows any address.'))
+  })
+
+  it('changes the addresses of a key behind the password dialog, and clears them', async () => {
+    const { container, api } = await open()
+    await startCreate(container)
+    await confirm(API_KEY_PASSWORD, 'Create key')
+    await waitFor(secretInput)
+    await click(byText(document.body, 'Done', '[role="dialog"] button'))
+    await waitFor(() => byText(container, 'Addresses', '.analytik-share-list button'))
+    expect(container.querySelector('.analytik-share-list')?.textContent).toContain('Any address')
+    await click(byText(container, 'Addresses', '.analytik-share-list button'))
+    const open1 = await waitFor(dialog)
+    await fill(byLabel(open1, 'Allowed addresses'), '198.51.100.7')
+    await confirm(API_KEY_PASSWORD, 'Save addresses')
+    await waitFor(() => api.find('PATCH', '/api-keys/ky_1').length === 1)
+    expect(api.find('PATCH', '/api-keys/ky_1')[0]?.body).toEqual({
+      ipAllowlist: ['198.51.100.7'],
+      password: API_KEY_PASSWORD,
+    })
+    await waitFor(() => container.querySelector('.analytik-share-list')?.textContent.includes('1 address'))
+    await click(byText(container, 'Addresses', '.analytik-share-list button'))
+    const open2 = await waitFor(dialog)
+    expect(byLabel(open2, 'Allowed addresses')?.value).toBe('198.51.100.7')
+    await fill(byLabel(open2, 'Allowed addresses'), '')
+    await confirm(API_KEY_PASSWORD, 'Save addresses')
+    await waitFor(() => api.find('PATCH', '/api-keys/ky_1').length === 2)
+    expect(api.find('PATCH', '/api-keys/ky_1')[1]?.body).toEqual({ ipAllowlist: [], password: API_KEY_PASSWORD })
+    await waitFor(() => container.querySelector('.analytik-share-list')?.textContent.includes('Any address'))
+  })
+
+  it('shows the server message when saving addresses is refused', async () => {
+    const { container, api } = await open()
+    await startCreate(container)
+    await confirm(API_KEY_PASSWORD, 'Create key')
+    await waitFor(secretInput)
+    await click(byText(document.body, 'Done', '[role="dialog"] button'))
+    await waitFor(() => byText(container, 'Addresses', '.analytik-share-list button'))
+    await click(byText(container, 'Addresses', '.analytik-share-list button'))
+    const open1 = await waitFor(dialog)
+    await fill(byLabel(open1, 'Allowed addresses'), '198.51.100.7')
+    await confirm('wrong', 'Save addresses')
+    await waitFor(() => dialog()?.textContent.includes('wrong password'))
+    expect(api.state.apiKeys[0]?.ipAllowlist).toEqual([])
+  })
+
+  it('labels the address events in the activity list', async () => {
+    const api = fakeApi()
+    api.state.apiKeyEvents = [
+      {
+        id: 'e1',
+        at: Date.UTC(2026, 9, 26),
+        keyId: 'ky_1',
+        label: 'Grafana',
+        type: 'denied_ip',
+        detail: '198.51.100.9',
+      },
+      {
+        id: 'e2',
+        at: Date.UTC(2026, 9, 25),
+        keyId: 'ky_1',
+        label: 'Grafana',
+        type: 'allowlist_changed',
+        detail: '0 to 1 addresses',
+      },
+    ]
+    const { container } = await render(<Dashboard api="/api" fetcher={api.fetcher} siteId="site_1" view="settings" />)
+    await settled()
+    await click(byText(container, 'API keys', '.analytik-settings-nav button'))
+    await waitFor(() => container.textContent.includes('198.51.100.9'))
+    expect(container.textContent).toContain('Refused address')
+    expect(container.textContent).toContain('Addresses changed')
+  })
 })

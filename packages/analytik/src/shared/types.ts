@@ -629,10 +629,21 @@ export interface ApiKey {
   disabledAt: number | null
   /** While a rolled key's old secret still works, when it stops. */
   previousUntil: number | null
+  /** Addresses and ranges the key may be used from, canonical form; empty means any address. */
+  ipAllowlist: string[]
   state: 'active' | 'disabled' | 'expired'
 }
 
-export const API_KEY_EVENT_TYPES = ['created', 'rolled', 'disabled', 'enabled', 'deleted', 'denied'] as const
+export const API_KEY_EVENT_TYPES = [
+  'created',
+  'rolled',
+  'disabled',
+  'enabled',
+  'deleted',
+  'denied',
+  'denied_ip',
+  'allowlist_changed',
+] as const
 export type ApiKeyEventType = (typeof API_KEY_EVENT_TYPES)[number]
 
 /** One line of the API key audit log. */

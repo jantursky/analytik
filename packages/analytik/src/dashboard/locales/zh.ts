@@ -1052,4 +1052,18 @@ export default {
   'Try it:': '试一试：',
   'Used {when}': '{when}使用',
   'Your API key': '你的 API 密钥',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, other {# 个地址}}',
+  Addresses: '地址',
+  'Addresses changed': '地址已更改',
+  'Allowed addresses': '允许的地址',
+  'Any address': '任意地址',
+  'Change allowed addresses?': '更改允许的地址？',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    '每行一个地址或范围，例如 203.0.113.7 或 203.0.113.0/24。留空则允许任意地址。',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    '只有这些地址可以使用该密钥。列表为空则允许任意地址。输入管理员密码以继续。',
+  'Refused address': '地址被拒绝',
+  'Save addresses': '保存地址',
+  'This allows any address.': '这将允许任意地址。',
+  'Your address as the server sees it: {ip}': '服务器看到的你的地址：{ip}',
 } satisfies Messages

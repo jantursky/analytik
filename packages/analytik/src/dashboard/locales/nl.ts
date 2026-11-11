@@ -1089,4 +1089,18 @@ export default {
   'Try it:': 'Probeer het:',
   'Used {when}': 'Gebruikt {when}',
   'Your API key': 'Je API-sleutel',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, one {# adres} other {# adressen}}',
+  Addresses: 'Adressen',
+  'Addresses changed': 'Adressen gewijzigd',
+  'Allowed addresses': 'Toegestane adressen',
+  'Any address': 'Elk adres',
+  'Change allowed addresses?': 'Toegestane adressen wijzigen?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Eén adres of bereik per regel, zoals 203.0.113.7 of 203.0.113.0/24. Laat leeg om elk adres toe te staan.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Alleen deze adressen kunnen de sleutel gebruiken. Bij een lege lijst mag elk adres hem gebruiken. Typ het beheerderswachtwoord om door te gaan.',
+  'Refused address': 'Geweigerd adres',
+  'Save addresses': 'Adressen opslaan',
+  'This allows any address.': 'Dit staat elk adres toe.',
+  'Your address as the server sees it: {ip}': 'Je adres zoals de server het ziet: {ip}',
 } satisfies Messages

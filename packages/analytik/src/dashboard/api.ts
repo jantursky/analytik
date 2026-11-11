@@ -88,6 +88,8 @@ export interface ApiKeyInput {
   siteIds?: string[]
   /** The key stops working after this many days; left out means never. */
   expiresInDays?: number | null
+  /** Addresses and ranges the key may be used from; left out or empty means any address. */
+  ipAllowlist?: string[]
 }
 
 export interface ShareLinkInput {
@@ -181,6 +183,8 @@ export interface ApiClient {
   /** Gives a key a new secret; the old one works for `graceHours` more (0 stops it at once). */
   rollApiKey(id: string, graceHours: number, password?: string): Promise<{ key: ApiKey; secret: string }>
   /** Stops a key at once. Needs no password. */
+  /** Replaces the addresses a key may be used from; an empty list allows any address. */
+  setApiKeyAllowlist(id: string, ipAllowlist: string[], password?: string): Promise<ApiKey>
   disableApiKey(id: string): Promise<ApiKey>
   enableApiKey(id: string, password?: string): Promise<ApiKey>
   deleteApiKey(id: string, password?: string): Promise<unknown>
@@ -405,6 +409,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     createApiKey: (input, password) => write('POST', '/api-keys', { ...input, password }),
     rollApiKey: (id, graceHours, password) =>
       write('POST', `/api-keys/${encodeURIComponent(id)}/roll`, { graceHours, password }),
+    setApiKeyAllowlist: (id, ipAllowlist, password) =>
+      write('PATCH', `/api-keys/${encodeURIComponent(id)}`, { ipAllowlist, password }),
     disableApiKey: (id) => write('POST', `/api-keys/${encodeURIComponent(id)}/disable`, {}),
     enableApiKey: (id, password) => write('POST', `/api-keys/${encodeURIComponent(id)}/enable`, { password }),
     deleteApiKey: (id, password) => write('DELETE', `/api-keys/${encodeURIComponent(id)}`, { password }),

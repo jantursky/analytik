@@ -1074,4 +1074,18 @@ export default {
   'Try it:': '사용해 보기:',
   'Used {when}': '{when} 사용됨',
   'Your API key': '내 API 키',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, other {주소 #개}}',
+  Addresses: '주소',
+  'Addresses changed': '주소 변경됨',
+  'Allowed addresses': '허용된 주소',
+  'Any address': '모든 주소',
+  'Change allowed addresses?': '허용된 주소를 변경할까요?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    '한 줄에 주소 또는 범위를 하나씩 입력하세요. 예: 203.0.113.7 또는 203.0.113.0/24. 비워 두면 모든 주소를 허용합니다.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    '이 주소만 키를 사용할 수 있습니다. 목록이 비어 있으면 모든 주소가 사용할 수 있습니다. 계속하려면 관리자 비밀번호를 입력하세요.',
+  'Refused address': '거부된 주소',
+  'Save addresses': '주소 저장',
+  'This allows any address.': '모든 주소를 허용합니다.',
+  'Your address as the server sees it: {ip}': '서버에서 보이는 내 주소: {ip}',
 } satisfies Messages

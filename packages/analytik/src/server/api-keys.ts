@@ -3,6 +3,7 @@ import { randomId } from '../shared/ids'
 import { DAY, HOUR, MINUTE } from '../shared/time'
 import { API_KEY_SCOPES, type ApiKey, type ApiKeyEvent, type ApiKeyEventType, type ApiKeyScope } from '../shared/types'
 import { AnalytikError, type Context } from './context'
+import { normalizeAllowlist } from './ip-allowlist'
 
 export const KEY_PREFIX = 'anl_'
 const SECRET_BYTES = 32
@@ -27,10 +28,11 @@ interface KeyRow {
   disabled_at: number | null
   previous_hash: string | null
   previous_until: number | null
+  ip_allowlist: string | null
 }
 
 const COLUMNS =
-  'id, label, token_hash, prefix, scope, site_ids, created_at, expires_at, last_used_at, disabled_at, previous_hash, previous_until'
+  'id, label, token_hash, prefix, scope, site_ids, created_at, expires_at, last_used_at, disabled_at, previous_hash, previous_until, ip_allowlist'
 
 /** A secret that could be a key: the prefix and 43 URL-safe characters. Anything else is not looked up. */
 export const looksLikeKey = (value: string): boolean => /^anl_[\w-]{43}$/.test(value)
@@ -44,6 +46,18 @@ function parseSiteIds(text: string): string[] {
   }
   // A damaged list must never widen a key to every site.
   return ['\u0000']
+}
+
+function parseAllowlist(text: string | null): string[] {
+  if (text === null) return []
+  try {
+    const parsed = JSON.parse(text) as unknown
+    if (Array.isArray(parsed) && parsed.every((entry) => typeof entry === 'string')) return parsed
+  } catch {
+    // A list that cannot be read is treated as damaged below.
+  }
+  // A damaged list must never open a key to every address: this entry matches none.
+  return ['damaged']
 }
 
 const stateOf = (row: KeyRow, now: number): ApiKey['state'] =>
@@ -60,6 +74,7 @@ const toKey = (row: KeyRow, now: number): ApiKey => ({
   lastUsedAt: row.last_used_at ?? null,
   disabledAt: row.disabled_at ?? null,
   previousUntil: row.previous_hash !== null && (row.previous_until ?? 0) > now ? row.previous_until : null,
+  ipAllowlist: parseAllowlist(row.ip_allowlist ?? null),
   state: stateOf(row, now),
 })
 
@@ -141,7 +156,13 @@ async function parseInput(ctx: Context, input: Record<string, unknown>) {
     }
     expiresAt = ctx.now() + days * DAY
   }
-  return { label: label.trim(), scope: scope as ApiKeyScope, siteIds: await parseSites(ctx, input.siteIds), expiresAt }
+  return {
+    label: label.trim(),
+    scope: scope as ApiKeyScope,
+    siteIds: await parseSites(ctx, input.siteIds),
+    expiresAt,
+    ipAllowlist: normalizeAllowlist(input.ipAllowlist),
+  }
 }
 
 /** Creates a key and returns it with its secret. Only the hash is stored, so this is the one time the secret is shown. */
@@ -149,23 +170,33 @@ export async function createApiKey(
   ctx: Context,
   input: Record<string, unknown>,
 ): Promise<{ key: ApiKey; secret: string }> {
-  const { label, scope, siteIds, expiresAt } = await parseInput(ctx, input)
+  const { label, scope, siteIds, expiresAt, ipAllowlist } = await parseInput(ctx, input)
   const [count] = await ctx.storage.query<{ n: number }>('SELECT COUNT(*) AS n FROM api_keys')
   if ((count?.n ?? 0) >= MAX_KEYS) throw new AnalytikError(`at most ${MAX_KEYS} API keys are allowed`)
   const secret = newSecret(ctx)
   const id = `ky_${randomId(12, ctx.random)}`
   const createdAt = ctx.now()
   await ctx.storage.run(
-    `INSERT INTO api_keys (id, label, token_hash, prefix, scope, site_ids, created_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, label, await sha256Hex(secret), displayPrefix(secret), scope, JSON.stringify(siteIds), createdAt, expiresAt],
+    `INSERT INTO api_keys (id, label, token_hash, prefix, scope, site_ids, created_at, expires_at, ip_allowlist)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      label,
+      await sha256Hex(secret),
+      displayPrefix(secret),
+      scope,
+      JSON.stringify(siteIds),
+      createdAt,
+      expiresAt,
+      ipAllowlist.length > 0 ? JSON.stringify(ipAllowlist) : null,
+    ],
   )
   const key = await requireApiKey(ctx, id)
   await recordKeyEvent(
     ctx,
     'created',
     key,
-    `${scope}, ${siteIds.length === 0 ? 'all sites' : `${siteIds.length} sites`}`,
+    `${scope}, ${siteIds.length === 0 ? 'all sites' : `${siteIds.length} sites`}${ipAllowlist.length > 0 ? `, ${ipAllowlist.length} ${ipAllowlist.length === 1 ? 'address' : 'addresses'}` : ''}`,
   )
   return { key, secret }
 }
@@ -218,6 +249,23 @@ export async function rollApiKey(
   const key = await requireApiKey(ctx, id)
   await recordKeyEvent(ctx, 'rolled', key, hours > 0 ? `old secret works for ${hours} h` : 'old secret stopped at once')
   return { key, secret }
+}
+
+/**
+ * Replaces a key's allow list; an empty list opens it to any address. The audit entry holds the counts before and after,
+ * never the addresses.
+ */
+export async function setApiKeyAllowlist(ctx: Context, id: string, value: unknown): Promise<ApiKey> {
+  const current = await row(ctx, id)
+  if (!current) throw new AnalytikError('API key not found', 404)
+  const list = normalizeAllowlist(value)
+  await ctx.storage.run('UPDATE api_keys SET ip_allowlist = ? WHERE id = ?', [
+    list.length > 0 ? JSON.stringify(list) : null,
+    id,
+  ])
+  const before = parseAllowlist(current.ip_allowlist ?? null).length
+  await recordKeyEvent(ctx, 'allowlist_changed', current, `${before} to ${list.length} addresses`)
+  return requireApiKey(ctx, id)
 }
 
 /** Disables or enables a key; its settings and secret stay. Doing either twice changes nothing. */

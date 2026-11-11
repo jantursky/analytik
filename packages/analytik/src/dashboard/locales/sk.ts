@@ -1090,4 +1090,19 @@ export default {
   'Try it:': 'Vyskúšajte:',
   'Used {when}': 'Použitý {when}',
   'Your API key': 'Váš API kľúč',
+  '{count, plural, one {# address} other {# addresses}}':
+    '{count, plural, one {# adresa} few {# adresy} other {# adries}}',
+  Addresses: 'Adresy',
+  'Addresses changed': 'Adresy zmenené',
+  'Allowed addresses': 'Povolené adresy',
+  'Any address': 'Ľubovoľná adresa',
+  'Change allowed addresses?': 'Zmeniť povolené adresy?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Jedna adresa alebo rozsah na riadok, napríklad 203.0.113.7 alebo 203.0.113.0/24. Nechajte prázdne, aby sa povolila ľubovoľná adresa.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Kľúč môžu používať iba tieto adresy. Prázdny zoznam povolí ľubovoľnú adresu. Zadajte heslo správcu a pokračujte.',
+  'Refused address': 'Adresa odmietnutá',
+  'Save addresses': 'Uložiť adresy',
+  'This allows any address.': 'Toto povolí ľubovoľnú adresu.',
+  'Your address as the server sees it: {ip}': 'Vaša adresa, ako ju vidí server: {ip}',
 } satisfies Messages

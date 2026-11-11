@@ -12,7 +12,7 @@ describe('openStorage', () => {
     for (const url of [`sqlite:${join(dir, 'a.db')}`, `file://${join(dir, 'b')}`, join(dir, 'c.sqlite3'), ':memory:']) {
       const storage = await openStorage(url)
       expect(storage.dialect).toBe('sqlite')
-      await expect(storage.migrate()).resolves.toMatchObject({ version: '0014_api_keys' })
+      await expect(storage.migrate()).resolves.toMatchObject({ version: '0015_api_key_allowlist' })
       await storage.close?.()
     }
   })

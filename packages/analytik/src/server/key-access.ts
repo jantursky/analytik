@@ -4,6 +4,7 @@ import { MINUTE } from '../shared/time'
 import type { ApiKey } from '../shared/types'
 import { findApiKey, recordKeyEvent } from './api-keys'
 import { AnalytikError, type Context } from './context'
+import { allowedByList } from './ip-allowlist'
 import { hashedKey } from './privacy'
 import { hit } from './ratelimit'
 
@@ -38,6 +39,7 @@ const closed = (method: string, path: string): KeyRoute => ({ method, path, acce
  */
 export const KEY_ROUTES: readonly KeyRoute[] = [
   read('/whoami'),
+  read('/openapi.json'),
   read('/summary'),
   read('/sites'),
   read('/sites/:id'),
@@ -107,6 +109,7 @@ export const KEY_ROUTES: readonly KeyRoute[] = [
   closed('POST', '/api-keys/:id/roll'),
   closed('POST', '/api-keys/:id/disable'),
   closed('POST', '/api-keys/:id/enable'),
+  closed('PATCH', '/api-keys/:id'),
   closed('DELETE', '/api-keys/:id'),
 ]
 
@@ -197,6 +200,18 @@ export async function authorizeKey(
   }
   const method = c.req.method
   const path = keyRoutePath(ctx, c.req.path)
+  if (key.ipAllowlist.length > 0) {
+    const ip = ctx.clientIp(c.req.raw)
+    if (!allowedByList(key.ipAllowlist, ip)) {
+      // The same answer for an address that is not listed and one that is not known; the list itself stays hidden.
+      // One audit line per key and address a minute, so a scan cannot fill the log.
+      const seen = ip ?? 'unknown'
+      if ((await hit(ctx, `deniedip:${key.id}:${seen}`, MINUTE)) === 1) {
+        await recordKeyEvent(ctx, 'denied_ip', key, seen)
+      }
+      throw new AnalytikError('this key cannot be used from this address', 403)
+    }
+  }
   const route = classifyRoute(method, path)
   if (!route || route.access === 'closed') {
     return deny(ctx, key, method, path, 'this route is not available to API keys')

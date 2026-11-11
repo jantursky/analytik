@@ -1092,4 +1092,18 @@ export default {
   'Try it:': 'Provala:',
   'Used {when}': 'Usata {when}',
   'Your API key': 'La tua chiave API',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, one {# indirizzo} other {# indirizzi}}',
+  Addresses: 'Indirizzi',
+  'Addresses changed': 'Indirizzi modificati',
+  'Allowed addresses': 'Indirizzi consentiti',
+  'Any address': 'Qualsiasi indirizzo',
+  'Change allowed addresses?': 'Modificare gli indirizzi consentiti?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Un indirizzo o intervallo per riga, ad esempio 203.0.113.7 o 203.0.113.0/24. Lascia vuoto per consentire qualsiasi indirizzo.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Solo questi indirizzi possono usare la chiave. Con un elenco vuoto qualsiasi indirizzo può usarla. Inserisci la password amministratore per continuare.',
+  'Refused address': 'Indirizzo rifiutato',
+  'Save addresses': 'Salva indirizzi',
+  'This allows any address.': 'Questo consente qualsiasi indirizzo.',
+  'Your address as the server sees it: {ip}': 'Il tuo indirizzo come lo vede il server: {ip}',
 } satisfies Messages

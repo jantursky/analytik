@@ -1096,4 +1096,18 @@ export default {
   'Try it:': 'Essayez :',
   'Used {when}': 'Utilisée {when}',
   'Your API key': 'Votre clé API',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, one {# adresse} other {# adresses}}',
+  Addresses: 'Adresses',
+  'Addresses changed': 'Adresses modifiées',
+  'Allowed addresses': 'Adresses autorisées',
+  'Any address': 'Toute adresse',
+  'Change allowed addresses?': 'Modifier les adresses autorisées ?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Une adresse ou une plage par ligne, par exemple 203.0.113.7 ou 203.0.113.0/24. Laissez vide pour autoriser toute adresse.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Seules ces adresses peuvent utiliser la clé. Une liste vide autorise toute adresse. Saisissez le mot de passe administrateur pour continuer.',
+  'Refused address': 'Adresse refusée',
+  'Save addresses': 'Enregistrer les adresses',
+  'This allows any address.': 'Cela autorise toute adresse.',
+  'Your address as the server sees it: {ip}': 'Votre adresse telle que le serveur la voit : {ip}',
 } satisfies Messages

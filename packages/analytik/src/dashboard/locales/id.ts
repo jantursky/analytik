@@ -1081,4 +1081,18 @@ export default {
   'Try it:': 'Coba:',
   'Used {when}': 'Digunakan {when}',
   'Your API key': 'Kunci API Anda',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, other {# alamat}}',
+  Addresses: 'Alamat',
+  'Addresses changed': 'Alamat diubah',
+  'Allowed addresses': 'Alamat yang diizinkan',
+  'Any address': 'Alamat mana pun',
+  'Change allowed addresses?': 'Ubah alamat yang diizinkan?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Satu alamat atau rentang per baris, misalnya 203.0.113.7 atau 203.0.113.0/24. Biarkan kosong untuk mengizinkan alamat mana pun.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Hanya alamat ini yang dapat memakai kunci. Daftar kosong mengizinkan alamat mana pun. Ketik kata sandi admin untuk melanjutkan.',
+  'Refused address': 'Alamat ditolak',
+  'Save addresses': 'Simpan alamat',
+  'This allows any address.': 'Ini mengizinkan alamat mana pun.',
+  'Your address as the server sees it: {ip}': 'Alamat Anda seperti dilihat server: {ip}',
 } satisfies Messages

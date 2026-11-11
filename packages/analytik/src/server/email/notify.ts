@@ -91,7 +91,7 @@ async function deliverPaymentAlert(ctx: Context, site: SiteRecord, payment: Paym
  */
 export async function alertKeyEvent(
   ctx: Context,
-  action: 'created' | 'rolled' | 'disabled' | 'deleted',
+  action: 'created' | 'rolled' | 'disabled' | 'deleted' | 'allowlist_changed',
   key: ApiKey,
 ): Promise<void> {
   if (!ctx.email) return
@@ -110,6 +110,7 @@ export async function alertKeyEvent(
         prefix: key.prefix,
         scope: key.scope,
         sites: key.siteIds.length,
+        addresses: key.ipAllowlist.length,
         at: ctx.now(),
       })
       await ctx.email.send({ from: ctx.email.from, to, ...content })

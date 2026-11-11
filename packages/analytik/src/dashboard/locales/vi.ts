@@ -1083,4 +1083,18 @@ export default {
   'Try it:': 'Thử ngay:',
   'Used {when}': 'Dùng {when}',
   'Your API key': 'Khóa API của bạn',
+  '{count, plural, one {# address} other {# addresses}}': '{count, plural, other {# địa chỉ}}',
+  Addresses: 'Địa chỉ',
+  'Addresses changed': 'Đã đổi địa chỉ',
+  'Allowed addresses': 'Địa chỉ được phép',
+  'Any address': 'Mọi địa chỉ',
+  'Change allowed addresses?': 'Đổi địa chỉ được phép?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Mỗi dòng một địa chỉ hoặc dải địa chỉ, ví dụ 203.0.113.7 hoặc 203.0.113.0/24. Để trống để cho phép mọi địa chỉ.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Chỉ những địa chỉ này mới dùng được khóa. Danh sách trống cho phép mọi địa chỉ. Nhập mật khẩu quản trị để tiếp tục.',
+  'Refused address': 'Địa chỉ bị từ chối',
+  'Save addresses': 'Lưu địa chỉ',
+  'This allows any address.': 'Thao tác này cho phép mọi địa chỉ.',
+  'Your address as the server sees it: {ip}': 'Địa chỉ của bạn như máy chủ thấy: {ip}',
 } satisfies Messages

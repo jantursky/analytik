@@ -59,6 +59,10 @@ A hosted multi-tenant service, Google sign-in and plan billing are out of scope.
 
 Make an [API key](/guides/api-keys) in **Settings → API keys** and send it as `Authorization: Bearer anl_...` to `/api/v1/sites/SITE_ID/overview`. A key can be limited to some sites, rolled without downtime and switched off in one click. For showing numbers to other people, a [share link](/guides/webhooks-and-api#stats-api) is simpler.
 
+## Can I limit an API key to my server's address?
+
+Yes. Press **Addresses** next to the key in **Settings → API keys** and list the IPv4 or IPv6 addresses or ranges it may be used from. Any other address, or one the server cannot tell, is refused with 403. See [Limit a key to addresses](/guides/api-keys#limit-a-key-to-addresses).
+
 ## Is the code open source?
 
 Yes, under the MIT license. See the repository for the source and issues.

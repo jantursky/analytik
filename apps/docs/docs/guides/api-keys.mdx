@@ -20,10 +20,11 @@ The site API key sends data in, an API key reads it out. They are different thin
 
 1. Open **Settings → API keys**.
 2. Give the key a name (say "Grafana"), choose **Read only** or **Read and write**, pick the sites (all of them by default) and an expiry.
-3. Press **Create key** and type the admin password.
-4. Copy the key. **It is shown once.** analytik stores only a hash, so a lost key cannot be recovered, only replaced.
+3. Optionally list the **Allowed addresses** the key may be used from (see [Limit a key to addresses](#limit-a-key-to-addresses)).
+4. Press **Create key** and type the admin password.
+5. Copy the key. **It is shown once.** analytik stores only a hash, so a lost key cannot be recovered, only replaced.
 
-Creating, rolling, enabling and deleting a key always asks for the admin password, so a browser left open is not enough. **Disable** does not ask: if a key leaks, you can stop it at once. When you sign in through the `verify()` option there is no password, and the dialog only asks you to confirm.
+Creating, rolling, enabling, deleting and changing the addresses of a key always asks for the admin password, so a browser left open is not enough. **Disable** does not ask: if a key leaks, you can stop it at once. When you sign in through the `verify()` option there is no password, and the dialog only asks you to confirm.
 
 Short expiries and one key per tool limit the damage of a leak. If you have an e-mail sender set up, analytik also e-mails you whenever a key is created, rolled, disabled or deleted (switch it off in **Settings → Email**). The e-mail never contains the key.
 
@@ -50,6 +51,8 @@ curl -H "Authorization: Bearer anl_YOUR_KEY" \
   "rateLimit": { "limit": 120, "remaining": 119, "reset": 1794412380 }
 }
 ```
+
+Tools that read OpenAPI can load [`GET /v1/openapi.json`](/reference/openapi), a description of every route a key can call.
 
 The plain paths without `/v1` answer the same; examples here use `/v1`. A key is accepted only in the `Authorization` header, never in the address.
 
@@ -113,14 +116,14 @@ Unknown keys are counted per address too: after 30 wrong keys in 15 minutes from
 
 Every error is JSON, `{ "error": "..." }`.
 
-| Status | Meaning                                                                                                                               |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `401`  | No key, or one that cannot be used: unknown, disabled, expired, deleted or replaced. All look the same on purpose.                    |
-| `403`  | The key is valid but not allowed: it is read only, it belongs to other sites, or the route is closed to keys. The message says which. |
-| `400`  | The request is wrong (a bad date, an unknown dimension). Fix it, retrying will not help.                                              |
-| `404`  | The site or item does not exist.                                                                                                      |
-| `429`  | A limit was passed. Wait for `Retry-After` seconds.                                                                                   |
-| `5xx`  | A server problem. Retry with backoff.                                                                                                 |
+| Status | Meaning                                                                                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `401`  | No key, or one that cannot be used: unknown, disabled, expired, deleted or replaced. All look the same on purpose.                                                                        |
+| `403`  | The key is valid but not allowed: it is read only, it belongs to other sites, it is used from an address that is not on its list, or the route is closed to keys. The message says which. |
+| `400`  | The request is wrong (a bad date, an unknown dimension). Fix it, retrying will not help.                                                                                                  |
+| `404`  | The site or item does not exist.                                                                                                                                                          |
+| `429`  | A limit was passed. Wait for `Retry-After` seconds.                                                                                                                                       |
+| `5xx`  | A server problem. Retry with backoff.                                                                                                                                                     |
 
 ## Retry and backoff
 
@@ -133,6 +136,22 @@ Every error is JSON, `{ "error": "..." }`.
 ## Pagination
 
 Sessions, events and payments answer `{ items, nextCursor, total }`. Pass `nextCursor` as `cursor` to get the next page, until it is `null`. See [Lists](/reference/http-api#lists).
+
+## Limit a key to addresses
+
+A leaked key works from anywhere. If the script runs from a fixed server, list its address and the key is useless to anyone else. In **Settings → API keys** press **Addresses** next to a key, or fill **Allowed addresses** when you create it, one entry per line:
+
+- a single address: `203.0.113.7` or `2001:db8::1`
+- a range in CIDR form: `203.0.113.0/24` or `2001:db8::/32`
+
+An empty list means any address, which is how every key behaves by default. At most 20 entries per key. An entry is checked when you save and a wrong one is named in the answer; nothing is saved then. An IPv4 address written as IPv6 (`::ffff:203.0.113.7`) counts as the IPv4 address. `0.0.0.0/0` and `::/0` mean any address, and the dashboard says so.
+
+A request from an address that is not listed answers `403` with the same message whatever the reason, so the list is not revealed, and it is checked before anything else about the key. It is written to **Key activity** as a refused address, once a minute per key and address. Changing or clearing the list asks for the admin password, and analytik e-mails you about it like other key changes.
+
+Two things to know:
+
+- **Unknown address means refused.** If the server cannot tell where a request comes from, a key with a list is refused rather than let through. Behind a proxy or CDN the address is the proxy's unless the server trusts its forwarding header: set `trustProxy` first (see [Client IP and `trustProxy`](/reference/server-api#client-ip-and-trustproxy)), or every request looks like it comes from the proxy.
+- **You cannot lock yourself out.** The list applies to keys only, never to the dashboard, and a key cannot change its own list. If a list is wrong, open **Addresses** and fix or clear it, or press **Disable**. Addresses that change often, such as a laptop at home, are a poor fit for a list.
 
 ## Roll a key without downtime
 

@@ -20,6 +20,7 @@ import {
   listKeyEvents,
   looksLikeKey,
   rollApiKey,
+  setApiKeyAllowlist,
   setApiKeyDisabled,
 } from '../api-keys'
 import type { KeyRate } from '../key-access'
@@ -27,6 +28,7 @@ import { createShareLink, findShareLink, linkAllows, listShareLinks, revokeShare
 import { importVisits } from '../import/core'
 import { listImports, removeImport } from '../import/manage'
 import { IMPORT_BODY_LIMIT, parseImportBody } from '../import/validate'
+import { openApiDocument } from '../openapi'
 import { versionInfo } from '../version'
 import { rematchPayments } from '../payments'
 import { getPreferences, savePreferences } from '../preferences'
@@ -251,6 +253,13 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     return c.json({ kind: 'key', id, label, prefix, scope, siteIds, expiresAt, rateLimit: c.get('keyRate') })
   })
 
+  // The document of what a key can call. Any valid key or the admin reads it; it holds no site data.
+  app.use('/openapi.json', requireAdmin(ctx))
+  app.get('/openapi.json', (c) => {
+    if (c.get('apiKey')) c.header('cache-control', 'no-store')
+    return c.json(openApiDocument())
+  })
+
   // API keys. Admin only, and never through a key. Creating, rolling, enabling and deleting ask for the admin password;
   // disabling does not, so a leaked key can be stopped at once.
   app.use('/api-keys', requireAdmin(ctx))
@@ -263,6 +272,14 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     const created = await createApiKey(ctx, input)
     await alertKeyEvent(ctx, 'created', created.key)
     return c.json(created, 201)
+  })
+  // Who may use a key: the allow list. Asks for the password, also to clear it, since that widens access.
+  app.patch('/api-keys/:id', async (c) => {
+    const input = await body(c)
+    await confirmPassword(ctx, c, input.password)
+    const key = await setApiKeyAllowlist(ctx, c.req.param('id'), input.ipAllowlist)
+    await alertKeyEvent(ctx, 'allowlist_changed', key)
+    return c.json(key)
   })
   app.post('/api-keys/:id/roll', async (c) => {
     const input = await body(c)

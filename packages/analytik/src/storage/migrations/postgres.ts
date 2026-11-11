@@ -13,6 +13,7 @@ import { hotIndexes } from './0011_hot_indexes'
 import { eventNameIndex } from './0012_event_name_index'
 import { outboundWebhooks } from './0013_outbound_webhooks'
 import { apiKeys } from './0014_api_keys'
+import { apiKeyAllowlist } from './0015_api_key_allowlist'
 
 /** Postgres (Supabase, Neon or self-hosted), applied in order and recorded in `schema_migrations`. */
 export const migrations: readonly Migration[] = [
@@ -30,4 +31,5 @@ export const migrations: readonly Migration[] = [
   { version: '0012_event_name_index', sql: eventNameIndex() },
   { version: '0013_outbound_webhooks', sql: outboundWebhooks({ big: 'BIGINT' }) },
   { version: '0014_api_keys', sql: apiKeys({ big: 'BIGINT' }) },
+  { version: '0015_api_key_allowlist', sql: apiKeyAllowlist() },
 ]

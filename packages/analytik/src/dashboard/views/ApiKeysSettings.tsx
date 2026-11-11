@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
+import { normalizeAllowlist } from '../../shared/ip-allowlist'
 import type { ApiKey, ApiKeyEvent, ApiKeyEventType, ApiKeyScope, Site } from '../../shared/types'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
@@ -43,6 +44,8 @@ const EVENT_LABELS: Record<ApiKeyEventType, string> = {
   enabled: msg('Enabled'),
   deleted: msg('Deleted'),
   denied: msg('Refused'),
+  denied_ip: msg('Refused address'),
+  allowlist_changed: msg('Addresses changed'),
 }
 
 /** Whether the admin signs in with a password, and so must type it again before a key changes. */
@@ -50,6 +53,63 @@ function useNeedsPassword(): boolean {
   const { client } = useDashboard()
   const me = useResource('me', () => client.me())
   return me.data?.login !== 'custom'
+}
+
+const lines = (text: string): string[] =>
+  text
+    .split(/[\n,;]+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+/** The list a text field holds, or what is wrong with it. The server applies the same rules. */
+function readAddresses(text: string): { list: string[]; error?: string; anyAddress: boolean } {
+  try {
+    const list = normalizeAllowlist(lines(text))
+    return { list, anyAddress: list.includes('0.0.0.0/0') || list.includes('::/0') }
+  } catch (error) {
+    return { list: [], error: error instanceof Error ? error.message : String(error), anyAddress: false }
+  }
+}
+
+/** One address or range per line, checked as you type, with the address the server sees this browser at as a hint. */
+function AddressesField({
+  value,
+  onChange,
+  error,
+  anyAddress,
+}: {
+  value: string
+  onChange: (value: string) => void
+  error: string | undefined
+  anyAddress: boolean
+}) {
+  const { client } = useDashboard()
+  const mine = useResource<{ ip: string | null }>('my-ip', () => client.myIp())
+  const errorId = useId()
+  return (
+    <Field
+      label={t('Allowed addresses')}
+      hint={
+        <>
+          {t('One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.')}
+          {anyAddress && ` ${t('This allows any address.')}`}
+          {mine.data?.ip && ` ${t('Your address as the server sees it: {ip}', { ip: mine.data.ip })}`}
+        </>
+      }
+      error={error ? { id: errorId, text: error } : null}
+    >
+      <textarea
+        className="analytik-input analytik-mono"
+        rows={3}
+        spellCheck={false}
+        autoCapitalize="off"
+        value={value}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </Field>
+  )
 }
 
 /** The address a script calls: the dashboard's API address with the stable `/v1` prefix. */
@@ -120,7 +180,9 @@ function NewKey({
   const [scope, setScope] = useState<ApiKeyScope>('read')
   const [siteIds, setSiteIds] = useState<string[]>([])
   const [expires, setExpires] = useState('')
+  const [addresses, setAddresses] = useState('')
   const [asking, setAsking] = useState(false)
+  const checked = readAddresses(addresses)
   const summary =
     siteIds.length === 0 || siteIds.length === sites.length
       ? t('All sites')
@@ -130,7 +192,7 @@ function NewKey({
       className="analytik-form"
       onSubmit={(event) => {
         event.preventDefault()
-        setAsking(true)
+        if (!checked.error) setAsking(true)
       }}
     >
       <div className="analytik-row">
@@ -164,6 +226,7 @@ function NewKey({
           onChange={setExpires}
         />
       </div>
+      <AddressesField value={addresses} onChange={setAddresses} error={checked.error} anyAddress={checked.anyAddress} />
       <Actions>
         <button type="submit" className="analytik-button" data-variant="primary">
           {t('Create key')}
@@ -190,11 +253,13 @@ function NewKey({
                 scope,
                 siteIds: siteIds.length === sites.length ? [] : siteIds,
                 expiresInDays: expires === '' ? null : Number(expires),
+                ...(checked.list.length > 0 && { ipAllowlist: checked.list }),
               },
               needsPassword ? password : undefined,
             )
             .then((created) => {
               setLabel('')
+              setAddresses('')
               onCreated(created)
             })
         }
@@ -216,10 +281,16 @@ function KeyRow({
 }) {
   const { client, site } = useDashboard()
   const needsPassword = useNeedsPassword()
-  const [dialog, setDialog] = useState<'roll' | 'enable' | 'delete'>()
+  const [dialog, setDialog] = useState<'roll' | 'enable' | 'delete' | 'addresses'>()
+  const [addresses, setAddresses] = useState('')
+  const checked = readAddresses(addresses)
   const [grace, setGrace] = useState('0')
   const close = (open: boolean): void => {
     if (!open) setDialog(undefined)
+  }
+  const editAddresses = (): void => {
+    setAddresses(apiKey.ipAllowlist.join('\n'))
+    setDialog('addresses')
   }
   const pass = (password: string): string | undefined => (needsPassword ? password : undefined)
   const sitesText =
@@ -233,6 +304,7 @@ function KeyRow({
         <span className="analytik-muted">
           <span className="analytik-mono">{apiKey.prefix}…</span>
           {` · ${t(STATES[apiKey.state])} · ${t(SCOPES.find((s) => s.value === apiKey.scope)?.label ?? apiKey.scope)} · ${sitesText}`}
+          {` · ${apiKey.ipAllowlist.length === 0 ? t('Any address') : t('{count, plural, one {# address} other {# addresses}}', { count: apiKey.ipAllowlist.length })}`}
           {` · ${apiKey.lastUsedAt === null ? t('Never used') : t('Used {when}', { when: formatDateTime(apiKey.lastUsedAt, site.timezone) })}`}
           {apiKey.expiresAt !== null &&
             ` · ${t('Expires {when}', { when: formatDateTime(apiKey.expiresAt, site.timezone) })}`}
@@ -241,6 +313,9 @@ function KeyRow({
         </span>
       </div>
       <div className="analytik-row analytik-key-actions">
+        <button type="button" className="analytik-button" onClick={editAddresses}>
+          {t('Addresses')}
+        </button>
         <button type="button" className="analytik-button" onClick={() => setDialog('roll')}>
           {t('Roll')}
         </button>
@@ -261,6 +336,27 @@ function KeyRow({
           {t('Delete')}
         </button>
       </div>
+      <PasswordDialog
+        open={dialog === 'addresses'}
+        onOpenChange={close}
+        title={t('Change allowed addresses?')}
+        description={t(
+          'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.',
+        )}
+        confirmLabel={t('Save addresses')}
+        needsPassword={needsPassword}
+        onSubmit={(password) => {
+          if (checked.error) return Promise.reject(new Error(checked.error))
+          return client.setApiKeyAllowlist(apiKey.id, checked.list, pass(password)).then(onChange)
+        }}
+      >
+        <AddressesField
+          value={addresses}
+          onChange={setAddresses}
+          error={checked.error}
+          anyAddress={checked.anyAddress}
+        />
+      </PasswordDialog>
       <PasswordDialog
         open={dialog === 'roll'}
         onOpenChange={close}

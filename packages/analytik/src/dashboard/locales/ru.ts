@@ -1093,4 +1093,19 @@ export default {
   'Try it:': 'Попробуйте:',
   'Used {when}': 'Использован {when}',
   'Your API key': 'Ваш API-ключ',
+  '{count, plural, one {# address} other {# addresses}}':
+    '{count, plural, one {# адрес} few {# адреса} many {# адресов} other {# адреса}}',
+  Addresses: 'Адреса',
+  'Addresses changed': 'Адреса изменены',
+  'Allowed addresses': 'Разрешённые адреса',
+  'Any address': 'Любой адрес',
+  'Change allowed addresses?': 'Изменить разрешённые адреса?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Один адрес или диапазон на строку, например 203.0.113.7 или 203.0.113.0/24. Оставьте пустым, чтобы разрешить любой адрес.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Ключ могут использовать только эти адреса. Пустой список разрешает любой адрес. Введите пароль администратора, чтобы продолжить.',
+  'Refused address': 'Адрес отклонён',
+  'Save addresses': 'Сохранить адреса',
+  'This allows any address.': 'Это разрешает любой адрес.',
+  'Your address as the server sees it: {ip}': 'Ваш адрес, каким его видит сервер: {ip}',
 } satisfies Messages
