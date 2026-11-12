@@ -36,6 +36,10 @@ afterEach(() => {
   localStorage.clear()
 })
 
+/** Waits for a preferences save (they are debounced) that matches, instead of sleeping through the delay. */
+const savedWhen = (api: ReturnType<typeof fakeApi>, match: (body: Record<string, unknown>) => boolean = () => true) =>
+  waitFor(() => api.find('PUT', '/preferences').some((r) => match(r.body as Record<string, unknown>)) || null, 400)
+
 /** The calendar only offers past days, so on the first of a month it has none to pick: these tests run on a fixed Sunday in July. */
 function midMonth(): void {
   beforeEach(() => {
@@ -205,7 +209,7 @@ describe('Dashboard shell', () => {
         await press(menuItem('Save the active filters…'))
         await fill(document.querySelector('.analytik-segment-form input'), 'Slovak visitors')
         await submit(document.querySelector('.analytik-segment-form'))
-        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        await savedWhen(api, (b) => Array.isArray(b.segments))
         const saved = api.find('PUT', '/preferences').at(-1)?.body as { segments: { id: string; name: string }[] }
         expect(saved.segments).toEqual([
           { id: expect.any(String) as string, name: 'Slovak visitors', filters: { country: 'SK' } },
@@ -272,7 +276,7 @@ describe('Dashboard shell', () => {
         await fill(first, 'Renamed')
         await actAsync(() => first?.blur())
         await click(document.querySelector('[aria-label="Delete segment Segment 1"]'))
-        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        await savedWhen(api, (b) => (b.segments as unknown[] | undefined)?.length === 19)
         const body = api.find('PUT', '/preferences').at(-1)?.body as { segments: { name: string }[] }
         expect(body.segments).toHaveLength(19)
         expect(body.segments[0]?.name).toBe('Renamed')
@@ -820,7 +824,8 @@ describe('Dashboard shell', () => {
     await click(live)
     await click(live)
     expect(live?.getAttribute('aria-checked')).toBe('false')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api)
+    await settled()
     expect(api.find('PUT', '/preferences')).toHaveLength(1)
     expect(api.find('PUT', '/preferences')[0]?.body).toEqual({
       live: false,
@@ -837,7 +842,7 @@ describe('Dashboard shell', () => {
     const live = switchFor(container, 'Live')
     expect(live?.getAttribute('aria-checked')).toBe('true')
     await click(live)
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, () => api.find('PUT', '/preferences').length >= 2)
     expect(api.find('PUT', '/preferences')).toHaveLength(2)
     expect(live?.getAttribute('aria-checked')).toBe('false')
     expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: false })
@@ -845,10 +850,11 @@ describe('Dashboard shell', () => {
 
   it('keeps the settings in the browser only with syncPreferences off', async () => {
     const api = fakeApi()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
     const { container } = await render(<Dashboard api="/api" fetcher={api.fetcher} syncPreferences={false} />)
     await settled()
     await click(switchFor(container, 'Live'))
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await actAsync(() => vi.advanceTimersByTime(700))
     expect(api.find('GET', '/preferences')).toHaveLength(0)
     expect(api.find('PUT', '/preferences')).toHaveLength(0)
     expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: true })
@@ -2323,7 +2329,7 @@ describe('update notice', () => {
     ])
     await click(container.querySelector('.analytik-update button'))
     expect(notice()).toBeNull()
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.updateDismissed === '1.2.0')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ updateDismissed: '1.2.0' })
   })
 
@@ -2469,7 +2475,7 @@ describe('formatting and credits', () => {
     await section(container, 'Appearance')
     await choose(selectTrigger(container, 'Theme'), 'Dark')
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBe('dark')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.theme === 'dark')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ theme: 'dark' })
     await choose(selectTrigger(container, 'Theme'), 'Same as the page')
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBeNull()
@@ -2479,7 +2485,7 @@ describe('formatting and credits', () => {
     const { container, api } = await open(fakeApi(), 'settings')
     await section(container, 'Appearance')
     await choose(selectTrigger(container, 'Language'), 'Slovenčina')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.language === 'sk')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'sk' })
   })
 
@@ -2512,7 +2518,7 @@ describe('formatting and credits', () => {
       expect(languages.slice(0, 5)).toEqual(['Bahasa Indonesia', 'Čeština', 'Deutsch', 'English', 'Español'])
       await press([...document.querySelectorAll('[role="menuitemradio"]')].find((i) => i.textContent === 'Deutsch'))
       await waitFor(() => trigger?.textContent === 'de')
-      await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+      await savedWhen(api, (b) => b.language === 'de')
       expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'de' })
       const fixed = await render(<Dashboard api="/api" fetcher={fakeApi().fetcher} locale="en" />)
       await settled()
@@ -2545,7 +2551,7 @@ describe('formatting and credits', () => {
     await choose(selectTrigger(container, 'Numbers'), 'Dot groups, comma decimals')
     await choose(selectTrigger(container, 'Dates'), 'ISO 8601')
     expect(api.state.preferences).toEqual({})
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => !!b.format)
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({
       format: { numbers: 'dot', currency: 'symbol', cents: 'always', date: 'iso', time: '12h' },
     })

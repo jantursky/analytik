@@ -47,3 +47,13 @@ test('the consent switch moves between strict and enriched mode', async ({ page 
   await consent.click()
   await expect(badge).toHaveText('strict')
 })
+
+test('the thank-you page links to the dashboard view where the order shows', async ({ page }) => {
+  await page.goto('/checkout#site')
+  await page.getByLabel('Email for the receipt').fill('reader@example.com')
+  await page.getByRole('button', { name: /^Pay / }).click()
+  await page.getByRole('link', { name: 'See it in the dashboard' }).click()
+  await expect(page.getByRole('link', { name: 'Full page' })).toHaveAttribute('aria-current', 'page')
+  await expect(page).toHaveURL(/section=revenue/)
+  await expect(page.getByRole('heading', { level: 1, name: 'Revenue' })).toBeAttached()
+})

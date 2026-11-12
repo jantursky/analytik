@@ -11,6 +11,7 @@
     "test/**/*.tsx",
     "vite.config.ts",
     "vitest.config.ts",
-    "vitest.browser.config.ts"
+    "vitest.browser.config.ts",
+    "vitest.workers.config.ts"
   ]
 }

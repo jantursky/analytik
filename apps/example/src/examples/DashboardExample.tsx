@@ -10,10 +10,11 @@ import { API_BASE, SITE_ID } from '../config'
 // choices stay in each visitor's browser instead of the shared database.
 const icon = () => '/icon.svg'
 
-export function DashboardExample() {
+/** `urlState` keeps the view, range and filters in the address, so a link can open the dashboard on a view. */
+export function DashboardExample({ urlState = false }: { urlState?: boolean }) {
   return (
     <div className="dashboard-host">
-      <Dashboard api={API_BASE} siteId={SITE_ID} favicons={icon} syncPreferences={false} />
+      <Dashboard api={API_BASE} siteId={SITE_ID} favicons={icon} syncPreferences={false} urlState={urlState} />
     </div>
   )
 }

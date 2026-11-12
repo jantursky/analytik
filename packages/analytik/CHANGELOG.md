@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Click a point of a site's sparkline on All sites to open its Overview for that day.
+- Demo: hints on what to try, a refusal that says how to try writes locally, Core Web Vitals, goal targets and notes in the seed.
+
 ## [1.26.0]
 
 ### Added

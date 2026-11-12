@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config'
 // (tracker, client, react, dashboard) get happy-dom. Real browsers run in vitest.browser.config.ts.
 const NODE_TESTS = ['test/{shared,server,storage,adapters,migrate,cli}-*.test.ts']
 const SERVER_SOURCES = 'src/{shared,server,storage,adapters,migrate}/**/*.ts'
-const GATE = { statements: 92, branches: 78, functions: 95, lines: 95 }
+const GATE = { statements: 92, branches: 85, functions: 95, lines: 95 }
 
 export default defineConfig({
   plugins: [react()],
@@ -35,6 +35,15 @@ export default defineConfig({
           environment: 'happy-dom',
           include: ['test/**/*.test.{ts,tsx}'],
           exclude: [...NODE_TESTS, 'test/browser/**'],
+        },
+      },
+      // Type tests for the public API: `expectTypeOf` only, checked by tsc, nothing runs.
+      {
+        extends: true,
+        test: {
+          name: 'types',
+          include: [],
+          typecheck: { enabled: true, include: ['test/types/**/*.test-d.ts'] },
         },
       },
     ],

@@ -162,15 +162,21 @@ function ThankYou() {
         Your {cart.plan.name} licence is on its way. This page reported a {money(cart.plan.cents)} revenue event with
         order id <code>{cart.orderId.slice(0, 8)}</code>, attributed to the channel that brought you here.
       </p>
-      <button
-        type="button"
-        className="btn"
-        onClick={() => {
-          navigate('/')
-        }}
-      >
-        Back to the start
-      </button>
+      <div className="row">
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            navigate('/')
+          }}
+        >
+          Back to the start
+        </button>
+        {/* The full dashboard keeps its view in the address, so this opens it on Revenue, where the order and the goal show. */}
+        <a className="btn btn--primary" href="/?section=revenue#full">
+          See it in the dashboard
+        </a>
+      </div>
     </>
   )
 }

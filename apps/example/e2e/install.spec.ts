@@ -95,3 +95,18 @@ test('copies the integration prompt to the clipboard', async ({ page, context, b
   expect(text).toContain("import Script from 'next/script'")
   expect(text).toContain('strategy="afterInteractive"')
 })
+
+test('offers Core Web Vitals in the snippet and the prompt', async ({ page }) => {
+  await page.goto('/#install')
+  await openOptions(page)
+  const code = page.locator('.code').first()
+  await expect(code).not.toContainText('data-vitals')
+
+  await page.getByLabel('Measure Core Web Vitals').check()
+  await expect(code).toContainText('data-vitals="100"')
+
+  const panel = page.getByRole('region', { name: 'Site integration prompt' })
+  await panel.getByRole('radio', { name: 'Nuxt' }).check()
+  await expect(panel.locator('pre')).toContainText('data-vitals')
+  await expect(panel.locator('pre')).toContainText('Core Web Vitals')
+})

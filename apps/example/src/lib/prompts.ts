@@ -893,6 +893,11 @@ ${numbered([
   `In DevTools > Network, filter for \`event\`: a \`POST ${host}/api/event\` request returns **202**. 403 means the page's host is not the site's domain (on localhost add \`data-allow-localhost\` and enable allowLocalhost for the site); 404 means the site id is wrong.`,
   'Open the Analytik dashboard: the visit shows up in Realtime within a few seconds.',
   'If you added goals or revenue, trigger one and check that it appears under Events or Revenue.',
+  ...(options.vitals
+    ? [
+        'Core Web Vitals are measured only when the site\'s "Core Web Vitals" setting is on in the dashboard (Settings); then the Performance block fills after a few page loads.',
+      ]
+    : []),
 ])}
 `
 }

@@ -114,6 +114,16 @@ const PLANS = [
   { id: 'studio', amount: 79 },
 ] as const
 
+/** Share of page leaves that carry vitals. */
+const VITALS_SHARE = 0.6
+
+/** The `v` field of a page-leave update: largest contentful paint and interaction delay in ms, layout shift score. */
+export const vitalsReport = (random: () => number): { l: number; i: number; c: number } => ({
+  l: 1100 + Math.floor(random() * 3100),
+  i: 60 + Math.floor(random() * 360),
+  c: Math.round(random() * 250) / 1000,
+})
+
 interface Visitor {
   ip: string
   ua: string
@@ -188,7 +198,9 @@ export function createSimulator({
   }
 
   const advance = async (visitor: Visitor) => {
-    await send(visitor, { t: 'ping', d: 5000 + Math.floor(random() * 40000) })
+    // Like the tracker, report Core Web Vitals with the update sent on leaving a page, for a share of the views.
+    const vitals = random() < VITALS_SHARE ? { v: vitalsReport(random) } : {}
+    await send(visitor, { t: 'ping', d: 5000 + Math.floor(random() * 40000), ...vitals })
     visitor.steps--
     const path = visitor.path.split('?')[0]
     if (path === '/' && random() < 0.25) {

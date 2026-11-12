@@ -193,6 +193,16 @@ export function InstallExample() {
               />
               Track outbound link clicks
             </label>
+            <label className="row">
+              <input
+                type="checkbox"
+                checked={options.vitals}
+                onChange={(event) => {
+                  set('vitals', event.target.checked)
+                }}
+              />
+              Measure Core Web Vitals
+            </label>
           </div>
 
           <div className="stack">

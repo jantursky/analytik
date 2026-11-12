@@ -29,7 +29,7 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "615 kB"
+    "limit": "617 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
@@ -53,7 +53,7 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "16.4 kB"
+    "limit": "17.4 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
@@ -67,7 +67,7 @@
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "60 kB"
+    "limit": "60.5 kB"
   },
   {
     "name": "D1 storage",
@@ -101,6 +101,6 @@
     "path": "dist/migrate.js",
     "ignore": ["postgres"],
     "gzip": true,
-    "limit": "8.5 kB"
+    "limit": "9 kB"
   }
 ]

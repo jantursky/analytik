@@ -24,6 +24,7 @@ afterEach(() => {
 
 describe('toasts', () => {
   it('show a message for a moment, replace the one before, and mark failures as alerts', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
     const { container } = await render(
       <ToastProvider>
         <Buttons />
@@ -35,7 +36,7 @@ describe('toasts', () => {
     await click(container.querySelectorAll('button')[1])
     await waitFor(() => (toasts().length === 1 && toasts()[0]?.textContent === 'Copy failed' ? true : null))
     expect(toasts()[0]?.getAttribute('role')).toBe('alert')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 2600)))
+    await actAsync(() => vi.advanceTimersByTime(2600))
     await waitFor(() => (toasts().length === 0 ? true : null), 100)
   })
 

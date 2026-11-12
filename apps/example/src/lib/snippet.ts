@@ -7,6 +7,8 @@ export interface SnippetOptions {
   requireInteraction: boolean
   allowLocalhost: boolean
   autoOutbound: boolean
+  /** Measure Core Web Vitals on every page view (`data-vitals`, a share in percent). */
+  vitals: boolean
 }
 
 export const DEFAULT_OPTIONS: SnippetOptions = {
@@ -16,6 +18,7 @@ export const DEFAULT_OPTIONS: SnippetOptions = {
   requireInteraction: true,
   allowLocalhost: false,
   autoOutbound: true,
+  vitals: false,
 }
 
 export const escapeAttr = (value: string): string =>
@@ -52,6 +55,7 @@ export const scriptAttributes = (options: SnippetOptions): [string, string][] =>
   if (!options.requireInteraction) attributes.push(['data-require-interaction', 'false'])
   if (options.allowLocalhost) attributes.push(['data-allow-localhost', 'true'])
   if (!options.autoOutbound) attributes.push(['data-auto-outbound', 'false'])
+  if (options.vitals) attributes.push(['data-vitals', '100'])
   return attributes
 }
 

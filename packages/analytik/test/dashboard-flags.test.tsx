@@ -36,7 +36,7 @@ describe('country flags when the chunk fails', () => {
     })
     const { Flag: Fresh } = await import('../src/dashboard/flags')
     const { container } = await render(<Fresh code="SK" />)
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitFor(() => container.querySelector('.analytik-flag[data-fallback]'))
     expect(container.querySelector('.analytik-flag')?.getAttribute('data-fallback')).toBe('')
     vi.doUnmock('../src/dashboard/flags-data')
   })
