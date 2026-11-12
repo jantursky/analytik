@@ -1110,4 +1110,6 @@ export default {
   'Save addresses': 'Zapisz adresy',
   'This allows any address.': 'To zezwala na dowolny adres.',
   'Your address as the server sees it: {ip}': 'Twój adres widziany przez serwer: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Zaktualizowano {view}: {range}{count, plural, =0 {} one {, # filtr} few {, # filtry} many {, # filtrów} other {, # filtra}}',
 } satisfies Messages

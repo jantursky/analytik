@@ -1103,4 +1103,6 @@ export default {
   'Save addresses': 'Uložit adresy',
   'This allows any address.': 'Tím je povolena libovolná adresa.',
   'Your address as the server sees it: {ip}': 'Vaše adresa, jak ji vidí server: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Aktualizováno {view}: {range}{count, plural, =0 {} one {, # filtr} few {, # filtry} other {, # filtrů}}',
 } satisfies Messages

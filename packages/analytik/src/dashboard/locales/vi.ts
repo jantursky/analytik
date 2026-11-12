@@ -1097,4 +1097,6 @@ export default {
   'Save addresses': 'Lưu địa chỉ',
   'This allows any address.': 'Thao tác này cho phép mọi địa chỉ.',
   'Your address as the server sees it: {ip}': 'Địa chỉ của bạn như máy chủ thấy: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Đã cập nhật {view}: {range}{count, plural, =0 {} other {, # bộ lọc}}',
 } satisfies Messages

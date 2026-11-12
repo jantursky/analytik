@@ -1095,4 +1095,6 @@ export default {
   'Save addresses': 'Simpan alamat',
   'This allows any address.': 'Ini mengizinkan alamat mana pun.',
   'Your address as the server sees it: {ip}': 'Alamat Anda seperti dilihat server: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Diperbarui {view}: {range}{count, plural, =0 {} other {, # filter}}',
 } satisfies Messages

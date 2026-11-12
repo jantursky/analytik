@@ -1096,4 +1096,6 @@ export default {
   'Save addresses': 'アドレスを保存',
   'This allows any address.': 'これにより、すべてのアドレスが許可されます。',
   'Your address as the server sees it: {ip}': 'サーバーから見たあなたのアドレス: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    '{view}を更新しました: {range}{count, plural, =0 {} other {、フィルター # 件}}',
 } satisfies Messages

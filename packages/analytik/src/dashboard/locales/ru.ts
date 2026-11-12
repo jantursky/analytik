@@ -1108,4 +1108,6 @@ export default {
   'Save addresses': 'Сохранить адреса',
   'This allows any address.': 'Это разрешает любой адрес.',
   'Your address as the server sees it: {ip}': 'Ваш адрес, каким его видит сервер: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Обновлено {view}: {range}{count, plural, =0 {} one {, # фильтр} few {, # фильтра} many {, # фильтров} other {, # фильтра}}',
 } satisfies Messages

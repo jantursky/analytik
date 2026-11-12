@@ -1097,4 +1097,6 @@ export default {
   'Save addresses': 'पते सहेजें',
   'This allows any address.': 'इससे कोई भी पता अनुमत होगा।',
   'Your address as the server sees it: {ip}': 'सर्वर को दिखने वाला आपका पता: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    '{view} अपडेट हुआ: {range}{count, plural, =0 {} other {, # फ़िल्टर}}',
 } satisfies Messages

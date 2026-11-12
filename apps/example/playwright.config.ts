@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test'
 const previewPort = 4180
 const devPort = 4181
 
-const mobile = ['**/touch.spec.ts']
+const mobile = ['**/touch.spec.ts', '**/touch-size.spec.ts']
 const writes = ['**/*.dev.spec.ts']
 
 export default defineConfig({

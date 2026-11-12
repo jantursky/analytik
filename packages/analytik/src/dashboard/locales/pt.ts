@@ -1100,4 +1100,6 @@ export default {
   'Save addresses': 'Salvar endereços',
   'This allows any address.': 'Isso permite qualquer endereço.',
   'Your address as the server sees it: {ip}': 'Seu endereço como o servidor o vê: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Atualizado {view}: {range}{count, plural, =0 {} one {, # filtro} other {, # filtros}}',
 } satisfies Messages

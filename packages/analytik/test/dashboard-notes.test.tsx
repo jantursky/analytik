@@ -196,7 +196,11 @@ describe('Export PNG', () => {
     vi.doMock('../src/dashboard/chart-export', () => ({ chartPng: () => Promise.reject(new Error('no canvas')) }))
     const { container } = await open(withNotes().api)
     await clickButton(container, 'Export PNG')
-    await waitFor(() => document.querySelector('.analytik-toast, [role="status"]')?.textContent.includes('no canvas'))
+    await waitFor(() =>
+      [...document.querySelectorAll('.analytik-toast, [role="status"]')].some((el) =>
+        el.textContent.includes('no canvas'),
+      ),
+    )
     vi.doUnmock('../src/dashboard/chart-export')
   })
 })

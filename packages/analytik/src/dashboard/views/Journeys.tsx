@@ -36,29 +36,29 @@ function Bar({ node, onPick }: { node: PlacedNode; onPick: (node: PlacedNode) =>
       onPick(node)
     }
   }
+  const name = `${t('{page}, step {step}: {count} sessions', {
+    page: label,
+    step: node.step,
+    count: formatNumber(node.sessions),
+  })}${t(', filter by this')}`
+  // The bar is the button and the written label beside it is left out of the button's content, so the name it
+  // announces does not have to repeat the clipped text that is on screen.
   return (
-    <g
-      className="analytik-journey-node"
-      data-kind={node.kind}
-      {...(pick && {
-        role: 'button',
-        tabIndex: 0,
-        onClick: () => onPick(node),
-        onKeyDown,
-        'aria-label': `${t('{page}, step {step}: {count} sessions', {
-          page: label,
-          step: node.step,
-          count: formatNumber(node.sessions),
-        })}${t(', filter by this')}`,
-      })}
-    >
+    <g {...(pick && { onClick: () => onPick(node) })}>
       <title>{`${label} · ${formatNumber(node.sessions)}`}</title>
-      <rect className="analytik-journey-bar" x={node.x} y={node.y} width={12} height={node.height} rx={2} />
+      <g
+        className="analytik-journey-node"
+        data-kind={node.kind}
+        {...(pick && { role: 'button', tabIndex: 0, onKeyDown, 'aria-label': name })}
+      >
+        <rect className="analytik-journey-bar" x={node.x} y={node.y} width={12} height={node.height} rx={2} />
+      </g>
       <text
         className="analytik-journey-label"
         x={labelX}
         y={node.y + Math.min(node.height / 2, 12) + 4}
         textAnchor={node.side === 'right' ? 'start' : 'end'}
+        aria-hidden="true"
       >
         {text}
       </text>

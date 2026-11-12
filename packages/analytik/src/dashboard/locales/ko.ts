@@ -1088,4 +1088,6 @@ export default {
   'Save addresses': '주소 저장',
   'This allows any address.': '모든 주소를 허용합니다.',
   'Your address as the server sees it: {ip}': '서버에서 보이는 내 주소: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    '{view} 업데이트됨: {range}{count, plural, =0 {} other {, 필터 #개}}',
 } satisfies Messages

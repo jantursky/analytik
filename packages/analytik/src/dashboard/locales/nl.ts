@@ -1103,4 +1103,6 @@ export default {
   'Save addresses': 'Adressen opslaan',
   'This allows any address.': 'Dit staat elk adres toe.',
   'Your address as the server sees it: {ip}': 'Je adres zoals de server het ziet: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Bijgewerkt {view}: {range}{count, plural, =0 {} other {, # filters}}',
 } satisfies Messages

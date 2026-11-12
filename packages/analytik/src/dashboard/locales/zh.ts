@@ -1066,4 +1066,6 @@ export default {
   'Save addresses': '保存地址',
   'This allows any address.': '这将允许任意地址。',
   'Your address as the server sees it: {ip}': '服务器看到的你的地址：{ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    '已更新{view}：{range}{count, plural, =0 {} other {，# 个筛选条件}}',
 } satisfies Messages

@@ -1100,4 +1100,6 @@ export default {
   'Save addresses': 'Adresleri kaydet',
   'This allows any address.': 'Bu, herhangi bir adrese izin verir.',
   'Your address as the server sees it: {ip}': 'Sunucunun gördüğü adresiniz: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Güncellendi {view}: {range}{count, plural, =0 {} other {, # filtre}}',
 } satisfies Messages

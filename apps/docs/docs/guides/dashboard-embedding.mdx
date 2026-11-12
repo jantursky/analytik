@@ -313,6 +313,18 @@ curl -X POST https://analytics.example.com/api/v1/annotations \
 
 `ts` is a Unix time in milliseconds or an ISO 8601 date, and defaults to now. The text is plain text, at most 200 characters. A site keeps up to 2000 notes. Run `analytik upgrade` after updating to create the `annotations` and `share_links` tables.
 
+## Accessibility
+
+The dashboard is checked with axe on every view, the command palette and the main dialogs, in the light and the dark theme.
+
+- **Keyboard:** everything works without a mouse. Tab reaches a chart, the arrow keys step through its points and show the values, and Tab leaves it. Map markers and chart notes open with Enter or Space; `?` lists the shortcuts.
+- **Reduced motion:** with `prefers-reduced-motion` the animations are skipped.
+- **Contrast:** text and controls meet WCAG AA in both themes.
+- **Screen readers:** each chart has a name and a data table, the map has a list of its places, and the view heading is exposed. After the view, range, comparison or filters change, one polite message such as "Updated Overview: Past 7 days, 1 filter" says the numbers have changed; it stays silent on a refresh and on first load.
+- **Touch:** on a coarse pointer controls have a hit area of at least 24 by 24 pixels, and the main ones 44 by 44, without changing the layout.
+
+Known gaps: there is no forced-colors (Windows high contrast) styling, and the Journeys bars are smaller than 44 pixels on touch screens.
+
 ## Export
 
 Every table has an **Export CSV** button, and each breakdown a **Export CSV** link: they save what is on screen (the visible columns and rows of the current page) with no new request. Each chart has **Export PNG**, drawn in the browser. Cells that begin with `=`, `+`, `-` or `@` are prefixed with an apostrophe so a spreadsheet does not run them as formulas. The whole-site backup in Settings → Data is separate.

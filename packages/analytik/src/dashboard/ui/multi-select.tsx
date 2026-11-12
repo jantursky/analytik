@@ -25,6 +25,7 @@ export function MultiSelect({
 }) {
   const [open, setOpen] = useState(false)
   const labelId = useId()
+  const summaryId = useId()
   const all = chosen.length === options.length
   const toggle = (value: string): void =>
     onChange(chosen.includes(value) ? chosen.filter((c) => c !== value) : [...chosen, value])
@@ -43,9 +44,9 @@ export function MultiSelect({
             type="button"
             className="analytik-input analytik-date-trigger"
             style={{ justifyContent: 'space-between' }}
-            aria-labelledby={labelId}
+            aria-labelledby={`${labelId} ${summaryId}`}
           >
-            <span>{summary}</span>
+            <span id={summaryId}>{summary}</span>
             <Icon name="down" />
           </button>
         }

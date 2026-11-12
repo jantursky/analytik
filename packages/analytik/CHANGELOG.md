@@ -8,6 +8,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- Accessibility: axe checks of every view in both themes, larger touch targets, a screen reader message after data changes, and a place list for the map.
 - Click a point of a site's sparkline on All sites to open its Overview for that day.
 - Demo: hints on what to try, a refusal that says how to try writes locally, Core Web Vitals, goal targets and notes in the seed.
 

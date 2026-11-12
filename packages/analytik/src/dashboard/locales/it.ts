@@ -1106,4 +1106,6 @@ export default {
   'Save addresses': 'Salva indirizzi',
   'This allows any address.': 'Questo consente qualsiasi indirizzo.',
   'Your address as the server sees it: {ip}': 'Il tuo indirizzo come lo vede il server: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Aggiornato {view}: {range}{count, plural, =0 {} one {, # filtro} other {, # filtri}}',
 } satisfies Messages

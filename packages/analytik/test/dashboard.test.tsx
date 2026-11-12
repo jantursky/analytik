@@ -51,6 +51,10 @@ function midMonth(): void {
   })
 }
 
+/** The button that applies a row's filter: the row itself, or, where a copy button sits in the row, the button laid over it. */
+const rowButton = (label: Element | null | undefined): Element | null | undefined =>
+  label?.closest('button') ?? label?.closest('.analytik-bar')?.querySelector('.analytik-bar-hit')
+
 describe('Dashboard shell', () => {
   it('lets the theme be switched and the password shown on the login screen', async () => {
     const api = fakeApi()
@@ -667,7 +671,7 @@ describe('Dashboard shell', () => {
     expect(details?.getAttribute('aria-expanded')).toBe('true')
     await click(byText(pages!, 'Fewer', 'button'))
     expect(pages?.querySelectorAll('.analytik-bar')).toHaveLength(8)
-    await click(byText(container, '/p0', '.analytik-bar-label')?.closest('button'))
+    await click(rowButton(byText(container, '/p0', '.analytik-bar-label')))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.page).toBe('/p0')
   })
@@ -677,7 +681,7 @@ describe('Dashboard shell', () => {
     await click(byText(container, 'Organic Search', '.analytik-bar-label')?.closest('button'))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.channel).toBe('Organic Search')
-    await click(byText(container, '/pricing', '.analytik-bar-label')?.closest('button'))
+    await click(rowButton(byText(container, '/pricing', '.analytik-bar-label')))
     await settled()
     expect(texts(container, '.analytik-chip')).toEqual(['channel Organic Search ×', 'page /pricing ×'])
     await click(container.querySelector('[aria-label="Remove filter channel is Organic Search"]'))
@@ -1830,7 +1834,8 @@ describe('Settings', () => {
     await settled()
     expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^https:\/\/example\.com\//))
     expect(container.querySelector('[aria-label="Copied"]')).not.toBeNull()
-    await key(copy, 'Enter')
+    // A real button: Enter and Space press it natively, which a simulated DOM does not do.
+    await click(copy)
     expect(writeText).toHaveBeenCalledTimes(2)
   })
 
@@ -2504,7 +2509,7 @@ describe('formatting and credits', () => {
     try {
       const { container, api } = await open(fakeApi(), 'overview')
       const trigger = container.querySelector<HTMLElement>('.analytik-header .analytik-language-switch')
-      expect(trigger?.getAttribute('aria-label')).toBe('Language')
+      expect(trigger?.getAttribute('aria-label')).toBe('Language: en')
       expect(trigger?.textContent).toBe('en')
       expect(trigger?.nextElementSibling?.classList.contains('analytik-theme-toggle')).toBe(true)
       await click(trigger)

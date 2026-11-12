@@ -33,12 +33,12 @@
   --analytik-revenue-soft: #d9f3ea;
 
   --analytik-violet-soft: #ece7fd;
-  --analytik-warning: #c9541f;
+  --analytik-warning: #b84613;
   --analytik-danger: #b42f2f;
   --analytik-on-danger: #ffffff;
   --analytik-warning-soft: #fde8dc;
   --analytik-danger-soft: #fdeaea;
-  --analytik-caution: #9a6700;
+  --analytik-caution: #8a5d00;
   --analytik-caution-soft: #fdf1d0;
   --analytik-focus: #3a4fd8;
   --analytik-font: 'Figtree Variable', 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -1720,6 +1720,11 @@ button.analytik-stat[aria-pressed='true'] {
   opacity: 0.5;
 }
 
+.analytik-note-hit {
+  display: none;
+  fill: transparent;
+}
+
 .analytik-note-dot {
   fill: var(--analytik-accent-text);
   stroke: var(--analytik-surface);
@@ -1904,8 +1909,29 @@ button.analytik-bar {
   cursor: pointer;
 }
 
-button.analytik-bar:hover {
+button.analytik-bar:hover,
+.analytik-bar[data-pick]:hover {
   background: var(--analytik-bg-subtle);
+}
+
+/* A row with a copy button in it: the row's button covers it and the copy button sits above, not inside. */
+.analytik-bar-hit {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.analytik-bar-hit:focus-visible {
+  outline-offset: -2px;
+}
+
+.analytik-bar[data-pick] .analytik-cell-actions {
+  position: relative;
+  z-index: 1;
 }
 
 .analytik-funnel-bar {
@@ -2630,12 +2656,11 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   border: 1px solid var(--analytik-border);
   border-radius: var(--analytik-radius-row);
   background: var(--analytik-surface);
-  opacity: 0.6;
-  transition: opacity 200ms;
 }
 
-.analytik-params > div[data-set] {
-  opacity: 1;
+/* Not in this link: a dashed outline, since fading the text would take its contrast below the minimum. */
+.analytik-params > div:not([data-set]) {
+  border-style: dashed;
 }
 
 .analytik-params dt code {
@@ -3667,6 +3692,7 @@ tr:hover .analytik-row-button {
   ):hover
   .analytik-cell-actions,
 .analytik-bar:focus-visible .analytik-cell-actions,
+.analytik-bar:has(.analytik-bar-hit:focus-visible) .analytik-cell-actions,
 .analytik-cell-actions:focus-within,
 .analytik-cell-actions:has([data-done]) {
   opacity: 1;
@@ -5475,7 +5501,7 @@ tr:hover .analytik-row-button {
 
 .analytik-mode-banner[data-need='none'] {
   background: var(--analytik-success-soft);
-  color: var(--analytik-success);
+  color: var(--analytik-success-text);
 }
 
 .analytik-mode-banner[data-need='consent'] {
@@ -6138,4 +6164,45 @@ tr:hover .analytik-row-button {
 
 .analytik-journeys[data-zoomed]:active {
   cursor: grabbing;
+}
+
+/*
+ * Touch screens: row actions and map markers answer to a 44 px area, though they stay as drawn. The action's box grows
+ * and a negative margin gives the room back, so nothing around it moves; neighbouring actions are spaced so their
+ * areas touch and do not overlap. A mouse sees none of this.
+ */
+@media (pointer: coarse) {
+  .analytik-cell-actions {
+    gap: 20px;
+  }
+
+  .analytik-cell-action {
+    position: relative;
+    z-index: 1;
+    width: 44px;
+    height: 44px;
+    margin: -10px;
+  }
+
+  /* The 32 px icon buttons keep their look; a transparent extension makes the tappable area 44 px. */
+  .analytik-pill-icon,
+  .analytik-select {
+    position: relative;
+  }
+
+  .analytik-pill-icon::after,
+  .analytik-select::after {
+    position: absolute;
+    inset: -6px;
+    content: '';
+  }
+
+  /* The map is 360 units wide and as wide as its card, so on a phone a unit is about a pixel: 14 makes 24 or more. */
+  .analytik-map-hit {
+    r: 14px;
+  }
+
+  .analytik-note-hit {
+    display: inline;
+  }
 }

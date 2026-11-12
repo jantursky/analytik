@@ -19,7 +19,7 @@ export function LanguageSwitch() {
     <Menu.Root>
       <Menu.Trigger
         className="analytik-pill-icon analytik-language-switch"
-        aria-label={t('Language')}
+        aria-label={`${t('Language')}: ${currentLanguage()}`}
         title={t('Language')}
       >
         <Icon name="globe" />

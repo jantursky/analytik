@@ -408,7 +408,7 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 <span className="analytik-bar-name">
                   <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
                   <span className="analytik-cell-actions">
-                    <CopyId text={row.copy.text} label={row.copy.label} nested />
+                    <CopyId text={row.copy.text} label={row.copy.label} />
                   </span>
                 </span>
               ) : (
@@ -432,7 +432,18 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
               transition={{ duration: 0.3, ease: EASE }}
             >
-              {onSelect ? (
+              {onSelect && row.copy ? (
+                // A button cannot hold the copy button, so the row's own button lies over it and the copy sits above.
+                <div className="analytik-bar" data-pick="">
+                  <button type="button" className="analytik-bar-hit" onClick={() => onSelect(row.key)}>
+                    <span className="analytik-sr-only">
+                      {row.label ?? (row.key || t('(none)'))}
+                      {t(', filter by this')}
+                    </span>
+                  </button>
+                  {content}
+                </div>
+              ) : onSelect ? (
                 <button type="button" className="analytik-bar" onClick={() => onSelect(row.key)}>
                   {content}
                   <span className="analytik-sr-only">{t(', filter by this')}</span>

@@ -1108,4 +1108,6 @@ export default {
   'Save addresses': 'Guardar direcciones',
   'This allows any address.': 'Esto permite cualquier dirección.',
   'Your address as the server sees it: {ip}': 'Tu dirección tal como la ve el servidor: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Actualizado {view}: {range}{count, plural, =0 {} one {, # filtro} other {, # filtros}}',
 } satisfies Messages
