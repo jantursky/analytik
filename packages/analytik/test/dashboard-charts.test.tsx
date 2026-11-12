@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { AreaChart, BarList, MultiChart, Sparkline } from '../src/dashboard/charts'
 import { DeltaBadge } from '../src/dashboard/ui'
@@ -189,10 +189,31 @@ describe('Sparkline details', () => {
   it('waits before arming the tooltip and disarms it when the pointer leaves', async () => {
     const { container } = await render(<Sparkline values={[3, 8]} details={details} />)
     const plot = await waitFor(() => container.querySelector('.analytik-spark-plot'))
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
+    onTestFinished(() => void vi.useRealTimers())
     await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })))
     await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })))
     await actAsync(() => plot.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })))
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 800)))
+    await actAsync(() => vi.advanceTimersByTime(800))
     expect(container.querySelector('.analytik-spark-plot')).not.toBeNull()
+  })
+})
+
+describe('Sparkline selection', () => {
+  it('reports the point under a click and keeps the click from reaching the card around it', async () => {
+    const onSelect = vi.fn()
+    const onCard = vi.fn()
+    const { container } = await render(
+      <div onClick={onCard}>
+        <Sparkline values={[1, 2, 3, 4, 5]} onSelect={onSelect} />
+      </div>,
+    )
+    const plot = await waitFor(() => container.querySelector<HTMLElement>('.analytik-spark-plot'))
+    plot.getBoundingClientRect = () => ({ left: 0, width: 100 }) as DOMRect
+    for (const x of [-10, 0, 80, 200]) {
+      await actAsync(() => plot.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x })))
+    }
+    expect(onSelect.mock.calls.map((c: unknown[]) => c[0])).toEqual([0, 0, 3, 4])
+    expect(onCard).not.toHaveBeenCalled()
   })
 })

@@ -217,6 +217,12 @@ function dayParts(ts: number, timeZone?: string): DayParts {
   }
 }
 
+/** The day of a moment in a time zone as `YYYY-MM-DD`, the form date inputs and `customRange` take. */
+export function dateKey(ts: number, timeZone?: string): string {
+  const { year, month, day } = dayParts(ts, timeZone)
+  return `${year}-${month}-${day}`
+}
+
 /** A day in the chosen style, with or without its year: Oct 27, 2026 · 27.10. · 2026-10-27. */
 export function formatDate(ts: number, timeZone?: string, withYear = true): string {
   const { year, month, day, name } = dayParts(ts, timeZone)

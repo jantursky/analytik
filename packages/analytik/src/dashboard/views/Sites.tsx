@@ -5,7 +5,7 @@ import type { Site, SiteSummary } from '../../shared/types'
 import type { ApiClient } from '../api'
 import { requestKey } from '../context'
 import { useResource } from '../data'
-import { formatDate, formatDateTime, formatMoney, formatMoneyShort, formatNumber } from '../format'
+import { dateKey, formatDate, formatDateTime, formatMoney, formatMoneyShort, formatNumber } from '../format'
 import { msg, t } from '../i18n'
 import { Icon } from '../icons'
 import { usePreferences } from '../preferences'
@@ -110,7 +110,8 @@ function SiteCard({
   foot: string
   /** Where the sparklines start and how long each point is, to say what a point stands for. */
   trend: { from: number; step: number }
-  onOpen: () => void
+  /** Opens the site; with a day (`YYYY-MM-DD`) when a point of a sparkline was clicked. */
+  onOpen: (day?: string) => void
   onChange: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
@@ -124,6 +125,7 @@ function SiteCard({
         value: format(value),
       }
     })
+  const dayOf = (i: number): string => dateKey(trend.from + i * trend.step, site.timezone)
   const online = data?.online ?? 0
   const visitors = failed ? '–' : data ? formatNumber(data.visitors) : '…'
   // Revenue only for sites that take payments: a provider is connected, or payments came in anyway (API, client).
@@ -135,7 +137,7 @@ function SiteCard({
       className="analytik-site-item"
       data-paused={site.paused ? '' : undefined}
     >
-      <button type="button" className="analytik-card analytik-site-card" onClick={onOpen}>
+      <button type="button" className="analytik-card analytik-site-card" onClick={() => onOpen()}>
         <span className="analytik-site-name">
           <SiteTile site={site} />
           <span>
@@ -154,9 +156,19 @@ function SiteCard({
           {data?.previous && !failed && <DeltaBadge change={visitorChange(data)} />}
         </span>
         <span className="analytik-muted">{t(foot)}</span>
-        {data?.traffic && <Sparkline values={data.traffic} details={details(data.traffic, formatNumber)} />}
+        {data?.traffic && (
+          <Sparkline
+            values={data.traffic}
+            details={details(data.traffic, formatNumber)}
+            onSelect={(i) => onOpen(dayOf(i))}
+          />
+        )}
         {takesPayments && data?.sales && data.sales.some((n) => n !== 0) && (
-          <Sparkline values={data.sales} details={details(data.sales, (v) => formatMoney(v, data.currency))} />
+          <Sparkline
+            values={data.sales}
+            details={details(data.sales, (v) => formatMoney(v, data.currency))}
+            onSelect={(i) => onOpen(dayOf(i))}
+          />
         )}
         <span className="analytik-site-foot">
           <span className="analytik-site-online">
@@ -202,7 +214,8 @@ function SiteCard({
 export interface SitesOverviewProps {
   client: ApiClient
   sites: Site[]
-  onOpen: (site: Site) => void
+  /** `day` (`YYYY-MM-DD`, in the site's time zone) when a point of a sparkline was clicked. */
+  onOpen: (site: Site, day?: string) => void
   onAdd: () => void
   /** Opens the dialog that brings another tool's history in; without it "Add website" is a plain button. */
   onImport?: () => void
@@ -320,7 +333,7 @@ export function SitesOverview({
             failed={!!summary.error}
             foot={period.foot}
             trend={{ from, step: period.series === 'hour' ? HOUR : DAY }}
-            onOpen={() => onOpen(site)}
+            onOpen={(day) => onOpen(site, day)}
             onChange={onChange}
           />
         ))}

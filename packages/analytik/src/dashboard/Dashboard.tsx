@@ -16,7 +16,7 @@ import { NavScroll } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
-import { type DateRange, presetRange, shiftRange } from './range'
+import { customRange, type DateRange, presetRange, shiftRange } from './range'
 import { sameFilters } from './segments'
 import { useShortcuts } from './shortcuts'
 import { NEXT_THEME, ThemeToggle } from './theme-toggle'
@@ -488,8 +488,10 @@ export function Dashboard({
       <SitesOverview
         client={client}
         sites={list}
-        onOpen={(s) => {
+        onOpen={(s, day) => {
           openSite(s.id)
+          const picked = day ? customRange(day, day) : null
+          if (picked) chooseRange(picked)
           setView('overview')
         }}
         onAdd={() => setAdding(true)}

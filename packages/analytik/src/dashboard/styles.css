@@ -2177,6 +2177,10 @@ button.analytik-bar:hover {
   width: 100%;
 }
 
+.analytik-spark-plot[data-selectable] {
+  cursor: pointer;
+}
+
 .analytik-sparkline {
   display: block;
   flex-basis: 100%;

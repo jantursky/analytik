@@ -458,12 +458,21 @@ export interface SparkDetail {
  * A tiny trend line; decorative, so hidden from assistive technology. With `details` (one per value), resting the
  * pointer on it for a moment shows the time and value of the point under it.
  */
-export function Sparkline({ values, details }: { values: number[]; details?: SparkDetail[] }) {
+export function Sparkline({
+  values,
+  details,
+  onSelect,
+}: {
+  values: number[]
+  details?: SparkDetail[]
+  /** Called with the index of the point that was clicked. */
+  onSelect?: (index: number) => void
+}) {
   if (values.length < 2) return null
   return (
     <span className="analytik-sparkline" aria-hidden="true">
       <Suspense fallback={null}>
-        <SparkPlot values={values} details={details} />
+        <SparkPlot values={values} details={details} onSelect={onSelect} />
       </Suspense>
     </span>
   )
