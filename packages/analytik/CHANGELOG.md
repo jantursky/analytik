@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.27.0]
+
 ### Added
 
 - Accessibility: axe checks of every view in both themes, larger touch targets, a screen reader message after data changes, and a place list for the map.
