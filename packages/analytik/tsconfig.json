@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
-    "noEmit": true
+    "noEmit": true,
+    // The demo's server files (tested from here) import the package by name; point that at the sources, not at dist.
+    "paths": { "analytik/server": ["./src/server"] }
   },
   "include": [
     "src/**/*.ts",
