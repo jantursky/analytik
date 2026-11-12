@@ -125,7 +125,14 @@ function SiteCard({
         value: format(value),
       }
     })
-  const dayOf = (i: number): string => dateKey(trend.from + i * trend.step, site.timezone)
+  // A click on a point opens the site for the day it stands for.
+  const spark = (values: number[], format: (value: number) => string) => (
+    <Sparkline
+      values={values}
+      details={details(values, format)}
+      onSelect={(i) => onOpen(dateKey(trend.from + i * trend.step, site.timezone))}
+    />
+  )
   const online = data?.online ?? 0
   const visitors = failed ? '–' : data ? formatNumber(data.visitors) : '…'
   // Revenue only for sites that take payments: a provider is connected, or payments came in anyway (API, client).
@@ -156,20 +163,11 @@ function SiteCard({
           {data?.previous && !failed && <DeltaBadge change={visitorChange(data)} />}
         </span>
         <span className="analytik-muted">{t(foot)}</span>
-        {data?.traffic && (
-          <Sparkline
-            values={data.traffic}
-            details={details(data.traffic, formatNumber)}
-            onSelect={(i) => onOpen(dayOf(i))}
-          />
-        )}
-        {takesPayments && data?.sales && data.sales.some((n) => n !== 0) && (
-          <Sparkline
-            values={data.sales}
-            details={details(data.sales, (v) => formatMoney(v, data.currency))}
-            onSelect={(i) => onOpen(dayOf(i))}
-          />
-        )}
+        {data?.traffic && spark(data.traffic, formatNumber)}
+        {takesPayments &&
+          data?.sales &&
+          data.sales.some((n) => n !== 0) &&
+          spark(data.sales, (v) => formatMoney(v, data.currency))}
         <span className="analytik-site-foot">
           <span className="analytik-site-online">
             <span className="analytik-live-dot" data-idle={online ? undefined : ''} aria-hidden="true" />

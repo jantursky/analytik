@@ -253,13 +253,11 @@ export function WorldMap({ locations, globe = false, selected, onSelect }: World
         </AnimatePresence>
       </svg>
       {/* The same places as a list a screen reader can step through. */}
-      {places.length > 0 && (
-        <ul className="analytik-sr-only">
-          {places.map((p) => (
-            <li key={p.key}>{`${p.label}: ${visitorCount(p.count)}`}</li>
-          ))}
-        </ul>
-      )}
+      <ul className="analytik-sr-only">
+        {places.map((p) => (
+          <li key={p.key}>{`${p.label}: ${visitorCount(p.count)}`}</li>
+        ))}
+      </ul>
       <AnimatePresence>
         {tipPlace && tipPoint && (
           <motion.div

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { type MouseEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useDashboard } from './context'
 import { Icon, type IconName } from './icons'
@@ -21,33 +21,30 @@ export function CopyId({ text, label }: { text: string; label: string }) {
   }, [copied])
   const copy = (): void => void navigator.clipboard.writeText(text).then(() => setCopied(true))
   const icon: IconName = copied ? 'check' : 'copy'
-  const props = {
-    className: 'analytik-cell-action',
-    'data-done': copied ? '' : undefined,
-    'aria-label': copied ? t('Copied') : label,
-    title: label,
-    onClick: (event: MouseEvent): void => {
-      // A click on the copy button must not also open the row or apply its filter.
-      event.stopPropagation()
-      copy()
-    },
-  }
-  const mark = (
-    <AnimatePresence mode="popLayout" initial={false}>
-      <motion.span
-        key={icon}
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.5 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 26 }}
-      >
-        <Icon name={icon} />
-      </motion.span>
-    </AnimatePresence>
-  )
   return (
-    <button type="button" {...props}>
-      {mark}
+    <button
+      type="button"
+      className="analytik-cell-action"
+      data-done={copied ? '' : undefined}
+      aria-label={copied ? t('Copied') : label}
+      title={label}
+      onClick={(event) => {
+        // A click on the copy button must not also open the row or apply its filter.
+        event.stopPropagation()
+        copy()
+      }}
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={icon}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 26 }}
+        >
+          <Icon name={icon} />
+        </motion.span>
+      </AnimatePresence>
     </button>
   )
 }

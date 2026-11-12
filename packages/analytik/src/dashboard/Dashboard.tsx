@@ -202,7 +202,7 @@ const ANNOUNCE_MS = 600
  * The text to announce once `state` has changed and stayed so for a moment. Nothing is said while `ready` is false (the
  * first load, whose result becomes the starting point) or when the state comes back to what was last announced.
  */
-function useAnnouncement(ready: boolean, state: unknown[], text: string): string {
+function useAnnouncement(ready: boolean, state: unknown[], text: () => string): string {
   const [message, setMessage] = useState('')
   const key = JSON.stringify(state)
   const last = useRef<string>(undefined)
@@ -215,10 +215,12 @@ function useAnnouncement(ready: boolean, state: unknown[], text: string): string
     if (last.current === key) return
     const timer = setTimeout(() => {
       last.current = key
-      setMessage(text)
+      setMessage(text())
     }, ANNOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [ready, key, text])
+    // `text` is read when the timer fires; the key already says when it would differ.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, key])
   return message
 }
 
@@ -462,11 +464,12 @@ export function Dashboard({
   const announced = useAnnouncement(
     !!site,
     [view, range.preset === 'custom' ? `${range.from}-${range.to}` : range.preset, compare, filters],
-    t('Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}', {
-      view: t(current?.label ?? 'All sites'),
-      range: rangeLabel(range),
-      count: Object.keys(filters).length,
-    }),
+    () =>
+      t('Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}', {
+        view: t(current?.label ?? 'All sites'),
+        range: rangeLabel(range),
+        count: Object.keys(filters).length,
+      }),
   )
 
   const addFilter = (dimension: string, value: string): void => {

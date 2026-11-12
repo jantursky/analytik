@@ -529,13 +529,14 @@ export function SparkPlot({
     setShown(false)
   }
   // The point under a click, from where along the line it landed; the line spreads its points evenly over its width.
-  const pick = (event: MouseEvent<HTMLDivElement>): void => {
-    if (!onSelect) return
-    event.stopPropagation()
-    const box = event.currentTarget.getBoundingClientRect()
-    const share = box.width > 0 ? (event.clientX - box.left) / box.width : 0
-    onSelect(Math.min(values.length - 1, Math.max(0, Math.round(share * (values.length - 1)))))
-  }
+  const pick =
+    onSelect &&
+    ((event: MouseEvent<HTMLDivElement>): void => {
+      event.stopPropagation()
+      const box = event.currentTarget.getBoundingClientRect()
+      const share = box.width > 0 ? (event.clientX - box.left) / box.width : 0
+      onSelect(Math.min(values.length - 1, Math.max(0, Math.round(share * (values.length - 1)))))
+    })
   return (
     <div
       className="analytik-spark-plot"

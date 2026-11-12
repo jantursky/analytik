@@ -3,10 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AreaChart } from '../src/dashboard/charts'
 import { groupPlaces, WorldMap } from '../src/dashboard/map'
 import { waitFor } from './dashboard-helpers'
-import { actAsync, render } from './react-render'
-
-const press = (element: Element, name: string): Promise<void> =>
-  actAsync(() => element.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true })))
+import { key as press, render } from './react-render'
 
 describe('chart note markers', () => {
   const points = [10, 40, 20, 30].map((value, i) => ({ ts: i, value }))
@@ -65,8 +62,8 @@ describe('map places', () => {
     expect(markers.map((m) => m.getAttribute('aria-label'))).toEqual(
       groupPlaces(locations).map((p) => expect.stringContaining(p.label) as string),
     )
-    await press(markers[0]!, 'Enter')
-    await press(markers[1]!, ' ')
+    await press(markers[0], 'Enter')
+    await press(markers[1], ' ')
     expect(onSelect.mock.calls.map((c: unknown[]) => c[0])).toEqual(
       groupPlaces(locations)
         .slice(0, 2)
