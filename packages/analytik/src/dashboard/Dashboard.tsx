@@ -16,13 +16,14 @@ import { NavScroll } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
-import { type DateRange, presetRange, shiftRange } from './range'
+import { customRange, type DateRange, presetRange, shiftRange } from './range'
 import { sameFilters } from './segments'
 import { useShortcuts } from './shortcuts'
 import { NEXT_THEME, ThemeToggle } from './theme-toggle'
 import { ComparePicker, FilterBar, IntervalPicker, RangePicker } from './Toolbar'
 import { ConfirmButton, FaviconsContext, type FaviconSource, SiteTile, Status } from './ui'
 import { LayerContext } from './ui/layer'
+import { rangeLabel } from './ui/date-picker'
 import { Select } from './ui/select'
 import { Switch } from './ui/switch'
 import { Tooltip } from './ui/tooltip'
@@ -193,6 +194,35 @@ const VOCABULARY = {
 
 /** The state the current address names; anything unknown is left out. */
 const readAddress = (): AddressState => parseAddress(location.search, VOCABULARY)
+
+// A burst of changes is announced once, after it settles.
+const ANNOUNCE_MS = 600
+
+/**
+ * The text to announce once `state` has changed and stayed so for a moment. Nothing is said while `ready` is false (the
+ * first load, whose result becomes the starting point) or when the state comes back to what was last announced.
+ */
+function useAnnouncement(ready: boolean, state: unknown[], text: () => string): string {
+  const [message, setMessage] = useState('')
+  const key = JSON.stringify(state)
+  const last = useRef<string>(undefined)
+  useEffect(() => {
+    if (!ready) return
+    if (last.current === undefined) {
+      last.current = key
+      return
+    }
+    if (last.current === key) return
+    const timer = setTimeout(() => {
+      last.current = key
+      setMessage(text())
+    }, ANNOUNCE_MS)
+    return () => clearTimeout(timer)
+    // `text` is read when the timer fires; the key already says when it would differ.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, key])
+  return message
+}
 
 /** The full dashboard: login, sites overview, site switcher, date range, filters and every view. */
 export function Dashboard({
@@ -430,6 +460,18 @@ export function Dashboard({
   }, [urlState])
   const current = view === 'sites' ? undefined : VIEWS[view]
 
+  // One polite message after the view, range, comparison or filters change; the first load and refreshes say nothing.
+  const announced = useAnnouncement(
+    !!site,
+    [view, range.preset === 'custom' ? `${range.from}-${range.to}` : range.preset, compare, filters],
+    () =>
+      t('Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}', {
+        view: t(current?.label ?? 'All sites'),
+        range: rangeLabel(range),
+        count: Object.keys(filters).length,
+      }),
+  )
+
   const addFilter = (dimension: string, value: string): void => {
     setPendingSegment(undefined)
     setFilters((f) => ({ ...f, [dimension]: value }))
@@ -488,8 +530,10 @@ export function Dashboard({
       <SitesOverview
         client={client}
         sites={list}
-        onOpen={(s) => {
+        onOpen={(s, day) => {
           openSite(s.id)
+          const picked = day ? customRange(day, day) : null
+          if (picked) chooseRange(picked)
           setView('overview')
         }}
         onAdd={() => setAdding(true)}
@@ -698,6 +742,9 @@ export function Dashboard({
                 data-centered={unauthorized || (!sites.loading && !sites.error && !site) ? '' : undefined}
               >
                 {content}
+              </div>
+              <div className="analytik-sr-only" role="status" aria-live="polite">
+                {announced}
               </div>
               {credits && <Credits />}
               {pending && (

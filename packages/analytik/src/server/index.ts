@@ -67,6 +67,10 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
   const admin = new Hono<AdminEnv>()
   adminRoutes(admin, ctx)
   app.route('/', admin)
+  // The same routes under `/v1`, the stable address for API keys; the dashboard keeps using the plain ones.
+  const versioned = new Hono<AdminEnv>()
+  adminRoutes(versioned, ctx)
+  app.route('/v1', versioned)
 
   return {
     app,

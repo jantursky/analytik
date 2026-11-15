@@ -127,6 +127,17 @@ const DEMO_CRAWLERS: Weighted<[crawler: string, category: string]> = [
 const PLANS = [900, 2900, 9900] as const
 const BATCH = 500
 
+// Two goal targets, so the goal block shows progress; notes for the charts, as days back from the end of the history.
+const TARGETS = JSON.stringify([
+  { goal: 'signup', target: 400, period: 'month' },
+  { goal: 'checkout', target: 60, period: 'week' },
+])
+const NOTES: [number, string][] = [
+  [2, 'Newsletter'],
+  [9, 'Product Hunt launch'],
+  [17, 'New pricing page'],
+]
+
 /**
  * Fills a storage with a believable month of traffic, goals and payments for a demo site.
  * Ids derive from the seed, so running it twice with the same options adds nothing.
@@ -160,9 +171,9 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
   const statements: Statement[] = [
     {
       sql: `INSERT INTO sites (id, name, domain, timezone, currency, privacy_mode, api_key_hash, webhook_secrets,
-              retention_days, allow_localhost, ignored_ips, share_token, created_at)
-            VALUES (?, ?, ?, 'UTC', ?, 'strict', ?, '{}', NULL, 0, '[]', NULL, ?) ON CONFLICT DO NOTHING`,
-      params: [siteId, options.name ?? 'Demo', domain, currency, await sha256Hex(apiKey), first],
+              retention_days, allow_localhost, ignored_ips, share_token, created_at, vitals_sample, targets)
+            VALUES (?, ?, ?, 'UTC', ?, 'strict', ?, '{}', NULL, 0, '[]', NULL, ?, 100, ?) ON CONFLICT DO NOTHING`,
+      params: [siteId, options.name ?? 'Demo', domain, currency, await sha256Hex(apiKey), first, TARGETS],
     },
   ]
   const counts = { visitors: 0, sessions: 0, events: 0, payments: 0, funnels: 0 }
@@ -370,17 +381,33 @@ export async function seedDemo(storage: Storage, options: SeedOptions = {}): Pro
     })
   }
 
-  // Crawler requests, so the Bots view has something to show. Re-seeding replaces them: the table has no natural id.
-  statements.push({ sql: 'DELETE FROM bot_requests WHERE site_id = ?', params: [siteId] })
+  // Crawler requests, so the Bots view has something to show, and vitals of sampled page loads. Re-seeding replaces
+  // both: the tables have no natural id.
+  for (const table of ['bot_requests', 'vitals']) {
+    statements.push({ sql: `DELETE FROM ${table} WHERE site_id = ?`, params: [siteId] })
+  }
+  const at = (day: number): number => Math.min(now, first + day * DAY + between(0, DAY - 1))
   for (let day = 0; day < days; day++) {
     for (let request = between(4, 12); request > 0; request--) {
       const [crawler, category] = pick(DEMO_CRAWLERS)
-      statements.push({
-        sql: 'INSERT INTO bot_requests (site_id, ts, crawler, category, path) VALUES (?, ?, ?, ?, ?)',
-        params: [siteId, Math.min(now, first + day * DAY + between(0, DAY - 1)), crawler, category, pick(NEXT)],
-      })
+      statements.push(
+        {
+          sql: 'INSERT INTO bot_requests (site_id, ts, crawler, category, path) VALUES (?, ?, ?, ?, ?)',
+          params: [siteId, at(day), crawler, category, pick(NEXT)],
+        },
+        {
+          sql: 'INSERT INTO vitals (site_id, ts, path, lcp, inp, cls) VALUES (?, ?, ?, ?, ?, ?)',
+          params: [siteId, at(day), pick(NEXT), between(1100, 4200), between(60, 420), between(0, 25) / 100],
+        },
+      )
     }
   }
+  NOTES.forEach(([back, text], index) =>
+    statements.push({
+      sql: 'INSERT INTO annotations (id, site_id, ts, text, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
+      params: [`note${index}-${siteId}`, siteId, first + Math.max(0, days - 1 - back) * DAY, text, first],
+    }),
+  )
 
   await flush(true)
   return { siteId, apiKey, counts }

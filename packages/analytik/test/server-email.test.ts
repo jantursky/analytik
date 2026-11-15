@@ -170,11 +170,19 @@ describe('settings', () => {
       hour: 7,
       down: false,
       timezone: 'Europe/Bratislava',
+      apiKeyAlerts: true,
     })
     // A partial save keeps the rest.
     await server.adminJson('/email', { method: 'PUT', json: { down: true } })
     expect(await server.adminJson('/email')).toMatchObject({ settings: { summary: 'weekly', down: true, hour: 7 } })
-    for (const bad of [{ to: 'nope' }, { summary: 'hourly' }, { hour: 24 }, { hour: 1.5 }, { timezone: 'Mars/Base' }]) {
+    for (const bad of [
+      { to: 'nope' },
+      { summary: 'hourly' },
+      { hour: 24 },
+      { hour: 1.5 },
+      { timezone: 'Mars/Base' },
+      { apiKeyAlerts: 'yes' },
+    ]) {
       expect((await server.admin('/email', { method: 'PUT', json: bad })).status).toBe(400)
     }
   })

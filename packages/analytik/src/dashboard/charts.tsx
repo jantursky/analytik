@@ -408,7 +408,7 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
                 <span className="analytik-bar-name">
                   <span className="analytik-bar-label">{row.label ?? (row.key || t('(none)'))}</span>
                   <span className="analytik-cell-actions">
-                    <CopyId text={row.copy.text} label={row.copy.label} nested />
+                    <CopyId text={row.copy.text} label={row.copy.label} />
                   </span>
                 </span>
               ) : (
@@ -432,7 +432,18 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
               transition={{ duration: 0.3, ease: EASE }}
             >
-              {onSelect ? (
+              {onSelect && row.copy ? (
+                // A button cannot hold the copy button, so the row's own button lies over it and the copy sits above.
+                <div className="analytik-bar" data-pick="">
+                  <button type="button" className="analytik-bar-hit" onClick={() => onSelect(row.key)}>
+                    <span className="analytik-sr-only">
+                      {row.label ?? (row.key || t('(none)'))}
+                      {t(', filter by this')}
+                    </span>
+                  </button>
+                  {content}
+                </div>
+              ) : onSelect ? (
                 <button type="button" className="analytik-bar" onClick={() => onSelect(row.key)}>
                   {content}
                   <span className="analytik-sr-only">{t(', filter by this')}</span>
@@ -458,12 +469,21 @@ export interface SparkDetail {
  * A tiny trend line; decorative, so hidden from assistive technology. With `details` (one per value), resting the
  * pointer on it for a moment shows the time and value of the point under it.
  */
-export function Sparkline({ values, details }: { values: number[]; details?: SparkDetail[] }) {
+export function Sparkline({
+  values,
+  details,
+  onSelect,
+}: {
+  values: number[]
+  details?: SparkDetail[]
+  /** Called with the index of the point that was clicked. */
+  onSelect?: (index: number) => void
+}) {
   if (values.length < 2) return null
   return (
     <span className="analytik-sparkline" aria-hidden="true">
       <Suspense fallback={null}>
-        <SparkPlot values={values} details={details} />
+        <SparkPlot values={values} details={details} onSelect={onSelect} />
       </Suspense>
     </span>
   )

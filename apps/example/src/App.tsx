@@ -9,6 +9,7 @@ import { DashboardExample } from './examples/DashboardExample'
 import { InstallExample } from './examples/InstallExample'
 import { PrivacyExample } from './examples/PrivacyExample'
 import { ShopExample } from './examples/ShopExample'
+import { DEMO_SHARE_TOKEN, SITE_ID } from './config'
 import { TABS, useHashTab, type TabId } from './lib/useHashTab'
 
 const DOCS_URL = 'https://analytik-docs.vercel.app'
@@ -116,6 +117,26 @@ export function App() {
                 Seeded traffic for a fictional shop, plus anything you do in the Instrumented site tab. This demo is
                 read-only and resets when the server restarts.
               </p>
+              <section className="hints" aria-labelledby="hints-title">
+                <h2 id="hints-title">Try this</h2>
+                <ul>
+                  <li>
+                    Send events: buy a plan in the <a href="#site">Instrumented site tab</a>, then watch the Live view.
+                  </li>
+                  <li>
+                    Press <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>K</kbd> in the <a href="#full">full-page view</a> for
+                    the command palette.
+                  </li>
+                  <li>Compare periods: choose a comparison in the toolbar next to the date range.</li>
+                  <li>
+                    Open the <a href={`/?site=${SITE_ID}&share=${DEMO_SHARE_TOKEN}#full`}>read-only share view</a>.
+                  </li>
+                  <li>Export a chart as PNG from the menu on its corner.</li>
+                  <li>
+                    Prefer the menu bar? See the <a href={`${DOCS_URL}/guides/mac-menu-bar`}>Mac menu bar app</a>.
+                  </li>
+                </ul>
+              </section>
             </div>
             <ExampleFrame
               title="Dashboard"
@@ -128,7 +149,7 @@ export function App() {
           </>
         )}
 
-        {shown === 'full' && <DashboardExample />}
+        {shown === 'full' && <DashboardExample urlState />}
 
         {shown === 'site' && (
           <>

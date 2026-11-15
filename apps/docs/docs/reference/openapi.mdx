@@ -1,0 +1,26 @@
+---
+title: OpenAPI document
+description: A machine-readable OpenAPI 3.1 description of every route an API key can call, for Postman, code generators and AI agents.
+---
+
+`GET /v1/openapi.json` returns an [OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) document of the routes an [API key](/guides/api-keys) can use. Any valid key can read it, whatever its scope or site list, and so can the signed-in admin. It holds no site data.
+
+```bash
+curl -H "Authorization: Bearer anl_YOUR_KEY" \
+  "https://analytik.example.com/api/v1/openapi.json"
+```
+
+Load it into Postman or Insomnia, feed it to a client generator, or hand it to an agent framework as the tool list. The `servers` entry is `/v1`, relative to the address of your server and its base path.
+
+## What it contains
+
+- **Paths and methods** of every route a key may call, generated from the same table the server uses to decide, so the document cannot list a route a key is refused, or miss one it can use.
+- **`x-analytik-scope`** on each operation: `read` or `write`, the minimum scope of the key. A read key may call every `read` operation; a write key all of them.
+- **Parameters**: path parameters, the range, interval and filter parameters of the stats routes, paging, and the required ones such as `dimension` for the breakdown.
+- **Security**: one HTTP bearer scheme, `bearerKey` (keys start with `anl_`), applied to every operation.
+- **Errors**: a shared `Error` schema (`{ "error": "..." }`) and the `401`, `403` and `429` answers.
+- **Limit headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` on every answer and `Retry-After` on `429`.
+
+Responses of large reports are described loosely (an object) on purpose; the [HTTP API reference](/reference/http-api) and the [types](/reference/types) say what is inside. Routes closed to keys (sign-in, key management, webhooks, share links, deleting a site) are left out.
+
+`info.version` is the analytik version and `info['x-api-version']` is `v1`.

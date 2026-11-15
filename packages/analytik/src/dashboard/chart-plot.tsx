@@ -1,6 +1,6 @@
 // Loaded on demand by charts.tsx, so Recharts stays out of the first dashboard bundle.
 import { useReducedMotionConfig } from 'motion/react'
-import { type CSSProperties, useEffect, useId, useRef, useState } from 'react'
+import { type CSSProperties, type MouseEvent, useEffect, useId, useRef, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -122,6 +122,8 @@ function NoteMarkers({ notes, times, onOpen, formatTime }: NoteMarkersProps) {
                 y2={area.y + area.height}
                 className="analytik-note-line"
               />
+              {/* A bigger invisible target, so the small dot is easy to tap. */}
+              <rect x={group.x - 12} y={area.y} width={24} height={24} className="analytik-note-hit" />
               <circle cx={group.x} cy={area.y + NOTE_RADIUS} r={NOTE_RADIUS} className="analytik-note-dot" />
               {group.notes.length > 1 && (
                 <text
@@ -503,7 +505,15 @@ export function SparkTip({
 }
 
 /** A tiny trend area without axes, for stat tiles. */
-export function SparkPlot({ values, details }: { values: number[]; details?: SparkDetail[] }) {
+export function SparkPlot({
+  values,
+  details,
+  onSelect,
+}: {
+  values: number[]
+  details?: SparkDetail[]
+  onSelect?: (index: number) => void
+}) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
   // The value shows only once the pointer has rested on the line for a moment, not as it passes over.
@@ -518,10 +528,30 @@ export function SparkPlot({ values, details }: { values: number[]; details?: Spa
     clearTimeout(timer.current)
     setShown(false)
   }
+  // The point under a click, from where along the line it landed; the line spreads its points evenly over its width.
+  const pick =
+    onSelect &&
+    ((event: MouseEvent<HTMLDivElement>): void => {
+      event.stopPropagation()
+      const box = event.currentTarget.getBoundingClientRect()
+      const share = box.width > 0 ? (event.clientX - box.left) / box.width : 0
+      onSelect(Math.min(values.length - 1, Math.max(0, Math.round(share * (values.length - 1)))))
+    })
   return (
-    <div className="analytik-spark-plot" onMouseEnter={details && rest} onMouseLeave={details && leave}>
+    <div
+      className="analytik-spark-plot"
+      data-selectable={onSelect ? '' : undefined}
+      onMouseEnter={details && rest}
+      onMouseLeave={details && leave}
+      onClick={pick}
+    >
       <ResponsiveContainer width="100%" height={28} initialDimension={{ width: 120, height: 28 }}>
-        <AreaChart data={values.map((value, i) => ({ i, value }))} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+        <AreaChart
+          data={values.map((value, i) => ({ i, value }))}
+          margin={{ top: 2, right: 0, bottom: 2, left: 0 }}
+          // Decorative and hidden from assistive technology, so its keyboard layer must not take focus either.
+          tabIndex={-1}
+        >
           <defs>
             <linearGradient id={`${id}-spark`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="currentColor" stopOpacity={0.25} />

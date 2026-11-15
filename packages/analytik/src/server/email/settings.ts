@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: EmailSettings = {
   hour: 8,
   down: false,
   timezone: 'UTC',
+  apiKeyAlerts: true,
 }
 
 /** Rebuilds the settings from stored or sent JSON, keeping only valid fields so a bad value can't break the schedule. */
@@ -23,6 +24,7 @@ export function parseSettings(value: unknown): EmailSettings {
   if (typeof input.to === 'string' && (input.to === '' || ADDRESS.test(input.to))) settings.to = input.to
   if (typeof input.payments === 'boolean') settings.payments = input.payments
   if (typeof input.down === 'boolean') settings.down = input.down
+  if (typeof input.apiKeyAlerts === 'boolean') settings.apiKeyAlerts = input.apiKeyAlerts
   if (FREQUENCIES.includes(input.summary as SummaryFrequency)) settings.summary = input.summary as SummaryFrequency
   if (Number.isInteger(input.hour) && (input.hour as number) >= 0 && (input.hour as number) <= 23) {
     settings.hour = input.hour as number
@@ -64,7 +66,7 @@ export async function saveEmailSettings(ctx: Context, input: Record<string, unkn
   if (input.to !== undefined && !(typeof input.to === 'string' && (input.to === '' || ADDRESS.test(input.to)))) {
     throw new AnalytikError('to must be an email address')
   }
-  for (const key of ['payments', 'down'] as const) {
+  for (const key of ['payments', 'down', 'apiKeyAlerts'] as const) {
     if (input[key] !== undefined && typeof input[key] !== 'boolean')
       throw new AnalytikError(`${key} must be true or false`)
   }

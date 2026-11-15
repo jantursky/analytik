@@ -72,7 +72,10 @@ const serve = async (request: Request, local: boolean): Promise<Response> => {
 export const handle: Handle = async (request) => {
   const { pathname } = new URL(request.url)
   if (!isAllowed(request.method, pathname)) {
-    return Response.json({ error: 'This demo is read-only.' }, { status: 403 })
+    return Response.json(
+      { error: 'This demo is read-only. Run it locally with "bun run dev" to try this.' },
+      { status: 403 },
+    )
   }
   return serve(request, false)
 }

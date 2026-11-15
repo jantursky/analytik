@@ -36,6 +36,10 @@ afterEach(() => {
   localStorage.clear()
 })
 
+/** Waits for a preferences save (they are debounced) that matches, instead of sleeping through the delay. */
+const savedWhen = (api: ReturnType<typeof fakeApi>, match: (body: Record<string, unknown>) => boolean = () => true) =>
+  waitFor(() => api.find('PUT', '/preferences').some((r) => match(r.body as Record<string, unknown>)) || null, 400)
+
 /** The calendar only offers past days, so on the first of a month it has none to pick: these tests run on a fixed Sunday in July. */
 function midMonth(): void {
   beforeEach(() => {
@@ -46,6 +50,10 @@ function midMonth(): void {
     vi.useRealTimers()
   })
 }
+
+/** The button that applies a row's filter: the row itself, or, where a copy button sits in the row, the button laid over it. */
+const rowButton = (label: Element | null | undefined): Element | null | undefined =>
+  label?.closest('button') ?? label?.closest('.analytik-bar')?.querySelector('.analytik-bar-hit')
 
 describe('Dashboard shell', () => {
   it('lets the theme be switched and the password shown on the login screen', async () => {
@@ -205,7 +213,7 @@ describe('Dashboard shell', () => {
         await press(menuItem('Save the active filters…'))
         await fill(document.querySelector('.analytik-segment-form input'), 'Slovak visitors')
         await submit(document.querySelector('.analytik-segment-form'))
-        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        await savedWhen(api, (b) => Array.isArray(b.segments))
         const saved = api.find('PUT', '/preferences').at(-1)?.body as { segments: { id: string; name: string }[] }
         expect(saved.segments).toEqual([
           { id: expect.any(String) as string, name: 'Slovak visitors', filters: { country: 'SK' } },
@@ -272,7 +280,7 @@ describe('Dashboard shell', () => {
         await fill(first, 'Renamed')
         await actAsync(() => first?.blur())
         await click(document.querySelector('[aria-label="Delete segment Segment 1"]'))
-        await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+        await savedWhen(api, (b) => (b.segments as unknown[] | undefined)?.length === 19)
         const body = api.find('PUT', '/preferences').at(-1)?.body as { segments: { name: string }[] }
         expect(body.segments).toHaveLength(19)
         expect(body.segments[0]?.name).toBe('Renamed')
@@ -663,7 +671,7 @@ describe('Dashboard shell', () => {
     expect(details?.getAttribute('aria-expanded')).toBe('true')
     await click(byText(pages!, 'Fewer', 'button'))
     expect(pages?.querySelectorAll('.analytik-bar')).toHaveLength(8)
-    await click(byText(container, '/p0', '.analytik-bar-label')?.closest('button'))
+    await click(rowButton(byText(container, '/p0', '.analytik-bar-label')))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.page).toBe('/p0')
   })
@@ -673,7 +681,7 @@ describe('Dashboard shell', () => {
     await click(byText(container, 'Organic Search', '.analytik-bar-label')?.closest('button'))
     await settled()
     expect(api.find('GET', '/sites/site_1/overview').at(-1)?.params.channel).toBe('Organic Search')
-    await click(byText(container, '/pricing', '.analytik-bar-label')?.closest('button'))
+    await click(rowButton(byText(container, '/pricing', '.analytik-bar-label')))
     await settled()
     expect(texts(container, '.analytik-chip')).toEqual(['channel Organic Search ×', 'page /pricing ×'])
     await click(container.querySelector('[aria-label="Remove filter channel is Organic Search"]'))
@@ -820,7 +828,8 @@ describe('Dashboard shell', () => {
     await click(live)
     await click(live)
     expect(live?.getAttribute('aria-checked')).toBe('false')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api)
+    await settled()
     expect(api.find('PUT', '/preferences')).toHaveLength(1)
     expect(api.find('PUT', '/preferences')[0]?.body).toEqual({
       live: false,
@@ -837,7 +846,7 @@ describe('Dashboard shell', () => {
     const live = switchFor(container, 'Live')
     expect(live?.getAttribute('aria-checked')).toBe('true')
     await click(live)
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, () => api.find('PUT', '/preferences').length >= 2)
     expect(api.find('PUT', '/preferences')).toHaveLength(2)
     expect(live?.getAttribute('aria-checked')).toBe('false')
     expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: false })
@@ -845,10 +854,11 @@ describe('Dashboard shell', () => {
 
   it('keeps the settings in the browser only with syncPreferences off', async () => {
     const api = fakeApi()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
     const { container } = await render(<Dashboard api="/api" fetcher={api.fetcher} syncPreferences={false} />)
     await settled()
     await click(switchFor(container, 'Live'))
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await actAsync(() => vi.advanceTimersByTime(700))
     expect(api.find('GET', '/preferences')).toHaveLength(0)
     expect(api.find('PUT', '/preferences')).toHaveLength(0)
     expect(JSON.parse(localStorage.getItem('analytik:preferences') ?? '{}')).toEqual({ live: true })
@@ -1824,7 +1834,8 @@ describe('Settings', () => {
     await settled()
     expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/^https:\/\/example\.com\//))
     expect(container.querySelector('[aria-label="Copied"]')).not.toBeNull()
-    await key(copy, 'Enter')
+    // A real button: Enter and Space press it natively, which a simulated DOM does not do.
+    await click(copy)
     expect(writeText).toHaveBeenCalledTimes(2)
   })
 
@@ -1988,6 +1999,8 @@ describe('Settings', () => {
     expect(testButton().disabled).toBe(false)
     await click(switchFor(container, 'Email me when a payment arrives'))
     await click(switchFor(container, 'Email me when a site gets no events for 24 hours'))
+    // API key notices are on until switched off.
+    await click(switchFor(container, 'Email me when an API key is created, rolled, disabled or deleted'))
     // The time zone and hour only matter once there is a summary.
     expect(container.textContent).not.toContain('Send after')
     await choose(selectTrigger(container, 'Summary of all sites'), 'Every Monday')
@@ -2004,6 +2017,7 @@ describe('Settings', () => {
       to: 'me@example.com',
       payments: true,
       down: true,
+      apiKeyAlerts: false,
       summary: 'weekly',
       hour: 9,
     })
@@ -2320,7 +2334,7 @@ describe('update notice', () => {
     ])
     await click(container.querySelector('.analytik-update button'))
     expect(notice()).toBeNull()
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.updateDismissed === '1.2.0')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ updateDismissed: '1.2.0' })
   })
 
@@ -2466,7 +2480,7 @@ describe('formatting and credits', () => {
     await section(container, 'Appearance')
     await choose(selectTrigger(container, 'Theme'), 'Dark')
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBe('dark')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.theme === 'dark')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ theme: 'dark' })
     await choose(selectTrigger(container, 'Theme'), 'Same as the page')
     expect(container.querySelector('.analytik')?.getAttribute('data-theme')).toBeNull()
@@ -2476,7 +2490,7 @@ describe('formatting and credits', () => {
     const { container, api } = await open(fakeApi(), 'settings')
     await section(container, 'Appearance')
     await choose(selectTrigger(container, 'Language'), 'Slovenčina')
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => b.language === 'sk')
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'sk' })
   })
 
@@ -2495,7 +2509,7 @@ describe('formatting and credits', () => {
     try {
       const { container, api } = await open(fakeApi(), 'overview')
       const trigger = container.querySelector<HTMLElement>('.analytik-header .analytik-language-switch')
-      expect(trigger?.getAttribute('aria-label')).toBe('Language')
+      expect(trigger?.getAttribute('aria-label')).toBe('Language: en')
       expect(trigger?.textContent).toBe('en')
       expect(trigger?.nextElementSibling?.classList.contains('analytik-theme-toggle')).toBe(true)
       await click(trigger)
@@ -2509,7 +2523,7 @@ describe('formatting and credits', () => {
       expect(languages.slice(0, 5)).toEqual(['Bahasa Indonesia', 'Čeština', 'Deutsch', 'English', 'Español'])
       await press([...document.querySelectorAll('[role="menuitemradio"]')].find((i) => i.textContent === 'Deutsch'))
       await waitFor(() => trigger?.textContent === 'de')
-      await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+      await savedWhen(api, (b) => b.language === 'de')
       expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({ language: 'de' })
       const fixed = await render(<Dashboard api="/api" fetcher={fakeApi().fetcher} locale="en" />)
       await settled()
@@ -2542,7 +2556,7 @@ describe('formatting and credits', () => {
     await choose(selectTrigger(container, 'Numbers'), 'Dot groups, comma decimals')
     await choose(selectTrigger(container, 'Dates'), 'ISO 8601')
     expect(api.state.preferences).toEqual({})
-    await actAsync(() => new Promise((resolve) => setTimeout(resolve, 700)))
+    await savedWhen(api, (b) => !!b.format)
     expect(api.find('PUT', '/preferences').at(-1)?.body).toEqual({
       format: { numbers: 'dot', currency: 'symbol', cents: 'always', date: 'iso', time: '12h' },
     })
@@ -2562,7 +2576,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(14)
+    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(15)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

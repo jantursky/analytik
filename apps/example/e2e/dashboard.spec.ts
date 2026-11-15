@@ -26,5 +26,16 @@ test('the API serves the seeded site and refuses writes', async ({ request }) =>
     await request.patch('/api/sites/demo', { data: { name: 'x' } }),
   ]) {
     expect(response.status()).toBe(403)
+    expect(await response.json()).toEqual({
+      error: 'This demo is read-only. Run it locally with "bun run dev" to try this.',
+    })
   }
+})
+
+test('saving a setting in the demo says how to try it', async ({ page }) => {
+  await page.goto('/#dashboard')
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await page.getByLabel('Name', { exact: true }).fill('Renamed')
+  await page.getByRole('button', { name: 'Save', exact: true }).first().click()
+  await expect(page.getByText('This demo is read-only. Run it locally with "bun run dev" to try this.')).toBeVisible()
 })

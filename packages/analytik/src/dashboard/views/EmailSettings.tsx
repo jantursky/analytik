@@ -64,6 +64,9 @@ function EmailForm({ state }: { state: EmailState }) {
       <Switch checked={draft.down} onChange={(on) => set('down', on)}>
         {t('Email me when a site gets no events for 24 hours')}
       </Switch>
+      <Switch checked={draft.apiKeyAlerts} onChange={(on) => set('apiKeyAlerts', on)}>
+        {t('Email me when an API key is created, rolled, disabled or deleted')}
+      </Switch>
       <div className="analytik-row">
         <Select
           label={t('Summary of all sites')}

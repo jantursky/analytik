@@ -1033,4 +1033,76 @@ export default {
     'Týdny začínají v pondělí (UTC). Každý řádek sleduje návštěvníky poprvé viděné v daný týden.',
   'Properties of “{name}”': 'Vlastnosti cíle „{name}“',
   Other: 'Ostatní',
+  'A new key replaces this one. Update the script that uses it before the old key stops.':
+    'Nový klíč nahradí tento. Upravte skript, který ho používá, dřív než starý klíč přestane platit.',
+  Access: 'Přístup',
+  'After 1 year': 'Po 1 roce',
+  'Anyone who holds the key can read your statistics and change settings. Type the admin password to continue.':
+    'Kdo klíč drží, může číst vaše statistiky a měnit nastavení. Pro pokračování zadejte heslo správce.',
+  'Anyone who holds the key can read your statistics. Type the admin password to continue.':
+    'Kdo klíč drží, může číst vaše statistiky. Pro pokračování zadejte heslo správce.',
+  'API keys': 'API klíče',
+  'Copy the key now. For safety it is not shown again. Keep it on a server, never in a web page.':
+    'Klíč si zkopírujte hned. Z bezpečnostních důvodů se znovu nezobrazí. Uložte ho na serveru, nikdy ne na webové stránce.',
+  'Create an API key?': 'Vytvořit API klíč?',
+  'Create key': 'Vytvořit klíč',
+  Created: 'Vytvořeno',
+  'Delete this key?': 'Smazat tento klíč?',
+  Deleted: 'Smazáno',
+  Disable: 'Vypnout',
+  Disabled: 'Vypnuto',
+  'Email me when an API key is created, rolled, disabled or deleted':
+    'Pošlete mi e-mail, když se API klíč vytvoří, vymění, vypne nebo smaže',
+  Enable: 'Zapnout',
+  'Enable this key?': 'Zapnout tento klíč?',
+  Enabled: 'Zapnuto',
+  'Example request': 'Ukázkový požadavek',
+  'Expires {when}': 'Vyprší {when}',
+  'Grafana, nightly report…': 'Grafana, noční report…',
+  'Key activity': 'Aktivita klíčů',
+  'Key disabled': 'Klíč vypnut',
+  'Keys created, rolled, switched off or deleted, and calls a key was refused.':
+    'Vytvoření, výměny, vypnutí a smazání klíčů a volání, která klíč odmítl.',
+  'Let a script or another tool read your statistics with a key of its own. Each key can be limited to some sites, switched off or replaced without touching the others.':
+    'Nechte skript nebo jiný nástroj číst vaše statistiky pomocí vlastního klíče. Každý klíč lze omezit na některé weby, vypnout nebo vyměnit, aniž by se dotkl ostatních.',
+  'Let the old key work for 1 hour': 'Nechat starý klíč fungovat 1 hodinu',
+  'Let the old key work for 24 hours': 'Nechat starý klíč fungovat 24 hodin',
+  'Let the old key work for 7 days': 'Nechat starý klíč fungovat 7 dní',
+  'Never used': 'Nikdy nepoužit',
+  'No API keys yet.': 'Zatím žádné API klíče.',
+  'Nothing has happened yet.': 'Zatím se nic nestalo.',
+  'Old key works until {when}': 'Starý klíč funguje do {when}',
+  'Read and write': 'Čtení a zápis',
+  'Read only': 'Pouze čtení',
+  Refused: 'Odmítnuto',
+  Roll: 'Vyměnit',
+  'Roll key': 'Vyměnit klíč',
+  'Roll this key?': 'Vyměnit tento klíč?',
+  Rolled: 'Vyměněno',
+  'Scripts that use it can read your statistics again.':
+    'Skripty, které ho používají, mohou zase číst vaše statistiky.',
+  'Scripts that use it stop working at once. This cannot be undone.':
+    'Skripty, které ho používají, okamžitě přestanou fungovat. Tuto akci nelze vrátit.',
+  'Stop the old key at once': 'Okamžitě zastavit starý klíč',
+  'The old key': 'Starý klíč',
+  'Try it:': 'Vyzkoušejte:',
+  'Used {when}': 'Použit {when}',
+  'Your API key': 'Váš API klíč',
+  '{count, plural, one {# address} other {# addresses}}':
+    '{count, plural, one {# adresa} few {# adresy} other {# adres}}',
+  Addresses: 'Adresy',
+  'Addresses changed': 'Adresy změněny',
+  'Allowed addresses': 'Povolené adresy',
+  'Any address': 'Libovolná adresa',
+  'Change allowed addresses?': 'Změnit povolené adresy?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Jedna adresa nebo rozsah na řádek, například 203.0.113.7 nebo 203.0.113.0/24. Nechte prázdné, aby byla povolena libovolná adresa.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Klíč mohou použít jen tyto adresy. Prázdný seznam povolí libovolnou adresu. Pro pokračování zadejte heslo správce.',
+  'Refused address': 'Odmítnutá adresa',
+  'Save addresses': 'Uložit adresy',
+  'This allows any address.': 'Tím je povolena libovolná adresa.',
+  'Your address as the server sees it: {ip}': 'Vaše adresa, jak ji vidí server: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Aktualizováno {view}: {range}{count, plural, =0 {} one {, # filtr} few {, # filtry} other {, # filtrů}}',
 } satisfies Messages

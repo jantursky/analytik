@@ -1,6 +1,6 @@
 ---
 title: Webhooks, hooks and the Stats API
-description: Read your numbers from scripts with a share link, get a signed message when a goal is reached or a payment arrives, and filter or react to events in your own server code.
+description: Read your numbers from scripts with a share link or an API key, get a signed message when a goal is reached or a payment arrives, and filter or react to events in your own server code.
 ---
 
 Three ways to connect analytik to other things: read the numbers with a token, receive messages when something happens, and run your own code inside the server.
@@ -23,6 +23,8 @@ curl -H "Authorization: Bearer TOKEN" \
 ```
 
 The token reads only what the link's views allow, never settings, payments or any write; a revoked or expired token answers 401. Answers sent for a bearer token or header are not cached publicly. See the [HTTP API](/reference/http-api#share-links) for the routes.
+
+A share link is meant for showing numbers to someone else. For your own scripts, tools and agents, use an [API key](/guides/api-keys) instead: it can read payments, single sessions and exports, cover several sites, be limited, rolled and switched off without touching anything else, and optionally make changes.
 
 ## Outgoing webhooks
 

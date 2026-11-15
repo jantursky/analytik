@@ -49,9 +49,10 @@ bun run test:browser   # tracker and dashboard in Chromium, Firefox and WebKit
 bun run test:e2e       # builds the demo and drives it with Playwright
 bun run build          # fails when a size budget is exceeded
 bun run lint:package && bun run test:pack   # after build: publint, types, install the tarball
+bun run --filter analytik test:workers      # server and D1 on a real workerd (Miniflare); not part of `check`
 ```
 
-CI runs all of them on every pull request, plus the server tests on Postgres and on the Bun runtime, and the React bindings against the oldest and newest React.
+CI runs all of them on every pull request, plus the server tests on Postgres, on the Bun runtime and on a real Workers runtime (`workerd`, the `workers` job), and the React bindings against the oldest and newest React. The Mac menu bar app's tests are not part of these: they run in their own workflow, `menubar.yml`.
 
 ## Conventions
 

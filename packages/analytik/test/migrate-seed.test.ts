@@ -57,6 +57,18 @@ describe.each(storageKinds())('seedDemo on %s', (kind) => {
       [''],
     )
     expect(n).toBe(1)
+    // Vitals, goal targets and chart notes, so the demo has no empty view.
+    const [reports] = await storage.query<{ n: number }>(
+      'SELECT COUNT(*) AS n FROM vitals WHERE lcp IS NOT NULL AND inp IS NOT NULL AND cls IS NOT NULL',
+    )
+    expect(reports?.n).toBeGreaterThan(30)
+    const [site] = await storage.query<{ targets: string; vitals_sample: number }>(
+      'SELECT targets, vitals_sample FROM sites',
+    )
+    expect(JSON.parse(site?.targets ?? '[]')).toHaveLength(2)
+    expect(site?.vitals_sample).toBe(100)
+    const notes = await storage.query<{ text: string }>('SELECT text FROM annotations ORDER BY ts')
+    expect(notes).toHaveLength(3)
   })
 })
 

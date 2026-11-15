@@ -1038,4 +1038,76 @@ export default {
     'Недели начинаются в понедельник (UTC). Каждая строка прослеживает посетителей, впервые замеченных на этой неделе.',
   'Properties of “{name}”': 'Свойства цели «{name}»',
   Other: 'Другие',
+  'A new key replaces this one. Update the script that uses it before the old key stops.':
+    'Новый ключ заменит этот. Обновите скрипт, который его использует, прежде чем старый ключ перестанет работать.',
+  Access: 'Доступ',
+  'After 1 year': 'Через 1 год',
+  'Anyone who holds the key can read your statistics and change settings. Type the admin password to continue.':
+    'Любой, у кого есть ключ, может читать вашу статистику и менять настройки. Чтобы продолжить, введите пароль администратора.',
+  'Anyone who holds the key can read your statistics. Type the admin password to continue.':
+    'Любой, у кого есть ключ, может читать вашу статистику. Чтобы продолжить, введите пароль администратора.',
+  'API keys': 'API-ключи',
+  'Copy the key now. For safety it is not shown again. Keep it on a server, never in a web page.':
+    'Скопируйте ключ сейчас. В целях безопасности он больше не будет показан. Храните его на сервере, никогда на веб-странице.',
+  'Create an API key?': 'Создать API-ключ?',
+  'Create key': 'Создать ключ',
+  Created: 'Создан',
+  'Delete this key?': 'Удалить этот ключ?',
+  Deleted: 'Удалён',
+  Disable: 'Отключить',
+  Disabled: 'Отключён',
+  'Email me when an API key is created, rolled, disabled or deleted':
+    'Присылать мне письмо, когда API-ключ создан, заменён, отключён или удалён',
+  Enable: 'Включить',
+  'Enable this key?': 'Включить этот ключ?',
+  Enabled: 'Включён',
+  'Example request': 'Пример запроса',
+  'Expires {when}': 'Истекает {when}',
+  'Grafana, nightly report…': 'Grafana, ночной отчёт…',
+  'Key activity': 'Активность ключей',
+  'Key disabled': 'Ключ отключён',
+  'Keys created, rolled, switched off or deleted, and calls a key was refused.':
+    'Создание, замена, отключение и удаление ключей, а также вызовы, которые ключ отклонил.',
+  'Let a script or another tool read your statistics with a key of its own. Each key can be limited to some sites, switched off or replaced without touching the others.':
+    'Позвольте скрипту или другому инструменту читать вашу статистику с помощью собственного ключа. Каждый ключ можно ограничить некоторыми сайтами, отключить или заменить, не затрагивая остальные.',
+  'Let the old key work for 1 hour': 'Оставить старый ключ рабочим на 1 час',
+  'Let the old key work for 24 hours': 'Оставить старый ключ рабочим на 24 часа',
+  'Let the old key work for 7 days': 'Оставить старый ключ рабочим на 7 дней',
+  'Never used': 'Никогда не использовался',
+  'No API keys yet.': 'API-ключей пока нет.',
+  'Nothing has happened yet.': 'Пока ничего не происходило.',
+  'Old key works until {when}': 'Старый ключ работает до {when}',
+  'Read and write': 'Чтение и запись',
+  'Read only': 'Только чтение',
+  Refused: 'Отклонено',
+  Roll: 'Заменить',
+  'Roll key': 'Заменить ключ',
+  'Roll this key?': 'Заменить этот ключ?',
+  Rolled: 'Заменён',
+  'Scripts that use it can read your statistics again.':
+    'Скрипты, которые его используют, снова смогут читать вашу статистику.',
+  'Scripts that use it stop working at once. This cannot be undone.':
+    'Скрипты, которые его используют, сразу перестанут работать. Это нельзя отменить.',
+  'Stop the old key at once': 'Сразу остановить старый ключ',
+  'The old key': 'Старый ключ',
+  'Try it:': 'Попробуйте:',
+  'Used {when}': 'Использован {when}',
+  'Your API key': 'Ваш API-ключ',
+  '{count, plural, one {# address} other {# addresses}}':
+    '{count, plural, one {# адрес} few {# адреса} many {# адресов} other {# адреса}}',
+  Addresses: 'Адреса',
+  'Addresses changed': 'Адреса изменены',
+  'Allowed addresses': 'Разрешённые адреса',
+  'Any address': 'Любой адрес',
+  'Change allowed addresses?': 'Изменить разрешённые адреса?',
+  'One address or range per line, such as 203.0.113.7 or 203.0.113.0/24. Leave empty to allow any address.':
+    'Один адрес или диапазон на строку, например 203.0.113.7 или 203.0.113.0/24. Оставьте пустым, чтобы разрешить любой адрес.',
+  'Only these addresses can use the key. An empty list lets any address use it. Type the admin password to continue.':
+    'Ключ могут использовать только эти адреса. Пустой список разрешает любой адрес. Введите пароль администратора, чтобы продолжить.',
+  'Refused address': 'Адрес отклонён',
+  'Save addresses': 'Сохранить адреса',
+  'This allows any address.': 'Это разрешает любой адрес.',
+  'Your address as the server sees it: {ip}': 'Ваш адрес, каким его видит сервер: {ip}',
+  'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
+    'Обновлено {view}: {range}{count, plural, =0 {} one {, # фильтр} few {, # фильтра} many {, # фильтров} other {, # фильтра}}',
 } satisfies Messages

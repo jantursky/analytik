@@ -47,3 +47,13 @@ test.describe('at 360 px', () => {
     })
   }
 })
+
+test('the dashboard tab lists things to try and links to the Mac app guide', async ({ page }) => {
+  await page.goto('/#dashboard')
+  const hints = page.getByRole('region', { name: 'Try this' })
+  await expect(hints).toBeVisible()
+  await expect(hints.getByRole('link', { name: 'Instrumented site tab' })).toHaveAttribute('href', '#site')
+  await expect(hints.getByRole('link', { name: 'Mac menu bar app' })).toHaveAttribute('href', /\/guides\/mac-menu-bar$/)
+  await hints.getByRole('link', { name: 'read-only share view' }).click()
+  await expect(page.getByRole('link', { name: 'Full page' })).toHaveAttribute('aria-current', 'page')
+})

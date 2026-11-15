@@ -6,6 +6,26 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.27.0]
+
+### Added
+
+- Accessibility: axe checks of every view in both themes, larger touch targets, a screen reader message after data changes, and a place list for the map.
+- Click a point of a site's sparkline on All sites to open its Overview for that day.
+- Demo: hints on what to try, a refusal that says how to try writes locally, Core Web Vitals, goal targets and notes in the seed.
+
+## [1.26.0]
+
+### Added
+
+- An OpenAPI 3.1 document of the API key routes at `GET /v1/openapi.json`, and an optional IP address allow list per API key.
+
+## [1.25.0]
+
+### Added
+
+- API keys for scripts and tools: several keys, read or write, per site, with roll, disable, delete, expiry, limits and an activity log, each step behind the admin password; also served under `/v1`, with e-mail notices.
+
 ## [1.24.0]
 
 ### Added

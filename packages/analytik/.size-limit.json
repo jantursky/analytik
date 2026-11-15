@@ -29,13 +29,13 @@
     "path": "dist/dashboard.js",
     "ignore": ["react", "react-dom", "@base-ui/react", "motion", "recharts"],
     "gzip": true,
-    "limit": "587 kB"
+    "limit": "617 kB"
   },
   {
     "name": "Language catalogs, all together (each is a lazy chunk of about 14 kB for one of seventeen languages, loaded only for that language)",
     "path": "dist/chunks/{sk,cs,de,es,fr,pt,pl,it,nl,ru,tr,ja,zh,ko,id,hi,vi}-*.js",
     "gzip": true,
-    "limit": "388 kB"
+    "limit": "411 kB"
   },
   {
     "name": "Country flags (a lazy chunk, loaded when the first country is shown)",
@@ -53,21 +53,21 @@
     "name": "Dashboard styles",
     "path": "dist/dashboard.css",
     "gzip": true,
-    "limit": "16.4 kB"
+    "limit": "17.4 kB"
   },
   {
     "name": "Standalone dashboard, tracker and wrapper (everything a Worker serves; hono is a peer)",
     "path": "dist/standalone.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "939 kB"
+    "limit": "976 kB"
   },
   {
     "name": "Server (the test data generator is a lazy chunk, counted here)",
     "path": "dist/server.js",
     "ignore": ["hono"],
     "gzip": true,
-    "limit": "52.1 kB"
+    "limit": "60.5 kB"
   },
   {
     "name": "D1 storage",
@@ -79,7 +79,7 @@
     "name": "Postgres storage",
     "path": "dist/storage/postgres.js",
     "gzip": true,
-    "limit": "3 kB"
+    "limit": "3.2 kB"
   },
   {
     "name": "Payment adapters",
@@ -101,6 +101,6 @@
     "path": "dist/migrate.js",
     "ignore": ["postgres"],
     "gzip": true,
-    "limit": "8.25 kB"
+    "limit": "9 kB"
   }
 ]

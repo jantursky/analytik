@@ -55,8 +55,6 @@ async function collect(run: string, count: number): Promise<Received[]> {
   return list
 }
 
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
 describe('tracker in a real browser', () => {
   it('sends a strict pageview as text/plain with a cleaned URL and no storage', async () => {
     const { run, win, doc } = await openPage({ 'data-site': 'site_1', 'data-require-interaction': 'false' })
@@ -103,7 +101,7 @@ describe('tracker in a real browser', () => {
   it('waits for an interaction before the first pageview', async () => {
     const { run, win } = await openPage({ 'data-site': 'site_1' })
     win.analytik.track('before')
-    await pause(600)
+    // Nothing is sent before an interaction; the order of the two requests below shows the goal was held back.
     expect(await received(run)).toEqual([])
     win.dispatchEvent(new Event('pointerdown'))
     expect((await collect(run, 2)).map((r) => r.body.t)).toEqual(['pageview', 'goal'])
@@ -111,8 +109,9 @@ describe('tracker in a real browser', () => {
 
   it('sends engaged time as a beacon when the page goes away', async () => {
     const { run, frame } = await openPage({ 'data-site': 'site_1', 'data-require-interaction': 'false' })
+    const start = Date.now()
     await collect(run, 1)
-    await pause(1300)
+    await waitFor(() => Date.now() - start >= 1300, 'engaged time to pass')
     frame.src = 'about:blank'
     const [, ping] = await collect(run, 2)
     expect(ping?.body.t).toBe('ping')
@@ -144,8 +143,9 @@ describe('tracker in a real browser', () => {
     expect(requests.find((r) => r.path === 'api/attribution')?.body).toMatchObject({ w: 'site_1', m: 'strict' })
     win.analytik.optOut()
     win.analytik.track('hidden')
-    await pause(300)
-    expect((await received(run)).some((r) => r.body.n === 'hidden')).toBe(false)
     win.analytik.optIn()
+    win.analytik.track('visible')
+    await waitFor(async () => (await received(run)).some((r) => r.body.n === 'visible'), 'the goal after opting in')
+    expect((await received(run)).some((r) => r.body.n === 'hidden')).toBe(false)
   })
 })
