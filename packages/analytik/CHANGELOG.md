@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.27.1]
+
+### Changed
+
+- Updated development tooling (Vitest 5.1, Vite 8.3.6, ESLint 10.14, motion 14.10).
+
 ## [1.27.0]
 
 ### Added
