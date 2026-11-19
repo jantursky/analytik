@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.28.0]
+
 ### Changed
 
 - Phones and tablets: the toolbar fades where it scrolls, summary cells fill the row, tables keep their first column in view, panels stack below 900 px, and a display cutout is respected. Documented in the embedding guide, with phone screenshots.
