@@ -37,3 +37,21 @@ export const allowTracking = async (page: Page): Promise<void> => {
     }
   })
 }
+
+/** Every dashboard view the phone specs open, as the `section` of the demo's full-page address. */
+export const VIEWS = [
+  'sites',
+  'overview',
+  'sources',
+  'pages',
+  'events',
+  'bots',
+  'funnels',
+  'journeys',
+  'retention',
+  'revenue',
+  'sessions',
+  'realtime',
+  'settings&tab=general',
+  'settings&tab=sharing',
+]

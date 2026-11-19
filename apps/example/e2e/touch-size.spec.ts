@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
+import { VIEWS } from './helpers'
+
 // How big a finger's target is, on the Pixel 7 and iPhone 14 profiles (see playwright.config.ts). The size is the
 // area that answers a tap, not the drawn box: a control may look small and reach further with a transparent extension,
 // so each control is hit-tested at the corners of a centred square of the wanted size instead of being measured.
@@ -27,23 +29,6 @@ const CONTROLS =
 // bar does, filtering the dashboard by that page, is also done from the Pages view, which WCAG 2.5.8 accepts as an
 // equivalent. This is listed as a known gap in the embedding guide.
 const EXEMPT = ['.analytik-journey-node']
-
-const VIEWS = [
-  'sites',
-  'overview',
-  'sources',
-  'pages',
-  'events',
-  'bots',
-  'funnels',
-  'journeys',
-  'retention',
-  'revenue',
-  'sessions',
-  'realtime',
-  'settings&tab=general',
-  'settings&tab=sharing',
-]
 
 interface Small {
   control: string

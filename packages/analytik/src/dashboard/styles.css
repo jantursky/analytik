@@ -3660,6 +3660,11 @@ tr:hover .analytik-row-button {
   border: 0;
 }
 
+/* WebKit ignores the 1 px width of a table unless its layout is fixed, so a hidden table would widen the page. */
+table.analytik-sr-only {
+  table-layout: fixed;
+}
+
 /* ---- focus: visible ring on every interactive element */
 
 .analytik :is(a, button, input, select, textarea, [tabindex]):focus-visible,
