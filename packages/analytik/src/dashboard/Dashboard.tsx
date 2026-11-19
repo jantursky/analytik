@@ -12,7 +12,7 @@ import { useResource } from './data'
 import { loadMessages, type Messages, msg, resolveLanguage, setLanguage, t } from './i18n'
 import { Icon } from './icons'
 import { LanguageSwitch } from './language-switch'
-import { NavScroll } from './nav-scroll'
+import { NavScroll, useScrollEdges } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
 import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
@@ -357,6 +357,8 @@ export function Dashboard({
   // Switching views swaps the content for a short loading state. When the toolbar is stuck, the new view starts at
   // its top instead of wherever the scroll position ends up.
   const main = useRef<HTMLDivElement>(null)
+  // On a phone the toolbar scrolls sideways; the side that hides more controls fades out.
+  const { ref: toolbarRef, edges: toolbarEdges } = useScrollEdges<HTMLDivElement>()
   const setView = (next: DashboardView): void => {
     if (allowed && !allowed.includes(next)) return
     if (next !== 'settings') setTab(undefined)
@@ -558,7 +560,12 @@ export function Dashboard({
         customizing={customizing && view === 'overview' && !readOnly}
         readOnly={readOnly}
       >
-        <div className="analytik-toolbar">
+        <div
+          className="analytik-toolbar"
+          ref={toolbarRef}
+          data-edge-start={toolbarEdges.left || undefined}
+          data-edge-end={toolbarEdges.right || undefined}
+        >
           <div className="analytik-action-left">
             <h1 className="analytik-sr-only">{t(current.label)}</h1>
             {readOnly ? (

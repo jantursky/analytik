@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Changed
+
+- Phones and tablets: the toolbar fades where it scrolls, summary cells fill the row, tables keep their first column in view, panels stack below 900 px, and a display cutout is respected.
+
+### Fixed
+
+- The Journeys view no longer makes the page wider than the screen in Safari on iPhone.
+
 ## [1.27.1]
 
 ### Changed

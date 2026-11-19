@@ -1,29 +1,28 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { Icon } from './icons'
 
 const EDGE = 2
 
 /**
- * The header's view list. It scrolls sideways when the views do not fit, so the side that hides more is faded out and
- * carries an arrow that moves the list by a page. The arrows are for the pointer: the buttons in the list stay
- * reachable with the keyboard, which scrolls the focused one into view, so the arrows are hidden from assistive tech.
+ * Which sides of a sideways-scrolling element hide more content, kept current while it scrolls and resizes. The element
+ * is passed in through the returned ref, so it may mount late.
  */
-export function NavScroll({ label, active, children }: { label: string; active: string; children: ReactNode }) {
-  const scroller = useRef<HTMLElement>(null)
+export function useScrollEdges<T extends HTMLElement>(): {
+  ref: (element: T | null) => void
+  element: T | null
+  edges: { left: boolean; right: boolean }
+} {
+  const [element, setElement] = useState<T | null>(null)
   const [edges, setEdges] = useState({ left: false, right: false })
 
-  const update = useCallback((): void => {
-    const element = scroller.current
-    if (!element) return
-    const left = element.scrollLeft > EDGE
-    const right = element.scrollLeft < element.scrollWidth - element.clientWidth - EDGE
-    setEdges((previous) => (previous.left === left && previous.right === right ? previous : { left, right }))
-  }, [])
-
   useEffect(() => {
-    const element = scroller.current
     if (!element) return
+    const update = (): void => {
+      const left = element.scrollLeft > EDGE
+      const right = element.scrollLeft < element.scrollWidth - element.clientWidth - EDGE
+      setEdges((previous) => (previous.left === left && previous.right === right ? previous : { left, right }))
+    }
     update()
     element.addEventListener('scroll', update, { passive: true })
     const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(update)
@@ -33,11 +32,22 @@ export function NavScroll({ label, active, children }: { label: string; active: 
       element.removeEventListener('scroll', update)
       observer?.disconnect()
     }
-  }, [update])
+  }, [element])
+
+  return { ref: setElement, element, edges }
+}
+
+/**
+ * The header's view list. It scrolls sideways when the views do not fit, so the side that hides more is faded out and
+ * carries an arrow that moves the list by a page. The arrows are for the pointer: the buttons in the list stay
+ * reachable with the keyboard, which scrolls the focused one into view, so the arrows are hidden from assistive tech.
+ */
+export function NavScroll({ label, active, children }: { label: string; active: string; children: ReactNode }) {
+  const { ref, element: scroller, edges } = useScrollEdges<HTMLElement>()
 
   // The open view is brought into the visible part of the list when it changes, from a shortcut or the address too.
   useEffect(() => {
-    const element = scroller.current
+    const element = scroller
     const current = element?.querySelector<HTMLElement>('[aria-current="page"]')
     if (!element || !current) return
     const box = current.getBoundingClientRect()
@@ -48,10 +58,10 @@ export function NavScroll({ label, active, children }: { label: string; active: 
     else if (end + margin > element.scrollLeft + element.clientWidth) {
       element.scrollTo({ left: end + margin - element.clientWidth })
     }
-  }, [active])
+  }, [active, scroller])
 
   const page = (direction: -1 | 1): void => {
-    const element = scroller.current
+    const element = scroller
     const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
     element?.scrollBy({ left: direction * element.clientWidth * 0.7, behavior: reduced ? 'auto' : 'smooth' })
   }
@@ -82,7 +92,7 @@ export function NavScroll({ label, active, children }: { label: string; active: 
       >
         <Icon name="next" />
       </button>
-      <nav aria-label={label} ref={scroller}>
+      <nav aria-label={label} ref={ref}>
         {children}
       </nav>
     </div>

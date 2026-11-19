@@ -197,7 +197,8 @@
   justify-content: space-between;
   gap: 8px 20px;
   /* The same left and right edge as .analytik-main: its gutter, inside its 1240px column. */
-  padding: 10px max(24px, calc((100% - 1240px) / 2 + 24px)) 0;
+  padding: 10px max(24px, calc((100% - 1240px) / 2 + 24px), env(safe-area-inset-right, 0px)) 0
+    max(24px, calc((100% - 1240px) / 2 + 24px), env(safe-area-inset-left, 0px));
   border-bottom: 1px solid var(--analytik-border);
   background: var(--analytik-surface);
 }
@@ -366,7 +367,10 @@
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 0 var(--analytik-gutter) 48px;
+  /* Clear of a display cutout when the page uses viewport-fit=cover; the insets are 0 otherwise. */
+  --analytik-pad-start: max(var(--analytik-gutter), env(safe-area-inset-left, 0px));
+  --analytik-pad-end: max(var(--analytik-gutter), env(safe-area-inset-right, 0px));
+  padding: 0 var(--analytik-pad-end) 48px var(--analytik-pad-start);
 }
 
 .analytik-main > :first-child:not(.analytik-toolbar) {
@@ -377,8 +381,8 @@
   position: sticky;
   top: calc(var(--analytik-sticky-top, 0px) + var(--analytik-header-height, 0px));
   z-index: 15;
-  margin: 0 calc(-1 * var(--analytik-gutter));
-  padding: 12px var(--analytik-gutter) 10px;
+  margin: 0 calc(-1 * var(--analytik-pad-end)) 0 calc(-1 * var(--analytik-pad-start));
+  padding: 12px var(--analytik-pad-end) 10px var(--analytik-pad-start);
 }
 
 /* The toolbar's backdrop runs the full width of the dashboard, like the header; its divider and shadow show only once content has scrolled beneath it. */
@@ -5208,11 +5212,14 @@ table.analytik-sr-only {
 
 /* ---- small screens */
 
-@media (max-width: 760px) {
+/* Two panels side by side leave each too narrow for its tabs below this width, so they stack. */
+@media (max-width: 900px) {
   .analytik-board {
     grid-template-columns: minmax(0, 1fr);
   }
+}
 
+@media (max-width: 760px) {
   .analytik-picker {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
@@ -5231,7 +5238,7 @@ table.analytik-sr-only {
   }
 
   .analytik-header {
-    padding: 8px 16px 0;
+    padding: 8px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
   }
 
   /* Brand and actions share the first row, the tabs get the whole second row. */
@@ -5251,16 +5258,17 @@ table.analytik-sr-only {
   .analytik-nav-wrap {
     order: 3;
     flex-basis: 100%;
-    margin: 0 -16px;
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0
+      calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
   }
 
   .analytik-header nav {
-    padding: 0 16px;
+    padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
   }
 
   .analytik-main {
     --analytik-gutter: 16px;
-    padding: 0 16px 32px;
+    padding: 0 var(--analytik-pad-end) 32px var(--analytik-pad-start);
   }
 
   /* On a phone only the toolbar sticks, as one row that scrolls sideways, so the page keeps most of the screen. */
@@ -5296,6 +5304,35 @@ table.analytik-sr-only {
     flex: none;
   }
 
+  /* The side that hides more controls fades out, and a control reached with the keyboard stops short of the fade. */
+  .analytik-main > .analytik-toolbar {
+    --fade-start: 0px;
+    --fade-end: 0px;
+    scroll-padding-inline: 32px;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+  }
+
+  .analytik-main > .analytik-toolbar[data-edge-start] {
+    --fade-start: 28px;
+  }
+
+  .analytik-main > .analytik-toolbar[data-edge-end] {
+    --fade-end: 28px;
+  }
+
   .analytik-switcher .analytik-select-value {
     max-width: 120px;
   }
@@ -5311,28 +5348,46 @@ table.analytik-sr-only {
     width: auto;
     margin: 8px;
   }
+
+  /* A table wider than the screen scrolls inside its card; its first column, the row's name, stays in view. */
+  /* A control scrolled into view, by focus or a tap on its label, stops short of the column that stays in place. */
+  .analytik-table-wrap {
+    scroll-padding-left: 45vw;
+  }
+
+  .analytik-table :is(th, td):first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    max-width: 45vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: var(--analytik-surface);
+  }
 }
 
 @media (max-width: 640px) {
+  /* The dividers are the 1 px gap between cells, so they join without notches; an odd last cell spans the row. */
   .analytik-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
+    gap: 1px;
+    overflow: hidden;
+    background: var(--analytik-border);
   }
 
-  .analytik-stat {
+  .analytik-stats > .analytik-stat {
     padding: 12px 12px 14px;
+    border-radius: 0;
+    background: var(--analytik-surface);
   }
 
   .analytik-stat + .analytik-stat {
     border-left: 0;
   }
 
-  .analytik-stat:nth-child(even) {
-    border-left: 1px solid var(--analytik-border);
-  }
-
-  .analytik-stat:nth-child(n + 3) {
-    border-top: 1px solid var(--analytik-border);
+  /* An odd last cell takes the whole row instead of leaving half of it empty. */
+  .analytik-stat:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .analytik-stat-value {

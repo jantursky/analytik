@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { NavScroll } from '../src/dashboard/nav-scroll'
+import { NavScroll, useScrollEdges } from '../src/dashboard/nav-scroll'
 import { actAsync, click, render, settled } from './react-render'
 
 // happy-dom has no layout: give the list a width of 300 inside a 1000 wide strip.
@@ -69,5 +69,43 @@ describe('NavScroll', () => {
     nav.scrollBy = by
     await click(container.querySelector('.analytik-nav-arrow[data-side="end"]'))
     expect(by).toHaveBeenCalledWith(expect.objectContaining({ left: 210 }))
+  })
+})
+
+// A sideways-scrolling strip that is not the header's list, such as the toolbar on a phone, reads the same edges.
+function Strip() {
+  const { ref, edges } = useScrollEdges<HTMLDivElement>()
+  return (
+    <div ref={ref} data-edge-start={edges.left || undefined} data-edge-end={edges.right || undefined}>
+      <span>controls</span>
+    </div>
+  )
+}
+
+describe('useScrollEdges', () => {
+  it('marks the side that hides more, follows the scroll and marks nothing when it all fits', async () => {
+    widths.mockReturnValue(300)
+    scrolls.mockReturnValue(1000)
+    const { container } = await render(<Strip />)
+    await settled()
+    const strip = container.querySelector('div')
+    if (!strip) throw new Error('no strip')
+    expect(strip.hasAttribute('data-edge-start')).toBe(false)
+    expect(strip.hasAttribute('data-edge-end')).toBe(true)
+
+    await actAsync(() => {
+      strip.scrollLeft = 700
+      strip.dispatchEvent(new Event('scroll'))
+    })
+    expect(strip.hasAttribute('data-edge-start')).toBe(true)
+    expect(strip.hasAttribute('data-edge-end')).toBe(false)
+
+    scrolls.mockReturnValue(300)
+    await actAsync(() => {
+      strip.scrollLeft = 0
+      strip.dispatchEvent(new Event('scroll'))
+    })
+    expect(strip.hasAttribute('data-edge-start')).toBe(false)
+    expect(strip.hasAttribute('data-edge-end')).toBe(false)
   })
 })
