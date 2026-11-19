@@ -1,5 +1,6 @@
 // Captures the demo dashboard for the READMEs: `bun run screenshots`. Builds the demo, serves it, and saves light and
-// dark PNGs of the overview, the live map and revenue to .github/assets/. Uses the seeded demo data only.
+// dark PNGs of the overview, the live map and revenue to .github/assets/, and the overview on a phone. Uses the seeded
+// demo data only. `bun run screenshots phone` captures only the phone pair.
 import { spawn, spawnSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -17,6 +18,9 @@ const views = [
   { name: 'live', tab: 'Live', ready: '.analytik-map', height: 820 },
   { name: 'revenue', tab: 'Revenue', ready: '.analytik-view .analytik-card', height: 1000 },
 ]
+
+const only = process.argv.slice(2)
+const wanted = (name) => only.length === 0 || only.includes(name)
 
 mkdirSync(out, { recursive: true })
 const build = spawnSync('bun', ['run', 'build'], { cwd: root, stdio: 'inherit' })
@@ -50,7 +54,7 @@ try {
       colorScheme: scheme,
     })
     const page = await context.newPage()
-    for (const view of views) {
+    for (const view of views.filter((v) => wanted(v.name))) {
       await page.goto(base + '#dashboard')
       await page.locator('.analytik-toolbar').waitFor()
       if (view.tab) await page.locator('.analytik nav').getByText(view.tab, { exact: true }).first().click()
@@ -72,6 +76,29 @@ try {
         .toFile(join(out, `${view.name}-${scheme}.png`))
     }
     await context.close()
+
+    if (wanted('phone')) {
+      // The full-page view on a phone, without the demo's own header: the view list, the toolbar and the summary.
+      const phone = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2,
+        isMobile: true,
+        hasTouch: true,
+        colorScheme: scheme,
+      })
+      const view = await phone.newPage()
+      await view.goto(base + '?section=overview#full')
+      await view.locator('.analytik-overview .analytik-stat').first().waitFor()
+      await view.evaluate(() => document.fonts.ready)
+      await view.waitForTimeout(3000)
+      const box = await view.locator('.analytik').first().boundingBox()
+      if (!box) throw new Error('no dashboard on the phone')
+      const png = await view.screenshot({ clip: { x: 0, y: box.y, width: 390, height: 760 } })
+      await sharp(png)
+        .png({ palette: true, quality: 85, compressionLevel: 9 })
+        .toFile(join(out, `phone-${scheme}.png`))
+      await phone.close()
+    }
   }
 } finally {
   await browser.close()

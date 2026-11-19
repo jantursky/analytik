@@ -39,6 +39,15 @@ Web analytics you host yourself. The default `strict` mode is designed to avoid 
 </picture></a>
 </p>
 
+It works on a phone too: the toolbar, the summary and the tables adapt to a narrow screen and a display cutout.
+
+<a href="https://analytik.vercel.app/?section=overview#full">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/phone-dark.png">
+    <img alt="The Analytik dashboard on a phone: the view list, the toolbar and the summary in two columns" src=".github/assets/phone-light.png" width="240">
+  </picture>
+</a>
+
 The demo also shows [how each privacy mode works](https://analytik.vercel.app/#privacy) and a [shop wired up with the React bindings](https://analytik.vercel.app/#site).
 
 ## What you get

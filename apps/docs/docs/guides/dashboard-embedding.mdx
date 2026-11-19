@@ -325,6 +325,23 @@ The dashboard is checked with axe on every view, the command palette and the mai
 
 Known gaps: there is no forced-colors (Windows high contrast) styling, and the Journeys bars are smaller than 44 pixels on touch screens.
 
+## Phone and tablet
+
+The dashboard fits phones and small tablets: no view makes the page scroll sideways at 320, 390 or 768 pixels, which an end-to-end test checks on every view in Chromium and WebKit. On a phone the view list and the toolbar scroll inside their own row and fade where more is hidden, summary cells fill a two-column grid, the breakdown panels stack below 900 pixels, and a wide table scrolls inside its card with its first column kept in place.
+
+Your page needs two things:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+```
+
+- **The viewport tag.** Without `width=device-width` a phone draws the page as a 980 pixel desktop and shrinks it.
+- **`viewport-fit=cover`** lets the page reach under a display cutout. The header, the toolbar and the page margins then stay clear of the notch and the home indicator in landscape. Without it the page keeps the browser's own margins and nothing changes.
+
+Give the dashboard the full width of the screen on a phone: a fixed or narrow container is the usual reason for a sideways scroll. The dashboard is as wide as its parent, so put it in an element with `min-width: 0` inside a flex or grid layout.
+
+Known gaps: the Journeys diagram is drawn for a wide screen, so on a phone its labels can run past its edge (use its zoom buttons), and a table's first column can take up to 45% of the width.
+
 ## Export
 
 Every table has an **Export CSV** button, and each breakdown a **Export CSV** link: they save what is on screen (the visible columns and rows of the current page) with no new request. Each chart has **Export PNG**, drawn in the browser. Cells that begin with `=`, `+`, `-` or `@` are prefixed with an apostrophe so a spreadsheet does not run them as formulas. The whole-site backup in Settings → Data is separate.

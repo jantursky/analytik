@@ -133,6 +133,10 @@ export function App() {
                   </li>
                   <li>Export a chart as PNG from the menu on its corner.</li>
                   <li>
+                    Open the <a href="#full">full-page view</a> on your phone: it fits a narrow screen, with the toolbar
+                    and tables scrolling inside their own row.
+                  </li>
+                  <li>
                     Prefer the menu bar? See the <a href={`${DOCS_URL}/guides/mac-menu-bar`}>Mac menu bar app</a>.
                   </li>
                 </ul>
