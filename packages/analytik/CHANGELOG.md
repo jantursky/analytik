@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.29.0]
+
 ### Added
 
 - Choose which views the navigation shows and in what order (Settings, Appearance, Views), with a start page.
