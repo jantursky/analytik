@@ -101,10 +101,10 @@ describe('tracker in a real browser', () => {
   it('waits for an interaction before the first pageview', async () => {
     const { run, win } = await openPage({ 'data-site': 'site_1' })
     win.analytik.track('before')
-    // Nothing is sent before an interaction; the order of the two requests below shows the goal was held back.
+    // Nothing is sent before an interaction; then the held goal and the first pageview go out together, in either order.
     expect(await received(run)).toEqual([])
     win.dispatchEvent(new Event('pointerdown'))
-    expect((await collect(run, 2)).map((r) => r.body.t)).toEqual(['pageview', 'goal'])
+    expect((await collect(run, 2)).map((r) => r.body.t).sort()).toEqual(['goal', 'pageview'])
   })
 
   it('sends engaged time as a beacon when the page goes away', async () => {
