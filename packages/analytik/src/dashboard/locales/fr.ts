@@ -1124,4 +1124,8 @@ export default {
   'Start page': 'Page de démarrage',
   '{name} is now number {number} of {count}': '{name} est maintenant en position {number} sur {count}',
   'Drag {name} to reorder': 'Faites glisser {name} pour le réordonner',
+  Style: 'Style',
+  Default: 'Par défaut',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

@@ -6309,3 +6309,264 @@ table.analytik-sr-only {
     display: inline;
   }
 }
+
+/* ---- chart styles: Dither and ASCII draw fills as patterns. Flat fills keep their colour and are cut by a mask tile. */
+.analytik[data-chart-style='dither'] {
+  --analytik-tile-size: 4px 4px;
+  --analytik-tile-1: conic-gradient(#000 25%, #0000 0 50%, #000 0 75%, #0000 0);
+  --analytik-tile-2: repeating-linear-gradient(45deg, #000 0 1px, #0000 1px 3px);
+  --analytik-tile-3:
+    repeating-linear-gradient(45deg, #000 0 1px, #0000 1px 4px),
+    repeating-linear-gradient(-45deg, #000 0 1px, #0000 1px 4px);
+  --analytik-tile-4: radial-gradient(#000 0.9px, #0000 1.2px);
+}
+
+.analytik[data-chart-style='ascii'] {
+  --analytik-tile-size: 6px 9px;
+  --analytik-tile-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='9'%3E%3Ctext y='7' font-size='9' font-family='monospace'%3E%23%3C/text%3E%3C/svg%3E");
+  --analytik-tile-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='9'%3E%3Ctext y='7' font-size='9' font-family='monospace'%3EX%3C/text%3E%3C/svg%3E");
+  --analytik-tile-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='9'%3E%3Ctext y='7' font-size='9' font-family='monospace'%3E%25%3C/text%3E%3C/svg%3E");
+  --analytik-tile-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='9'%3E%3Ctext y='7' font-size='9' font-family='monospace'%3E@%3C/text%3E%3C/svg%3E");
+}
+
+.analytik[data-chart-style='ascii'] :is(.analytik-chart, .analytik-bars, .analytik-funnel, .analytik-retention-cell) {
+  font-family: var(--analytik-font-mono);
+}
+
+.analytik[data-chart-style] :is(.analytik-marker, .analytik-bar-fill, .analytik-funnel-bar),
+.analytik[data-chart-style] .analytik-retention-cell::before {
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+}
+
+.analytik[data-chart-style] .analytik-legend-item:nth-child(2) .analytik-marker,
+.analytik[data-chart-style] .analytik-bars[data-metric='revenue'] .analytik-bar-fill {
+  mask-image: var(--analytik-tile-2);
+}
+
+.analytik[data-chart-style] .analytik-legend-item:nth-child(3) .analytik-marker {
+  mask-image: var(--analytik-tile-3);
+}
+
+.analytik[data-chart-style] .analytik-legend-item:nth-child(4) .analytik-marker {
+  mask-image: var(--analytik-tile-4);
+}
+
+.analytik[data-chart-style] :is(.analytik-bar-fill, .analytik-bar::after) {
+  height: 6px;
+  border-radius: 0;
+}
+
+.analytik[data-chart-style] .analytik-bar-fill {
+  right: auto;
+  width: calc((100% - 20px) * var(--analytik-bar, 0));
+}
+
+.analytik[data-chart-style] .analytik-retention-cell {
+  position: relative;
+  isolation: isolate;
+  background: none;
+}
+
+.analytik[data-chart-style] .analytik-retention-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--analytik-primary) calc(var(--share) * 45%), var(--analytik-surface));
+}
+
+.analytik[data-chart-style] .analytik-map-marker > circle:not([class]) {
+  fill-opacity: 0.35;
+  stroke: #4ade80;
+  stroke-width: 0.5;
+  stroke-dasharray: 0.8 0.6;
+}
+
+/* The same fills on the rest of the dashboard: goal bars, tooltip keys, avatars, switches, journeys and buttons. */
+.analytik[data-chart-style='dither'] {
+  --analytik-tile-dense: conic-gradient(#0000 0 25%, #000 0);
+}
+
+.analytik[data-chart-style='ascii'] {
+  --analytik-tile-dense: var(--analytik-tile-4);
+}
+
+.analytik[data-chart-style] .analytik-target-value {
+  right: auto;
+  width: calc(100% * var(--analytik-bar, 0));
+  border-radius: 0;
+  transform: none;
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+}
+
+.analytik[data-chart-style] .analytik-target-track {
+  border-radius: 0;
+}
+
+.analytik[data-chart-style] .analytik-chart-tip-row::before,
+.analytik[data-chart-style] .analytik-avatar,
+.analytik[data-chart-style] :is(.analytik-journey-bar, .analytik-journey-link) {
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+}
+
+.analytik[data-chart-style] .analytik-chart-tip-row[data-series='secondary']::before {
+  mask-image: var(--analytik-tile-2);
+}
+
+.analytik[data-chart-style] .analytik-chart-tip-row::before {
+  border-radius: 0;
+}
+
+.analytik[data-chart-style] .analytik-journey-link {
+  stroke-opacity: 0.4;
+}
+
+.analytik[data-chart-style] .analytik-journey-link[data-major] {
+  stroke: var(--analytik-primary);
+  stroke-opacity: 1;
+}
+
+.analytik[data-chart-style] .analytik-switch {
+  isolation: isolate;
+}
+
+.analytik[data-chart-style] .analytik-switch[data-checked] {
+  background: none;
+}
+
+.analytik[data-chart-style] .analytik-switch[data-checked]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--analytik-success);
+  mask-image: var(--analytik-tile-dense);
+  mask-size: var(--analytik-tile-size);
+}
+
+/* Buttons keep a legible label: a tinted base, the pattern over it in the button's colour, and the page text colour. */
+.analytik[data-chart-style]
+  .analytik-button:is(
+    [data-variant='primary'],
+    [data-variant='danger-solid'],
+    [data-variant='warning'],
+    [data-variant='danger']
+  ):not(:disabled) {
+  position: relative;
+  isolation: isolate;
+  text-shadow:
+    0 0 2px var(--analytik-surface),
+    0 0 4px var(--analytik-surface);
+}
+
+.analytik[data-chart-style]
+  .analytik-button:is([data-variant='primary'], [data-variant='danger-solid']):not(:disabled) {
+  background: color-mix(in srgb, var(--analytik-btn-colour) 22%, var(--analytik-surface));
+  color: var(--analytik-text);
+}
+
+.analytik[data-chart-style] .analytik-button:is([data-variant='warning'], [data-variant='danger']):not(:disabled) {
+  background: var(--analytik-surface);
+}
+
+.analytik[data-chart-style]
+  .analytik-button:is(
+    [data-variant='primary'],
+    [data-variant='danger-solid'],
+    [data-variant='warning'],
+    [data-variant='danger']
+  ):not(:disabled)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--analytik-btn-colour);
+  opacity: 0.55;
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+}
+
+.analytik[data-chart-style] .analytik-button[data-variant='primary'] {
+  --analytik-btn-colour: var(--analytik-primary);
+}
+
+.analytik[data-chart-style] .analytik-button[data-variant='danger-solid'],
+.analytik[data-chart-style] .analytik-button[data-variant='danger'] {
+  --analytik-btn-colour: var(--analytik-danger);
+}
+
+.analytik[data-chart-style] .analytik-button[data-variant='warning'] {
+  --analytik-btn-colour: var(--analytik-caution);
+}
+
+.analytik[data-chart-style]
+  .analytik-button:is([data-variant='warning'], [data-variant='danger']):not(:disabled)::before {
+  opacity: 0.25;
+}
+
+/* Soft tints, status dots and round solid fills get the pattern too. */
+.analytik[data-chart-style]
+  :is(
+    .analytik-badge:is([data-trend], [data-type], [data-tone], [data-category]),
+    .analytik-block-toggle[aria-pressed='true'],
+    .analytik-chart-edit .analytik-chip[aria-pressed='true'],
+    .analytik-preset[aria-pressed='true'],
+    .analytik-day[data-between]
+  ) {
+  position: relative;
+  isolation: isolate;
+}
+
+.analytik[data-chart-style] :is(.analytik-insert, .analytik-add-icon, .analytik-day[data-edge]) {
+  isolation: isolate;
+}
+
+.analytik[data-chart-style]
+  :is(
+    .analytik-badge:is([data-trend], [data-type], [data-tone], [data-category]),
+    .analytik-block-toggle[aria-pressed='true'],
+    .analytik-chart-edit .analytik-chip[aria-pressed='true'],
+    .analytik-preset[aria-pressed='true'],
+    .analytik-day[data-between],
+    .analytik-insert,
+    .analytik-add-icon,
+    .analytik-day[data-edge]
+  )::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--fx, var(--analytik-primary));
+  opacity: var(--fx-opacity, 0.3);
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+  pointer-events: none;
+}
+
+.analytik[data-chart-style] .analytik-badge:is([data-trend], [data-type], [data-tone], [data-category]) {
+  --fx: currentColor;
+  --fx-opacity: 0.35;
+}
+
+.analytik[data-chart-style] :is(.analytik-insert, .analytik-add-icon, .analytik-day[data-edge]) {
+  background: color-mix(in srgb, var(--analytik-primary) 22%, var(--analytik-surface));
+  color: var(--analytik-text);
+  --fx-opacity: 0.7;
+}
+
+.analytik[data-chart-style] :is(.analytik-live-dot, .analytik-update-dot, .analytik-note-dot) {
+  mask-image: var(--analytik-tile-1);
+  mask-size: var(--analytik-tile-size);
+}
+
+.analytik[data-chart-style] .analytik-live-dot {
+  box-shadow: none;
+  animation: none;
+}

@@ -1080,4 +1080,8 @@ export default {
   'Start page': '起始页',
   '{name} is now number {number} of {count}': '{name} 现在排在第 {number} 位（共 {count} 个）',
   'Drag {name} to reorder': '拖动 {name} 以重新排序',
+  Style: '样式',
+  Default: '默认',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

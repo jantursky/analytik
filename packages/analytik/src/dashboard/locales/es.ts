@@ -1122,4 +1122,8 @@ export default {
   'Start page': 'Página de inicio',
   '{name} is now number {number} of {count}': '{name} es ahora el número {number} de {count}',
   'Drag {name} to reorder': 'Arrastre {name} para reordenar',
+  Style: 'Estilo',
+  Default: 'Predeterminado',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

@@ -15,7 +15,7 @@ import {
   setFormatSettings,
 } from '../format'
 import { compareLabels, LANGUAGES, msg, t } from '../i18n'
-import { parseTheme, usePreferences } from '../preferences'
+import { CHART_STYLES, parseChartStyle, parseTheme, usePreferences } from '../preferences'
 import { Card } from '../ui'
 import { Select } from '../ui/select'
 import { ViewsCard } from './ViewsSettings'
@@ -184,6 +184,12 @@ const THEMES = [
   { value: 'dark', label: msg('Dark') },
 ]
 
+const STYLES: Record<(typeof CHART_STYLES)[number], string> = {
+  default: msg('Default'),
+  dither: msg('Dither'),
+  ascii: msg('ASCII'),
+}
+
 /** Light or dark for the whole dashboard, and the language; saved with the other settings. */
 export function ThemeSettings() {
   const { values, update } = usePreferences()
@@ -200,6 +206,12 @@ export function ThemeSettings() {
             description: o.description && t(o.description),
           }))}
           onChange={(value) => update({ theme: value === 'system' ? undefined : value })}
+        />
+        <Select
+          label={t('Style')}
+          value={parseChartStyle(values.chartStyle)}
+          options={CHART_STYLES.map((value) => ({ value, label: t(STYLES[value]) }))}
+          onChange={(value) => update({ chartStyle: value === 'default' ? undefined : value })}
         />
       </Card>
       <Card title={t('Language')} description={t('The language of the dashboard. Saved for every admin.')}>

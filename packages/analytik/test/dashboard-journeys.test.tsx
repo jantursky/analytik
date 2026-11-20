@@ -99,7 +99,7 @@ describe('Journeys view', () => {
     expect(svg.getAttribute('aria-label')).toBe('Journeys')
     expect(svg.textContent).toContain('Step 1')
     expect(svg.textContent).toContain('Exit')
-    const rows = [...container.querySelectorAll('table.analytik-sr-only tbody tr')].map((row) =>
+    const rows = [...container.querySelectorAll('.analytik-sr-only table tbody tr')].map((row) =>
       [...row.querySelectorAll('td')].map((cell) => cell.textContent),
     )
     expect(rows).toEqual([

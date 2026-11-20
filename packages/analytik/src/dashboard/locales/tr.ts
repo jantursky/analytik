@@ -1114,4 +1114,8 @@ export default {
   'Start page': 'Başlangıç sayfası',
   '{name} is now number {number} of {count}': '{name} artık {count} içinde {number}. sırada',
   'Drag {name} to reorder': 'Sırayı değiştirmek için {name} öğesini sürükleyin',
+  Style: 'Stil',
+  Default: 'Varsayılan',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

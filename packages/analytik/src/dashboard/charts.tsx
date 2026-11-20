@@ -7,6 +7,7 @@ import { download, fileName } from './export'
 import { formatChange, formatShare } from './format'
 import { Icon } from './icons'
 import { t } from './i18n'
+import { useChartStyle } from './preferences'
 import { EASE } from './ui/motion'
 import { useToast } from './ui/toast'
 
@@ -389,6 +390,7 @@ function RowChange({ value, previous }: { value: number; previous: number }) {
 
 /** Ranked rows with a proportional meter under each; rows fade in and meters grow to their length. */
 export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric, total }: BarListProps) {
+  const patterned = useChartStyle() !== 'default'
   if (!rows.length) return <p className="analytik-empty">{t('Nothing recorded in this period')}</p>
   const scale = total && total > 0 ? total : Math.max(...rows.map((r) => r.value), 1)
   return (
@@ -399,8 +401,13 @@ export function BarList({ rows, label, formatValue, onSelect, limit = 10, metric
             <>
               <motion.span
                 className="analytik-bar-fill"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: Math.min(row.value / scale, 1) }}
+                // A pattern fill must keep its tile size, so it grows in width instead of being scaled with the bar.
+                initial={patterned ? { '--analytik-bar': 0 } : { scaleX: 0 }}
+                animate={
+                  patterned
+                    ? { '--analytik-bar': Math.min(row.value / scale, 1) }
+                    : { scaleX: Math.min(row.value / scale, 1) }
+                }
                 transition={{ duration: 0.6, ease: EASE, delay: Math.min(index, 10) * 0.03 }}
                 aria-hidden="true"
               />

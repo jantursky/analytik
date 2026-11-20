@@ -5,6 +5,7 @@ import { requestKey, useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatNumber, formatPercent } from '../format'
 import { msg, t } from '../i18n'
+import { useChartStyle } from '../preferences'
 import { EASE } from '../ui/motion'
 
 /** What each period is called on a target, and in the settings list. */
@@ -16,6 +17,8 @@ export const PERIOD_LABELS: Record<TargetPeriod, string> = {
 
 function Target({ target, index }: { target: TargetProgress; index: number }) {
   const share = target.count / target.target
+  // A patterned fill must not be scaled (the tile would shrink), so its width is animated instead.
+  const patterned = useChartStyle() !== 'default'
   const figures = t('{count} of {target}', { count: formatNumber(target.count), target: formatNumber(target.target) })
   return (
     <li className="analytik-target">
@@ -35,8 +38,8 @@ function Target({ target, index }: { target: TargetProgress; index: number }) {
         <motion.span
           className="analytik-target-value"
           data-reached={share >= 1 ? '' : undefined}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: Math.min(1, share) }}
+          initial={patterned ? { '--analytik-bar': 0 } : { scaleX: 0 }}
+          animate={patterned ? { '--analytik-bar': Math.min(1, share) } : { scaleX: Math.min(1, share) }}
           transition={{ duration: 0.6, ease: EASE, delay: index * 0.06 }}
         />
       </div>

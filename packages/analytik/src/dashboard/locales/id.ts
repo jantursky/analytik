@@ -1109,4 +1109,8 @@ export default {
   'Start page': 'Halaman awal',
   '{name} is now number {number} of {count}': '{name} kini nomor {number} dari {count}',
   'Drag {name} to reorder': 'Seret {name} untuk mengubah urutan',
+  Style: 'Gaya',
+  Default: 'Bawaan',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

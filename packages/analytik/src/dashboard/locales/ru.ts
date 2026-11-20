@@ -1122,4 +1122,8 @@ export default {
   'Start page': 'Стартовая страница',
   '{name} is now number {number} of {count}': '{name} теперь на месте {number} из {count}',
   'Drag {name} to reorder': 'Перетащите {name}, чтобы изменить порядок',
+  Style: 'Стиль',
+  Default: 'По умолчанию',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

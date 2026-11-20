@@ -1102,4 +1102,8 @@ export default {
   'Start page': '시작 페이지',
   '{name} is now number {number} of {count}': '{name}이(가) 이제 {count}개 중 {number}번째입니다',
   'Drag {name} to reorder': '{name}을(를) 끌어 순서 변경',
+  Style: '스타일',
+  Default: '기본',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

@@ -1111,4 +1111,8 @@ export default {
   'Start page': 'शुरुआती पेज',
   '{name} is now number {number} of {count}': '{name} अब {count} में से {number} नंबर पर है',
   'Drag {name} to reorder': '{name} का क्रम बदलने के लिए खींचें',
+  Style: 'शैली',
+  Default: 'डिफ़ॉल्ट',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

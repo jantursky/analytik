@@ -76,6 +76,17 @@ export function parseStartView(value: unknown, visible: readonly SiteViewId[]): 
   return visible.includes(wanted) ? wanted : (visible[0] ?? 'overview')
 }
 
+export const CHART_STYLES = ['default', 'dither', 'ascii'] as const
+export type ChartStyle = (typeof CHART_STYLES)[number]
+
+/** The saved chart style; anything else is the default look. */
+export function parseChartStyle(value: unknown): ChartStyle {
+  return CHART_STYLES.includes(value as ChartStyle) ? (value as ChartStyle) : 'default'
+}
+
+/** The style the dashboard resolved (the prop, else the saved choice); charts read it with `useChartStyle`. */
+export const ChartStyleContext = createContext<ChartStyle | undefined>(undefined)
+
 const isEmpty = (values: Preferences): boolean => Object.keys(values).length === 0
 
 /**
@@ -146,6 +157,13 @@ export function OwnPreferences({ client, children }: { client: ApiClient; childr
   const value = outer ?? own
   applyFormatting(value.values)
   return <PreferencesContext value={value}>{children}</PreferencesContext>
+}
+
+/** The style charts are drawn in: the dashboard's, else the saved choice of the provider above, else the default. */
+export function useChartStyle(): ChartStyle {
+  const resolved = useContext(ChartStyleContext)
+  const saved = useContext(PreferencesContext)?.values.chartStyle
+  return resolved ?? parseChartStyle(saved)
 }
 
 /** The dashboard's settings; outside `<Dashboard>` and `<DashboardProvider>` they are kept in this browser only. */

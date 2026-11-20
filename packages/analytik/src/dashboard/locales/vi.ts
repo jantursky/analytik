@@ -1111,4 +1111,8 @@ export default {
   'Start page': 'Trang bắt đầu',
   '{name} is now number {number} of {count}': '{name} hiện ở vị trí {number} trên {count}',
   'Drag {name} to reorder': 'Kéo {name} để sắp xếp lại',
+  Style: 'Kiểu',
+  Default: 'Mặc định',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

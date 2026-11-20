@@ -15,7 +15,16 @@ import { LanguageSwitch } from './language-switch'
 import { NavScroll, useScrollEdges } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
-import { parseStartView, parseTheme, parseViews, PreferencesProvider, usePreferencesStore } from './preferences'
+import {
+  type ChartStyle,
+  ChartStyleContext,
+  parseChartStyle,
+  parseStartView,
+  parseTheme,
+  parseViews,
+  PreferencesProvider,
+  usePreferencesStore,
+} from './preferences'
 import { customRange, type DateRange, presetRange, shiftRange } from './range'
 import { sameFilters } from './segments'
 import { useShortcuts } from './shortcuts'
@@ -124,6 +133,11 @@ export interface DashboardProps {
    * `data-theme` on the page or else `prefers-color-scheme`.
    */
   theme?: 'light' | 'dark'
+  /**
+   * Forces how charts are drawn: `default`, `dither` (ordered-dither patterns) or `ascii` (text glyphs). Without it the
+   * dashboard follows the Style setting under Appearance.
+   */
+  chartStyle?: ChartStyle
   /** View shown first. Default `overview`. */
   view?: DashboardView
   /**
@@ -242,6 +256,7 @@ export function Dashboard({
   siteId,
   fetcher,
   theme,
+  chartStyle,
   view: initialViewProp,
   favicons = true,
   syncPreferences = true,
@@ -318,6 +333,8 @@ export function Dashboard({
   const chosenViews = readOnly ? undefined : parseViews(preferences.values.views)
   const startView = chosenViews && !viewPicked ? parseStartView(preferences.values.startView, chosenViews) : undefined
   const wanted = startView ?? requestedView
+  // A shared dashboard has no admin whose choice it could follow.
+  const style = chartStyle ?? (readOnly ? 'default' : parseChartStyle(preferences.values.chartStyle))
   const view = allowed && !allowed.includes(wanted) ? (allowed[0] ?? 'overview') : wanted
   // The period and comparison from the last visit, unless the address names its own or the admin already chose here.
   // Applied while rendering, like the linked segment below; the saved copy from the database may arrive later.
@@ -707,139 +724,146 @@ export function Dashboard({
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="analytik" data-theme={theme ?? parseTheme(preferences.values.theme)} ref={setRoot}>
+      <div
+        className="analytik"
+        data-theme={theme ?? parseTheme(preferences.values.theme)}
+        data-chart-style={style === 'default' ? undefined : style}
+        ref={setRoot}
+      >
         <PreferencesProvider value={preferences}>
-          <LayerContext value={root}>
-            <FaviconsContext
-              value={
-                readOnly
-                  ? () => undefined
-                  : favicons === true
-                    ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon${s.iconHash ? `?v=${s.iconHash}` : ''}`
-                    : favicons
-              }
-            >
-              {!unauthorized && site && !readOnly && <UpdateNotice client={client} />}
-              {!unauthorized && site && (
-                <header className="analytik-header" ref={header}>
-                  <div className="analytik-header-left">
-                    <span className="analytik-brand">
-                      <BrandMark />
-                    </span>
-                    <NavScroll label={t('Dashboard')} active={view}>
-                      <ul>
-                        {nav.map(({ value, label }) => (
-                          <li key={value}>
-                            <button
-                              type="button"
-                              className="analytik-nav-item"
-                              aria-current={value === view ? 'page' : undefined}
-                              onClick={() => setView(value)}
-                            >
-                              {value === view && (
-                                <motion.span
-                                  className="analytik-nav-pill"
-                                  layoutId="analytik-nav-pill"
-                                  aria-hidden="true"
-                                />
-                              )}
-                              <span>{t(label)}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavScroll>
-                  </div>
-                  <div className="analytik-header-right">
-                    {locale === undefined && <LanguageSwitch />}
-                    <ThemeToggle />
-                    {!readOnly && (
-                      <button
-                        type="button"
-                        className="analytik-button analytik-signout"
-                        onClick={() => void client.logout().finally(() => setUnauthorized(true))}
-                      >
-                        {t('Log out')}
-                      </button>
-                    )}
-                  </div>
-                </header>
-              )}
-              {/* Not a <main>: the dashboard is embedded in pages that have their own. */}
-              <div
-                className="analytik-main"
-                ref={main}
-                data-centered={unauthorized || (!sites.loading && !sites.error && !site) ? '' : undefined}
+          <ChartStyleContext value={style}>
+            <LayerContext value={root}>
+              <FaviconsContext
+                value={
+                  readOnly
+                    ? () => undefined
+                    : favicons === true
+                      ? (s) => s.id && `${apiUrl}/sites/${s.id}/favicon${s.iconHash ? `?v=${s.iconHash}` : ''}`
+                      : favicons
+                }
               >
-                {content}
-              </div>
-              <div className="analytik-sr-only" role="status" aria-live="polite">
-                {announced}
-              </div>
-              {credits && <Credits />}
-              {pending && (
-                <div className="analytik-chord-hint" role="status">
-                  <kbd>{pending}</kbd> {t('then a letter to go to a view')}
-                </div>
-              )}
-              <Suspense fallback={null}>
-                {overlay === 'palette' && site && (
-                  <Palette
-                    onClose={() => setOverlay(null)}
-                    controls={{
-                      views: nav,
-                      go: setView,
-                      sites: list,
-                      siteId: site.id,
-                      openSite,
-                      setRange: chooseRange,
-                      live,
-                      setLive,
-                      cycleTheme: () => {
-                        const theme = parseTheme(preferences.values.theme) ?? 'system'
-                        const next = NEXT_THEME[theme]
-                        preferences.update({ theme: next === 'system' ? undefined : next })
-                      },
-                      refresh,
-                      compare,
-                      setCompare: chooseCompare,
-                      segments,
-                      applySegment: (segment) => changeFilters({ ...segment.filters }),
-                      filters,
-                      clearFilters: () => changeFilters({}),
-                      addFilter,
-                      known,
-                    }}
-                  />
+                {!unauthorized && site && !readOnly && <UpdateNotice client={client} />}
+                {!unauthorized && site && (
+                  <header className="analytik-header" ref={header}>
+                    <div className="analytik-header-left">
+                      <span className="analytik-brand">
+                        <BrandMark />
+                      </span>
+                      <NavScroll label={t('Dashboard')} active={view}>
+                        <ul>
+                          {nav.map(({ value, label }) => (
+                            <li key={value}>
+                              <button
+                                type="button"
+                                className="analytik-nav-item"
+                                aria-current={value === view ? 'page' : undefined}
+                                onClick={() => setView(value)}
+                              >
+                                {value === view && (
+                                  <motion.span
+                                    className="analytik-nav-pill"
+                                    layoutId="analytik-nav-pill"
+                                    aria-hidden="true"
+                                  />
+                                )}
+                                <span>{t(label)}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </NavScroll>
+                    </div>
+                    <div className="analytik-header-right">
+                      {locale === undefined && <LanguageSwitch />}
+                      <ThemeToggle />
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          className="analytik-button analytik-signout"
+                          onClick={() => void client.logout().finally(() => setUnauthorized(true))}
+                        >
+                          {t('Log out')}
+                        </button>
+                      )}
+                    </div>
+                  </header>
                 )}
-                {overlay === 'help' && <ShortcutHelp views={nav} onClose={() => setOverlay(null)} />}
-              </Suspense>
-              {!unauthorized && !readOnly && importing && (
-                <Suspense>
-                  <ImportDialog
+                {/* Not a <main>: the dashboard is embedded in pages that have their own. */}
+                <div
+                  className="analytik-main"
+                  ref={main}
+                  data-centered={unauthorized || (!sites.loading && !sites.error && !site) ? '' : undefined}
+                >
+                  {content}
+                </div>
+                <div className="analytik-sr-only" role="status" aria-live="polite">
+                  {announced}
+                </div>
+                {credits && <Credits />}
+                {pending && (
+                  <div className="analytik-chord-hint" role="status">
+                    <kbd>{pending}</kbd> {t('then a letter to go to a view')}
+                  </div>
+                )}
+                <Suspense fallback={null}>
+                  {overlay === 'palette' && site && (
+                    <Palette
+                      onClose={() => setOverlay(null)}
+                      controls={{
+                        views: nav,
+                        go: setView,
+                        sites: list,
+                        siteId: site.id,
+                        openSite,
+                        setRange: chooseRange,
+                        live,
+                        setLive,
+                        cycleTheme: () => {
+                          const theme = parseTheme(preferences.values.theme) ?? 'system'
+                          const next = NEXT_THEME[theme]
+                          preferences.update({ theme: next === 'system' ? undefined : next })
+                        },
+                        refresh,
+                        compare,
+                        setCompare: chooseCompare,
+                        segments,
+                        applySegment: (segment) => changeFilters({ ...segment.filters }),
+                        filters,
+                        clearFilters: () => changeFilters({}),
+                        addFilter,
+                        known,
+                      }}
+                    />
+                  )}
+                  {overlay === 'help' && <ShortcutHelp views={nav} onClose={() => setOverlay(null)} />}
+                </Suspense>
+                {!unauthorized && !readOnly && importing && (
+                  <Suspense>
+                    <ImportDialog
+                      client={client}
+                      sites={list}
+                      open
+                      onClose={() => setImporting(false)}
+                      onImported={sites.reload}
+                      onOpen={(next) => {
+                        openSite(next.id)
+                        setView('overview')
+                      }}
+                    />
+                  </Suspense>
+                )}
+                {!unauthorized && !readOnly && (
+                  <AddSiteDialog
                     client={client}
                     sites={list}
-                    open
-                    onClose={() => setImporting(false)}
-                    onImported={sites.reload}
-                    onOpen={(next) => {
-                      openSite(next.id)
-                      setView('overview')
-                    }}
+                    open={adding}
+                    onCreated={created}
+                    onClose={() => setAdding(false)}
                   />
-                </Suspense>
-              )}
-              {!unauthorized && !readOnly && (
-                <AddSiteDialog
-                  client={client}
-                  sites={list}
-                  open={adding}
-                  onCreated={created}
-                  onClose={() => setAdding(false)}
-                />
-              )}
-            </FaviconsContext>
-          </LayerContext>
+                )}
+              </FaviconsContext>
+            </LayerContext>
+          </ChartStyleContext>
         </PreferencesProvider>
       </div>
     </MotionConfig>

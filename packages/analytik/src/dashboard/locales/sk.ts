@@ -1119,4 +1119,8 @@ export default {
   'Start page': 'Úvodná stránka',
   '{name} is now number {number} of {count}': '{name} je teraz na mieste {number} z {count}',
   'Drag {name} to reorder': 'Potiahnutím zmeníte poradie: {name}',
+  Style: 'Štýl',
+  Default: 'Predvolený',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

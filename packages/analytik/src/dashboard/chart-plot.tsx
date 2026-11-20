@@ -21,7 +21,9 @@ import {
 } from 'recharts'
 
 import type { ChartNote, SparkDetail } from './charts'
+import { ChartPatterns, FAMILIES, patternId, type PatternSpec } from './chart-patterns'
 import { t } from './i18n'
+import { useChartStyle } from './preferences'
 import { niceMax } from './scale'
 
 export interface PlotRow {
@@ -187,6 +189,16 @@ export function AreaPlot({
 }: AreaPlotProps) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
+  const style = useChartStyle()
+  const patterned = style !== 'default'
+  const specs: PatternSpec[] = [
+    { key: 'area', colour: PRIMARY, family: 0, strong: false },
+    { key: 'primary-bars', colour: PRIMARY, family: 0, strong: true },
+    { key: 'bar', colour: SECONDARY, family: 1, strong: true },
+  ]
+  const fill = (key: string, gradient: string): string =>
+    `url(#${patterned ? patternId(id, key) : `${id}-${gradient}`})`
+  const edge = (colour: string) => (patterned ? { stroke: colour, strokeWidth: 1 } : {})
   const max = niceMax(Math.max(...rows.map((r) => Math.max(r.value, r.previous ?? 0))))
   const secondMax = niceMax(Math.max(...rows.map((r) => r.secondary ?? 0)))
   const series: Record<string, [string, (v: number) => string]> = {
@@ -203,6 +215,7 @@ export function AreaPlot({
         aria-label={t('{label} chart', { label })}
       >
         <defs>
+          <ChartPatterns style={style} id={id} specs={specs} />
           <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={PRIMARY} stopOpacity={0.38} />
             <stop offset="100%" stopColor={PRIMARY} stopOpacity={0.02} />
@@ -244,7 +257,8 @@ export function AreaPlot({
           <Bar
             yAxisId="right"
             dataKey="secondary"
-            fill={`url(#${id}-bar)`}
+            fill={fill('bar', 'bar')}
+            {...edge(SECONDARY)}
             radius={[4, 4, 0, 0]}
             maxBarSize={14}
             isAnimationActive={animate}
@@ -272,7 +286,8 @@ export function AreaPlot({
           <Bar
             yAxisId="left"
             dataKey="value"
-            fill={PRIMARY}
+            fill={patterned ? fill('primary-bars', 'area') : PRIMARY}
+            {...edge(PRIMARY)}
             radius={[4, 4, 0, 0]}
             maxBarSize={22}
             isAnimationActive={animate}
@@ -287,7 +302,7 @@ export function AreaPlot({
             dataKey="value"
             stroke={PRIMARY}
             strokeWidth={2.25}
-            fill={kind === 'line' ? 'none' : `url(#${id}-area)`}
+            fill={kind === 'line' ? 'none' : fill('area', 'area')}
             dot={false}
             activeDot={{ r: 5, strokeWidth: 2.5, stroke: 'var(--analytik-surface)', fill: PRIMARY }}
             isAnimationActive={animate}
@@ -385,6 +400,16 @@ export function MultiPlot({ rows, series, formatTime, height, label, notes, onNo
           .flatMap((s) => rows.flatMap((r) => [r[s.key] ?? 0, r[`${s.key}:previous`] ?? 0])),
       ),
     )
+  const style = useChartStyle()
+  const patterned = style !== 'default'
+  const specs: PatternSpec[] = series.map((s, i) => ({
+    key: String(i),
+    colour: s.colour,
+    family: i % FAMILIES,
+    strong: s.kind === 'bars',
+  }))
+  const fillOf = (s: PlotSeries): string =>
+    `url(#${patterned ? patternId(id, String(series.indexOf(s))) : `${id}-${series.indexOf(s)}`})`
   const ordered = [...series].sort((a, b) => Number(b.kind === 'bars') - Number(a.kind === 'bars'))
   const bars = series.filter((s) => s.kind === 'bars').length
 
@@ -396,6 +421,7 @@ export function MultiPlot({ rows, series, formatTime, height, label, notes, onNo
         aria-label={t('{label} chart', { label })}
       >
         <defs>
+          <ChartPatterns style={style} id={id} specs={specs} />
           {series.map((s, i) => (
             <linearGradient key={s.key} id={`${id}-${i}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={s.colour} stopOpacity={s.kind === 'bars' ? 0.95 : 0.32} />
@@ -454,7 +480,8 @@ export function MultiPlot({ rows, series, formatTime, height, label, notes, onNo
               key={s.key}
               yAxisId={s.scale}
               dataKey={s.key}
-              fill={`url(#${id}-${series.indexOf(s)})`}
+              fill={fillOf(s)}
+              {...(patterned ? { stroke: s.colour, strokeWidth: 1 } : {})}
               radius={[4, 4, 0, 0]}
               maxBarSize={bars > 1 ? 10 : 14}
               isAnimationActive={animate}
@@ -469,7 +496,7 @@ export function MultiPlot({ rows, series, formatTime, height, label, notes, onNo
               dataKey={s.key}
               stroke={s.colour}
               strokeWidth={2.25}
-              fill={s.kind === 'line' ? 'none' : `url(#${id}-${series.indexOf(s)})`}
+              fill={s.kind === 'line' ? 'none' : fillOf(s)}
               dot={false}
               activeDot={{ r: 5, strokeWidth: 2.5, stroke: 'var(--analytik-surface)', fill: s.colour }}
               isAnimationActive={animate}
@@ -516,6 +543,7 @@ export function SparkPlot({
 }) {
   const id = useId().replace(/:/g, '')
   const animate = !useReducedMotionConfig()
+  const style = useChartStyle()
   // The value shows only once the pointer has rested on the line for a moment, not as it passes over.
   const [shown, setShown] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -553,6 +581,11 @@ export function SparkPlot({
           tabIndex={-1}
         >
           <defs>
+            <ChartPatterns
+              style={style}
+              id={id}
+              specs={[{ key: 'spark', colour: 'currentColor', family: 0, strong: false }]}
+            />
             <linearGradient id={`${id}-spark`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="currentColor" stopOpacity={0.25} />
               <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
@@ -581,7 +614,7 @@ export function SparkPlot({
             dataKey="value"
             stroke="currentColor"
             strokeWidth={1.5}
-            fill={`url(#${id}-spark)`}
+            fill={`url(#${style === 'default' ? `${id}-spark` : patternId(id, 'spark')})`}
             dot={false}
             activeDot={details && shown ? { r: 3, strokeWidth: 0, fill: 'currentColor' } : false}
             isAnimationActive={animate}

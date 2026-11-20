@@ -71,6 +71,8 @@ const keepZoom = (next: Viewport, whole: Viewport): Viewport | null => (zoomLeve
 function Flow({ result }: { result: JourneysResult }) {
   const { addFilter } = useDashboard()
   const layout = layoutFlow(result)
+  // The busiest paths stand out in the patterned chart styles, where thin flat strokes would blur into the rest.
+  const majorSessions = Math.max(...layout.links.map((link) => link.sessions), 0) * 0.35
   const height = layout.nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0)
   const names = new Map(layout.nodes.map((node) => [node.id, nodeLabel(node)]))
   // The first bar of a column stands for where sessions began; later ones for pages seen on the way.
@@ -225,6 +227,7 @@ function Flow({ result }: { result: JourneysResult }) {
               <path
                 key={`${link.from}>${link.to}`}
                 className="analytik-journey-link"
+                data-major={link.sessions >= majorSessions ? '' : undefined}
                 d={link.path}
                 strokeWidth={link.width}
                 fill="none"
@@ -236,25 +239,28 @@ function Flow({ result }: { result: JourneysResult }) {
           ))}
         </svg>
       </div>
-      <table className="analytik-sr-only">
-        <caption>{t('Journeys')}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{t('From')}</th>
-            <th scope="col">{t('To')}</th>
-            <th scope="col">{t('Sessions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {layout.links.map((link) => (
-            <tr key={`${link.from}>${link.to}`}>
-              <td>{names.get(link.from)}</td>
-              <td>{names.get(link.to)}</td>
-              <td>{formatNumber(link.sessions)}</td>
+      {/* The box clips the rows; a 1 px table alone lets them spill below the page and stretch it. */}
+      <div className="analytik-sr-only">
+        <table>
+          <caption>{t('Journeys')}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{t('From')}</th>
+              <th scope="col">{t('To')}</th>
+              <th scope="col">{t('Sessions')}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {layout.links.map((link) => (
+              <tr key={`${link.from}>${link.to}`}>
+                <td>{names.get(link.from)}</td>
+                <td>{names.get(link.to)}</td>
+                <td>{formatNumber(link.sessions)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }

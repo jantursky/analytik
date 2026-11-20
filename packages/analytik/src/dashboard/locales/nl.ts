@@ -1117,4 +1117,8 @@ export default {
   'Start page': 'Startpagina',
   '{name} is now number {number} of {count}': '{name} staat nu op plaats {number} van {count}',
   'Drag {name} to reorder': 'Sleep {name} om te herordenen',
+  Style: 'Stijl',
+  Default: 'Standaard',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages

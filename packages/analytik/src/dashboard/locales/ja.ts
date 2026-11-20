@@ -1110,4 +1110,8 @@ export default {
   'Start page': '開始ページ',
   '{name} is now number {number} of {count}': '{name} は現在 {count} 件中 {number} 番目です',
   'Drag {name} to reorder': '{name} をドラッグして並べ替え',
+  Style: 'スタイル',
+  Default: 'デフォルト',
+  Dither: 'Dither',
+  ASCII: 'ASCII',
 } satisfies Messages
