@@ -293,7 +293,8 @@ async function enforceRetention(
   now: number,
   defer?: IngestInput['defer'],
 ): Promise<void> {
-  if (!site.retentionDays || now - (ctx.retentionRuns.get(site.id) ?? 0) < HOUR) return
+  // With a cron secret the schedule enforces retention (`/v1/cron`, `scheduled()`), so an event never starts a purge.
+  if (ctx.cronSecret || !site.retentionDays || now - (ctx.retentionRuns.get(site.id) ?? 0) < HOUR) return
   ctx.retentionRuns.set(site.id, now)
   const purge = purgeBefore(ctx, site.id, now - site.retentionDays * DAY)
   if (!defer) {

@@ -135,7 +135,7 @@ describe('off unless configured', () => {
     })
     expect(paid.status).toBe(200)
     expect(site.id).toBeTruthy()
-    expect(await server.analytik.scheduled()).toEqual({ summary: null, down: [] })
+    expect(await server.analytik.scheduled()).toEqual({ summary: null, down: [], retention: { done: true, sites: {} } })
     const test = await server.admin('/email/test', { method: 'POST', json: { to: 'a@b.co' } })
     expect(test.status).toBe(400)
   })
@@ -326,7 +326,7 @@ describe('summary', () => {
   it('sends one daily summary after the chosen hour with the numbers the dashboard shows', async () => {
     const { server, mail, site } = await withYesterday({})
     const first = await server.analytik.scheduled({ url: 'https://analytics.example.com' })
-    expect(first).toEqual({ summary: 'daily', down: [] })
+    expect(first).toEqual({ summary: 'daily', down: [], retention: { done: true, sites: {} } })
     expect(mail.inbox).toHaveLength(1)
     const [summary] = mail.inbox
     expect(summary!.subject).toBe('Your daily analytik summary, 2026-03-15')
@@ -342,7 +342,7 @@ describe('summary', () => {
     expect(summary!.text).toContain('Conversion rate: ')
 
     // The same period again, even from another call, sends nothing.
-    expect(await server.analytik.scheduled()).toEqual({ summary: null, down: [] })
+    expect(await server.analytik.scheduled()).toEqual({ summary: null, down: [], retention: { done: true, sites: {} } })
     expect(mail.inbox).toHaveLength(1)
   })
 
@@ -483,12 +483,22 @@ describe('POST /v1/cron', () => {
     server.now += 2 * DAY
     const response = await call(server, 'POST', 's3cret')
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ ok: true, summary: 'daily', down: [site.id] })
+    expect(await response.json()).toEqual({
+      ok: true,
+      summary: 'daily',
+      down: [site.id],
+      retention: { done: true, sites: {} },
+    })
     expect(mail.inbox).toHaveLength(2)
     expect(mail.inbox.find((m) => m.subject.startsWith('Your daily'))!.text).toContain(
       'Open the dashboard: https://analytics.example.com',
     )
-    expect(await (await call(server, 'GET', 's3cret')).json()).toEqual({ ok: true, summary: null, down: [] })
+    expect(await (await call(server, 'GET', 's3cret')).json()).toEqual({
+      ok: true,
+      summary: null,
+      down: [],
+      retention: { done: true, sites: {} },
+    })
   })
 
   it('does not put secrets into the emails', async () => {

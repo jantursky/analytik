@@ -37,20 +37,26 @@ For continuous replication to object storage, run Litestream next to the process
 
 `GET /api/sites/SITE_ID/export?format=json` (or `csv`) returns all the data for one site, as admin. It is the format to use for moving between storage backends or leaving Analytik, and it is not a replacement for database backups.
 
+The response is streamed, one page of rows at a time, so a site of any size can be exported without the server holding it in memory. The JSON export is newline-delimited (`.ndjson`): the first line is `{"version":2,"exportedAt":...,"site":{...}}`, and every line after it is one row with a `table` field (`visitors`, `sessions`, `events`, `payments` or `funnels`). CSV holds one table (`&table=events`, the default) with the same columns as before, and a cell that starts with `=`, `+`, `-` or `@` is prefixed so a spreadsheet does not run it.
+
 ```bash
-curl -b cookies.txt "https://analytics.example.com/api/sites/SITE_ID/export?format=json" -o site.json
+curl -b cookies.txt "https://analytics.example.com/api/sites/SITE_ID/export?format=json" -o site.ndjson
 ```
+
+Earlier versions returned one JSON document (`"version": 1`). Add `&version=1` to get that document again; this option stays for one minor release. A reader of backups should accept both: the header line says which one it is.
+
+From a terminal, `npx analytik export --db "$DATABASE_URL" --site SITE_ID --out site.ndjson` writes the same file straight from the database and prints the row counts; see the [CLI reference](/reference/cli#export).
 
 ## Retention
 
-Data is kept until it is deleted. Each site has a `retentionDays` setting (a whole number of days, or empty to keep everything). When it is set, Analytik purges older data by itself: the ingest path checks it at most once an hour per server instance, so there is no cron job to set up. You can also purge by hand, for one site and any date, with the purge route:
+Data is kept until it is deleted. Each site has a `retentionDays` setting (a whole number of days, or empty to keep everything). When it is set, Analytik purges older data by itself, in one of two ways. Without a cron secret, the ingest path checks it at most once an hour per server instance, which needs no setup but only runs while events arrive. With a `cronSecret` option (the `CRON_SECRET` variable in the Cloudflare and Vercel templates), the scheduled call to `/api/v1/cron` runs the purge for every site that has a retention period, also on a quiet site, and events no longer start a purge themselves. The Cloudflare template calls it hourly through a Workers cron trigger (`scheduled()`), the Vercel template daily through Vercel Cron. The purge deletes in chunks within a time budget (20 seconds by default, `retentionBudgetMs`); a large backlog is finished over the next calls, and the response says `done: false` while work is left. You can also purge by hand, for one site and any date, with the purge route:
 
 ```bash
 curl -b cookies.txt -X DELETE \
   "https://analytics.example.com/api/sites/SITE_ID/data?before=2025-01-01"
 ```
 
-`before` is an ISO 8601 date or Unix milliseconds. The purge, automatic or manual, removes:
+`before` is an ISO 8601 date or Unix milliseconds. The same works from a terminal: `npx analytik purge --db "$DATABASE_URL" --site SITE_ID --before 2025-01-01`. The purge, automatic or manual, removes:
 
 - events and sessions older than the date;
 - payment claims (the payment ids seen on return pages) older than the date;

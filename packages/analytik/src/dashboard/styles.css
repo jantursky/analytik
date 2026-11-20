@@ -259,12 +259,12 @@
 
 .analytik-nav-fade[data-side='start'] {
   inset-inline-start: 0;
-  background: linear-gradient(to right, var(--analytik-surface) 25%, transparent);
+  background: linear-gradient(to right, var(--analytik-fade, var(--analytik-surface)) 25%, transparent);
 }
 
 .analytik-nav-fade[data-side='end'] {
   inset-inline-end: 0;
-  background: linear-gradient(to left, var(--analytik-surface) 25%, transparent);
+  background: linear-gradient(to left, var(--analytik-fade, var(--analytik-surface)) 25%, transparent);
 }
 
 .analytik-nav-arrow {
@@ -2530,6 +2530,10 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
   grid-template-columns: 200px minmax(0, 1fr);
   align-items: start;
   gap: 24px;
+}
+
+.analytik-settings-picker {
+  display: none;
 }
 
 .analytik-settings-nav {
@@ -5411,23 +5415,17 @@ table.analytik-sr-only {
     gap: 12px;
   }
 
+  .analytik-settings-picker {
+    display: block;
+  }
+
+  .analytik-settings-picker .analytik-select {
+    width: 100%;
+    min-height: 44px;
+  }
+
   .analytik-settings-nav {
-    position: static;
-    margin: 0 -16px;
-    padding: 0 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .analytik-settings-nav ul {
-    flex-direction: row;
-  }
-
-  .analytik-settings-nav li:is([data-tone='debug'], [data-tone='meta']) {
-    margin: 0 0 0 8px;
-    padding: 0 0 0 8px;
-    border-top: 0;
-    border-left: 1px dashed var(--analytik-border);
+    display: none;
   }
 
   .analytik-range-popup {

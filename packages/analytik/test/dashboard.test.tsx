@@ -2576,7 +2576,7 @@ describe('formatting and credits', () => {
     const api = fakeApi()
     api.state.debug = true
     const { container } = await open(api, 'settings')
-    expect(container.querySelectorAll('.analytik-settings-nav .analytik-icon')).toHaveLength(15)
+    expect(container.querySelectorAll('.analytik-settings-nav ul .analytik-icon')).toHaveLength(15)
     expect(container.querySelector('.analytik-settings-nav li[data-tone="debug"]')?.textContent).toBe('Debug')
   })
 

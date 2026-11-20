@@ -106,6 +106,27 @@ npx analytik erase --db "$DATABASE_URL" --site SITE_ID --email person@example.co
 
 It deletes the person's events, sessions and visitor records and clears the personal details from their payments, which stay for revenue. It prints how many rows it touched. The same erasure is in the dashboard on a session's timeline and in the [HTTP API](/reference/http-api#data-requests). D1 cannot be reached from the command line; use the dashboard.
 
+### purge
+
+Deletes a site's data older than a date, the same as the purge route and the automatic retention.
+
+```bash
+npx analytik purge --db "$DATABASE_URL" --site SITE_ID --before 2025-01-01
+```
+
+`--before` is a date such as `2025-01-01` or a full ISO 8601 time. It removes events, sessions, payment claims and visitors without a session, and clears the personal fields of older payments, which stay for revenue. It deletes in chunks, so it also suits a large database, and prints how many rows it removed. Running it again finds nothing left. D1 cannot be reached from the command line; use the purge route or the scheduled retention.
+
+### export
+
+Writes a site's data to a file, read from the database one page at a time.
+
+```bash
+npx analytik export --db "$DATABASE_URL" --site SITE_ID --out backup.ndjson
+npx analytik export --db "$DATABASE_URL" --site SITE_ID --out events.csv --format csv --table events
+```
+
+The default `--format ndjson` writes the whole site: a header line with the format version and the site, then one line per row with a `table` field. `--format csv` writes one table (`visitors`, `sessions`, `events` or `payments`; default `events`). The command prints the row count per table. The file is the same as the export route returns; see [Portable export](/deploy/backups-retention-and-upgrades#portable-export).
+
 ### menubar
 
 Downloads the newest release of the [Mac menu bar app](/guides/mac-menu-bar), puts it into Applications and opens it. It needs macOS 14 or later.

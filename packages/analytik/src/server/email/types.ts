@@ -1,3 +1,5 @@
+import type { RetentionRun } from '../retention'
+
 export type { EmailSettings, SummaryFrequency } from '../../shared/types'
 
 /** One email, as the sender receives it. `to` is a single address; the body comes as plain text and HTML. */
@@ -27,7 +29,7 @@ export interface EmailOptions {
   url?: string
   /**
    * Secret for `POST /api/v1/cron`, sent as `Authorization: Bearer <secret>`. Without it the route answers 401; scheduled
-   * work then only runs through `scheduled()`.
+   * work then only runs through `scheduled()`. The top-level `cronSecret` option does the same without email.
    */
   cronSecret?: string
 }
@@ -38,4 +40,6 @@ export interface ScheduledResult {
   summary: 'daily' | 'weekly' | null
   /** Ids of the sites a tracker-down alert was sent for. */
   down: string[]
+  /** What the retention run removed, when it ran: `scheduled()` and `/v1/cron` run it. */
+  retention?: RetentionRun
 }

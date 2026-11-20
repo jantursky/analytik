@@ -22,6 +22,10 @@ export interface Context {
   debug: boolean
   /** Owner emails; undefined when no sender is configured. */
   email: EmailOptions | undefined
+  /** Secret for `/v1/cron`; undefined when scheduled work is only run through `scheduled()`. */
+  cronSecret: string | undefined
+  /** How long one scheduled retention run may keep deleting, in milliseconds. */
+  retentionBudgetMs: number
   updateCheck: boolean
   /** Month salts this instance has loaded, so the hot path doesn't query them on every event. */
   salts: Map<string, string>
@@ -73,6 +77,8 @@ export function createContext(options: CreateAnalytikOptions): Context {
     clientIp: options.clientIp ?? ((request) => clientIpFrom(request, trustProxy)),
     debug: options.debug === true,
     email: options.email,
+    cronSecret: options.cronSecret ?? options.email?.cronSecret,
+    retentionBudgetMs: options.retentionBudgetMs ?? 20_000,
     updateCheck: options.updateCheck !== false,
     salts: new Map(),
     retentionRuns: new Map(),

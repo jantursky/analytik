@@ -55,6 +55,8 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(help.stdout).toContain('seed --db <url> [--days 30] [--seed 1]')
     expect(help.stdout).toContain('import --from umami|simple-analytics')
     expect(help.stdout).toContain('[--password <pw>]')
+    expect(help.stdout).toContain('purge --db <url> --site <id> --before <date>')
+    expect(help.stdout).toContain('export --db <url> --site <id> --out <file>')
     expect(help.stdout).toContain('menubar [--dir <folder>]')
     expect(help.stdout).toContain('erase --db <url> --site <id> --visitor <id> | --email <address>')
     expect((await cli()).stdout).toContain('Usage: analytik')
@@ -132,6 +134,73 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
       expect(refused.stderr).toContain('Pass exactly one of --visitor <id> or --email <address>')
     }
     expect((await cli('erase', '--db', db, '--visitor', 'a')).stderr).toContain('Missing --site')
+  })
+
+  describe('export and purge', () => {
+    const seeded = async () => {
+      const db = temp('backup.db')
+      await cli('migrate', '--db', db)
+      await cli('seed', '--db', db, '--days', '5', '--seed', '2')
+      return db
+    }
+    const events = async (db: string) => {
+      const storage = sqliteStorage(db)
+      const [row] = await storage.query<{ n: number }>('SELECT COUNT(*) AS n FROM events')
+      await storage.close?.()
+      return Number(row?.n)
+    }
+
+    it('writes the whole site as lines and prints the row counts', async () => {
+      const db = await seeded()
+      const out = temp('backup.ndjson')
+      const run = await cli('export', '--db', db, '--site', 'demo', '--out', out)
+      expect(run.code).toBe(0)
+      const lines = readFileSync(out, 'utf8').trimEnd().split('\n')
+      expect(JSON.parse(lines[0] ?? '')).toMatchObject({ version: 2, site: { id: 'demo' } })
+      const stored = await events(db)
+      expect(lines.filter((line) => (JSON.parse(line) as { table: string }).table === 'events')).toHaveLength(stored)
+      expect(run.stdout).toContain(`events: ${stored}`)
+      expect(run.stdout).toContain('sessions:')
+    })
+
+    it('writes one table as CSV', async () => {
+      const db = await seeded()
+      const out = temp('events.csv')
+      const run = await cli(
+        'export',
+        '--db',
+        db,
+        '--site',
+        'demo',
+        '--out',
+        out,
+        '--format',
+        'csv',
+        '--table',
+        'events',
+      )
+      expect(run.code).toBe(0)
+      expect(readFileSync(out, 'utf8').split('\n')[0]).toContain('id,site_id')
+      expect(run.stdout).toContain(`events: ${await events(db)}`)
+    })
+
+    it('deletes what is older than a date', async () => {
+      const db = await seeded()
+      const before = await events(db)
+      const run = await cli('purge', '--db', db, '--site', 'demo', '--before', '2100-01-01')
+      expect(run.code).toBe(0)
+      expect(run.stdout).toContain(`events: ${before}`)
+      expect(await events(db)).toBe(0)
+    })
+
+    it('refuses bad input', async () => {
+      const db = await seeded()
+      expect((await cli('purge', '--db', db, '--site', 'demo', '--before', 'soon')).code).toBe(2)
+      expect((await cli('purge', '--db', db, '--site', 'demo')).stderr).toContain('Missing --before')
+      expect((await cli('export', '--db', db, '--site', 'demo')).stderr).toContain('Missing --out')
+      expect((await cli('export', '--db', db, '--site', 'demo', '--out', 'x', '--format', 'xml')).code).toBe(2)
+      expect((await cli('export', '--db', db, '--site', 'nope', '--out', temp('x'))).code).toBe(1)
+    })
   })
 
   describe('import', () => {

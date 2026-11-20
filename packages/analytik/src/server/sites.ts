@@ -110,12 +110,12 @@ export function publicSite(record: SiteRecord): Site {
   }
 }
 
-export async function getSite(ctx: Context, id: string): Promise<SiteRecord | null> {
+export async function getSite(ctx: Pick<Context, 'storage'>, id: string): Promise<SiteRecord | null> {
   const [row] = await ctx.storage.query<SiteRow>('SELECT * FROM sites WHERE id = ?', [id])
   return row ? toRecord(row) : null
 }
 
-export async function requireSite(ctx: Context, id: string): Promise<SiteRecord> {
+export async function requireSite(ctx: Pick<Context, 'storage'>, id: string): Promise<SiteRecord> {
   const site = await getSite(ctx, id)
   if (!site) throw new AnalytikError('site not found', 404)
   return site

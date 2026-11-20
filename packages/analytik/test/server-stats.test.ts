@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import { readExport } from '../src/server/stats/export'
 import { DAY, HOUR, MINUTE } from '../src/shared/time'
 import type {
   BreakdownRow,
@@ -617,7 +618,7 @@ describe.each(storageKinds())('stats on %s', (kind) => {
   })
 
   it('export: JSON backup and CSV tables, defusing spreadsheet formulas', async () => {
-    const json = await server.admin(`/sites/${site.id}/export?format=json`)
+    const json = await server.admin(`/sites/${site.id}/export?format=json&version=1`)
     expect(json.headers.get('content-disposition')).toMatch(/attachment; filename="analytik-.+\.json"/)
     const backup = (await json.json()) as Record<string, unknown[]> & { site: Site }
     expect(backup.site.id).toBe(site.id)
@@ -625,6 +626,19 @@ describe.each(storageKinds())('stats on %s', (kind) => {
       5, 8, 3, 1,
     ])
     expect(JSON.stringify(backup)).not.toContain('api_key_hash')
+
+    const streamed = await server.admin(`/sites/${site.id}/export?format=json`)
+    expect(streamed.headers.get('content-type')).toContain('application/x-ndjson')
+    expect(streamed.headers.get('content-disposition')).toMatch(/attachment; filename="analytik-.+\.ndjson"/)
+    const parsed = readExport(await streamed.text())
+    expect(parsed.version).toBe(2)
+    expect([
+      parsed.tables.sessions.length,
+      parsed.tables.events.length,
+      parsed.tables.payments.length,
+      parsed.tables.funnels.length,
+    ]).toEqual([5, 8, 3, 1])
+    expect(parsed.tables.events).toEqual(backup.events)
 
     await server.storage.run("UPDATE events SET name = '=HYPERLINK(\"x\")' WHERE type = 'goal'")
     const csv = await server.admin(`/sites/${site.id}/export?format=csv&table=events`)

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { type ComponentType, type SubmitEvent, useState } from 'react'
+import { type ComponentType, type SubmitEvent, useEffect, useRef, useState } from 'react'
 
 import type { GoalTarget, PaymentProvider, PrivacyMode, Site, TargetPeriod } from '../../shared/types'
 import { cleanDomain, domainProblem } from '../../shared/url'
@@ -10,6 +10,7 @@ import { msg, t } from '../i18n'
 import { Icon, type IconName } from '../icons'
 import { DomainField } from '../Login'
 import { Logo } from '../logo'
+import { NavScroll } from '../nav-scroll'
 import { buildCampaignUrl, buildSnippet, type CampaignParams } from '../snippet'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Notice, useOutcome } from '../ui'
 import { CurrencySelect } from '../ui/currency'
@@ -971,10 +972,31 @@ export function Settings({
   }
   const current = sections.find((s) => s.value === section) ?? SECTIONS[0]
   const Content = current.content
+  const top = useRef<HTMLDivElement>(null)
+  const shown = useRef(section)
+  // A new section starts at its top, also when the page was scrolled down inside the previous, longer one.
+  useEffect(() => {
+    if (shown.current === section) return
+    shown.current = section
+    const box = top.current
+    if (box && box.getBoundingClientRect().top < 0) box.scrollIntoView({ block: 'start' })
+  }, [section])
   return (
     <View>
-      <div className="analytik-settings">
-        <nav className="analytik-settings-nav" aria-label={t('Settings')}>
+      <div className="analytik-settings" ref={top}>
+        {/* On a phone the list is one visible control with the current section, instead of a strip to scroll. */}
+        <div className="analytik-settings-picker">
+          <Select
+            label={t('Settings')}
+            hideLabel
+            className="analytik-pill"
+            value={section}
+            leading={<Icon name={current.icon} />}
+            options={sections.map(({ value, label, icon }) => ({ value, label: t(label), icon: <Icon name={icon} /> }))}
+            onChange={(value) => setSection(value as SettingsSection)}
+          />
+        </div>
+        <NavScroll className="analytik-settings-nav" label={t('Settings')} active={section}>
           <ul>
             {sections.map(({ value, label, icon, tone }) => (
               <li key={value} data-tone={tone}>
@@ -995,7 +1017,7 @@ export function Settings({
               </li>
             ))}
           </ul>
-        </nav>
+        </NavScroll>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={section}

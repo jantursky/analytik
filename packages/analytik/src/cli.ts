@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { createWriteStream, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -10,7 +10,10 @@ import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo
 import { installMenubar, type MenubarIo, MENUBAR_APP, MENUBAR_REPO } from './create/menubar'
 import { openStorage, seedDemo } from './migrate'
 import { eraseVisitor } from './server/stats/erase'
-import type { VisitorSelector } from './server/types'
+import { EXPORT_TABLES, exportCsvStream, exportNdjson } from './server/stats/export'
+import { purgeChunked } from './server/stats/purge'
+import { requireSite } from './server/sites'
+import type { ExportTable, VisitorSelector } from './server/types'
 import { importFiles } from './migrate/import'
 import { IMPORT_SOURCES, isImportSource } from './shared/import/types'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
@@ -31,6 +34,10 @@ Commands:
                                            Add the history of another analytics tool to a site
   erase --db <url> --site <id> --visitor <id> | --email <address>
                                            Delete everything held about one visitor (a data-subject request)
+  purge --db <url> --site <id> --before <date>
+                                           Delete a site's data older than a date (payments keep their amounts)
+  export --db <url> --site <id> --out <file> [--format ndjson|csv] [--table visitors|sessions|events|payments]
+                                           Write a site's data to a file, streamed in pages
   menubar [--dir <folder>] [--no-open]     Install the Mac menu bar app (macOS 14 or later) into Applications
   doctor [--db <url>] [--url <deployment>] Check the runtime, database and a deployment
 
@@ -178,6 +185,46 @@ async function withStorage<T>(url: string, run: (storage: Storage) => Promise<T>
   }
 }
 
+/** Writes a stream to a file and counts the rows: per table for a full export, in one group for a CSV table. */
+async function writeExport(
+  stream: ReadableStream<Uint8Array>,
+  file: string,
+  csvTable: string | null,
+): Promise<Record<string, number>> {
+  const sink = createWriteStream(file)
+  const done = new Promise<void>((resolve, reject) => sink.on('finish', resolve).on('error', reject))
+  const counts: Record<string, number> = {}
+  const decoder = new TextDecoder()
+  let tail = ''
+  // A CSV cell may hold line breaks inside quotes; only a break outside quotes ends a row.
+  let quoted = false
+  let rows = -1
+  const reader = stream.getReader()
+  for (;;) {
+    const { done: finished, value } = await reader.read()
+    if (finished) break
+    if (!sink.write(value)) await new Promise((resolve) => sink.once('drain', resolve))
+    const text = decoder.decode(value, { stream: true })
+    if (csvTable !== null) {
+      for (const char of text) {
+        if (char === '"') quoted = !quoted
+        else if (char === '\n' && !quoted) rows++
+      }
+      continue
+    }
+    const lines = (tail + text).split('\n')
+    tail = lines.pop() ?? ''
+    for (const line of lines) {
+      const table = (JSON.parse(line) as { table?: string }).table
+      if (table) counts[table] = (counts[table] ?? 0) + 1
+    }
+  }
+  if (csvTable !== null) counts[csvTable] = Math.max(rows, 0)
+  sink.end()
+  await done
+  return counts
+}
+
 async function doctor(db: string | undefined, url: string | undefined): Promise<boolean> {
   let ok = true
   const report = (passed: boolean, message: string) => {
@@ -281,6 +328,10 @@ async function main(argv: string[]): Promise<number> {
       dir: { type: 'string' },
       visitor: { type: 'string' },
       email: { type: 'string' },
+      before: { type: 'string' },
+      out: { type: 'string' },
+      format: { type: 'string' },
+      table: { type: 'string' },
     },
   })
   const [command] = positionals
@@ -396,6 +447,36 @@ async function main(argv: string[]): Promise<number> {
       )
       console.log(`Erased from ${siteId}:`)
       for (const [table, rows] of Object.entries(result)) console.log(`  ${table}: ${rows}`)
+      return 0
+    }
+    case 'purge': {
+      const siteId = required(values.site, '--site')
+      const before = Date.parse(required(values.before, '--before'))
+      if (Number.isNaN(before)) throw new UsageError('--before must be a date such as 2026-01-31')
+      const result = await withStorage(required(values.db, '--db'), async (storage) => {
+        await requireSite({ storage }, siteId)
+        return purgeChunked({ storage }, siteId, before)
+      })
+      console.log(`Deleted from ${siteId}:`)
+      for (const [table, rows] of Object.entries(result))
+        if (typeof rows === 'number') console.log(`  ${table}: ${rows}`)
+      return 0
+    }
+    case 'export': {
+      const siteId = required(values.site, '--site')
+      const out = required(values.out, '--out')
+      const format = values.format ?? 'ndjson'
+      const table = (values.table ?? 'events') as ExportTable
+      if (format !== 'ndjson' && format !== 'csv') throw new UsageError('--format must be ndjson or csv')
+      if (!EXPORT_TABLES.includes(table)) throw new UsageError(`--table must be one of ${EXPORT_TABLES.join(', ')}`)
+      const counts = await withStorage(required(values.db, '--db'), async (storage) => {
+        const ctx = { storage, now: Date.now }
+        const site = await requireSite(ctx, siteId)
+        const stream = format === 'csv' ? exportCsvStream(ctx, site, table) : exportNdjson(ctx, site)
+        return writeExport(stream, out, format === 'csv' ? table : null)
+      })
+      console.log(`Wrote ${out}:`)
+      for (const [name, rows] of Object.entries(counts)) console.log(`  ${name}: ${rows}`)
       return 0
     }
     case 'menubar': {

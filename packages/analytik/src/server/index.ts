@@ -5,6 +5,7 @@ import { AnalytikError, createContext } from './context'
 import { runScheduled } from './email/notify'
 import { ingest } from './ingest'
 import { recordPayment } from './payments'
+import { runRetention } from './retention'
 import { type AdminEnv, adminRoutes } from './routes/admin'
 import { cronRoute } from './routes/cron'
 import { publicRoutes } from './routes/public'
@@ -86,7 +87,8 @@ export function createAnalytik(options: CreateAnalytikOptions): Analytik {
     stats: createStatsApi(ctx, ready),
     async scheduled(options) {
       await ready()
-      return runScheduled(ctx, options?.url)
+      const retention = await runRetention(ctx)
+      return { ...(await runScheduled(ctx, options?.url)), retention }
     },
   }
 }

@@ -10,6 +10,15 @@ All notable changes to this project are documented in this file. The format foll
 
 - Erase or download one visitor's data, from a session in the dashboard, `npx analytik erase` and two admin routes. Payments stay for revenue without personal details.
 
+### Changed
+
+- Retention runs from `/v1/cron` and `scheduled()` in chunks within a time budget (new `cronSecret` option), and the full export streams as newline-delimited JSON (`?version=1` gives the old document); new `npx analytik purge` and `export`.
+
+### Fixed
+
+- Switching Settings sections scrolls back to the top of the section.
+- On a phone the Settings sections are one dropdown showing the current section, instead of a strip that hid sections off to the side.
+
 ## [1.28.0]
 
 ### Changed

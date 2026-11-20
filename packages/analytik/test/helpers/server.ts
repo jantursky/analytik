@@ -1,4 +1,5 @@
 import { createAnalytik } from '../../src/server'
+import { createContext } from '../../src/server/context'
 import type { CreateAnalytikOptions } from '../../src/server/types'
 import type { Site } from '../../src/shared/types'
 import { type StorageKind, createStorage } from './databases'
@@ -23,6 +24,14 @@ export async function testServer(kind: StorageKind = 'memory', options: Partial<
     storage,
     admin: { password: PASSWORD, secret: SECRET },
     // The helpers send `cf-connecting-ip` the way Cloudflare does; `auto` would only trust it with `request.cf`.
+    trustProxy: 'cloudflare',
+    now: () => now,
+    ...options,
+  })
+  // The same settings as a context, for tests that call server functions directly.
+  const context = createContext({
+    storage,
+    admin: { password: PASSWORD, secret: SECRET },
     trustProxy: 'cloudflare',
     now: () => now,
     ...options,
@@ -74,6 +83,7 @@ export async function testServer(kind: StorageKind = 'memory', options: Partial<
 
   return {
     analytik,
+    context,
     storage,
     request,
     admin,

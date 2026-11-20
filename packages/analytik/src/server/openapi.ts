@@ -181,13 +181,14 @@ export const DESCRIPTIONS: Readonly<Record<string, Described>> = {
     response: 'A page of payments.',
   },
   'GET /sites/:id/export': {
-    summary: 'A full export as JSON, or one table as CSV. Costly: shares a lower limit.',
+    summary: 'A full export as newline-delimited JSON, or one table as CSV. Streamed. Costly: shares a lower limit.',
     query: [
       choice('format', 'Default json.', ['json', 'csv']),
       choice('table', 'The table for csv. Default events.', EXPORT_TABLES),
+      choice('version', '1 for the old single JSON document.', ['1']),
     ],
     response: 'A file.',
-    media: 'application/json',
+    media: 'application/x-ndjson',
   },
   'GET /sites/:id/imports': { summary: 'History imported from other tools.', response: 'A list of imports.' },
   'PATCH /sites/:id': { summary: 'Changes the site’s settings.', body: 'The fields to change.', response: 'The site.' },

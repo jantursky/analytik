@@ -38,11 +38,22 @@ export function useScrollEdges<T extends HTMLElement>(): {
 }
 
 /**
- * The header's view list. It scrolls sideways when the views do not fit, so the side that hides more is faded out and
+ * A list of views or sections. It scrolls sideways when the views do not fit, so the side that hides more is faded out and
  * carries an arrow that moves the list by a page. The arrows are for the pointer: the buttons in the list stay
  * reachable with the keyboard, which scrolls the focused one into view, so the arrows are hidden from assistive tech.
  */
-export function NavScroll({ label, active, children }: { label: string; active: string; children: ReactNode }) {
+export function NavScroll({
+  label,
+  active,
+  className,
+  children,
+}: {
+  label: string
+  active: string
+  /** Extra class for the wrapper, so a list outside the header can style its own edges. */
+  className?: string
+  children: ReactNode
+}) {
   const { ref, element: scroller, edges } = useScrollEdges<HTMLElement>()
 
   // The open view is brought into the visible part of the list when it changes, from a shortcut or the address too.
@@ -67,7 +78,7 @@ export function NavScroll({ label, active, children }: { label: string; active: 
   }
 
   return (
-    <div className="analytik-nav-wrap">
+    <div className={className ? `analytik-nav-wrap ${className}` : 'analytik-nav-wrap'}>
       <span className="analytik-nav-fade" data-side="start" data-on={edges.left || undefined} aria-hidden="true" />
       <span className="analytik-nav-fade" data-side="end" data-on={edges.right || undefined} aria-hidden="true" />
       <button

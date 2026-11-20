@@ -11,12 +11,16 @@ interface Env {
   RESEND_API_KEY?: string
   EMAIL_FROM?: string
   EMAIL_TO?: string
+  // Optional: any long random string. With it set, events no longer start a purge themselves; the hourly cron below
+  // enforces each site's retention period instead.
+  CRON_SECRET?: string
 }
 
 function create(env: Env) {
   const analytik = createAnalytik({
     storage: d1Storage(env.DB),
     admin: { password: env.ADMIN_PASSWORD, secret: env.SESSION_SECRET },
+    cronSecret: env.CRON_SECRET,
     email:
       env.RESEND_API_KEY && env.EMAIL_FROM
         ? { send: resendSender({ apiKey: env.RESEND_API_KEY }), from: env.EMAIL_FROM, to: env.EMAIL_TO }
@@ -33,7 +37,8 @@ export default {
     instance ??= create(env)
     return instance.handler.fetch(request, env, ctx)
   },
-  // The hourly cron in wrangler.jsonc: sends the summary when it is due and checks that tracking still works.
+  // The hourly cron in wrangler.jsonc: deletes data past each site's retention period, sends the summary when it is due
+  // and checks that tracking still works.
   scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     instance ??= create(env)
     ctx.waitUntil(instance.analytik.scheduled())

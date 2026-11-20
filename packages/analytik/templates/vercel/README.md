@@ -10,9 +10,13 @@ One Vercel function that serves the [Analytik](https://github.com/jantursky/anal
 
 Open the project's address, sign in, add your site and paste the tracking snippet it shows. The schema is created on the first request.
 
+## Retention
+
+To have data older than a site's retention period deleted on a schedule, add the environment variable `CRON_SECRET` (any long random string) and redeploy. The daily call in `vercel.json` then deletes it in bounded steps, so a quiet site is cleaned too, and events no longer start a purge themselves.
+
 ## Email
 
-To get payment alerts, a daily or weekly summary and a warning when tracking stops, add the environment variables `RESEND_API_KEY` ([Resend](https://resend.com)), `EMAIL_FROM`, `EMAIL_TO` and `CRON_SECRET` (any long random string), redeploy, and turn the emails on in Settings → Email.
+To get payment alerts, a daily or weekly summary and a warning when tracking stops, add the environment variables `RESEND_API_KEY` ([Resend](https://resend.com)), `EMAIL_FROM` and `EMAIL_TO` (and `CRON_SECRET`, as above), redeploy, and turn the emails on in Settings → Email.
 
 `vercel.json` calls `/api/v1/cron` once a day at 07:00 UTC, which is what the Hobby plan allows: choose a summary hour of 07:00 or earlier. On Pro, change the schedule to `0 * * * *` so the summary goes out at the hour you pick. Any other sender works too: edit `api/index.ts` to use `httpSender` from `analytik/email`.
 

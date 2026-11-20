@@ -25,6 +25,6 @@ printf '{"RESEND_API_KEY":"re_...","EMAIL_FROM":"analytik@your-domain.com","EMAI
 npx wrangler secret bulk secrets.json && rm secrets.json
 ```
 
-The hourly cron in `wrangler.jsonc` sends the summary at the hour you chose. Any other sender works too: edit `src/worker.ts` to use `httpSender` or `cloudflareSender` from `analytik/email`.
+The hourly cron in `wrangler.jsonc` also deletes data older than a site's retention period (Settings → Privacy → Keep data for), in bounded steps. Add a `CRON_SECRET` secret (any long random string) so events stop starting that purge themselves. The same cron sends the summary at the hour you chose. Any other sender works too: edit `src/worker.ts` to use `httpSender` or `cloudflareSender` from `analytik/email`.
 
 The schema is created on the first request, so after a package upgrade you only need to deploy again.

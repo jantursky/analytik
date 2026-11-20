@@ -54,7 +54,7 @@ import type { Dialect } from '../../storage/types'
 import { breakdown } from '../stats/breakdown'
 import { properties } from '../stats/properties'
 import { createWebhook, deleteWebhook, listWebhooks, testWebhook, updateWebhook } from '../webhooks'
-import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
+import { EXPORT_TABLES, exportCsvStream, exportJson, exportNdjson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
 import { eraseVisitor, exportVisitor } from '../stats/erase'
@@ -530,13 +530,22 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     const format = c.req.query('format') ?? 'json'
     const date = new Date(ctx.now()).toISOString().slice(0, 10)
     if (format === 'json') {
-      c.header('content-disposition', `attachment; filename="analytik-${site.id}-${date}.json"`)
-      return c.body(await exportJson(ctx, site), 200, { 'content-type': 'application/json' })
+      // Version 1 is the old single document, kept for one minor for tools that read it.
+      if (c.req.query('version') === '1') {
+        c.header('content-disposition', `attachment; filename="analytik-${site.id}-${date}.json"`)
+        return c.body(await exportJson(ctx, site), 200, { 'content-type': 'application/json' })
+      }
+      return c.body(exportNdjson(ctx, site), 200, {
+        'content-type': 'application/x-ndjson; charset=utf-8',
+        'content-disposition': `attachment; filename="analytik-${site.id}-${date}.ndjson"`,
+      })
     }
     const table = (c.req.query('table') ?? 'events') as ExportTable
     if (format !== 'csv' || !EXPORT_TABLES.includes(table)) throw new AnalytikError('format must be json or csv')
-    c.header('content-disposition', `attachment; filename="analytik-${site.id}-${table}-${date}.csv"`)
-    return c.body(await exportCsv(ctx, site, table), 200, { 'content-type': 'text/csv; charset=utf-8' })
+    return c.body(exportCsvStream(ctx, site, table), 200, {
+      'content-type': 'text/csv; charset=utf-8',
+      'content-disposition': `attachment; filename="analytik-${site.id}-${table}-${date}.csv"`,
+    })
   })
 
   // History from another tool. The browser sends it in chunks; every row is checked and rebuilt from known fields.

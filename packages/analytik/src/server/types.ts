@@ -135,9 +135,19 @@ export interface CreateAnalytikOptions {
    * in the dashboard. Summaries and tracker alerts need `scheduled()` or `POST /api/v1/cron` called every hour.
    */
   email?: EmailOptions
+  /**
+   * Secret for `POST /api/v1/cron`, sent as `Authorization: Bearer <secret>`; falls back to `email.cronSecret`. With it
+   * set, the cron call enforces every site's retention period, and events no longer start a purge themselves. Without
+   * it the route answers 401 and retention keeps running from ingest, at most once an hour per instance.
+   */
+  cronSecret?: string
+  /** How long one scheduled retention run may keep deleting before it stops and reports `done: false`. Default 20000. */
+  retentionBudgetMs?: number
 }
 
 export type { EmailMessage, EmailOptions, EmailSend, EmailSettings, ScheduledResult } from './email/types'
+export type { RetentionRun } from './retention'
+export type { ChunkedPurge } from './stats/purge'
 
 /** An event as the hooks see it. Pings and sign-ins are not hooked. */
 export interface HookEvent {
