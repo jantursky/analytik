@@ -1103,4 +1103,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Peristiwa, sesi, dan catatan pengunjungnya dihapus permanen. Pembayaran tetap ada untuk pendapatan, tanpa data pribadi. Tindakan ini tidak dapat dibatalkan.',
   'Erased. Events: {events}, sessions: {sessions}': 'Dihapus. Peristiwa: {events}, sesi: {sessions}',
+  Views: 'Tampilan',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Pilih tampilan yang ditampilkan navigasi dan urutannya. Disimpan untuk semua admin.',
+  'Start page': 'Halaman awal',
+  '{name} is now number {number} of {count}': '{name} kini nomor {number} dari {count}',
+  'Drag {name} to reorder': 'Seret {name} untuk mengubah urutan',
 } satisfies Messages

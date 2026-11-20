@@ -42,9 +42,15 @@ Settings → General has a **Tracking** card. **Pause tracking** drops new visit
 
 Settings → Appearance sets the dashboard to light or dark. The default, **Same as the page**, follows a `data-theme="light"` or `data-theme="dark"` on the page (on `<html>`, say) and otherwise the system's setting, so a theme switch on your site carries over. The choice is saved with the other dashboard settings; the `theme` prop of `<Dashboard>` overrides it.
 
-## Formatting
-
 Settings → Formatting sets how the whole dashboard writes numbers, money, dates and times: digit grouping (the language's own, `1,234.5`, `1.234,5`, `1 234,5` or `1'234.5`), the currency as a symbol or a code, cents always or only when there are some, five date styles (`Oct 27, 2026`, `27 Oct 2026`, `27.10.2026`, `10/27/2026`, `2026-10-27`) and a 12- or 24-hour clock. Each option in the lists shows an example written its way. The choice is saved with the other dashboard settings, for every admin.
+
+## Choosing the views
+
+Settings → Appearance → **Views** lists the eleven views of a site: Overview, Acquisition, Pages, Events, Bots, Funnels, Journeys, Retention, Revenue, Sessions and Live. Each has a switch to show or hide it. The shown views have buttons to move them earlier or later, which work from the keyboard and announce the new place, and a handle to drag them. The navigation, the command palette and the `g` shortcuts follow the choice. All sites and Settings are always there, at least one view stays on, and **Reset** brings back every view in the default order and the default start page.
+
+**Start page** picks the view a bare address opens (Overview by default); a `view` prop or a `?section=` in the address wins over it, and if the start page is hidden the first shown view opens. A hidden view is only hidden from the navigation: an address that names it still opens it, and its tab shows while it is open. The choice is saved with the other dashboard settings, so every browser and admin sees the same navigation. A shared page ignores it and shows the views its link allows.
+
+## Formatting
 
 ## Language
 

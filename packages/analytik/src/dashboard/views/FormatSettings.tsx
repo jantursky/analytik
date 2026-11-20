@@ -18,6 +18,7 @@ import { compareLabels, LANGUAGES, msg, t } from '../i18n'
 import { parseTheme, usePreferences } from '../preferences'
 import { Card } from '../ui'
 import { Select } from '../ui/select'
+import { ViewsCard } from './ViewsSettings'
 
 // Shown in each option and under each select, written the way the option would write them.
 const AMOUNT = 123456789
@@ -216,6 +217,7 @@ export function ThemeSettings() {
           </span>
         </div>
       </Card>
+      <ViewsCard />
     </>
   )
 }

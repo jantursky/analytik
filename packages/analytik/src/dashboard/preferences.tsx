@@ -41,6 +41,41 @@ export function parseTheme(value: unknown): 'light' | 'dark' | undefined {
   return value === 'light' || value === 'dark' ? value : undefined
 }
 
+/** The site views the navigation can show, in their default order. Settings and the sites overview are always shown. */
+export const SITE_VIEWS = [
+  'overview',
+  'sources',
+  'pages',
+  'events',
+  'bots',
+  'funnels',
+  'journeys',
+  'retention',
+  'revenue',
+  'sessions',
+  'realtime',
+] as const
+export type SiteViewId = (typeof SITE_VIEWS)[number]
+
+const isSiteView = (value: unknown): value is SiteViewId => SITE_VIEWS.includes(value as SiteViewId)
+
+/**
+ * The views to show, in order. A saved list is cleaned: unknown and repeated names go; a value that is not a list, or
+ * leaves nothing, means the default (every view). A view missing from a saved list is hidden.
+ */
+export function parseViews(value: unknown): SiteViewId[] {
+  if (!Array.isArray(value)) return [...SITE_VIEWS]
+  const seen = new Set<SiteViewId>()
+  for (const name of value as unknown[]) if (isSiteView(name)) seen.add(name)
+  return seen.size > 0 ? [...seen] : [...SITE_VIEWS]
+}
+
+/** The view a bare address opens: the saved one, else Overview, while it is visible; otherwise the first visible view. */
+export function parseStartView(value: unknown, visible: readonly SiteViewId[]): SiteViewId {
+  const wanted = isSiteView(value) ? value : 'overview'
+  return visible.includes(wanted) ? wanted : (visible[0] ?? 'overview')
+}
+
 const isEmpty = (values: Preferences): boolean => Object.keys(values).length === 0
 
 /**

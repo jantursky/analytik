@@ -1074,4 +1074,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     '其事件、会话和访客记录将被永久删除。付款记录会保留用于收入统计,但不含个人信息。此操作无法撤销。',
   'Erased. Events: {events}, sessions: {sessions}': '已删除。事件:{events},会话:{sessions}',
+  Views: '视图',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    '选择导航显示哪些视图以及它们的顺序。对所有管理员保存。',
+  'Start page': '起始页',
+  '{name} is now number {number} of {count}': '{name} 现在排在第 {number} 位（共 {count} 个）',
+  'Drag {name} to reorder': '拖动 {name} 以重新排序',
 } satisfies Messages

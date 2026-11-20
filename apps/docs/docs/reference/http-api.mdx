@@ -72,10 +72,10 @@ Most of them also accept an [API key](/guides/api-keys) as `Authorization: Beare
 
 ### Preferences
 
-| Method and path    | Description                                                                                                                      |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /preferences` | The dashboard settings (overview layout, summary numbers and chart, live refresh) as one JSON object; `{}` before any are saved. |
-| `PUT /preferences` | Replaces them with the JSON object in the body. The server stores it as is; the dashboard checks each value when it reads it.    |
+| Method and path    | Description                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /preferences` | The dashboard settings (overview layout, summary numbers and chart, live refresh, theme, language, the views shown and their order) as one JSON object; `{}` before any are saved. |
+| `PUT /preferences` | Replaces them with the JSON object in the body. The server stores it as is; the dashboard checks each value when it reads it.                                                      |
 
 ### Sites
 

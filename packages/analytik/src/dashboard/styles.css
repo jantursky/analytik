@@ -3903,6 +3903,51 @@ table.analytik-sr-only {
   pointer-events: none;
 }
 
+.analytik-view-rows {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.analytik-view-group {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytik-view-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 1px solid var(--analytik-border);
+  border-radius: var(--analytik-radius-input);
+  background: var(--analytik-surface);
+}
+
+.analytik-view-row[data-hidden] {
+  color: var(--analytik-text-faint);
+}
+
+.analytik-view-row .analytik-switch-field {
+  flex: 1;
+}
+
+.analytik-view-grip {
+  display: inline-grid;
+  color: var(--analytik-text-faint);
+  cursor: grab;
+  touch-action: none;
+}
+
+.analytik-view-moves {
+  display: flex;
+  gap: 4px;
+}
+
 .analytik-block-bar {
   display: flex;
   flex-wrap: wrap;

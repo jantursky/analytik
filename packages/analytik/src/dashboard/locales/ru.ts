@@ -1116,4 +1116,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Его события, сеансы и запись посетителя будут удалены безвозвратно. Платежи останутся для учёта выручки, без личных данных. Это действие нельзя отменить.',
   'Erased. Events: {events}, sessions: {sessions}': 'Удалено. События: {events}, сеансы: {sessions}',
+  Views: 'Разделы',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Выберите, какие разделы показывает навигация и в каком порядке. Сохраняется для всех администраторов.',
+  'Start page': 'Стартовая страница',
+  '{name} is now number {number} of {count}': '{name} теперь на месте {number} из {count}',
+  'Drag {name} to reorder': 'Перетащите {name}, чтобы изменить порядок',
 } satisfies Messages

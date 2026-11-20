@@ -1111,4 +1111,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Jeho události, relace a záznam návštěvníka budou trvale smazány. Platby zůstanou pro přehled tržeb, bez osobních údajů. Tuto akci nelze vrátit zpět.',
   'Erased. Events: {events}, sessions: {sessions}': 'Smazáno. Události: {events}, relace: {sessions}',
+  Views: 'Zobrazení',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Vyberte, která zobrazení navigace ukazuje a v jakém pořadí. Uloženo pro všechny správce.',
+  'Start page': 'Úvodní stránka',
+  '{name} is now number {number} of {count}': '{name} je nyní na místě {number} z {count}',
+  'Drag {name} to reorder': 'Přetažením změníte pořadí: {name}',
 } satisfies Messages

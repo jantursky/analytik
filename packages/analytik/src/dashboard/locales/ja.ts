@@ -1104,4 +1104,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'この訪問者のイベント、セッション、訪問者レコードは完全に削除されます。支払いは個人情報を除いて売上のために残ります。この操作は元に戻せません。',
   'Erased. Events: {events}, sessions: {sessions}': '削除しました。イベント: {events}、セッション: {sessions}',
+  Views: 'ビュー',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'ナビゲーションに表示するビューとその順序を選びます。すべての管理者に保存されます。',
+  'Start page': '開始ページ',
+  '{name} is now number {number} of {count}': '{name} は現在 {count} 件中 {number} 番目です',
+  'Drag {name} to reorder': '{name} をドラッグして並べ替え',
 } satisfies Messages

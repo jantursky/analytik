@@ -1096,4 +1096,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     '이 방문자의 이벤트, 세션, 방문자 기록이 영구적으로 삭제됩니다. 결제는 개인 정보 없이 매출 집계를 위해 남습니다. 되돌릴 수 없습니다.',
   'Erased. Events: {events}, sessions: {sessions}': '삭제됨. 이벤트: {events}, 세션: {sessions}',
+  Views: '보기',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    '탐색에 표시할 보기와 순서를 선택하세요. 모든 관리자에게 저장됩니다.',
+  'Start page': '시작 페이지',
+  '{name} is now number {number} of {count}': '{name}이(가) 이제 {count}개 중 {number}번째입니다',
+  'Drag {name} to reorder': '{name}을(를) 끌어 순서 변경',
 } satisfies Messages

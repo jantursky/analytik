@@ -1105,4 +1105,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Sự kiện, phiên và hồ sơ khách truy cập của họ sẽ bị xóa vĩnh viễn. Các khoản thanh toán vẫn được giữ cho doanh thu, không kèm thông tin cá nhân. Không thể hoàn tác.',
   'Erased. Events: {events}, sessions: {sessions}': 'Đã xóa. Sự kiện: {events}, phiên: {sessions}',
+  Views: 'Chế độ xem',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Chọn các chế độ xem mà điều hướng hiển thị và thứ tự của chúng. Được lưu cho mọi quản trị viên.',
+  'Start page': 'Trang bắt đầu',
+  '{name} is now number {number} of {count}': '{name} hiện ở vị trí {number} trên {count}',
+  'Drag {name} to reorder': 'Kéo {name} để sắp xếp lại',
 } satisfies Messages

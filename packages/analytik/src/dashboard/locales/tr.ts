@@ -1108,4 +1108,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Olayları, oturumları ve ziyaretçi kaydı kalıcı olarak silinir. Ödemeler gelir için kalır, kişisel bilgiler olmadan. Bu geri alınamaz.',
   'Erased. Events: {events}, sessions: {sessions}': 'Silindi. Olaylar: {events}, oturumlar: {sessions}',
+  Views: 'Görünümler',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Gezinmenin hangi görünümleri ve hangi sırayla göstereceğini seçin. Tüm yöneticiler için kaydedilir.',
+  'Start page': 'Başlangıç sayfası',
+  '{name} is now number {number} of {count}': '{name} artık {count} içinde {number}. sırada',
+  'Drag {name} to reorder': 'Sırayı değiştirmek için {name} öğesini sürükleyin',
 } satisfies Messages

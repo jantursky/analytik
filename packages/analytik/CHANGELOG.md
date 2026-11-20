@@ -8,6 +8,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- Choose which views the navigation shows and in what order (Settings, Appearance, Views), with a start page.
 - Erase or download one visitor's data, from a session in the dashboard, `npx analytik erase` and two admin routes. Payments stay for revenue without personal details.
 
 ### Changed

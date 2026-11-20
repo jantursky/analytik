@@ -1113,4 +1113,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Jeho udalosti, relácie a záznam návštevníka sa natrvalo vymažú. Platby zostanú pre prehľad tržieb, bez osobných údajov. Túto akciu nie je možné vrátiť späť.',
   'Erased. Events: {events}, sessions: {sessions}': 'Vymazané. Udalosti: {events}, relácie: {sessions}',
+  Views: 'Zobrazenia',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Vyberte, ktoré zobrazenia navigácia ukazuje a v akom poradí. Uložené pre všetkých správcov.',
+  'Start page': 'Úvodná stránka',
+  '{name} is now number {number} of {count}': '{name} je teraz na mieste {number} z {count}',
+  'Drag {name} to reorder': 'Potiahnutím zmeníte poradie: {name}',
 } satisfies Messages

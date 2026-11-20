@@ -1111,4 +1111,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'Zijn gebeurtenissen, sessies en bezoekersrecord worden definitief gewist. Betalingen blijven voor de omzet, zonder persoonsgegevens. Dit kan niet ongedaan worden gemaakt.',
   'Erased. Events: {events}, sessions: {sessions}': 'Gewist. Gebeurtenissen: {events}, sessies: {sessions}',
+  Views: 'Weergaven',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Kies welke weergaven de navigatie toont en in welke volgorde. Opgeslagen voor alle beheerders.',
+  'Start page': 'Startpagina',
+  '{name} is now number {number} of {count}': '{name} staat nu op plaats {number} van {count}',
+  'Drag {name} to reorder': 'Sleep {name} om te herordenen',
 } satisfies Messages

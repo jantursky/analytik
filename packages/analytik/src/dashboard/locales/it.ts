@@ -1114,4 +1114,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'I suoi eventi, le sessioni e la scheda del visitatore vengono eliminati definitivamente. I pagamenti restano per i ricavi, senza dati personali. L’azione non si può annullare.',
   'Erased. Events: {events}, sessions: {sessions}': 'Eliminato. Eventi: {events}, sessioni: {sessions}',
+  Views: 'Viste',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'Scegli quali viste mostra la navigazione e in che ordine. Salvato per tutti gli amministratori.',
+  'Start page': 'Pagina iniziale',
+  '{name} is now number {number} of {count}': '{name} è ora al numero {number} di {count}',
+  'Drag {name} to reorder': 'Trascina {name} per riordinare',
 } satisfies Messages

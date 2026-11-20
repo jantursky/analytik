@@ -15,7 +15,7 @@ import { LanguageSwitch } from './language-switch'
 import { NavScroll, useScrollEdges } from './nav-scroll'
 import { AddSiteDialog, CreateSiteForm, LoginForm } from './Login'
 import { savedCompare, savedRange } from './choices'
-import { parseTheme, PreferencesProvider, usePreferencesStore } from './preferences'
+import { parseStartView, parseTheme, parseViews, PreferencesProvider, usePreferencesStore } from './preferences'
 import { customRange, type DateRange, presetRange, shiftRange } from './range'
 import { sameFilters } from './segments'
 import { useShortcuts } from './shortcuts'
@@ -99,6 +99,18 @@ const NAV: { value: DashboardView; label: string }[] = [
   { value: 'sites', label: msg('All sites') },
   ...(Object.keys(VIEWS) as SiteView[]).map((value) => ({ value, label: VIEWS[value].label })),
 ]
+
+/**
+ * The navigation of an admin: the sites overview, the chosen views in order, the current view when it is hidden (so a
+ * linked address still shows where it is) and Settings.
+ */
+function navFor(chosen: readonly DashboardView[] | undefined, current: DashboardView): typeof NAV {
+  if (!chosen) return NAV
+  const item = (value: DashboardView) => NAV.find((entry) => entry.value === value)
+  const shown = [...chosen]
+  if (current !== 'sites' && current !== 'settings' && !shown.includes(current)) shown.push(current)
+  return [item('sites'), ...shown.map(item), item('settings')].filter((entry) => entry !== undefined)
+}
 
 export interface DashboardProps {
   /** Base URL of the analytik API, e.g. `/api`. */
@@ -230,7 +242,7 @@ export function Dashboard({
   siteId,
   fetcher,
   theme,
-  view: initialView = 'overview',
+  view: initialViewProp,
   favicons = true,
   syncPreferences = true,
   credits = true,
@@ -240,6 +252,7 @@ export function Dashboard({
   messages,
   share,
 }: DashboardProps) {
+  const initialView = initialViewProp ?? 'overview'
   const [unauthorized, setUnauthorized] = useState(false)
   // A share token makes the dashboard read-only: from the prop, else the address (also when urlState is off).
   const [shareToken] = useState(
@@ -254,6 +267,8 @@ export function Dashboard({
   const [requestedView, setViewState] = useState<DashboardView>(
     () => (initial?.view as DashboardView | undefined) ?? initialView,
   )
+  // Whether the view was named (by the prop, the address or a click); until then the saved start page applies.
+  const [viewPicked, setViewPicked] = useState(() => initialViewProp !== undefined || !!initial?.view)
   const [tab, setTab] = useState<SettingsSection | undefined>(initial?.tab as SettingsSection | undefined)
   const [customizing, setCustomizing] = useState(false)
   const [range, setRange] = useState(() => initial?.range ?? presetRange('7d', Date.now()))
@@ -295,11 +310,15 @@ export function Dashboard({
   const allowed = readOnly
     ? SHARED_VIEWS.filter((v) => !loaded.data?.views.length || loaded.data.views.includes(SHARE_OF[v] ?? 'overview'))
     : undefined
-  const view = allowed && !allowed.includes(requestedView) ? (allowed[0] ?? 'overview') : requestedView
   // Saved in the database once signed in, so every browser shows the same layout and keeps live refresh on. A shared
   // dashboard has no admin to save for, so its choices stay in the visitor's browser.
   const preferences = usePreferencesStore(syncPreferences && !readOnly ? client : undefined, !unauthorized)
   const live = preferences.values.live === true
+  // The views the admin chose to show; a shared dashboard has no such choice and keeps its own list.
+  const chosenViews = readOnly ? undefined : parseViews(preferences.values.views)
+  const startView = chosenViews && !viewPicked ? parseStartView(preferences.values.startView, chosenViews) : undefined
+  const wanted = startView ?? requestedView
+  const view = allowed && !allowed.includes(wanted) ? (allowed[0] ?? 'overview') : wanted
   // The period and comparison from the last visit, unless the address names its own or the admin already chose here.
   // Applied while rendering, like the linked segment below; the saved copy from the database may arrive later.
   const [choicesSettled, setChoicesSettled] = useState(() => !!(initial?.range ?? initial?.compare))
@@ -371,6 +390,7 @@ export function Dashboard({
         element.scrollIntoView({ block: 'start' })
       }
     }
+    setViewPicked(true)
     setViewState(next)
   }
 
@@ -415,7 +435,7 @@ export function Dashboard({
 
   const list = sites.data ?? []
   const site = list.find((s) => s.id === chosenId) ?? list[0]
-  const nav = allowed ? NAV.filter((item) => allowed.includes(item.value)) : NAV
+  const nav = allowed ? NAV.filter((item) => allowed.includes(item.value)) : navFor(chosenViews, view)
 
   // The address follows the whole state. Moving to another site or view adds a history entry, so Back steps through
   // places; anything else (Settings section, range, interval, filters) replaces it, so Back skips the clicks.
@@ -450,6 +470,7 @@ export function Dashboard({
     const back = (): void => {
       const next = readAddress()
       setChosenId(next.site)
+      setViewPicked(true)
       setViewState((next.view as DashboardView | undefined) ?? 'overview')
       setTab(next.tab as SettingsSection | undefined)
       setRange(next.range ?? presetRange('7d', Date.now()))
@@ -494,7 +515,9 @@ export function Dashboard({
   const pending = useShortcuts(
     root,
     {
-      go: setView,
+      go: (next) => {
+        if (nav.some((item) => item.value === next)) setView(next)
+      },
       step: (direction) => {
         const next = view !== 'sites' && VIEWS[view].ranged ? shiftRange(range, direction, clock()) : null
         if (next) setRange(next)

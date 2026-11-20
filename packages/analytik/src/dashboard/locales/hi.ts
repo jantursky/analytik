@@ -1105,4 +1105,10 @@ export default {
   'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
     'उनके इवेंट, सत्र और विज़िटर रिकॉर्ड हमेशा के लिए मिटा दिए जाएँगे। भुगतान राजस्व के लिए बने रहेंगे, बिना व्यक्तिगत जानकारी के। इसे पूर्ववत नहीं किया जा सकता।',
   'Erased. Events: {events}, sessions: {sessions}': 'मिटाया गया। इवेंट: {events}, सत्र: {sessions}',
+  Views: 'व्यू',
+  'Choose which views the navigation shows, and in what order. Saved for every admin.':
+    'चुनें कि नेविगेशन में कौन-से व्यू दिखें और किस क्रम में। सभी एडमिन के लिए सहेजा जाता है।',
+  'Start page': 'शुरुआती पेज',
+  '{name} is now number {number} of {count}': '{name} अब {count} में से {number} नंबर पर है',
+  'Drag {name} to reorder': '{name} का क्रम बदलने के लिए खींचें',
 } satisfies Messages
