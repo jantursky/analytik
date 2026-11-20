@@ -1068,4 +1068,10 @@ export default {
   'Your address as the server sees it: {ip}': '服务器看到的你的地址：{ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     '已更新{view}：{range}{count, plural, =0 {} other {，# 个筛选条件}}',
+  'Download their data': '下载其数据',
+  'Erase visitor data': '删除访客数据',
+  'Erase everything about this visitor?': '删除与该访客有关的全部数据?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    '其事件、会话和访客记录将被永久删除。付款记录会保留用于收入统计,但不含个人信息。此操作无法撤销。',
+  'Erased. Events: {events}, sessions: {sessions}': '已删除。事件:{events},会话:{sessions}',
 } satisfies Messages

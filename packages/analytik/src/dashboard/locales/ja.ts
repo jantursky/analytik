@@ -1098,4 +1098,10 @@ export default {
   'Your address as the server sees it: {ip}': 'サーバーから見たあなたのアドレス: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     '{view}を更新しました: {range}{count, plural, =0 {} other {、フィルター # 件}}',
+  'Download their data': 'この訪問者のデータをダウンロード',
+  'Erase visitor data': '訪問者のデータを削除',
+  'Erase everything about this visitor?': 'この訪問者に関するすべてを削除しますか?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'この訪問者のイベント、セッション、訪問者レコードは完全に削除されます。支払いは個人情報を除いて売上のために残ります。この操作は元に戻せません。',
+  'Erased. Events: {events}, sessions: {sessions}': '削除しました。イベント: {events}、セッション: {sessions}',
 } satisfies Messages

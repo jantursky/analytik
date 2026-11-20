@@ -233,6 +233,19 @@ Notes are read with `GET /sites/:id/timeseries`: each point carries the notes da
 
 The purge deletes events, sessions, return-page claims and visitors left without sessions. Payments are kept so revenue numbers stay correct, but their email, name, customer id, visitor id and session id are cleared. See [Retention](/deploy/backups-retention-and-upgrades#retention).
 
+### Data requests
+
+One visitor at a time, for an access or erasure request. Pass exactly one of `visitor` (a visitor id, as shown on a session) or `email` (matched without regard to case); anything else answers 400. Both routes are closed to API keys and need an admin sign-in.
+
+| Method and path                           | Description                                                                                                                                               |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /sites/:id/visitors/export?visitor=` | Download everything held about the person as JSON: visitor records, sessions, events and payments. Also takes `email=`.                                   |
+| `DELETE /sites/:id/visitors?visitor=`     | Erase the person. Answers with how many `events`, `sessions`, `visitors`, `payments` and `claims` were touched. Also takes `email=`. It cannot be undone. |
+
+Erasing deletes the person's events, sessions, return-page claims and visitor records. Payments are kept for revenue, but their email, name, customer id, visitor id and session id are cleared. The dashboard offers both actions on a session's timeline, and `npx analytik erase` does the same from the command line.
+
+A visitor id is a hash that changes every month in the default mode, so one person can hold several ids. Erase by `email` when the person was identified, because that finds every id linked to the address. Without an email, only the id you pass is erased.
+
 ### Debug
 
 Test data for trying the dashboard with many sites, long histories and large numbers. `GET /debug` always answers; the other routes answer 404 unless the server was created with `debug: true`.

@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Erase or download one visitor's data, from a session in the dashboard, `npx analytik erase` and two admin routes. Payments stay for revenue without personal details.
+
 ## [1.28.0]
 
 ### Changed

@@ -1107,4 +1107,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Vaša adresa, ako ju vidí server: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Aktualizované {view}: {range}{count, plural, =0 {} one {, # filter} few {, # filtre} other {, # filtrov}}',
+  'Download their data': 'Stiahnuť jeho údaje',
+  'Erase visitor data': 'Vymazať údaje návštevníka',
+  'Erase everything about this visitor?': 'Vymazať všetko o tomto návštevníkovi?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Jeho udalosti, relácie a záznam návštevníka sa natrvalo vymažú. Platby zostanú pre prehľad tržieb, bez osobných údajov. Túto akciu nie je možné vrátiť späť.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Vymazané. Udalosti: {events}, relácie: {sessions}',
 } satisfies Messages

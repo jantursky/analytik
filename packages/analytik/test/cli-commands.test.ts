@@ -56,6 +56,7 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     expect(help.stdout).toContain('import --from umami|simple-analytics')
     expect(help.stdout).toContain('[--password <pw>]')
     expect(help.stdout).toContain('menubar [--dir <folder>]')
+    expect(help.stdout).toContain('erase --db <url> --site <id> --visitor <id> | --email <address>')
     expect((await cli()).stdout).toContain('Usage: analytik')
     expect((await cli('--version')).stdout.trim()).toBe(version)
   })
@@ -106,6 +107,31 @@ describe('analytik CLI', { timeout: 30_000 }, () => {
     const [row] = await storage.query<{ n: number }>('SELECT COUNT(*) AS n FROM sessions')
     expect(row?.n).toBeGreaterThan(0)
     await storage.close?.()
+  })
+
+  it('erases one visitor from a database, and asks for exactly one selector', async () => {
+    const db = temp('analytik.db')
+    await cli('migrate', '--db', db)
+    await cli('seed', '--db', db, '--days', '2', '--seed', '5')
+    const storage = sqliteStorage(db)
+    const [seeded] = await storage.query<{ id: string }>('SELECT id FROM visitors LIMIT 1')
+    const visitor = seeded?.id ?? ''
+    expect(visitor).not.toBe('')
+
+    const erased = await cli('erase', '--db', db, '--site', 'demo', '--visitor', visitor)
+    expect(erased.code).toBe(0)
+    expect(erased.stdout).toContain('Erased from demo:')
+    expect(erased.stdout).toMatch(/visitors: 1/)
+    expect(await storage.query('SELECT 1 FROM visitors WHERE id = ?', [visitor])).toEqual([])
+    expect(await storage.query('SELECT 1 FROM sessions WHERE visitor_id = ?', [visitor])).toEqual([])
+    await storage.close?.()
+
+    for (const args of [[], ['--visitor', 'a', '--email', 'b@c.d']]) {
+      const refused = await cli('erase', '--db', db, '--site', 'demo', ...args)
+      expect(refused.code).toBe(2)
+      expect(refused.stderr).toContain('Pass exactly one of --visitor <id> or --email <address>')
+    }
+    expect((await cli('erase', '--db', db, '--visitor', 'a')).stderr).toContain('Missing --site')
   })
 
   describe('import', () => {

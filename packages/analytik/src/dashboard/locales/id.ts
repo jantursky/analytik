@@ -1097,4 +1097,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Alamat Anda seperti dilihat server: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Diperbarui {view}: {range}{count, plural, =0 {} other {, # filter}}',
+  'Download their data': 'Unduh datanya',
+  'Erase visitor data': 'Hapus data pengunjung',
+  'Erase everything about this visitor?': 'Hapus semua tentang pengunjung ini?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Peristiwa, sesi, dan catatan pengunjungnya dihapus permanen. Pembayaran tetap ada untuk pendapatan, tanpa data pribadi. Tindakan ini tidak dapat dibatalkan.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Dihapus. Peristiwa: {events}, sesi: {sessions}',
 } satisfies Messages

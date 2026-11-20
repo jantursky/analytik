@@ -96,6 +96,16 @@ npx analytik import --from umami --file events.csv --file sessions.csv --file ev
 
 `--from` names the source, `--file` is repeated once per export file, `--site` is the id of an existing site and `--db` the database. The command applies pending migrations, reads every file, and only then writes, so a wrong file stores nothing. Running it twice adds nothing the second time. D1 cannot be reached from the command line; use the import in Settings. What each export must contain is in [Importing data](/guides/importing-data).
 
+### erase
+
+Erases one visitor from a site, for an erasure request. Pass exactly one of `--visitor` or `--email`.
+
+```bash
+npx analytik erase --db "$DATABASE_URL" --site SITE_ID --email person@example.com
+```
+
+It deletes the person's events, sessions and visitor records and clears the personal details from their payments, which stay for revenue. It prints how many rows it touched. The same erasure is in the dashboard on a session's timeline and in the [HTTP API](/reference/http-api#data-requests). D1 cannot be reached from the command line; use the dashboard.
+
 ### menubar
 
 Downloads the newest release of the [Mac menu bar app](/guides/mac-menu-bar), puts it into Applications and opens it. It needs macOS 14 or later.

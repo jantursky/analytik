@@ -57,6 +57,7 @@ import { createWebhook, deleteWebhook, listWebhooks, testWebhook, updateWebhook 
 import { EXPORT_TABLES, exportCsv, exportJson } from '../stats/export'
 import { createFunnel, deleteFunnel, funnelResult, getFunnel, listFunnels } from '../stats/funnels'
 import { overview, siteSummaries, timeseries } from '../stats/overview'
+import { eraseVisitor, exportVisitor } from '../stats/erase'
 import { purgeBefore } from '../stats/purge'
 import { targetProgress } from '../stats/targets'
 import { journeys } from '../stats/journeys'
@@ -71,7 +72,7 @@ import {
   isDimension,
   pageLimit,
 } from '../stats/query'
-import type { ExportTable, PageOptions } from '../types'
+import type { ExportTable, PageOptions, VisitorSelector } from '../types'
 
 const BODY_LIMIT = 64 * 1024
 const INTERVALS: readonly Interval[] = ['hour', 'day', 'week', 'month']
@@ -548,6 +549,21 @@ export function adminRoutes(app: Hono<AdminEnv>, ctx: Context): void {
     const source = c.req.param('source')
     if (!isImportSource(source)) throw new AnalytikError('unknown import source', 404)
     return c.json(await removeImport(ctx, c.get('site').id, source))
+  })
+
+  // One person's data, for a data-subject request: erased, or handed over. Selected by `visitor` id or by `email`.
+  const person = (c: HonoContext<AdminEnv>): VisitorSelector => {
+    const visitor = c.req.query('visitor')?.trim()
+    const email = c.req.query('email')?.trim()
+    if (!visitor === !email) throw new AnalytikError('pass either visitor or email')
+    return visitor ? { visitor } : { email: email ?? '' }
+  }
+  app.delete('/sites/:id/visitors', async (c) => c.json(await eraseVisitor(ctx, c.get('site').id, person(c))))
+  app.get('/sites/:id/visitors/export', async (c) => {
+    const site = c.get('site')
+    const date = new Date(ctx.now()).toISOString().slice(0, 10)
+    c.header('content-disposition', `attachment; filename="analytik-${site.id}-visitor-${date}.json"`)
+    return c.json(await exportVisitor(ctx, site.id, person(c)))
   })
 
   app.delete('/sites/:id/data', async (c) => {

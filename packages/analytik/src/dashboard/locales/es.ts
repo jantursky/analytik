@@ -1110,4 +1110,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Tu dirección tal como la ve el servidor: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Actualizado {view}: {range}{count, plural, =0 {} one {, # filtro} other {, # filtros}}',
+  'Download their data': 'Descargar sus datos',
+  'Erase visitor data': 'Borrar datos del visitante',
+  'Erase everything about this visitor?': '¿Borrar todo sobre este visitante?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Sus eventos, sesiones y su registro de visitante se borran de forma permanente. Los pagos se conservan para los ingresos, sin datos personales. Esto no se puede deshacer.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Borrado. Eventos: {events}, sesiones: {sessions}',
 } satisfies Messages

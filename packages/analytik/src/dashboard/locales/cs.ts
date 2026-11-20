@@ -1105,4 +1105,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Vaše adresa, jak ji vidí server: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Aktualizováno {view}: {range}{count, plural, =0 {} one {, # filtr} few {, # filtry} other {, # filtrů}}',
+  'Download their data': 'Stáhnout jeho data',
+  'Erase visitor data': 'Smazat data návštěvníka',
+  'Erase everything about this visitor?': 'Smazat vše o tomto návštěvníkovi?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Jeho události, relace a záznam návštěvníka budou trvale smazány. Platby zůstanou pro přehled tržeb, bez osobních údajů. Tuto akci nelze vrátit zpět.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Smazáno. Události: {events}, relace: {sessions}',
 } satisfies Messages

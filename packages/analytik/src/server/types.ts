@@ -251,6 +251,8 @@ export interface PurgeResult {
   visitors: number
 }
 
+export type { EraseResult, VisitorExport, VisitorSelector } from '../shared/types'
+
 export interface RematchResult {
   checked: number
   matched: number

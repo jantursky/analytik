@@ -103,6 +103,8 @@ export const KEY_ROUTES: readonly KeyRoute[] = [
   closed('DELETE', '/sites/:id/webhooks/:wid'),
   closed('POST', '/sites/:id/webhooks/:wid/test'),
   closed('DELETE', '/sites/:id/data'),
+  closed('DELETE', '/sites/:id/visitors'),
+  closed('GET', '/sites/:id/visitors/export'),
   closed('GET', '/api-keys'),
   closed('POST', '/api-keys'),
   closed('GET', '/api-keys/events'),

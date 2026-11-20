@@ -1102,4 +1102,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Sunucunun gördüğü adresiniz: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Güncellendi {view}: {range}{count, plural, =0 {} other {, # filtre}}',
+  'Download their data': 'Verilerini indir',
+  'Erase visitor data': 'Ziyaretçi verilerini sil',
+  'Erase everything about this visitor?': 'Bu ziyaretçiyle ilgili her şey silinsin mi?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Olayları, oturumları ve ziyaretçi kaydı kalıcı olarak silinir. Ödemeler gelir için kalır, kişisel bilgiler olmadan. Bu geri alınamaz.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Silindi. Olaylar: {events}, oturumlar: {sessions}',
 } satisfies Messages

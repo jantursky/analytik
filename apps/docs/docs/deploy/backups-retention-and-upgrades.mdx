@@ -58,6 +58,8 @@ curl -b cookies.txt -X DELETE \
 
 Payments are not deleted, because the revenue numbers depend on them. Payments older than the date keep their amount, currency, provider and dates, but their email, name, customer id, visitor id and session id are cleared. Such a payment still counts in revenue and no longer points at a person or a source.
 
+To remove one person rather than old data, use the erase action; see [Data requests](/reference/http-api#data-requests). Backups still hold what they held when taken.
+
 Deleting data you no longer need is also the best way to stay inside the storage limit of a free plan.
 
 Strict-mode salts are handled separately and automatically, whatever retention you set. The first request that arrives in a new month creates that month's salt and deletes the older ones, so a salt is removed from the live database once the next month starts to see traffic.

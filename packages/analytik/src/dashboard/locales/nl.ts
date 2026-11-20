@@ -1105,4 +1105,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Je adres zoals de server het ziet: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Bijgewerkt {view}: {range}{count, plural, =0 {} other {, # filters}}',
+  'Download their data': 'Zijn gegevens downloaden',
+  'Erase visitor data': 'Bezoekersgegevens wissen',
+  'Erase everything about this visitor?': 'Alles over deze bezoeker wissen?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Zijn gebeurtenissen, sessies en bezoekersrecord worden definitief gewist. Betalingen blijven voor de omzet, zonder persoonsgegevens. Dit kan niet ongedaan worden gemaakt.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Gewist. Gebeurtenissen: {events}, sessies: {sessions}',
 } satisfies Messages

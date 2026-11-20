@@ -590,6 +590,7 @@ export function fakeApi(overrides: Record<string, Handler> = {}) {
     }),
     'POST /sites/:id/rematch': () => ({ matched: 1 }),
     'DELETE /sites/:id/data': () => ({ deleted: 10 }),
+    'DELETE /sites/:id/visitors': () => ({ events: 12, sessions: 3, visitors: 1, payments: 1, claims: 0 }),
     'GET /sites/:id/imports': () => [],
     'POST /sites/:id/import': ({ body }) => ({
       visits: (body as { visits: unknown[] }).visits.length,

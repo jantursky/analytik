@@ -8,14 +8,15 @@ import { CopyPageUrl } from '../copy-id'
 import { useResource } from '../data'
 import { formatDateTime, formatDuration, formatMoney, formatNumber } from '../format'
 import { msg, t } from '../i18n'
-import { Card, Status } from '../ui'
+import { Actions, Card, ConfirmButton, Status, useOutcome } from '../ui'
 import { Dialog } from '../ui/dialog'
 import { View } from '../ui/motion'
 import { Browser, Device, DeviceType, PathFlow, Place, Visitor, VisitorCell } from './cells'
 import { type Column, DataTable } from './DataTable'
 
 function TimelineBody({ sessionId }: { sessionId: string }) {
-  const { client, site } = useDashboard()
+  const { client, site, readOnly } = useDashboard()
+  const [outcome, run] = useOutcome()
   const detail = useResource<SessionDetail>(requestKey('session', site.id, sessionId), () =>
     client.session(site.id, sessionId),
   )
@@ -46,6 +47,33 @@ function TimelineBody({ sessionId }: { sessionId: string }) {
               </li>
             ))}
           </ol>
+          {!readOnly && (
+            <Actions outcome={outcome}>
+              <a className="analytik-button" href={client.visitorExportUrl(site.id, session.visitorId)} download>
+                {t('Download their data')}
+              </a>
+              <ConfirmButton
+                label={t('Erase visitor data')}
+                title={t('Erase everything about this visitor?')}
+                description={t(
+                  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.',
+                )}
+                onConfirm={() =>
+                  run(
+                    client.eraseVisitor(site.id, { visitor: session.visitorId }).then((result) => {
+                      client.clearCache()
+                      return result
+                    }),
+                    (result) =>
+                      t('Erased. Events: {events}, sessions: {sessions}', {
+                        events: result.events,
+                        sessions: result.sessions,
+                      }),
+                  )
+                }
+              />
+            </Actions>
+          )}
         </>
       )}
     </Status>

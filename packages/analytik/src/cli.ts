@@ -9,6 +9,8 @@ import { upgradeProject } from './create/upgrade'
 import { CREATE_TARGETS, type CreateIo, type CreateTarget, createProject, realIo } from './create'
 import { installMenubar, type MenubarIo, MENUBAR_APP, MENUBAR_REPO } from './create/menubar'
 import { openStorage, seedDemo } from './migrate'
+import { eraseVisitor } from './server/stats/erase'
+import type { VisitorSelector } from './server/types'
 import { importFiles } from './migrate/import'
 import { IMPORT_SOURCES, isImportSource } from './shared/import/types'
 import { migrations as postgresMigrations } from './storage/migrations/postgres'
@@ -27,6 +29,8 @@ Commands:
   seed --db <url> [--days 30] [--seed 1]   Fill a database with demo data
   import --from umami|simple-analytics|matomo|goatcounter|ga4|posthog --file <path>... --site <id> --db <url>
                                            Add the history of another analytics tool to a site
+  erase --db <url> --site <id> --visitor <id> | --email <address>
+                                           Delete everything held about one visitor (a data-subject request)
   menubar [--dir <folder>] [--no-open]     Install the Mac menu bar app (macOS 14 or later) into Applications
   doctor [--db <url>] [--url <deployment>] Check the runtime, database and a deployment
 
@@ -126,6 +130,11 @@ const D1_MIGRATE = (name: string) => `D1 can't be reached from the command line.
 Or skip this: createAnalytik() applies pending migrations on the first request (autoMigrate).`
 
 class UsageError extends Error {}
+
+function person(visitor: string | undefined, email: string | undefined): VisitorSelector {
+  if (!visitor === !email) throw new UsageError('Pass exactly one of --visitor <id> or --email <address>')
+  return visitor ? { visitor } : { email: email ?? '' }
+}
 
 function required(value: string | undefined, flag: string): string {
   if (!value) throw new UsageError(`Missing ${flag}`)
@@ -270,6 +279,8 @@ async function main(argv: string[]): Promise<number> {
       'no-deploy': { type: 'boolean' },
       'no-open': { type: 'boolean' },
       dir: { type: 'string' },
+      visitor: { type: 'string' },
+      email: { type: 'string' },
     },
   })
   const [command] = positionals
@@ -375,6 +386,16 @@ async function main(argv: string[]): Promise<number> {
         for (const row of skipped.slice(0, 10)) console.log(`    ${row.file} row ${row.row}: ${row.reason}`)
         if (skipped.length > 10) console.log(`    and ${skipped.length - 10} more`)
       }
+      return 0
+    }
+    case 'erase': {
+      const siteId = required(values.site, '--site')
+      const selector = person(values.visitor, values.email)
+      const result = await withStorage(required(values.db, '--db'), (storage) =>
+        eraseVisitor({ storage, now: Date.now }, siteId, selector),
+      )
+      console.log(`Erased from ${siteId}:`)
+      for (const [table, rows] of Object.entries(result)) console.log(`  ${table}: ${rows}`)
       return 0
     }
     case 'menubar': {

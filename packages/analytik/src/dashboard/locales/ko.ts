@@ -1090,4 +1090,10 @@ export default {
   'Your address as the server sees it: {ip}': '서버에서 보이는 내 주소: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     '{view} 업데이트됨: {range}{count, plural, =0 {} other {, 필터 #개}}',
+  'Download their data': '방문자 데이터 다운로드',
+  'Erase visitor data': '방문자 데이터 삭제',
+  'Erase everything about this visitor?': '이 방문자에 대한 모든 데이터를 삭제할까요?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    '이 방문자의 이벤트, 세션, 방문자 기록이 영구적으로 삭제됩니다. 결제는 개인 정보 없이 매출 집계를 위해 남습니다. 되돌릴 수 없습니다.',
+  'Erased. Events: {events}, sessions: {sessions}': '삭제됨. 이벤트: {events}, 세션: {sessions}',
 } satisfies Messages

@@ -1110,4 +1110,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Ваш адрес, каким его видит сервер: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Обновлено {view}: {range}{count, plural, =0 {} one {, # фильтр} few {, # фильтра} many {, # фильтров} other {, # фильтра}}',
+  'Download their data': 'Скачать его данные',
+  'Erase visitor data': 'Удалить данные посетителя',
+  'Erase everything about this visitor?': 'Удалить всё об этом посетителе?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Его события, сеансы и запись посетителя будут удалены безвозвратно. Платежи останутся для учёта выручки, без личных данных. Это действие нельзя отменить.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Удалено. События: {events}, сеансы: {sessions}',
 } satisfies Messages

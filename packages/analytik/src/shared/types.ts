@@ -667,3 +667,27 @@ export interface ShareLink {
   expiresAt: number | null
   revokedAt: number | null
 }
+
+/** One person of a site: by visitor id, or by the email `identify` or a payment gave. */
+export type VisitorSelector = { visitor: string } | { email: string }
+
+/** Rows removed by erasing one person; `payments` counts payments that lost their personal fields. */
+export interface EraseResult {
+  events: number
+  sessions: number
+  visitors: number
+  payments: number
+  claims: number
+}
+
+/** Everything held about one person of a site, as returned for a subject-access request. */
+export interface VisitorExport {
+  version: 1
+  exportedAt: number
+  siteId: string
+  subject: VisitorSelector
+  visitors: Record<string, unknown>[]
+  sessions: Record<string, unknown>[]
+  events: Record<string, unknown>[]
+  payments: Record<string, unknown>[]
+}

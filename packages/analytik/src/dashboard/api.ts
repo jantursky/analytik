@@ -43,6 +43,8 @@ import type {
   TimeseriesPoint,
   VersionInfo,
   VitalsResult,
+  EraseResult,
+  VisitorSelector,
 } from '../shared/types'
 import { t } from './i18n'
 import type { ImportRemoval, ImportResult, ImportSource, ImportSummary, ImportVisit } from '../shared/import/types'
@@ -258,6 +260,10 @@ export interface ApiClient {
   payments(siteId: string, query: Query & Paging & PaymentFilters): Promise<Page<Payment>>
   rematch(siteId: string): Promise<unknown>
   purge(siteId: string, before: number): Promise<unknown>
+  /** Deletes everything held about one visitor, or about every visitor given an email. Admin only. */
+  eraseVisitor(siteId: string, selector: VisitorSelector): Promise<EraseResult>
+  /** URL of the download of everything held about one visitor (cookie auth, so it works as a plain link). */
+  visitorExportUrl(siteId: string, visitor: string): string
   /** What each source imported into the site. */
   imports(siteId: string): Promise<ImportSummary[]>
   /** Stores one chunk of visits from another tool; at most 200 visits and 1000 events per call. */
@@ -466,6 +472,8 @@ export function createApiClient(api: string, fetcher: Fetcher = (input, init) =>
     payments: (id, query) => get(`${site(id)}/payments`, queryParams(query)),
     rematch: (id) => write('POST', `${site(id)}/rematch`, {}),
     purge: (id, before) => write('DELETE', `${site(id)}/data`, undefined, new URLSearchParams({ before: iso(before) })),
+    eraseVisitor: (id, selector) => write('DELETE', `${site(id)}/visitors`, undefined, new URLSearchParams(selector)),
+    visitorExportUrl: (id, visitor) => `${base}${site(id)}/visitors/export?visitor=${encodeURIComponent(visitor)}`,
     imports: (id) => get(`${site(id)}/imports`, undefined, true),
     importVisits: (id, source, visits) => write('POST', `${site(id)}/import`, { source, visits }),
     removeImport: (id, source) => write('DELETE', `${site(id)}/imports/${encodeURIComponent(source)}`),

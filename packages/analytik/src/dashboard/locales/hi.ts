@@ -1099,4 +1099,10 @@ export default {
   'Your address as the server sees it: {ip}': 'सर्वर को दिखने वाला आपका पता: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     '{view} अपडेट हुआ: {range}{count, plural, =0 {} other {, # फ़िल्टर}}',
+  'Download their data': 'उनका डेटा डाउनलोड करें',
+  'Erase visitor data': 'विज़िटर का डेटा मिटाएँ',
+  'Erase everything about this visitor?': 'इस विज़िटर से जुड़ा सब कुछ मिटाएँ?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'उनके इवेंट, सत्र और विज़िटर रिकॉर्ड हमेशा के लिए मिटा दिए जाएँगे। भुगतान राजस्व के लिए बने रहेंगे, बिना व्यक्तिगत जानकारी के। इसे पूर्ववत नहीं किया जा सकता।',
+  'Erased. Events: {events}, sessions: {sessions}': 'मिटाया गया। इवेंट: {events}, सत्र: {sessions}',
 } satisfies Messages

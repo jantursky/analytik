@@ -1099,4 +1099,10 @@ export default {
   'Your address as the server sees it: {ip}': 'Địa chỉ của bạn như máy chủ thấy: {ip}',
   'Updated {view}: {range}{count, plural, =0 {} one {, # filter} other {, # filters}}':
     'Đã cập nhật {view}: {range}{count, plural, =0 {} other {, # bộ lọc}}',
+  'Download their data': 'Tải xuống dữ liệu của họ',
+  'Erase visitor data': 'Xóa dữ liệu khách truy cập',
+  'Erase everything about this visitor?': 'Xóa mọi thứ về khách truy cập này?',
+  'Their events, sessions and visitor record are deleted for good. Payments stay for revenue, without personal details. This cannot be undone.':
+    'Sự kiện, phiên và hồ sơ khách truy cập của họ sẽ bị xóa vĩnh viễn. Các khoản thanh toán vẫn được giữ cho doanh thu, không kèm thông tin cá nhân. Không thể hoàn tác.',
+  'Erased. Events: {events}, sessions: {sessions}': 'Đã xóa. Sự kiện: {events}, phiên: {sessions}',
 } satisfies Messages
