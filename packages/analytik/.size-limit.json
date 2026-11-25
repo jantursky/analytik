@@ -12,6 +12,12 @@
     "limit": "1 kB"
   },
   {
+    "name": "Tracker extras (analytik-extras.js, opt-in: downloads and not-found pages)",
+    "path": "dist/analytik-extras.js",
+    "gzip": true,
+    "limit": "1 kB"
+  },
+  {
     "name": "Browser client",
     "path": "dist/client.js",
     "gzip": true,

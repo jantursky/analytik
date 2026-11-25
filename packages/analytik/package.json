@@ -99,6 +99,7 @@
     },
     "./analytik.js": "./dist/analytik.js",
     "./analytik-vitals.js": "./dist/analytik-vitals.js",
+    "./analytik-extras.js": "./dist/analytik-extras.js",
     "./migrate": {
       "types": "./dist/migrate.d.ts",
       "default": "./dist/migrate.js"
@@ -147,7 +148,7 @@
     "test:coverage": "vitest run --coverage",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:workers": "vitest run --config vitest.workers.config.ts",
-    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./analytik-vitals.js ./dashboard/styles.css",
+    "lint:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./analytik.js ./analytik-vitals.js ./analytik-extras.js ./dashboard/styles.css",
     "prepublishOnly": "bun run typecheck && bun run test && bun run test:browser && bun run build && bun run lint:package && bun run test:pack",
     "test:pack": "node scripts/pack-test.js",
     "size": "size-limit",

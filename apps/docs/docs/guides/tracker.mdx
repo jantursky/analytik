@@ -54,6 +54,21 @@ A site can measure how fast its pages feel for real visitors: Largest Contentful
 
 A browser that cannot measure a metric leaves it out, and the dashboard shows a dash. The numbers are in the Pages view of the dashboard, see [Core Web Vitals](/guides/funnels-and-goals#core-web-vitals).
 
+## Downloads and not-found pages
+
+The core tracker does not record file downloads or not-found pages, to stay small. An opt-in second script does, and only on pages that include it:
+
+```html
+<script defer src="https://analytics.example.com/js/analytik.js" data-site="SITE_ID"></script>
+<script defer src="https://analytics.example.com/js/analytik-extras.js"></script>
+```
+
+- **Downloads.** A click on a link whose path ends in a listed extension sends a goal named `download` with a `file` property: the path, without query string or fragment. The default list is pdf, zip, dmg, exe, csv, xlsx, docx, pptx, mp3 and mp4. Change it with `data-extensions="epub odt"` on the script tag.
+- **Not-found pages.** A page marked as not found sends one goal named `404` with the referrer's origin and path in a `from` property, when there is a referrer. Mark the page with `<meta name="analytik-404">` in its head, or `data-analytik-404` on `<body>`. Marking is up to your site: the tracker cannot read the HTTP status.
+- **Same rules as every event.** The goals go through the core's consent, Do Not Track and bot rules, and carry no query parameters. Events from the extras wait for the core when it loads after them.
+- **Content-Security-Policy.** The second script needs the same allowance as `analytik.js`, as with [Core Web Vitals](#core-web-vitals).
+- **Where the file comes from.** Copy `analytik/analytik-extras.js` next to `analytik.js`. The standalone server does not serve it yet.
+
 ## JavaScript API
 
 The script defines a global `analytik`. You can call it as a function, `analytik('track', 'signup')`, or use methods. Calls made before the script has loaded are queued in `analytik.q` and run when it does, so you do not need to wait for it.

@@ -110,7 +110,7 @@ function standaloneAssets(): Plugin {
   }
 }
 
-/** `<script src=".../analytik.js">` and the opt-in `analytik-vitals.js`: self-contained IIFEs, built after the library. */
+/** `<script src=".../analytik.js">` and the opt-in `analytik-vitals.js` and `analytik-extras.js`: self-contained IIFEs, built after the library. */
 function trackerScript(): Plugin {
   return {
     name: 'analytik:tracker',
@@ -119,6 +119,7 @@ function trackerScript(): Plugin {
       for (const [entry, name, fileName] of [
         ['src/tracker/tracker.ts', 'analytikTracker', 'analytik.js'],
         ['src/tracker/vitals.ts', 'analytikVitals', 'analytik-vitals.js'],
+        ['src/tracker/extras.ts', 'analytikExtras', 'analytik-extras.js'],
       ] as const) {
         await build({
           configFile: false,
