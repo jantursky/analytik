@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.30.0]
+
 ### Added
 
 - Opt-in `analytik-extras.js` records file downloads and not-found pages as goals, without enlarging `analytik.js`.
