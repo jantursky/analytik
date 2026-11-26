@@ -6,6 +6,16 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.31.0]
+
+### Added
+
+- Sites overview: the domain opens the site in a new tab, the online count opens its live map, and the card menu has Settings.
+
+### Changed
+
+- Site cards lift and show a stronger shadow on hover.
+
 ## [1.30.0]
 
 ### Added
