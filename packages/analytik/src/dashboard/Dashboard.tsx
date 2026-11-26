@@ -578,6 +578,14 @@ export function Dashboard({
           if (picked) chooseRange(picked)
           setView('overview')
         }}
+        onLive={(s) => {
+          openSite(s.id)
+          setView('realtime')
+        }}
+        onSettings={(s) => {
+          openSite(s.id)
+          setView('settings')
+        }}
         onAdd={() => setAdding(true)}
         onImport={() => setImporting(true)}
         onChange={sites.reload}

@@ -1073,6 +1073,31 @@ describe('Dashboard shell', () => {
     expect(nav(container, 'Overview')?.getAttribute('aria-current')).toBe('page')
   })
 
+  it('opens the domain in a new tab, the online count on the live map and the menu on the settings', async () => {
+    const openTab = vi.spyOn(window, 'open').mockReturnValue(null)
+    onTestFinished(() => openTab.mockRestore())
+    const { container } = await open(fakeApi(), 'sites')
+    await click(container.querySelector('.analytik-site-domain'))
+    await settled()
+    expect(openTab).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer')
+    // The click stays on the domain: no overview of the site.
+    expect(container.querySelector('h1')?.textContent).toBe('All sites')
+
+    await click(container.querySelectorAll('.analytik-site-online')[1])
+    await settled()
+    expect(selectTrigger(container, 'Site')?.textContent).toBe('OOther')
+    expect(nav(container, 'Live')?.getAttribute('aria-current')).toBe('page')
+
+    await click(nav(container, 'All sites'))
+    await settled()
+    await click(container.querySelector('[aria-label="Actions for Other"]'))
+    await settled()
+    await press(byText(document.body, 'Settings', '[role="menuitem"]'))
+    await settled()
+    expect(selectTrigger(container, 'Site')?.textContent).toBe('OOther')
+    expect(container.querySelector('.analytik-toolbar h1')?.textContent).toBe('Settings')
+  })
+
   it('sorts the sites by name, domain, visitors, revenue or orders and remembers the order', async () => {
     const api = fakeApi({
       'GET /summary': () => [

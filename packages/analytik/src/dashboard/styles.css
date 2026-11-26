@@ -2844,6 +2844,41 @@ button.analytik-stat[aria-pressed='true'] .analytik-sparkline {
 
 .analytik-site-item {
   position: relative;
+  transition: translate 200ms ease;
+}
+
+/* Lifts the whole card on hover; `translate` so it doesn't fight the entrance animation's `transform`. */
+.analytik-site-item:hover {
+  translate: 0 -3px;
+}
+
+/* The domain opens the site in a new tab: it underlines and shifts on hover. */
+.analytik-site-domain {
+  width: fit-content;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  cursor: alias;
+  transition: all 200ms ease;
+}
+
+.analytik-site-domain:hover {
+  background-size: 100% 1px;
+}
+
+/* The online count opens the live map: a soft pill that pulses its dot on hover. */
+.analytik-site-online {
+  padding: 3px 8px;
+  margin-left: -8px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.analytik-site-online:hover {
+  background: var(--analytik-success-soft);
+  color: var(--analytik-success-text);
+}
+
+.analytik-site-online:hover .analytik-live-dot {
+  animation: analytik-pulse 1s ease-out infinite;
 }
 
 .analytik-site-item[data-paused] .analytik-site-number {

@@ -98,6 +98,8 @@ function SiteCard({
   foot,
   trend,
   onOpen,
+  onLive,
+  onSettings,
   onChange,
 }: {
   /** Place in the list, for the entrance. */
@@ -112,6 +114,10 @@ function SiteCard({
   trend: { from: number; step: number }
   /** Opens the site; with a day (`YYYY-MM-DD`) when a point of a sparkline was clicked. */
   onOpen: (day?: string) => void
+  /** Opens the site on its live map. */
+  onLive: () => void
+  /** Opens the site's settings. */
+  onSettings: () => void
   onChange: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
@@ -149,7 +155,16 @@ function SiteCard({
           <SiteTile site={site} />
           <span>
             <strong>{site.name}</strong>
-            <span className="analytik-muted">{site.domain}</span>
+            {/* Opens the site itself in a new tab, instead of the card's overview. */}
+            <span
+              className="analytik-muted analytik-site-domain"
+              onClick={(event) => {
+                event.stopPropagation()
+                window.open(`https://${site.domain}`, '_blank', 'noopener,noreferrer')
+              }}
+            >
+              {site.domain}
+            </span>
           </span>
           {site.paused && (
             <span className="analytik-badge" data-tone="paused">
@@ -169,7 +184,14 @@ function SiteCard({
           data.sales.some((n) => n !== 0) &&
           spark(data.sales, (v) => formatMoney(v, data.currency))}
         <span className="analytik-site-foot">
-          <span className="analytik-site-online">
+          <span
+            className="analytik-site-online"
+            title={t('Open live map')}
+            onClick={(event) => {
+              event.stopPropagation()
+              onLive()
+            }}
+          >
             <span className="analytik-live-dot" data-idle={online ? undefined : ''} aria-hidden="true" />
             {t('{count} online', { count: formatNumber(online) })}
           </span>
@@ -194,6 +216,7 @@ function SiteCard({
         label={t('Actions for {name}', { name: site.name })}
         className="analytik-site-menu"
         actions={[
+          { label: t('Settings'), icon: 'sliders', onSelect: onSettings },
           {
             label: site.paused ? t('Resume tracking') : t('Pause tracking'),
             icon: site.paused ? 'play' : 'pause',
@@ -214,6 +237,10 @@ export interface SitesOverviewProps {
   sites: Site[]
   /** `day` (`YYYY-MM-DD`, in the site's time zone) when a point of a sparkline was clicked. */
   onOpen: (site: Site, day?: string) => void
+  /** Opens the site on its live map, from the "online" count of its card. */
+  onLive?: (site: Site) => void
+  /** Opens the site's settings, from the card's menu. */
+  onSettings?: (site: Site) => void
   onAdd: () => void
   /** Opens the dialog that brings another tool's history in; without it "Add website" is a plain button. */
   onImport?: () => void
@@ -229,6 +256,8 @@ export function SitesOverview({
   client,
   sites,
   onOpen,
+  onLive = () => undefined,
+  onSettings = () => undefined,
   onAdd,
   onImport,
   onChange = () => undefined,
@@ -332,6 +361,8 @@ export function SitesOverview({
             foot={period.foot}
             trend={{ from, step: period.series === 'hour' ? HOUR : DAY }}
             onOpen={(day) => onOpen(site, day)}
+            onLive={() => onLive(site)}
+            onSettings={() => onSettings(site)}
             onChange={onChange}
           />
         ))}
