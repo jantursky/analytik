@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.32.0]
+
 ### Added
 
 - Dashboard: a first-run card for sites without events, Retry on failed loads, definitions on the summary tiles, and forced-colors (Windows high contrast) styling.
