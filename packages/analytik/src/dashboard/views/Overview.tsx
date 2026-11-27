@@ -1,7 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 
-import { useDashboard } from '../context'
+import { requestKey, useDashboard } from '../context'
+import { useResource, usePolling } from '../data'
+import { neverHadEvents } from '../first-run'
+import { FirstRun } from './FirstRun'
 import { usePreferences } from '../preferences'
 import { Icon } from '../icons'
 import { EASE, View } from '../ui/motion'
@@ -136,8 +139,22 @@ export interface OverviewProps {
  * moved, made full or half width, removed, and new ones added from a catalogue at the end or next to another block.
  */
 export function Overview({ customizing }: OverviewProps = {}) {
-  const { customizing: fromToolbar } = useDashboard()
+  const { customizing: fromToolbar, client, site, readOnly } = useDashboard()
   const editing = customizing ?? fromToolbar ?? false
+  // Read over all time, since a quiet range says nothing about a site that has data. The card only shows once this
+  // has answered, so a slow load doesn't flash it, and it goes as soon as the first event is there.
+  const allTime = useResource(requestKey('overview-all-time', site.id), () =>
+    client.overview(site.id, { from: 0, to: Date.now(), tz: site.timezone }),
+  )
+  const empty = !editing && !readOnly && !!allTime.data && neverHadEvents(allTime.data)
+  usePolling(
+    () => {
+      if (empty) allTime.reload()
+    },
+    'empty',
+    10_000,
+    60_000,
+  )
   const [layout, setLayout] = useLayout()
   const [insertion, setInsertion] = useState<Insertion>()
   const change = (index: number, edit: BlockChange): void => {
@@ -157,6 +174,14 @@ export function Overview({ customizing }: OverviewProps = {}) {
   }
   const used = new Set(layout.map((item) => item.id))
   const full = used.size === BLOCK_IDS.length
+
+  if (empty) {
+    return (
+      <View>
+        <FirstRun />
+      </View>
+    )
+  }
 
   return (
     <View>

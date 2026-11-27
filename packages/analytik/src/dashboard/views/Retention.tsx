@@ -77,7 +77,7 @@ export function Retention() {
         title={t('Retention')}
         description={t('Weekly cohorts of new visitors and the share of each that came back in the weeks after.')}
       >
-        <Status loading={result.loading && !data} error={result.error}>
+        <Status loading={result.loading && !data} error={result.error} onRetry={result.reload}>
           {data &&
             (!data.available ? (
               <p className="analytik-empty">

@@ -210,9 +210,33 @@ export interface StatTileProps {
   /** Makes the tile a toggle button, e.g. to pick the chart metric. */
   selected?: boolean
   onSelect?: () => void
+  /** What the metric means, offered next to the label. */
+  help?: string
 }
 
-export function StatTile({ label, delta, format, exact, invert, trend, marker, selected, onSelect }: StatTileProps) {
+/** A small "what is this" button that shows `text`; it opens with hover, focus, Enter or a tap. */
+export function InfoTip({ label, text }: { label: string; text: string }) {
+  return (
+    <Tooltip label={text} tap>
+      <button type="button" className="analytik-mode-info" aria-label={label}>
+        <Icon name="info" />
+      </button>
+    </Tooltip>
+  )
+}
+
+export function StatTile({
+  label,
+  delta,
+  format,
+  exact,
+  invert,
+  trend,
+  marker,
+  selected,
+  onSelect,
+  help,
+}: StatTileProps) {
   const body = (
     <>
       <span className="analytik-stat-label">
@@ -228,12 +252,23 @@ export function StatTile({ label, delta, format, exact, invert, trend, marker, s
       {trend && <Sparkline values={trend} />}
     </>
   )
-  return onSelect ? (
+  const tile = onSelect ? (
     <button type="button" className="analytik-stat" aria-pressed={selected} onClick={onSelect}>
       {body}
     </button>
   ) : (
     <div className="analytik-stat">{body}</div>
+  )
+  // The help is a sibling of the tile, since a button can't hold another one.
+  return help ? (
+    <div className="analytik-stat-wrap">
+      {tile}
+      <span className="analytik-stat-help">
+        <InfoTip label={t('What is {metric}?', { metric: label })} text={help} />
+      </span>
+    </div>
+  ) : (
+    tile
   )
 }
 
@@ -247,7 +282,16 @@ const sentence = (text: string): string => {
  * An error: an alert icon in a tinted badge, a short title and the message as a sentence. Announced to screen
  * readers, and eases in when it appears.
  */
-export function ErrorNote({ title = t('Something went wrong'), children }: { title?: string; children: string }) {
+export function ErrorNote({
+  title = t('Something went wrong'),
+  children,
+  onRetry,
+}: {
+  title?: string
+  children: string
+  /** Adds a Retry button that loads the data again. */
+  onRetry?: () => void
+}) {
   return (
     <div className="analytik-error" role="alert">
       <span className="analytik-error-icon">
@@ -256,15 +300,44 @@ export function ErrorNote({ title = t('Something went wrong'), children }: { tit
       <div>
         <strong>{title}</strong>
         <span className="analytik-error-text">{sentence(children)}</span>
+        {onRetry && (
+          <button type="button" className="analytik-link" onClick={onRetry}>
+            {t('Retry')}
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
 /** Shows children once loaded; a busy state before and an alert on error. */
-export function Status({ loading, error, children }: { loading: boolean; error?: Error; children?: ReactNode }) {
+export function Status({
+  loading,
+  error,
+  onRetry,
+  children,
+}: {
+  loading: boolean
+  error?: Error
+  /** Shows a Retry button on an error; it loads the data again and says when that worked. */
+  onRetry?: () => void
+  children?: ReactNode
+}) {
+  const [retried, setRetried] = useState(false)
   if (error) {
-    return <ErrorNote>{error.message}</ErrorNote>
+    return (
+      <ErrorNote
+        onRetry={
+          onRetry &&
+          (() => {
+            setRetried(true)
+            onRetry()
+          })
+        }
+      >
+        {error.message}
+      </ErrorNote>
+    )
   }
   if (loading) {
     return (
@@ -273,7 +346,16 @@ export function Status({ loading, error, children }: { loading: boolean; error?:
       </p>
     )
   }
-  return children
+  return retried ? (
+    <>
+      <span className="analytik-sr-only" role="status">
+        {t('Loaded again')}
+      </span>
+      {children}
+    </>
+  ) : (
+    children
+  )
 }
 
 /** A labelled form control: the label wraps the control, so no ids are needed. */

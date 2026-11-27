@@ -14,18 +14,51 @@ export interface Metric {
   unit: 'count' | 'money' | 'percent' | 'duration'
   /** Lower is better, so a fall shows green. */
   invert?: boolean
+  /** What the metric means, offered on its summary tile. */
+  help?: string
 }
 
 export const METRICS: Record<MetricKey, Metric> = {
-  visitors: { label: msg('Visitors'), kind: 'area', unit: 'count' },
+  visitors: {
+    label: msg('Visitors'),
+    kind: 'area',
+    unit: 'count',
+    help: msg('People who visited in this range, each counted once.'),
+  },
   sessions: { label: msg('Sessions'), kind: 'area', unit: 'count' },
   pageviews: { label: msg('Pageviews'), kind: 'area', unit: 'count' },
-  revenue: { label: msg('Revenue'), kind: 'bars', unit: 'money' },
+  revenue: {
+    label: msg('Revenue'),
+    kind: 'bars',
+    unit: 'money',
+    help: msg('Money from payments in this range, in the site currency.'),
+  },
   orders: { label: msg('Orders'), kind: 'bars', unit: 'count' },
-  conversionRate: { label: msg('Conversion rate'), kind: 'line', unit: 'percent' },
-  revenuePerVisitor: { label: msg('Revenue per visitor'), kind: 'line', unit: 'money' },
-  bounceRate: { label: msg('Bounce rate'), kind: 'line', unit: 'percent', invert: true },
-  avgDurationMs: { label: msg('Visit duration'), kind: 'bars', unit: 'duration' },
+  conversionRate: {
+    label: msg('Conversion rate'),
+    kind: 'line',
+    unit: 'percent',
+    help: msg('Share of visitors who paid at least once.'),
+  },
+  revenuePerVisitor: {
+    label: msg('Revenue per visitor'),
+    kind: 'line',
+    unit: 'money',
+    help: msg('Revenue divided by the number of visitors.'),
+  },
+  bounceRate: {
+    label: msg('Bounce rate'),
+    kind: 'line',
+    unit: 'percent',
+    invert: true,
+    help: msg('Share of visits that viewed one page and did nothing else.'),
+  },
+  avgDurationMs: {
+    label: msg('Visit duration'),
+    kind: 'bars',
+    unit: 'duration',
+    help: msg('Average time a visit lasted, for visits whose length is known.'),
+  },
 }
 
 export const METRIC_KEYS = Object.keys(METRICS) as MetricKey[]

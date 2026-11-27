@@ -17,7 +17,7 @@ function FunnelSteps({ funnel }: { funnel: Funnel }) {
   )
   const first = result.data?.steps[0]?.visitors ?? 0
   return (
-    <Status loading={result.loading} error={result.error}>
+    <Status loading={result.loading} error={result.error} onRetry={result.reload}>
       <ol className="analytik-funnel" aria-label={t('{name} steps', { name: funnel.name })}>
         {result.data?.steps.map((step, i) => {
           const share = first ? step.visitors / first : 0
@@ -139,7 +139,7 @@ export function Funnels() {
 
   return (
     <View>
-      <Status loading={funnels.loading && !funnels.data} error={funnels.error}>
+      <Status loading={funnels.loading && !funnels.data} error={funnels.error} onRetry={funnels.reload}>
         {selected ? (
           <Card
             title={selected.name}

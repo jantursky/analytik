@@ -105,7 +105,7 @@ export function Bots() {
             </button>
           ))}
         </div>
-        <Status loading={!data} error={result.error}>
+        <Status loading={!data} error={result.error} onRetry={result.reload}>
           {data && (
             <AreaChart
               label={t('Bot requests')}
@@ -129,7 +129,7 @@ export function Bots() {
           onChange={setGrouping}
           extra={<span className="analytik-col-head">{t('Requests')}</span>}
         >
-          <Status loading={!data} error={result.error}>
+          <Status loading={!data} error={result.error} onRetry={result.reload}>
             <BarList
               label={t('Requests')}
               rows={rows}
@@ -142,7 +142,7 @@ export function Bots() {
         </Tabs>
       </Card>
       <Card title={t('Recent requests')}>
-        <Status loading={!data} error={result.error}>
+        <Status loading={!data} error={result.error} onRetry={result.reload}>
           {data && data.recent.length > 0 && (
             <ul className="analytik-bars" aria-label={t('Recent requests')}>
               {data.recent.map((row, index) => (

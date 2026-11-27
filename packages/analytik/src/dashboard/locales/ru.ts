@@ -4,20 +4,35 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Добавить вебхук',
   Address: 'Адрес',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Средняя длительность визита среди визитов с известной длительностью.',
   'Chat message': 'Сообщение в чат',
   'Copy secret': 'Скопировать секрет',
   'Copy the secret now. For safety it is not shown again.':
     'Скопируйте секрет сейчас. В целях безопасности он больше не будет показан.',
   Format: 'Формат',
+  'Let your coding assistant add it': 'Пусть ваш ИИ-помощник для кода добавит его',
+  'Loaded again': 'Загружено снова',
+  'Money from payments in this range, in the site currency.': 'Деньги от платежей за этот период в валюте сайта.',
+  'No data yet': 'Данных пока нет',
   'No webhooks yet.': 'Вебхуков пока нет.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Для этого сайта пока ничего не отслеживалось. Вставьте это в head каждой страницы, и обзор заполнится с первым визитом.',
   'Nothing is sent to it any more. This cannot be undone.': 'Ему больше ничего не отправляется. Это нельзя отменить.',
   'Outgoing webhooks': 'Исходящие вебхуки',
   Pause: 'Приостановить',
+  'People who visited in this range, each counted once.':
+    'Люди, которые посетили сайт за этот период, каждый учтён один раз.',
   'Remove this webhook?': 'Удалить этот вебхук?',
   Resume: 'Возобновить',
+  Retry: 'Повторить',
+  'Revenue divided by the number of visitors.': 'Выручка, делённая на число посетителей.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Отправляйте сообщение в другой сервис, например Slack или свой сервер, когда достигнута цель или поступил платёж.',
   'Send test': 'Отправить тест',
+  'Share of visitors who paid at least once.': 'Доля посетителей, которые заплатили хотя бы раз.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Доля визитов, в которых просмотрена одна страница и больше ничего не сделано.',
   'Signed JSON': 'Подписанный JSON',
   'Test sent': 'Тест отправлен',
   'Webhook added': 'Вебхук добавлен',
@@ -48,6 +63,7 @@ export default {
   'The website already matches.': 'Сайт уже совпадает.',
   'The website could not be read.': 'Не удалось прочитать сайт.',
   'Website details applied': 'Данные сайта применены',
+  'What is {metric}?': 'Что такое {metric}?',
   '{count} of {target}': '{count} из {target}',
   '1 to 20, named Test site …': 'от 1 до 20, с названием Test site …',
   '1 to 20; each takes the next kind of site.': 'от 1 до 20; каждый получает следующий вид сайта.',

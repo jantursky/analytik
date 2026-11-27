@@ -564,7 +564,7 @@ export function Dashboard({
       </div>
     )
   } else if (sites.loading || sites.error) {
-    content = <Status loading={sites.loading} error={sites.error} />
+    content = <Status loading={sites.loading} error={sites.error} onRetry={sites.reload} />
   } else if (!site) {
     content = <CreateSiteForm client={client} onCreated={created} />
   } else if (!current) {
@@ -604,7 +604,10 @@ export function Dashboard({
         known={known}
         onFilter={addFilter}
         onSiteChange={sites.reload}
-        onViewChange={setView}
+        onViewChange={(next, section) => {
+          setView(next)
+          if (section) setTab(section)
+        }}
         customizing={customizing && view === 'overview' && !readOnly}
         readOnly={readOnly}
       >

@@ -326,7 +326,7 @@ export function DataTable<T>({
           </button>
         )}
       </div>
-      <Status loading={!data} error={rows.error}>
+      <Status loading={!data} error={rows.error} onRetry={rows.reload}>
         <FilterContext value={setFilter}>
           {data?.items.length ? (
             <div className="analytik-table-wrap">

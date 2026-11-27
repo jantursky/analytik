@@ -215,7 +215,7 @@ export function Realtime() {
 
   return (
     <View>
-      <Status loading={live.loading && !data} error={live.error}>
+      <Status loading={live.loading && !data} error={live.error} onRetry={live.reload}>
         {data && (
           <section className="analytik-realtime" aria-label={t('Real-time visitors')} ref={setRoot}>
             <LayerContext value={root}>

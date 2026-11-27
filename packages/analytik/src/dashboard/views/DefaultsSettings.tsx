@@ -438,7 +438,7 @@ export function DefaultsSettings() {
           'New sites start with these values. “Apply to all sites” copies a card onto the sites you already have.',
         )}
       >
-        <Status loading={defaults.loading && !defaults.data} error={defaults.error}>
+        <Status loading={defaults.loading && !defaults.data} error={defaults.error} onRetry={defaults.reload}>
           {null}
         </Status>
       </Card>

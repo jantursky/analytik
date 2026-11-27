@@ -555,9 +555,9 @@ describe('Dashboard shell', () => {
     expect(
       texts(container, '.analytik-stat .analytik-delta').map((t) => t.replace('Change from previous period: ', '')),
     ).toEqual(['+20%', 'new', '+8%', '+20%', '+5%', '-8%'])
-    expect(container.querySelector('.analytik-stat:nth-child(5) .analytik-delta')?.getAttribute('data-trend')).toBe(
-      'down',
-    )
+    expect(
+      container.querySelectorAll('.analytik-stat')[4]?.querySelector('.analytik-delta')?.getAttribute('data-trend'),
+    ).toBe('down')
     expect(container.querySelectorAll('.analytik-stat .analytik-marker')).toHaveLength(2)
     expect(container.querySelector('figcaption')?.textContent).toMatch(
       /^Visitors, Revenue, 4 points\. Visitors peaks at 600 on /,
@@ -779,7 +779,12 @@ describe('Dashboard shell', () => {
 
   it('steps through periods, picks an interval and refreshes', async () => {
     const { container, api } = await open()
-    const last = () => api.find('GET', '/sites/site_1/overview').at(-1)?.params
+    // The overview over all time, which the first-run card reads, is not the range the toolbar shows.
+    const last = () =>
+      api
+        .find('GET', '/sites/site_1/overview')
+        .filter((request) => !request.params.from?.startsWith('1970'))
+        .at(-1)?.params
     const first = last()
     expect(byLabel(container, 'Next period')).toBeDefined()
     expect(container.querySelector<HTMLButtonElement>('[aria-label="Next period"]')?.disabled).toBe(true)
@@ -799,10 +804,12 @@ describe('Dashboard shell', () => {
     await choose(selectTrigger(container, 'Interval'), 'By hour')
     expect(last()?.interval).toBe('hour')
 
-    const before = api.find('GET', '/sites/site_1/overview').length
+    const ranged = () =>
+      api.find('GET', '/sites/site_1/overview').filter((request) => !request.params.from?.startsWith('1970')).length
+    const before = ranged()
     await click(container.querySelector('[aria-label="Refresh"]'))
     await settled()
-    expect(api.find('GET', '/sites/site_1/overview').length).toBe(before + 1)
+    expect(ranged()).toBe(before + 1)
 
     await click(container.querySelector('.analytik-range-trigger'))
     await settled()

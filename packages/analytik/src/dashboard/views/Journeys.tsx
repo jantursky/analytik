@@ -275,7 +275,7 @@ export function Journeys() {
   return (
     <View>
       <Card title={t('Journeys')} description={t('Where sessions go after the first page, and where they end.')}>
-        <Status loading={result.loading && !data} error={result.error}>
+        <Status loading={result.loading && !data} error={result.error} onRetry={result.reload}>
           {data &&
             (data.multiPage > 0 ? (
               <>

@@ -99,7 +99,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
       variants={rise}
       data-editing={editing ? '' : undefined}
     >
-      <Status loading={overview.loading && !data} error={overview.error}>
+      <Status loading={overview.loading && !data} error={overview.error} onRetry={overview.reload}>
         {data && (
           <div className="analytik-stats">
             {config.stats.map((key, index) =>
@@ -158,6 +158,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
                   format={formatMetric(key, currency)}
                   exact={exactMetric(key, currency)}
                   invert={METRICS[key].invert}
+                  help={METRICS[key].help && t(METRICS[key].help)}
                   marker={plotted.includes(key) ? seriesColour(plotted.indexOf(key)) : undefined}
                   selected={focus?.includes(key) ?? false}
                   onSelect={() => pick(key)}
@@ -220,7 +221,7 @@ export function SummaryBlock({ editing }: { editing: boolean }) {
           </button>
         </div>
       )}
-      <Status loading={series.loading && !series.data} error={series.error}>
+      <Status loading={series.loading && !series.data} error={series.error} onRetry={series.reload}>
         {chart}
         <ComparisonNote points={points} />
       </Status>

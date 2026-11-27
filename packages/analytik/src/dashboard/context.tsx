@@ -4,6 +4,7 @@ import { createContext, type ReactNode, use, useMemo } from 'react'
 import type { Comparison, Filters, Query, Site } from '../shared/types'
 import type { ApiClient } from './api'
 import type { DashboardView } from './Dashboard'
+import type { SettingsSection } from './views/Settings'
 import { OwnPreferences } from './preferences'
 import type { DateRange } from './range'
 import { ToastProvider } from './ui/toast'
@@ -25,7 +26,7 @@ export interface DashboardState {
   /** Called after the site was saved in settings. */
   onSiteChange: (site: Site) => void
   /** Switches the dashboard view; undefined when the parts are rendered without `<Dashboard>`. */
-  openView?: (view: DashboardView) => void
+  openView?: (view: DashboardView, section?: SettingsSection) => void
   /** The overview layout editor is open (the toolbar's Customize button). */
   customizing?: boolean
   /** Opened through a share link: parts show data only and leave out everything that edits. */
@@ -52,7 +53,7 @@ export interface DashboardProviderProps {
   onFilter?: (dimension: string, value: string) => void
   onSiteChange?: (site: Site) => void
   /** Lets parts link to other views, e.g. "Open live map" to the realtime view. */
-  onViewChange?: (view: DashboardView) => void
+  onViewChange?: (view: DashboardView, section?: SettingsSection) => void
   /** Opens the overview layout editor. */
   customizing?: boolean
   /** Hides what edits, as on a shared dashboard. */

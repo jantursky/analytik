@@ -113,7 +113,7 @@ export function Revenue() {
 
   return (
     <View>
-      <Status loading={overview.loading && !data} error={overview.error}>
+      <Status loading={overview.loading && !data} error={overview.error} onRetry={overview.reload}>
         {data && (
           <div className="analytik-stats">
             <StatTile label={t('Revenue')} delta={data.revenue} format={short} exact={money} />
@@ -124,7 +124,7 @@ export function Revenue() {
         )}
       </Status>
       <Card title={t('Revenue')}>
-        <Status loading={series.loading && !series.data} error={series.error}>
+        <Status loading={series.loading && !series.data} error={series.error} onRetry={series.reload}>
           <TrafficChart points={series.data ?? []} metric="revenue" reload={series.reload} />
         </Status>
       </Card>

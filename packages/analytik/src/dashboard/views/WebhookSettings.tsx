@@ -157,7 +157,7 @@ export function WebhookSettings() {
       )}
     >
       <NewWebhook onCreated={hooks.reload} />
-      <Status loading={hooks.loading && !hooks.data} error={hooks.error}>
+      <Status loading={hooks.loading && !hooks.data} error={hooks.error} onRetry={hooks.reload}>
         {hooks.data && <WebhookList webhooks={hooks.data} onChange={hooks.reload} />}
       </Status>
     </Card>

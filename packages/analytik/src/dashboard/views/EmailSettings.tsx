@@ -120,7 +120,7 @@ export function EmailSettings() {
         'Get a message when money arrives, a daily or weekly summary of every site, or a warning when tracking stops. These settings apply to all sites.',
       )}
     >
-      <Status loading={state.loading} error={state.error}>
+      <Status loading={state.loading} error={state.error} onRetry={state.reload}>
         {state.data && <EmailForm state={state.data} />}
       </Status>
     </Card>

@@ -449,7 +449,7 @@ export function ApiKeysSettings() {
             setSecret(created)
           }}
         />
-        <Status loading={keys.loading && !keys.data} error={keys.error}>
+        <Status loading={keys.loading && !keys.data} error={keys.error} onRetry={keys.reload}>
           {keys.data &&
             (keys.data.length === 0 ? (
               <p className="analytik-muted">{t('No API keys yet.')}</p>
@@ -469,7 +469,7 @@ export function ApiKeysSettings() {
         title={t('Key activity')}
         description={t('Keys created, rolled, switched off or deleted, and calls a key was refused.')}
       >
-        <Status loading={events.loading && !events.data} error={events.error}>
+        <Status loading={events.loading && !events.data} error={events.error} onRetry={events.reload}>
           {events.data && <Activity events={events.data} />}
         </Status>
       </Card>

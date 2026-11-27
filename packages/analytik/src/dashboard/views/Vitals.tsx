@@ -84,7 +84,7 @@ export function VitalsCard() {
   const data = result.data
   return (
     <Card title={t('Core Web Vitals')} description={t('Three in four page loads are at least this good.')}>
-      <Status loading={result.loading && !data} error={result.error}>
+      <Status loading={result.loading && !data} error={result.error} onRetry={result.reload}>
         {data &&
           (data.total.samples > 0 ? (
             <VitalsTable result={data} />

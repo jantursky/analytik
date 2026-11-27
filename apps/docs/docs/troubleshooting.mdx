@@ -32,6 +32,8 @@ Events from `localhost` are dropped on purpose. Both sides must opt in: add `dat
 
 ## The dashboard is empty
 
+A site that has never received an event shows a **No data yet** card on its Overview with its tracking code, instead of empty charts; the card goes away with the first event. A site that has older events but none in the chosen range shows the normal view with zeros. A view that fails to load shows its error with a **Retry** button.
+
 Work down the list. Each filtered event still gets a `202`, so scrapers learn nothing, which also means a `202` does not prove the event was stored.
 
 1. Is `data-site` the id of an existing site? An unknown id answers `404 site not found`.

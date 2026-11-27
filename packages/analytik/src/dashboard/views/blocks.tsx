@@ -62,7 +62,7 @@ function KeyNumbersBlock() {
   }))
   return (
     <motion.section className="analytik-kpis" aria-label={t('Key numbers')} variants={rise}>
-      <Status loading={overview.loading && !data} error={overview.error}>
+      <Status loading={overview.loading && !data} error={overview.error} onRetry={overview.reload}>
         {data &&
           tiles.map((tile) => (
             <div key={tile.key} className="analytik-card analytik-kpi">
@@ -92,7 +92,7 @@ function ChannelTableBlock() {
   const list = rows.data ?? []
   return (
     <Card title={t('Channel performance')}>
-      <Status loading={rows.loading && !rows.data} error={rows.error}>
+      <Status loading={rows.loading && !rows.data} error={rows.error} onRetry={rows.reload}>
         {list.length ? (
           <div className="analytik-table-wrap">
             <table className="analytik-table analytik-compact">
@@ -150,7 +150,7 @@ function DeviceSplitBlock() {
   const starts = lengths.map((_, index) => lengths.slice(0, index).reduce((sum, length) => sum + length, 0))
   return (
     <Card title={t('Device split')}>
-      <Status loading={rows.loading && !rows.data} error={rows.error}>
+      <Status loading={rows.loading && !rows.data} error={rows.error} onRetry={rows.reload}>
         {total ? (
           <div className="analytik-donut">
             <svg viewBox="0 0 100 100" role="img" aria-label={t('Visitors by device')}>
@@ -200,7 +200,7 @@ function OrderValueBlock() {
   const change = previous ? (value - previous) / previous : null
   return (
     <Card title={t('Average order value')}>
-      <Status loading={overview.loading && !data} error={overview.error}>
+      <Status loading={overview.loading && !data} error={overview.error} onRetry={overview.reload}>
         {data && (
           <div className="analytik-big-number">
             <span className="analytik-kpi-icon" aria-hidden="true">
@@ -237,7 +237,7 @@ function RecentPaymentsBlock() {
         )
       }
     >
-      <Status loading={payments.loading && !payments.data} error={payments.error}>
+      <Status loading={payments.loading && !payments.data} error={payments.error} onRetry={payments.reload}>
         {list.length ? (
           <ul className="analytik-feed-list">
             {list.map((p) => (
@@ -275,7 +275,11 @@ function FunnelBlock() {
   const top = Math.max(steps[0]?.visitors ?? 0, 1)
   return (
     <Card title={first ? t('Funnel: {name}', { name: first.name }) : t('Funnel')}>
-      <Status loading={funnels.loading && !funnels.data} error={funnels.error ?? result.error}>
+      <Status
+        loading={funnels.loading && !funnels.data}
+        error={funnels.error ?? result.error}
+        onRetry={funnels.error ? funnels.reload : result.reload}
+      >
         {first ? (
           <ol className="analytik-funnel-bars">
             {steps.map((step, index) => (
@@ -338,7 +342,7 @@ function LiveBlock() {
         )
       }
     >
-      <Status loading={live.loading && !data} error={live.error}>
+      <Status loading={live.loading && !data} error={live.error} onRetry={live.reload}>
         {data && (
           <>
             <p className="analytik-live-count">

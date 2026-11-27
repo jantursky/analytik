@@ -146,7 +146,7 @@ export function BreakdownCard({ title, dimensions, metric = 'visitors', limit = 
   }, [known, shown, loaded])
   const heading = <span className="analytik-col-head">{metric === 'revenue' ? t('Revenue') : t('Visitors')}</span>
   const list = (
-    <Status loading={!shown} error={rows.error}>
+    <Status loading={!shown} error={rows.error} onRetry={rows.reload}>
       <AnimatePresence mode="wait" initial={false}>
         {shown && (
           <motion.div

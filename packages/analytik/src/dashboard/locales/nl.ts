@@ -4,21 +4,37 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Webhook toevoegen',
   Address: 'Adres',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Gemiddelde duur van een bezoek, voor bezoeken waarvan de duur bekend is.',
   'Chat message': 'Chatbericht',
   'Copy secret': 'Geheim kopiëren',
   'Copy the secret now. For safety it is not shown again.':
     'Kopieer het geheim nu. Voor de veiligheid wordt het niet opnieuw getoond.',
   Format: 'Indeling',
+  'Let your coding assistant add it': 'Laat je codeerassistent het toevoegen',
+  'Loaded again': 'Opnieuw geladen',
+  'Money from payments in this range, in the site currency.':
+    'Geld uit betalingen in deze periode, in de valuta van de site.',
+  'No data yet': 'Nog geen gegevens',
   'No webhooks yet.': 'Nog geen webhooks.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Voor deze site is nog niets bijgehouden. Plak dit in de head van elke pagina, en het overzicht vult zich met het eerste bezoek.',
   'Nothing is sent to it any more. This cannot be undone.':
     'Er wordt niets meer naartoe gestuurd. Dit kan niet ongedaan worden gemaakt.',
   'Outgoing webhooks': 'Uitgaande webhooks',
   Pause: 'Pauzeren',
+  'People who visited in this range, each counted once.':
+    'Mensen die in deze periode op bezoek waren, ieder één keer geteld.',
   'Remove this webhook?': 'Deze webhook verwijderen?',
   Resume: 'Hervatten',
+  Retry: 'Opnieuw proberen',
+  'Revenue divided by the number of visitors.': 'Omzet gedeeld door het aantal bezoekers.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Stuur een bericht naar een andere dienst, zoals Slack of je eigen server, wanneer een doel is bereikt of een betaling binnenkomt.',
   'Send test': 'Test sturen',
+  'Share of visitors who paid at least once.': 'Aandeel bezoekers dat minstens één keer heeft betaald.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Aandeel bezoeken dat één pagina bekeek en verder niets deed.',
   'Signed JSON': 'Ondertekende JSON',
   'Test sent': 'Test verstuurd',
   'Webhook added': 'Webhook toegevoegd',
@@ -49,6 +65,7 @@ export default {
   'The website already matches.': 'De website komt al overeen.',
   'The website could not be read.': 'De website kon niet worden gelezen.',
   'Website details applied': 'Websitegegevens toegepast',
+  'What is {metric}?': 'Wat is {metric}?',
   '{count} of {target}': '{count} van {target}',
   '1 to 20, named Test site …': '1 tot 20, genaamd Test site …',
   '1 to 20; each takes the next kind of site.': '1 tot 20; elk krijgt de volgende soort site.',

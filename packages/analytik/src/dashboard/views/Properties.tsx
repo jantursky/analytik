@@ -46,7 +46,11 @@ export function Properties() {
         ) : undefined
       }
     >
-      <Status loading={!keys.data && !keys.error} error={keys.error ?? values.error}>
+      <Status
+        loading={!keys.data && !keys.error}
+        error={keys.error ?? values.error}
+        onRetry={keys.error ? keys.reload : values.reload}
+      >
         <BarList
           label={t('{dimension} by visitors', { dimension: key })}
           rows={[

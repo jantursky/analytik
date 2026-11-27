@@ -4,21 +4,37 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Webhook hinzufügen',
   Address: 'Adresse',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Durchschnittliche Dauer eines Besuchs, bei Besuchen mit bekannter Dauer.',
   'Chat message': 'Chat-Nachricht',
   'Copy secret': 'Geheimnis kopieren',
   'Copy the secret now. For safety it is not shown again.':
     'Kopieren Sie das Geheimnis jetzt. Aus Sicherheitsgründen wird es nicht noch einmal angezeigt.',
   Format: 'Format',
+  'Let your coding assistant add it': 'Lassen Sie Ihren Coding-Assistenten es einbauen',
+  'Loaded again': 'Erneut geladen',
+  'Money from payments in this range, in the site currency.':
+    'Geld aus Zahlungen in diesem Zeitraum, in der Währung der Website.',
+  'No data yet': 'Noch keine Daten',
   'No webhooks yet.': 'Noch keine Webhooks.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Für diese Website wurde noch nichts erfasst. Fügen Sie dies in den Head jeder Seite ein, und die Übersicht füllt sich mit dem ersten Besuch.',
   'Nothing is sent to it any more. This cannot be undone.':
     'Es wird nichts mehr dorthin gesendet. Das lässt sich nicht rückgängig machen.',
   'Outgoing webhooks': 'Ausgehende Webhooks',
   Pause: 'Pausieren',
+  'People who visited in this range, each counted once.':
+    'Personen, die in diesem Zeitraum zu Besuch waren, jede einmal gezählt.',
   'Remove this webhook?': 'Diesen Webhook entfernen?',
   Resume: 'Fortsetzen',
+  Retry: 'Erneut versuchen',
+  'Revenue divided by the number of visitors.': 'Umsatz geteilt durch die Zahl der Besucher.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Senden Sie eine Nachricht an einen anderen Dienst, etwa Slack oder Ihren eigenen Server, wenn ein Ziel erreicht oder eine Zahlung verbucht wird.',
   'Send test': 'Test senden',
+  'Share of visitors who paid at least once.': 'Anteil der Besucher, die mindestens einmal bezahlt haben.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Anteil der Besuche, die eine Seite angesehen und sonst nichts getan haben.',
   'Signed JSON': 'Signiertes JSON',
   'Test sent': 'Test gesendet',
   'Webhook added': 'Webhook hinzugefügt',
@@ -49,6 +65,7 @@ export default {
   'The website already matches.': 'Die Website stimmt bereits überein.',
   'The website could not be read.': 'Die Website konnte nicht gelesen werden.',
   'Website details applied': 'Angaben der Website übernommen',
+  'What is {metric}?': 'Was ist {metric}?',
   '{count} of {target}': '{count} von {target}',
   '1 to 20, named Test site …': '1 bis 20, benannt Test site …',
   '1 to 20; each takes the next kind of site.': '1 bis 20; jede erhält die nächste Art von Website.',

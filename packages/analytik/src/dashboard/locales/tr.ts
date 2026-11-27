@@ -4,20 +4,35 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Webhook ekle',
   Address: 'Adres',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Süresi bilinen ziyaretler için bir ziyaretin ortalama süresi.',
   'Chat message': 'Sohbet mesajı',
   'Copy secret': 'Sırrı kopyala',
   'Copy the secret now. For safety it is not shown again.':
     'Sırrı şimdi kopyalayın. Güvenlik için bir daha gösterilmez.',
   Format: 'Biçim',
+  'Let your coding assistant add it': 'Kodlama asistanınız eklesin',
+  'Loaded again': 'Yeniden yüklendi',
+  'Money from payments in this range, in the site currency.':
+    'Bu aralıktaki ödemelerden gelen para, sitenin para biriminde.',
+  'No data yet': 'Henüz veri yok',
   'No webhooks yet.': 'Henüz webhook yok.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Bu site için henüz bir şey izlenmedi. Bunu her sayfanın head bölümüne yapıştırın, ilk ziyaretle birlikte genel bakış dolacak.',
   'Nothing is sent to it any more. This cannot be undone.': 'Ona artık hiçbir şey gönderilmez. Bu geri alınamaz.',
   'Outgoing webhooks': "Giden webhook'lar",
   Pause: 'Duraklat',
+  'People who visited in this range, each counted once.': 'Bu aralıkta ziyaret eden kişiler, her biri bir kez sayılır.',
   'Remove this webhook?': 'Bu webhook kaldırılsın mı?',
   Resume: 'Sürdür',
+  Retry: 'Yeniden dene',
+  'Revenue divided by the number of visitors.': 'Gelir, ziyaretçi sayısına bölünür.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Bir hedefe ulaşıldığında veya ödeme geldiğinde Slack ya da kendi sunucunuz gibi başka bir hizmete mesaj gönderin.',
   'Send test': 'Test gönder',
+  'Share of visitors who paid at least once.': 'En az bir kez ödeme yapan ziyaretçilerin oranı.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Tek sayfa görüntüleyip başka bir şey yapmayan ziyaretlerin oranı.',
   'Signed JSON': 'İmzalı JSON',
   'Test sent': 'Test gönderildi',
   'Webhook added': 'Webhook eklendi',
@@ -48,6 +63,7 @@ export default {
   'The website already matches.': 'Web sitesi zaten eşleşiyor.',
   'The website could not be read.': 'Web sitesi okunamadı.',
   'Website details applied': 'Web sitesi bilgileri uygulandı',
+  'What is {metric}?': '{metric} nedir?',
   '{count} of {target}': '{count} / {target}',
   '1 to 20, named Test site …': '1 ile 20 arası, adı Test site …',
   '1 to 20; each takes the next kind of site.': '1 ile 20 arası; her biri sıradaki site türünü alır.',

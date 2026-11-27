@@ -4,21 +4,37 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Tambah webhook',
   Address: 'Alamat',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Rata-rata durasi kunjungan, untuk kunjungan yang durasinya diketahui.',
   'Chat message': 'Pesan obrolan',
   'Copy secret': 'Salin rahasia',
   'Copy the secret now. For safety it is not shown again.':
     'Salin rahasia sekarang. Demi keamanan, rahasia tidak ditampilkan lagi.',
   Format: 'Format',
+  'Let your coding assistant add it': 'Minta asisten kode Anda menambahkannya',
+  'Loaded again': 'Dimuat ulang',
+  'Money from payments in this range, in the site currency.':
+    'Uang dari pembayaran pada rentang ini, dalam mata uang situs.',
+  'No data yet': 'Belum ada data',
   'No webhooks yet.': 'Belum ada webhook.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Belum ada yang dilacak untuk situs ini. Tempel ini di head setiap halaman, dan ringkasan akan terisi dengan kunjungan pertama.',
   'Nothing is sent to it any more. This cannot be undone.':
     'Tidak ada lagi yang dikirim ke sana. Tindakan ini tidak bisa dibatalkan.',
   'Outgoing webhooks': 'Webhook keluar',
   Pause: 'Jeda',
+  'People who visited in this range, each counted once.':
+    'Orang yang berkunjung pada rentang ini, masing-masing dihitung sekali.',
   'Remove this webhook?': 'Hapus webhook ini?',
   Resume: 'Lanjutkan',
+  Retry: 'Coba lagi',
+  'Revenue divided by the number of visitors.': 'Pendapatan dibagi jumlah pengunjung.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Kirim pesan ke layanan lain, seperti Slack atau server Anda sendiri, saat target tercapai atau pembayaran masuk.',
   'Send test': 'Kirim uji coba',
+  'Share of visitors who paid at least once.': 'Persentase pengunjung yang membayar setidaknya sekali.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Persentase kunjungan yang melihat satu halaman dan tidak melakukan hal lain.',
   'Signed JSON': 'JSON bertanda tangan',
   'Test sent': 'Uji coba terkirim',
   'Webhook added': 'Webhook ditambahkan',
@@ -49,6 +65,7 @@ export default {
   'The website already matches.': 'Situs web sudah sesuai.',
   'The website could not be read.': 'Situs web tidak dapat dibaca.',
   'Website details applied': 'Detail situs web diterapkan',
+  'What is {metric}?': 'Apa itu {metric}?',
   '{count} of {target}': '{count} dari {target}',
   '1 to 20, named Test site …': '1 sampai 20, bernama Test site …',
   '1 to 20; each takes the next kind of site.': '1 sampai 20; masing-masing mendapat jenis situs berikutnya.',

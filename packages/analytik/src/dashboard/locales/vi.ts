@@ -4,20 +4,36 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Thêm webhook',
   Address: 'Địa chỉ',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Thời gian trung bình của một lượt truy cập, với các lượt đã biết thời lượng.',
   'Chat message': 'Tin nhắn trò chuyện',
   'Copy secret': 'Sao chép khóa bí mật',
   'Copy the secret now. For safety it is not shown again.':
     'Hãy sao chép khóa bí mật ngay. Vì an toàn, khóa sẽ không hiện lại.',
   Format: 'Định dạng',
+  'Let your coding assistant add it': 'Để trợ lý lập trình của bạn thêm vào',
+  'Loaded again': 'Đã tải lại',
+  'Money from payments in this range, in the site currency.':
+    'Tiền từ các khoản thanh toán trong khoảng này, theo đơn vị tiền tệ của trang.',
+  'No data yet': 'Chưa có dữ liệu',
   'No webhooks yet.': 'Chưa có webhook nào.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Chưa có gì được theo dõi cho trang này. Dán đoạn này vào head của mọi trang, và tổng quan sẽ có dữ liệu từ lượt truy cập đầu tiên.',
   'Nothing is sent to it any more. This cannot be undone.': 'Sẽ không gửi gì tới đó nữa. Không thể hoàn tác.',
   'Outgoing webhooks': 'Webhook gửi đi',
   Pause: 'Tạm dừng',
+  'People who visited in this range, each counted once.':
+    'Số người đã truy cập trong khoảng này, mỗi người chỉ tính một lần.',
   'Remove this webhook?': 'Xóa webhook này?',
   Resume: 'Tiếp tục',
+  Retry: 'Thử lại',
+  'Revenue divided by the number of visitors.': 'Doanh thu chia cho số khách truy cập.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Gửi tin nhắn tới dịch vụ khác, như Slack hoặc máy chủ của bạn, khi đạt mục tiêu hoặc có thanh toán.',
   'Send test': 'Gửi thử',
+  'Share of visitors who paid at least once.': 'Tỷ lệ khách truy cập đã thanh toán ít nhất một lần.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Tỷ lệ lượt truy cập chỉ xem một trang và không làm gì khác.',
   'Signed JSON': 'JSON có chữ ký',
   'Test sent': 'Đã gửi thử',
   'Webhook added': 'Đã thêm webhook',
@@ -48,6 +64,7 @@ export default {
   'The website already matches.': 'Website đã khớp.',
   'The website could not be read.': 'Không đọc được website.',
   'Website details applied': 'Đã áp dụng thông tin website',
+  'What is {metric}?': '{metric} là gì?',
   '{count} of {target}': '{count} trên {target}',
   '1 to 20, named Test site …': '1 đến 20, đặt tên Test site …',
   '1 to 20; each takes the next kind of site.': '1 đến 20; mỗi trang nhận loại trang tiếp theo.',

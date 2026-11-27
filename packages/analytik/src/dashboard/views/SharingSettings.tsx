@@ -1,14 +1,26 @@
-import { type SubmitEvent, useState } from 'react'
+import { type SubmitEvent, useEffect, useState } from 'react'
 
 import { SHARE_VIEWS, type ShareLink, type ShareView } from '../../shared/types'
 import { useDashboard } from '../context'
 import { useResource } from '../data'
 import { formatDateTime } from '../format'
 import { msg, t } from '../i18n'
-import macAppIcon from '../mac-app-icon'
 import { Actions, Card, ConfirmButton, CopyButton, Field, Status, useOutcome } from '../ui'
 import { MultiSelect } from '../ui/multi-select'
 import { Select } from '../ui/select'
+
+// The 5 kB icon is its own chunk, loaded with this view instead of with the dashboard.
+function MacAppIcon() {
+  const [src, setSrc] = useState<string>()
+  useEffect(() => {
+    let live = true
+    void import('../mac-app-icon').then((m) => live && setSrc(m.default))
+    return () => {
+      live = false
+    }
+  }, [])
+  return <img src={src} alt="" width={20} height={20} />
+}
 
 const MAC_APP_COMMAND = 'npx analytik menubar'
 const MAC_APP_GUIDE = 'https://analytik-docs.vercel.app/guides/mac-menu-bar#install'
@@ -141,7 +153,7 @@ function NewLink({ onCreated }: { onCreated: () => void }) {
       </Actions>
       <div className="analytik-row analytik-mac-app">
         <a className="analytik-button" href={MAC_APP_GUIDE} target="_blank" rel="noopener">
-          <img src={macAppIcon} alt="" width={20} height={20} />
+          <MacAppIcon />
           {t('Get the Mac app')}
         </a>
         <input
@@ -236,7 +248,7 @@ export function SharingSettings() {
         <NewLink onCreated={links.reload} />
       </Card>
       <Card title={t('Share links')}>
-        <Status loading={links.loading && !links.data} error={links.error}>
+        <Status loading={links.loading && !links.data} error={links.error} onRetry={links.reload}>
           {links.data && <LinkList links={links.data} onChange={links.reload} />}
         </Status>
       </Card>

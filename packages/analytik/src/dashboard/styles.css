@@ -1484,6 +1484,29 @@ button.analytik-stat:hover {
   background: var(--analytik-bg-subtle);
 }
 
+/* A tile with a help button: the button sits over the tile's top right corner, outside the tile's own button. */
+.analytik-stat-wrap {
+  position: relative;
+  display: flex;
+}
+
+.analytik-stat-wrap > .analytik-stat {
+  flex: 1;
+  padding-right: 32px;
+}
+
+.analytik-stat-wrap + .analytik-stat-wrap,
+.analytik-stat-wrap + .analytik-stat,
+.analytik-stat + .analytik-stat-wrap {
+  border-left: 1px solid var(--analytik-border);
+}
+
+.analytik-stat-help {
+  position: absolute;
+  top: 0;
+  right: 6px;
+}
+
 button.analytik-stat[aria-pressed='true'] {
   background: var(--analytik-accent-soft);
   box-shadow: inset 0 -2px 0 var(--analytik-accent-text);
@@ -6604,4 +6627,43 @@ table.analytik-sr-only {
 .analytik[data-chart-style] .analytik-live-dot {
   box-shadow: none;
   animation: none;
+}
+
+/* ---- forced colors (Windows high contrast): system colors, with shapes where color carried the meaning */
+
+@media (forced-colors: active) {
+  .analytik :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Selected tabs, pages and rows: an outline, since the tinted fill is dropped. */
+  .analytik
+    :is(.analytik-tab[data-active], .analytik-nav-item[aria-current='page'], .analytik-page[aria-current='page']),
+  .analytik :is(button.analytik-stat[aria-pressed='true'], .analytik-palette-option[aria-selected='true']),
+  .analytik .analytik-table tr[aria-selected='true'] td {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .analytik .analytik-switch {
+    border: 1px solid ButtonText;
+  }
+
+  .analytik .analytik-switch[data-checked] {
+    background: Highlight;
+  }
+
+  .analytik .analytik-switch-thumb {
+    background: ButtonText;
+  }
+
+  .analytik :is(.analytik-popup, .analytik-tooltip, .analytik-error, [role='dialog']) {
+    border: 1px solid CanvasText;
+  }
+
+  /* The chart's own series colors stay, since a line and a bar told apart by color alone need them. */
+  .analytik-chart-plot :is(.recharts-line-curve, .recharts-area-area, .recharts-bar-rectangle path) {
+    forced-color-adjust: none;
+  }
 }

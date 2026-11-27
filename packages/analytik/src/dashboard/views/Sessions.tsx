@@ -22,7 +22,7 @@ function TimelineBody({ sessionId }: { sessionId: string }) {
   )
   const session = detail.data?.session
   return (
-    <Status loading={detail.loading} error={detail.error}>
+    <Status loading={detail.loading} error={detail.error} onRetry={detail.reload}>
       {session && (
         <>
           <div className="analytik-session-head">

@@ -4,20 +4,36 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Añadir webhook',
   Address: 'Dirección',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Tiempo medio de una visita, en las visitas cuya duración se conoce.',
   'Chat message': 'Mensaje de chat',
   'Copy secret': 'Copiar secreto',
   'Copy the secret now. For safety it is not shown again.':
     'Copie el secreto ahora. Por seguridad no se vuelve a mostrar.',
   Format: 'Formato',
+  'Let your coding assistant add it': 'Deja que tu asistente de código lo añada',
+  'Loaded again': 'Cargado de nuevo',
+  'Money from payments in this range, in the site currency.':
+    'Dinero de los pagos en este periodo, en la moneda del sitio.',
+  'No data yet': 'Aún no hay datos',
   'No webhooks yet.': 'Aún no hay webhooks.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Todavía no se ha registrado nada en este sitio. Pega esto en el head de cada página y el resumen se llenará con la primera visita.',
   'Nothing is sent to it any more. This cannot be undone.': 'Ya no se le enviará nada. No se puede deshacer.',
   'Outgoing webhooks': 'Webhooks salientes',
   Pause: 'Pausar',
+  'People who visited in this range, each counted once.':
+    'Personas que visitaron en este periodo, cada una contada una vez.',
   'Remove this webhook?': '¿Quitar este webhook?',
   Resume: 'Reanudar',
+  Retry: 'Reintentar',
+  'Revenue divided by the number of visitors.': 'Ingresos divididos entre el número de visitantes.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Envía un mensaje a otro servicio, como Slack o tu propio servidor, cuando se alcanza un objetivo o llega un pago.',
   'Send test': 'Enviar prueba',
+  'Share of visitors who paid at least once.': 'Porcentaje de visitantes que pagaron al menos una vez.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Porcentaje de visitas que vieron una página y no hicieron nada más.',
   'Signed JSON': 'JSON firmado',
   'Test sent': 'Prueba enviada',
   'Webhook added': 'Webhook añadido',
@@ -48,6 +64,7 @@ export default {
   'The website already matches.': 'El sitio web ya coincide.',
   'The website could not be read.': 'No se pudo leer el sitio web.',
   'Website details applied': 'Datos del sitio web aplicados',
+  'What is {metric}?': '¿Qué es {metric}?',
   '{count} of {target}': '{count} de {target}',
   '1 to 20, named Test site …': 'De 1 a 20, con el nombre Test site …',
   '1 to 20; each takes the next kind of site.': 'De 1 a 20; cada uno toma el siguiente tipo de sitio.',

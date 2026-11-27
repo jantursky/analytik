@@ -4,21 +4,34 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'वेबहुक जोड़ें',
   Address: 'पता',
+  'Average time a visit lasted, for visits whose length is known.': 'उन विज़िट का औसत समय जिनकी अवधि पता है।',
   'Chat message': 'चैट संदेश',
   'Copy secret': 'सीक्रेट कॉपी करें',
   'Copy the secret now. For safety it is not shown again.':
     'अभी सीक्रेट कॉपी कर लें। सुरक्षा के लिए यह दोबारा नहीं दिखाया जाएगा।',
   Format: 'फ़ॉर्मैट',
+  'Let your coding assistant add it': 'अपने कोडिंग असिस्टेंट से इसे जुड़वाएँ',
+  'Loaded again': 'फिर से लोड किया गया',
+  'Money from payments in this range, in the site currency.': 'इस अवधि में भुगतानों से मिला पैसा, साइट की मुद्रा में।',
+  'No data yet': 'अभी कोई डेटा नहीं',
   'No webhooks yet.': 'अभी कोई वेबहुक नहीं।',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'इस साइट के लिए अभी कुछ ट्रैक नहीं हुआ है। इसे हर पेज के head में चिपकाएँ, और पहली विज़िट के साथ ओवरव्यू भर जाएगा।',
   'Nothing is sent to it any more. This cannot be undone.':
     'इसे अब कुछ नहीं भेजा जाएगा। इसे पूर्ववत नहीं किया जा सकता।',
   'Outgoing webhooks': 'आउटगोइंग वेबहुक',
   Pause: 'रोकें',
+  'People who visited in this range, each counted once.': 'इस अवधि में आए लोग, हर एक को एक बार गिना गया।',
   'Remove this webhook?': 'यह वेबहुक हटाएँ?',
   Resume: 'फिर शुरू करें',
+  Retry: 'फिर कोशिश करें',
+  'Revenue divided by the number of visitors.': 'राजस्व को विज़िटरों की संख्या से भाग देने पर।',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'लक्ष्य पूरा होने या भुगतान आने पर Slack या अपने सर्वर जैसी किसी दूसरी सेवा को संदेश भेजें।',
   'Send test': 'टेस्ट भेजें',
+  'Share of visitors who paid at least once.': 'उन विज़िटरों का हिस्सा जिन्होंने कम से कम एक बार भुगतान किया।',
+  'Share of visits that viewed one page and did nothing else.':
+    'उन विज़िट का हिस्सा जिनमें एक पेज देखा गया और कुछ और नहीं किया गया।',
   'Signed JSON': 'हस्ताक्षरित JSON',
   'Test sent': 'टेस्ट भेजा गया',
   'Webhook added': 'वेबहुक जोड़ा गया',
@@ -49,6 +62,7 @@ export default {
   'The website already matches.': 'वेबसाइट पहले से मेल खाती है।',
   'The website could not be read.': 'वेबसाइट पढ़ी नहीं जा सकी।',
   'Website details applied': 'वेबसाइट की जानकारी लागू हो गई',
+  'What is {metric}?': '{metric} क्या है?',
   '{count} of {target}': '{target} में से {count}',
   '1 to 20, named Test site …': '1 से 20, नाम Test site …',
   '1 to 20; each takes the next kind of site.': '1 से 20; हर एक को अगले प्रकार की साइट मिलती है।',

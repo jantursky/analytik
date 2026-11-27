@@ -4,20 +4,35 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Přidat webhook',
   Address: 'Adresa',
+  'Average time a visit lasted, for visits whose length is known.':
+    'Průměrná délka návštěvy u návštěv, jejichž délka je známa.',
   'Chat message': 'Zpráva do chatu',
   'Copy secret': 'Kopírovat tajný klíč',
   'Copy the secret now. For safety it is not shown again.':
     'Zkopírujte tajný klíč hned. Z bezpečnostních důvodů se znovu nezobrazí.',
   Format: 'Formát',
+  'Let your coding assistant add it': 'Nechte ho přidat programovacího asistenta',
+  'Loaded again': 'Načteno znovu',
+  'Money from payments in this range, in the site currency.': 'Peníze z plateb v tomto období v měně webu.',
+  'No data yet': 'Zatím žádná data',
   'No webhooks yet.': 'Zatím žádné webhooky.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Pro tento web se zatím nic nesledovalo. Vložte to do hlavičky každé stránky a přehled se naplní první návštěvou.',
   'Nothing is sent to it any more. This cannot be undone.': 'Nic se na něj už nebude posílat. Nelze to vrátit zpět.',
   'Outgoing webhooks': 'Odchozí webhooky',
   Pause: 'Pozastavit',
+  'People who visited in this range, each counted once.':
+    'Lidé, kteří v tomto období web navštívili, každý započítaný jednou.',
   'Remove this webhook?': 'Odebrat tento webhook?',
   Resume: 'Obnovit',
+  Retry: 'Zkusit znovu',
+  'Revenue divided by the number of visitors.': 'Tržby vydělené počtem návštěvníků.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Pošlete zprávu jiné službě, třeba Slacku nebo vlastnímu serveru, když se dosáhne cíle nebo přijde platba.',
   'Send test': 'Poslat test',
+  'Share of visitors who paid at least once.': 'Podíl návštěvníků, kteří zaplatili alespoň jednou.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Podíl návštěv, které zobrazily jednu stránku a nic jiného neudělaly.',
   'Signed JSON': 'Podepsaný JSON',
   'Test sent': 'Test odeslán',
   'Webhook added': 'Webhook přidán',
@@ -48,6 +63,7 @@ export default {
   'The website already matches.': 'Web už odpovídá.',
   'The website could not be read.': 'Web se nepodařilo přečíst.',
   'Website details applied': 'Údaje webu byly použity',
+  'What is {metric}?': 'Co je {metric}?',
   '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': '1 až 20, s názvem Test site …',
   '1 to 20; each takes the next kind of site.': '1 až 20; každý dostane další druh webu.',

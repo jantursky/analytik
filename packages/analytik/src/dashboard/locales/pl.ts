@@ -4,21 +4,35 @@ import type { Messages } from '../i18n'
 export default {
   'Add webhook': 'Dodaj webhook',
   Address: 'Adres',
+  'Average time a visit lasted, for visits whose length is known.': 'Średni czas wizyty, dla wizyt o znanej długości.',
   'Chat message': 'Wiadomość czatu',
   'Copy secret': 'Kopiuj sekret',
   'Copy the secret now. For safety it is not shown again.':
     'Skopiuj sekret teraz. Ze względów bezpieczeństwa nie zostanie pokazany ponownie.',
   Format: 'Format',
+  'Let your coding assistant add it': 'Niech asystent kodowania go doda',
+  'Loaded again': 'Wczytano ponownie',
+  'Money from payments in this range, in the site currency.': 'Pieniądze z płatności w tym okresie, w walucie witryny.',
+  'No data yet': 'Brak danych',
   'No webhooks yet.': 'Brak webhooków.',
+  'Nothing has been tracked for this site yet. Paste this into the head of every page, and the overview fills in with the first visit.':
+    'Dla tej witryny nic jeszcze nie zarejestrowano. Wklej to do head każdej strony, a przegląd wypełni się pierwszą wizytą.',
   'Nothing is sent to it any more. This cannot be undone.':
     'Nic więcej nie będzie na niego wysyłane. Tego nie można cofnąć.',
   'Outgoing webhooks': 'Webhooki wychodzące',
   Pause: 'Wstrzymaj',
+  'People who visited in this range, each counted once.':
+    'Osoby, które odwiedziły witrynę w tym okresie, każda policzona raz.',
   'Remove this webhook?': 'Usunąć ten webhook?',
   Resume: 'Wznów',
+  Retry: 'Spróbuj ponownie',
+  'Revenue divided by the number of visitors.': 'Przychód podzielony przez liczbę odwiedzających.',
   'Send a message to another service, such as Slack or your own server, when a goal is reached or a payment arrives.':
     'Wyślij wiadomość do innej usługi, np. Slacka lub własnego serwera, gdy cel zostanie osiągnięty albo wpłynie płatność.',
   'Send test': 'Wyślij test',
+  'Share of visitors who paid at least once.': 'Odsetek odwiedzających, którzy zapłacili co najmniej raz.',
+  'Share of visits that viewed one page and did nothing else.':
+    'Odsetek wizyt, w których wyświetlono jedną stronę i nic więcej nie zrobiono.',
   'Signed JSON': 'Podpisany JSON',
   'Test sent': 'Test wysłany',
   'Webhook added': 'Dodano webhook',
@@ -50,6 +64,7 @@ export default {
   'The website already matches.': 'Strona już się zgadza.',
   'The website could not be read.': 'Nie udało się odczytać strony.',
   'Website details applied': 'Zastosowano dane strony',
+  'What is {metric}?': 'Co to jest {metric}?',
   '{count} of {target}': '{count} z {target}',
   '1 to 20, named Test site …': 'Od 1 do 20, o nazwie Test site …',
   '1 to 20; each takes the next kind of site.': 'Od 1 do 20; każda dostaje kolejny rodzaj witryny.',
